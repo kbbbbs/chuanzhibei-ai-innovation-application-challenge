@@ -8,6 +8,7 @@
 ai-learning-backend/    后端服务
 ai-learning-frontend/   前端页面
 database/               数据库脚本
+backend-api.md          后端接口简表
 ```
 
 ## 数据库
