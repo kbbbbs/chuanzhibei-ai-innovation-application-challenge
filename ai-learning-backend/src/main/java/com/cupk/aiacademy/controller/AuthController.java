@@ -59,6 +59,8 @@ public class AuthController {
         user.setUsername(form.getUsername());
         user.setPassword(MD5Utils.md5(form.getPassword()));
         user.setNickname(isBlank(form.getNickname()) ? form.getUsername() : form.getNickname());
+        user.setEmail(form.getEmail());
+        user.setPhone(form.getPhone());
         user.setAvatar(form.getAvatar());
         user.setStatus(1);
         user.setCreateTime(now);
@@ -130,6 +132,8 @@ public class AuthController {
         data.put("userId", user.getId());
         data.put("username", user.getUsername());
         data.put("nickname", user.getNickname());
+        data.put("email", user.getEmail());
+        data.put("phone", user.getPhone());
         data.put("avatar", user.getAvatar());
         data.put("roleCode", roleCode);
         return data;

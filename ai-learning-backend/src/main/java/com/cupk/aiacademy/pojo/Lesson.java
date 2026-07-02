@@ -18,6 +18,13 @@ public class Lesson {
     private Integer chapterId;
 
     private String title;
+
+    @TableField("resource_type")
+    private String resourceType;
+
+    @TableField("resource_url")
+    private String resourceUrl;
+
     private String content;
 
     @TableField("video_url")

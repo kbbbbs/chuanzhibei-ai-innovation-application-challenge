@@ -18,12 +18,24 @@ public class Course {
     private String title;
     private String description;
     private String cover;
-    private String category;
+
+    @TableField("cover_url")
+    private String coverUrl;
+
     private String teacher;
     private String difficulty;
 
+    @TableField("category_id")
+    private Integer categoryId;
+
+    @TableField("teacher_id")
+    private Integer teacherId;
+
     @TableField("student_count")
     private Integer studentCount;
+
+    @TableField("view_count")
+    private Integer viewCount;
 
     private BigDecimal rating;
     private Integer status;

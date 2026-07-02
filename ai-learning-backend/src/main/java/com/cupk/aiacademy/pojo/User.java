@@ -17,8 +17,16 @@ public class User {
     private String username;
     private String password;
     private String nickname;
+    private String email;
+    private String phone;
     private String avatar;
     private Integer status;
+
+    @TableField(exist = false)
+    private Integer roleId;
+
+    @TableField(exist = false)
+    private String roleCode;
 
     @TableField("create_time")
     private LocalDateTime createTime;

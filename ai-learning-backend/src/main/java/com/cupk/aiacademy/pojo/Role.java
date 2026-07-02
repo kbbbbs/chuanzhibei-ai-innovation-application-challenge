@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 @TableName("t_role")
 public class Role {
@@ -17,4 +19,7 @@ public class Role {
 
     @TableField("role_code")
     private String roleCode;
+
+    @TableField("create_time")
+    private LocalDateTime createTime;
 }
