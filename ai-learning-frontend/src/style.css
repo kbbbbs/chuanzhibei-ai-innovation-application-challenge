@@ -8,8 +8,45 @@ body {
   margin: 0;
 }
 
-.page-shell {
+.app-layout {
   min-height: 100vh;
+}
+
+.topbar {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 36px;
+  background: #2f6fd6;
+  color: white;
+  box-sizing: border-box;
+}
+
+.brand {
+  color: white;
+  font-size: 20px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.topbar nav {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.topbar nav a {
+  color: white;
+  text-decoration: none;
+}
+
+.nickname {
+  font-size: 14px;
+}
+
+.page-shell {
+  min-height: calc(100vh - 60px);
   display: grid;
   place-items: center;
   padding: 32px;
@@ -41,7 +78,49 @@ h1 {
   color: #526070;
 }
 
+.home-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.home-message {
+  margin-top: 18px;
+  color: #2f6fd6;
+}
+
+.auth-page {
+  min-height: calc(100vh - 60px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 86px;
+  box-sizing: border-box;
+  background: #eef2f7;
+}
+
+.auth-box {
+  width: 430px;
+  max-width: calc(100% - 32px);
+  padding: 34px 36px 28px;
+  background: white;
+  border-radius: 6px;
+  box-shadow: 0 8px 28px rgba(32, 49, 78, 0.08);
+  box-sizing: border-box;
+}
+
+.auth-box h2 {
+  margin: 0 0 24px;
+  text-align: center;
+  font-size: 24px;
+  color: #1f2937;
+}
+
 @media (max-width: 720px) {
+  .topbar {
+    padding: 0 18px;
+  }
+
   .page-shell {
     place-items: start;
     padding: 56px 24px;
@@ -53,5 +132,9 @@ h1 {
 
   .summary {
     font-size: 16px;
+  }
+
+  .home-actions {
+    flex-direction: column;
   }
 }

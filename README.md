@@ -1,6 +1,6 @@
 # AI智学平台
 
-这是一个课程学习平台项目，前端使用 Vue 3 和 Vite，后端使用 Spring Boot。当前已经接入课程、章节和课时的数据模型，后续会继续补充接口和页面。
+这是一个课程学习平台项目，前端使用 Vue 3 和 Vite，后端使用 Spring Boot。当前已经接入登录注册、课程、章节和课时的数据模型，后续会继续补充课程接口和页面。
 
 ## 项目结构
 
@@ -18,6 +18,7 @@ database/               数据库脚本
 DB_URL=jdbc:mysql://localhost:3306/ai_academy?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
 DB_USERNAME=root
 DB_PASSWORD=[REDACTED]
+JWT_SECRET=[REDACTED]
 ```
 
 ## 本地运行
