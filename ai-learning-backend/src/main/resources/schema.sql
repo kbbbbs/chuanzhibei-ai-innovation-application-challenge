@@ -1,4 +1,4 @@
-CREATE TABLE IF NOT EXISTS question (
+CREATE TABLE IF NOT EXISTS t_question (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     content VARCHAR(500) NOT NULL,
     type VARCHAR(32) NOT NULL,
@@ -11,7 +11,7 @@ CREATE TABLE IF NOT EXISTS question (
     updated_at DATETIME NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS question_option (
+CREATE TABLE IF NOT EXISTS t_question_option (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     question_id BIGINT NOT NULL,
     option_key VARCHAR(8) NOT NULL,
@@ -20,7 +20,7 @@ CREATE TABLE IF NOT EXISTS question_option (
     CONSTRAINT fk_question_option_question FOREIGN KEY (question_id) REFERENCES question(id)
 );
 
-CREATE TABLE IF NOT EXISTS question_answer (
+CREATE TABLE IF NOT EXISTS t_question_answer (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     question_id BIGINT NOT NULL,
     answer_content VARCHAR(500) NOT NULL,
@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS question_answer (
     CONSTRAINT fk_question_answer_question FOREIGN KEY (question_id) REFERENCES question(id)
 );
 
-CREATE TABLE IF NOT EXISTS paper (
+CREATE TABLE IF NOT EXISTS t_paper (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
     description VARCHAR(1000),
@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS paper (
     updated_at DATETIME NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS paper_question (
+CREATE TABLE IF NOT EXISTS t_paper_question (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     paper_id BIGINT NOT NULL,
     question_id BIGINT NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS paper_question (
     CONSTRAINT fk_paper_question_question FOREIGN KEY (question_id) REFERENCES question(id)
 );
 
-CREATE TABLE IF NOT EXISTS exam (
+CREATE TABLE IF NOT EXISTS t_exam (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     name VARCHAR(200) NOT NULL,
     paper_id BIGINT NOT NULL,
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS exam (
     CONSTRAINT fk_exam_paper FOREIGN KEY (paper_id) REFERENCES paper(id)
 );
 
-CREATE TABLE IF NOT EXISTS exam_submission (
+CREATE TABLE IF NOT EXISTS t_exam_submission (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     exam_id BIGINT NOT NULL,
     candidate_id VARCHAR(64) NOT NULL,
@@ -77,7 +77,7 @@ CREATE TABLE IF NOT EXISTS exam_submission (
     CONSTRAINT fk_submission_exam FOREIGN KEY (exam_id) REFERENCES exam(id)
 );
 
-CREATE TABLE IF NOT EXISTS submission_answer (
+CREATE TABLE IF NOT EXISTS t_submission_answer (
     id BIGINT PRIMARY KEY AUTO_INCREMENT,
     submission_id BIGINT NOT NULL,
     paper_question_id BIGINT NOT NULL,
