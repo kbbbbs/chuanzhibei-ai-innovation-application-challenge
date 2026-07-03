@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.LearningProgressMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
@@ -37,7 +38,7 @@ public class LearningProgressController {
     private LessonMapper lessonMapper;
 
     @GetMapping
-    public Result pages(@RequestParam(required = false) Integer classId,
+    public ApiResponse<Page<LearningProgress>> pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer studentId,
                         @RequestParam(required = false) Integer lessonId,
                         @RequestParam(defaultValue = "1") Integer pageNum,
@@ -55,69 +56,74 @@ public class LearningProgressController {
         }
         queryWrapper.orderByDesc("id");
         progressMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<LearningProgress> selectById(@PathVariable Integer id) {
         LearningProgress progress = progressMapper.selectById(id);
-        return progress == null ? Result.error("404", "学习进度不存在") : Result.success(progress);
+        if (progress == null) {
+            throw new BusinessException("学习进度不存在");
+        }
+        return ApiResponse.success(progress);
     }
 
     @PostMapping
-    public Result add(@RequestBody LearningProgress progress) {
-        Result checkResult = checkProgress(progress);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody LearningProgress progress) {
+        checkProgress(progress);
         LocalDateTime now = LocalDateTime.now();
         progress.setCreateTime(now);
         progress.setUpdateTime(now);
         int row = progressMapper.insert(progress);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody LearningProgress progress) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody LearningProgress progress) {
         if (progressMapper.selectById(id) == null) {
-            return Result.error("404", "学习进度不存在");
+            throw new BusinessException("学习进度不存在");
         }
-        Result checkResult = checkProgress(progress);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkProgress(progress);
         progress.setId(id);
         progress.setUpdateTime(LocalDateTime.now());
         int row = progressMapper.updateById(progress);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (progressMapper.selectById(id) == null) {
-            return Result.error("404", "学习进度不存在");
+            throw new BusinessException("学习进度不存在");
         }
         int row = progressMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkProgress(LearningProgress progress) {
+    private void checkProgress(LearningProgress progress) {
         if (progress == null) {
-            return Result.error("400", "学习进度信息不能为空");
+            throw new BusinessException("学习进度信息不能为空");
         }
         if (progress.getClassId() == null || classMapper.selectById(progress.getClassId()) == null) {
-            return Result.error("404", "教学班不存在");
+            throw new BusinessException("教学班不存在");
         }
         if (progress.getStudentId() == null || userMapper.selectById(progress.getStudentId()) == null) {
-            return Result.error("404", "学生用户不存在");
+            throw new BusinessException("学生用户不存在");
         }
         if (progress.getLessonId() == null || lessonMapper.selectById(progress.getLessonId()) == null) {
-            return Result.error("404", "课时不存在");
+            throw new BusinessException("课时不存在");
         }
         if (progress.getProgress() != null && (progress.getProgress() < 0 || progress.getProgress() > 100)) {
-            return Result.error("400", "学习进度应在0到100之间");
+            throw new BusinessException("学习进度应在0到100之间");
         }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

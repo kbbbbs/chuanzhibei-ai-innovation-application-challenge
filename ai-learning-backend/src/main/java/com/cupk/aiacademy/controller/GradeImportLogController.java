@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.GradeImportLogMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
@@ -33,7 +34,7 @@ public class GradeImportLogController {
     private TeachingClassMapper classMapper;
 
     @GetMapping
-    public Result pages(@RequestParam(required = false) Integer teacherId,
+    public ApiResponse<Page<GradeImportLog>> pages(@RequestParam(required = false) Integer teacherId,
                         @RequestParam(required = false) Integer classId,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -47,60 +48,65 @@ public class GradeImportLogController {
         }
         queryWrapper.orderByDesc("id");
         logMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<GradeImportLog> selectById(@PathVariable Integer id) {
         GradeImportLog log = logMapper.selectById(id);
-        return log == null ? Result.error("404", "成绩导入日志不存在") : Result.success(log);
+        if (log == null) {
+            throw new BusinessException("成绩导入日志不存在");
+        }
+        return ApiResponse.success(log);
     }
 
     @PostMapping
-    public Result add(@RequestBody GradeImportLog log) {
-        Result checkResult = checkLog(log);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody GradeImportLog log) {
+        checkLog(log);
         log.setCreateTime(LocalDateTime.now());
         int row = logMapper.insert(log);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody GradeImportLog log) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody GradeImportLog log) {
         if (logMapper.selectById(id) == null) {
-            return Result.error("404", "成绩导入日志不存在");
+            throw new BusinessException("成绩导入日志不存在");
         }
-        Result checkResult = checkLog(log);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkLog(log);
         log.setId(id);
         int row = logMapper.updateById(log);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (logMapper.selectById(id) == null) {
-            return Result.error("404", "成绩导入日志不存在");
+            throw new BusinessException("成绩导入日志不存在");
         }
         int row = logMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkLog(GradeImportLog log) {
+    private void checkLog(GradeImportLog log) {
         if (log == null) {
-            return Result.error("400", "成绩导入日志不能为空");
+            throw new BusinessException("成绩导入日志不能为空");
         }
         if (log.getTeacherId() == null || userMapper.selectById(log.getTeacherId()) == null) {
-            return Result.error("404", "教师用户不存在");
+            throw new BusinessException("教师用户不存在");
         }
         if (log.getClassId() == null || classMapper.selectById(log.getClassId()) == null) {
-            return Result.error("404", "教学班不存在");
+            throw new BusinessException("教学班不存在");
         }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.pojo.Lesson;
@@ -27,7 +28,7 @@ public class LessonController {
     private ChapterMapper chapterMapper;
 
     @GetMapping("/lessons")
-    public Result pages(@RequestParam(required = false) Integer chapterId,
+    public ApiResponse<Page<Lesson>> pages(@RequestParam(required = false) Integer chapterId,
                         @RequestParam(defaultValue = "") String title,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -41,77 +42,82 @@ public class LessonController {
         }
         queryWrapper.orderByAsc("chapter_id").orderByAsc("sort_order").orderByAsc("id");
         lessonMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/chapters/{chapterId}/lessons")
-    public Result listByChapter(@PathVariable Integer chapterId) {
+    public ApiResponse<Object> listByChapter(@PathVariable Integer chapterId) {
         if (chapterMapper.selectById(chapterId) == null) {
-            return Result.error("404", "章节不存在");
+            throw new BusinessException("章节不存在");
         }
         QueryWrapper<Lesson> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("chapter_id", chapterId).orderByAsc("sort_order").orderByAsc("id");
-        return Result.success(lessonMapper.selectList(queryWrapper));
+        return ApiResponse.success(lessonMapper.selectList(queryWrapper));
     }
 
     @GetMapping("/lessons/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<Lesson> selectById(@PathVariable Integer id) {
         Lesson lesson = lessonMapper.selectById(id);
-        return lesson == null ? Result.error("404", "课时不存在") : Result.success(lesson);
+        if (lesson == null) {
+            throw new BusinessException("课时不存在");
+        }
+        return ApiResponse.success(lesson);
     }
 
     @PostMapping("/lessons")
-    public Result add(@RequestBody Lesson lesson) {
-        Result checkResult = checkLesson(lesson);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody Lesson lesson) {
+        checkLesson(lesson);
         LocalDateTime now = LocalDateTime.now();
         lesson.setTitle(lesson.getTitle().trim());
         fixSortOrder(lesson);
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now);
         int row = lessonMapper.insert(lesson);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/lessons/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Lesson lesson) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody Lesson lesson) {
         if (lessonMapper.selectById(id) == null) {
-            return Result.error("404", "课时不存在");
+            throw new BusinessException("课时不存在");
         }
-        Result checkResult = checkLesson(lesson);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkLesson(lesson);
         lesson.setId(id);
         lesson.setTitle(lesson.getTitle().trim());
         fixSortOrder(lesson);
         lesson.setUpdatedAt(LocalDateTime.now());
         int row = lessonMapper.updateById(lesson);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/lessons/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (lessonMapper.selectById(id) == null) {
-            return Result.error("404", "课时不存在");
+            throw new BusinessException("课时不存在");
         }
         int row = lessonMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkLesson(Lesson lesson) {
+    private void checkLesson(Lesson lesson) {
         if (lesson == null) {
-            return Result.error("400", "课时信息不能为空");
+            throw new BusinessException("课时信息不能为空");
         }
         if (lesson.getChapterId() == null || chapterMapper.selectById(lesson.getChapterId()) == null) {
-            return Result.error("404", "章节不存在");
+            throw new BusinessException("章节不存在");
         }
         if (lesson.getTitle() == null || lesson.getTitle().trim().isEmpty()) {
-            return Result.error("400", "课时名称不能为空");
+            throw new BusinessException("课时名称不能为空");
         }
-        return null;
     }
 
     private void fixSortOrder(Lesson lesson) {

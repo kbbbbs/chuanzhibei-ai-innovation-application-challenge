@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.NoticeMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
@@ -33,7 +34,7 @@ public class NoticeController {
     private TeachingClassMapper classMapper;
 
     @GetMapping
-    public Result pages(@RequestParam(required = false) Integer publisherId,
+    public ApiResponse<Page<Notice>> pages(@RequestParam(required = false) Integer publisherId,
                         @RequestParam(required = false) Integer classId,
                         @RequestParam(defaultValue = "") String noticeType,
                         @RequestParam(defaultValue = "1") Integer pageNum,
@@ -51,65 +52,70 @@ public class NoticeController {
         }
         queryWrapper.orderByDesc("id");
         noticeMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<Notice> selectById(@PathVariable Integer id) {
         Notice notice = noticeMapper.selectById(id);
-        return notice == null ? Result.error("404", "通知不存在") : Result.success(notice);
+        if (notice == null) {
+            throw new BusinessException("通知不存在");
+        }
+        return ApiResponse.success(notice);
     }
 
     @PostMapping
-    public Result add(@RequestBody Notice notice) {
-        Result checkResult = checkNotice(notice);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody Notice notice) {
+        checkNotice(notice);
         notice.setTitle(notice.getTitle().trim());
         notice.setCreateTime(LocalDateTime.now());
         int row = noticeMapper.insert(notice);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Notice notice) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody Notice notice) {
         if (noticeMapper.selectById(id) == null) {
-            return Result.error("404", "通知不存在");
+            throw new BusinessException("通知不存在");
         }
-        Result checkResult = checkNotice(notice);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkNotice(notice);
         notice.setId(id);
         notice.setTitle(notice.getTitle().trim());
         int row = noticeMapper.updateById(notice);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (noticeMapper.selectById(id) == null) {
-            return Result.error("404", "通知不存在");
+            throw new BusinessException("通知不存在");
         }
         int row = noticeMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkNotice(Notice notice) {
+    private void checkNotice(Notice notice) {
         if (notice == null) {
-            return Result.error("400", "通知信息不能为空");
+            throw new BusinessException("通知信息不能为空");
         }
         if (notice.getPublisherId() == null || userMapper.selectById(notice.getPublisherId()) == null) {
-            return Result.error("404", "发布用户不存在");
+            throw new BusinessException("发布用户不存在");
         }
         if (notice.getClassId() != null && classMapper.selectById(notice.getClassId()) == null) {
-            return Result.error("404", "教学班不存在");
+            throw new BusinessException("教学班不存在");
         }
         if (notice.getTitle() == null || notice.getTitle().trim().isEmpty()) {
-            return Result.error("400", "通知标题不能为空");
+            throw new BusinessException("通知标题不能为空");
         }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

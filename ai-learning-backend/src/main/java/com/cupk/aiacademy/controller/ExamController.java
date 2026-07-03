@@ -1,10 +1,9 @@
-// 文件: src/main/java/com/cupk/aiacademy/controller/ExamController.java
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.dto.exam.ExamRequest;
-import com.cupk.aiacademy.dto.exam.ExamResponse;
-import com.cupk.aiacademy.service.exam.ExamService;
+import com.cupk.aiacademy.dto.ExamRequest;
+import com.cupk.aiacademy.dto.ExamResponse;
+import com.cupk.aiacademy.service.ExamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

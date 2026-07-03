@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
@@ -33,7 +34,7 @@ public class ClassStudentController {
     private UserMapper userMapper;
 
     @GetMapping
-    public Result pages(@RequestParam(required = false) Integer classId,
+    public ApiResponse<Page<ClassStudent>> pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer studentId,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -47,60 +48,65 @@ public class ClassStudentController {
         }
         queryWrapper.orderByDesc("id");
         classStudentMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<ClassStudent> selectById(@PathVariable Integer id) {
         ClassStudent classStudent = classStudentMapper.selectById(id);
-        return classStudent == null ? Result.error("404", "学生名单记录不存在") : Result.success(classStudent);
+        if (classStudent == null) {
+            throw new BusinessException("学生名单记录不存在");
+        }
+        return ApiResponse.success(classStudent);
     }
 
     @PostMapping
-    public Result add(@RequestBody ClassStudent classStudent) {
-        Result checkResult = checkClassStudent(classStudent);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody ClassStudent classStudent) {
+        checkClassStudent(classStudent);
         classStudent.setJoinTime(LocalDateTime.now());
         int row = classStudentMapper.insert(classStudent);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody ClassStudent classStudent) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody ClassStudent classStudent) {
         if (classStudentMapper.selectById(id) == null) {
-            return Result.error("404", "学生名单记录不存在");
+            throw new BusinessException("学生名单记录不存在");
         }
-        Result checkResult = checkClassStudent(classStudent);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkClassStudent(classStudent);
         classStudent.setId(id);
         int row = classStudentMapper.updateById(classStudent);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (classStudentMapper.selectById(id) == null) {
-            return Result.error("404", "学生名单记录不存在");
+            throw new BusinessException("学生名单记录不存在");
         }
         int row = classStudentMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkClassStudent(ClassStudent classStudent) {
+    private void checkClassStudent(ClassStudent classStudent) {
         if (classStudent == null) {
-            return Result.error("400", "学生名单信息不能为空");
+            throw new BusinessException("学生名单信息不能为空");
         }
         if (classStudent.getClassId() == null || classMapper.selectById(classStudent.getClassId()) == null) {
-            return Result.error("404", "教学班不存在");
+            throw new BusinessException("教学班不存在");
         }
         if (classStudent.getStudentId() == null || userMapper.selectById(classStudent.getStudentId()) == null) {
-            return Result.error("404", "学生用户不存在");
+            throw new BusinessException("学生用户不存在");
         }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

@@ -1,7 +1,9 @@
 package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.cupk.aiacademy.common.Result;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
@@ -32,49 +34,49 @@ public class CategoryController {
     private CourseMapper courseMapper;
 
     @GetMapping
-    public Result list() {
+    public ApiResponse<Object> list() {
         QueryWrapper<CourseCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByAsc("id");
-        return Result.success(categoryMapper.selectList(queryWrapper));
+        return ApiResponse.success(categoryMapper.selectList(queryWrapper));
     }
 
     @PostMapping
-    public Result add(@RequestBody CourseCategory category) {
-        Result checkResult = checkCategory(category);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody CourseCategory category) {
+        checkCategory(category);
         category.setName(category.getName().trim());
         fixSortOrder(category);
         LocalDateTime now = LocalDateTime.now();
         category.setCreateTime(now);
         category.setUpdateTime(now);
         int row = categoryMapper.insert(category);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody CourseCategory category) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody CourseCategory category) {
         if (categoryMapper.selectById(id) == null) {
-            return Result.error("404", "分类不存在");
+            throw new BusinessException("分类不存在");
         }
-        Result checkResult = checkCategory(category);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkCategory(category);
         category.setId(id);
         category.setName(category.getName().trim());
         fixSortOrder(category);
         category.setUpdateTime(LocalDateTime.now());
         int row = categoryMapper.updateById(category);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
-    public Result delete(@PathVariable Integer id, @RequestParam(required = false) Boolean cascade) {
+    public ApiResponse<Map<String, Object>> delete(@PathVariable Integer id, @RequestParam(required = false) Boolean cascade) {
         if (categoryMapper.selectById(id) == null) {
-            return Result.error("404", "分类不存在");
+            throw new BusinessException("分类不存在");
         }
 
         QueryWrapper<Course> courseQuery = new QueryWrapper<>();
@@ -82,10 +84,7 @@ public class CategoryController {
         Long courseCount = courseMapper.selectCount(courseQuery);
 
         if (courseCount > 0 && !Boolean.TRUE.equals(cascade)) {
-            Map<String, Object> data = new HashMap<>();
-            data.put("hasCourses", true);
-            data.put("courseCount", courseCount);
-            return Result.error("409", "该分类下还有课程，请先处理课程或选择级联删除", data);
+            throw new BusinessException("该分类下还有" + courseCount + "门课程，请先处理课程或选择级联删除");
         }
 
         int deletedCourses = 0;
@@ -95,22 +94,21 @@ public class CategoryController {
 
         int row = categoryMapper.deleteById(id);
         if (row <= 0) {
-            return Result.error();
+            throw new BusinessException("删除失败");
         }
 
         Map<String, Object> data = new HashMap<>();
         data.put("deletedCourses", deletedCourses);
-        return Result.success(data);
+        return ApiResponse.success(data);
     }
 
-    private Result checkCategory(CourseCategory category) {
+    private void checkCategory(CourseCategory category) {
         if (category == null) {
-            return Result.error("400", "分类信息不能为空");
+            throw new BusinessException("分类信息不能为空");
         }
         if (category.getName() == null || category.getName().trim().isEmpty()) {
-            return Result.error("400", "分类名称不能为空");
+            throw new BusinessException("分类名称不能为空");
         }
-        return null;
     }
 
     private void fixSortOrder(CourseCategory category) {

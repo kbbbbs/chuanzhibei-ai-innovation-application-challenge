@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
@@ -33,7 +34,7 @@ public class HomeworkSubmitController {
     private UserMapper userMapper;
 
     @GetMapping
-    public Result pages(@RequestParam(required = false) Integer homeworkId,
+    public ApiResponse<Page<HomeworkSubmit>> pages(@RequestParam(required = false) Integer homeworkId,
                         @RequestParam(required = false) Integer studentId,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -47,21 +48,21 @@ public class HomeworkSubmitController {
         }
         queryWrapper.orderByDesc("id");
         submitMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<HomeworkSubmit> selectById(@PathVariable Integer id) {
         HomeworkSubmit submit = submitMapper.selectById(id);
-        return submit == null ? Result.error("404", "作业提交不存在") : Result.success(submit);
+        if (submit == null) {
+            throw new BusinessException("作业提交不存在");
+        }
+        return ApiResponse.success(submit);
     }
 
     @PostMapping
-    public Result add(@RequestBody HomeworkSubmit submit) {
-        Result checkResult = checkSubmit(submit);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody HomeworkSubmit submit) {
+        checkSubmit(submit);
         LocalDateTime now = LocalDateTime.now();
         if (submit.getSubmitTime() == null) {
             submit.setSubmitTime(now);
@@ -69,47 +70,52 @@ public class HomeworkSubmitController {
         submit.setCreateTime(now);
         submit.setUpdateTime(now);
         int row = submitMapper.insert(submit);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody HomeworkSubmit submit) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody HomeworkSubmit submit) {
         if (submitMapper.selectById(id) == null) {
-            return Result.error("404", "作业提交不存在");
+            throw new BusinessException("作业提交不存在");
         }
-        Result checkResult = checkSubmit(submit);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkSubmit(submit);
         submit.setId(id);
         submit.setUpdateTime(LocalDateTime.now());
         int row = submitMapper.updateById(submit);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (submitMapper.selectById(id) == null) {
-            return Result.error("404", "作业提交不存在");
+            throw new BusinessException("作业提交不存在");
         }
         int row = submitMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkSubmit(HomeworkSubmit submit) {
+    private void checkSubmit(HomeworkSubmit submit) {
         if (submit == null) {
-            return Result.error("400", "作业提交信息不能为空");
+            throw new BusinessException("作业提交信息不能为空");
         }
         if (submit.getHomeworkId() == null || homeworkMapper.selectById(submit.getHomeworkId()) == null) {
-            return Result.error("404", "作业不存在");
+            throw new BusinessException("作业不存在");
         }
         if (submit.getStudentId() == null || userMapper.selectById(submit.getStudentId()) == null) {
-            return Result.error("404", "学生用户不存在");
+            throw new BusinessException("学生用户不存在");
         }
         if (submit.getGraderId() != null && userMapper.selectById(submit.getGraderId()) == null) {
-            return Result.error("404", "批改教师不存在");
+            throw new BusinessException("批改教师不存在");
         }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

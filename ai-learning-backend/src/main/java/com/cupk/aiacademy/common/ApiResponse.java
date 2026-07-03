@@ -1,4 +1,3 @@
-// 文件: src/main/java/com/cupk/aiacademy/common/ApiResponse.java
 package com.cupk.aiacademy.common;
 
 public record ApiResponse<T>(boolean success, T data, String message) {

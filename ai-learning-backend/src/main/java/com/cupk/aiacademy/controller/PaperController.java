@@ -1,10 +1,9 @@
-// 文件: src/main/java/com/cupk/aiacademy/controller/PaperController.java
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.dto.paper.PaperRequest;
-import com.cupk.aiacademy.dto.paper.PaperResponse;
-import com.cupk.aiacademy.service.paper.PaperService;
+import com.cupk.aiacademy.dto.PaperRequest;
+import com.cupk.aiacademy.dto.PaperResponse;
+import com.cupk.aiacademy.service.PaperService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

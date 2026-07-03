@@ -1,13 +1,12 @@
-// 文件: src/main/java/com/cupk/aiacademy/controller/QuestionController.java
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
-import com.cupk.aiacademy.dto.question.QuestionRequest;
-import com.cupk.aiacademy.dto.question.QuestionResponse;
-import com.cupk.aiacademy.service.question.QuestionService;
+import com.cupk.aiacademy.dto.QuestionRequest;
+import com.cupk.aiacademy.dto.QuestionResponse;
+import com.cupk.aiacademy.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;

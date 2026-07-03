@@ -1,4 +1,3 @@
-// 文件: src/main/java/com/cupk/aiacademy/common/GlobalExceptionHandler.java
 package com.cupk.aiacademy.common;
 
 import jakarta.validation.ConstraintViolationException;
@@ -32,5 +31,11 @@ public class GlobalExceptionHandler {
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ApiResponse<Void> handleConstraint(ConstraintViolationException ex) {
         return ApiResponse.failure(ex.getMessage());
+    }
+
+    @ExceptionHandler(Exception.class)
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ApiResponse<Void> handleException(Exception ex) {
+        return ApiResponse.failure(ex.getMessage() != null ? ex.getMessage() : "服务器内部错误");
     }
 }

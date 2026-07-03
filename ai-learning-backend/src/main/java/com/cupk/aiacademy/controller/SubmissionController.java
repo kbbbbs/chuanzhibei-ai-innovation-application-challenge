@@ -1,10 +1,9 @@
-// 文件: src/main/java/com/cupk/aiacademy/controller/SubmissionController.java
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.dto.submission.SubmissionRequests;
-import com.cupk.aiacademy.dto.submission.SubmissionResponse;
-import com.cupk.aiacademy.service.submission.SubmissionService;
+import com.cupk.aiacademy.dto.SubmissionRequests;
+import com.cupk.aiacademy.dto.SubmissionResponse;
+import com.cupk.aiacademy.service.SubmissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

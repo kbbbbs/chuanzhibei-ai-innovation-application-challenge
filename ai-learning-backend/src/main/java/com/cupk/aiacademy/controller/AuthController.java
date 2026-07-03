@@ -1,9 +1,10 @@
 package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.JwtUtils;
 import com.cupk.aiacademy.common.MD5Utils;
-import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.mapper.UserRoleMapper;
@@ -39,19 +40,19 @@ public class AuthController {
     private JwtUtils jwtUtils;
 
     @PostMapping("/register")
-    public Result register(@RequestBody User form) {
+    public ApiResponse<Void> register(@RequestBody User form) {
         if (isBlank(form.getUsername()) || isBlank(form.getPassword())) {
-            return Result.error("用户名和密码不能为空");
+            throw new BusinessException("用户名和密码不能为空");
         }
 
         User oldUser = userMapper.selectOne(new QueryWrapper<User>().eq("username", form.getUsername()));
         if (oldUser != null) {
-            return Result.error("用户名已存在");
+            throw new BusinessException("用户名已存在");
         }
 
         Role studentRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", "student"));
         if (studentRole == null) {
-            return Result.error("学生角色未初始化");
+            throw new BusinessException("学生角色未初始化");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -72,22 +73,22 @@ public class AuthController {
         userRole.setRoleId(studentRole.getId());
         userRoleMapper.insert(userRole);
 
-        return Result.success();
+        return ApiResponse.success(null);
     }
 
     @PostMapping("/login")
-    public Result login(@RequestBody User form) {
+    public ApiResponse<Map<String, Object>> login(@RequestBody User form) {
         if (isBlank(form.getUsername()) || isBlank(form.getPassword())) {
-            return Result.error("请输入用户名和密码");
+            throw new BusinessException("请输入用户名和密码");
         }
 
         User user = userMapper.selectOne(new QueryWrapper<User>().eq("username", form.getUsername()));
         if (user == null || user.getStatus() == null || user.getStatus() == 0) {
-            return Result.error("用户名或密码错误");
+            throw new BusinessException("用户名或密码错误");
         }
 
         if (!MD5Utils.md5(form.getPassword()).equals(user.getPassword())) {
-            return Result.error("用户名或密码错误");
+            throw new BusinessException("用户名或密码错误");
         }
 
         Role role = getUserRole(user.getId());
@@ -96,13 +97,13 @@ public class AuthController {
 
         Map<String, Object> data = buildUserInfo(user, roleCode);
         data.put("token", token);
-        return Result.success(data);
+        return ApiResponse.success(data);
     }
 
     @GetMapping("/info")
-    public Result info(@RequestHeader(value = "Authorization", required = false) String authorization) {
+    public ApiResponse<Map<String, Object>> info(@RequestHeader(value = "Authorization", required = false) String authorization) {
         if (isBlank(authorization) || !authorization.startsWith("Bearer ")) {
-            return Result.error("请先登录");
+            throw new BusinessException("请先登录");
         }
 
         try {
@@ -110,12 +111,14 @@ public class AuthController {
             Integer userId = ((Number) claims.get("userId")).intValue();
             User user = userMapper.selectById(userId);
             if (user == null) {
-                return Result.error("用户不存在");
+                throw new BusinessException("用户不存在");
             }
             Role role = getUserRole(user.getId());
-            return Result.success(buildUserInfo(user, role == null ? "student" : role.getRoleCode()));
+            return ApiResponse.success(buildUserInfo(user, role == null ? "student" : role.getRoleCode()));
+        } catch (BusinessException e) {
+            throw e;
         } catch (Exception e) {
-            return Result.error("登录状态已失效");
+            throw new BusinessException("登录状态已失效");
         }
     }
 

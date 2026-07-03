@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.pojo.Role;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +26,7 @@ public class RoleController {
     private RoleMapper roleMapper;
 
     @GetMapping
-    public Result pages(@RequestParam(defaultValue = "") String roleName,
+    public ApiResponse<Page<Role>> pages(@RequestParam(defaultValue = "") String roleName,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Role> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
@@ -35,64 +36,69 @@ public class RoleController {
         }
         queryWrapper.orderByAsc("id");
         roleMapper.selectPage(page, queryWrapper);
-        return Result.success(page);
+        return ApiResponse.success(page);
     }
 
     @GetMapping("/{id}")
-    public Result selectById(@PathVariable Integer id) {
+    public ApiResponse<Role> selectById(@PathVariable Integer id) {
         Role role = roleMapper.selectById(id);
-        return role == null ? Result.error("404", "角色不存在") : Result.success(role);
+        if (role == null) {
+            throw new BusinessException("角色不存在");
+        }
+        return ApiResponse.success(role);
     }
 
     @PostMapping
-    public Result add(@RequestBody Role role) {
-        Result checkResult = checkRole(role);
-        if (checkResult != null) {
-            return checkResult;
-        }
+    public ApiResponse<Void> add(@RequestBody Role role) {
+        checkRole(role);
         role.setRoleName(role.getRoleName().trim());
         role.setRoleCode(role.getRoleCode().trim());
         role.setCreateTime(LocalDateTime.now());
         int row = roleMapper.insert(role);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("添加失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Role role) {
+    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody Role role) {
         if (roleMapper.selectById(id) == null) {
-            return Result.error("404", "角色不存在");
+            throw new BusinessException("角色不存在");
         }
-        Result checkResult = checkRole(role);
-        if (checkResult != null) {
-            return checkResult;
-        }
+        checkRole(role);
         role.setId(id);
         role.setRoleName(role.getRoleName().trim());
         role.setRoleCode(role.getRoleCode().trim());
         int row = roleMapper.updateById(role);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("更新失败");
+        }
+        return ApiResponse.success(null);
     }
 
     @DeleteMapping("/{id}")
-    public Result delete(@PathVariable Integer id) {
+    public ApiResponse<Void> delete(@PathVariable Integer id) {
         if (roleMapper.selectById(id) == null) {
-            return Result.error("404", "角色不存在");
+            throw new BusinessException("角色不存在");
         }
         int row = roleMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        if (row <= 0) {
+            throw new BusinessException("删除失败");
+        }
+        return ApiResponse.success(null);
     }
 
-    private Result checkRole(Role role) {
+    private void checkRole(Role role) {
         if (role == null) {
-            return Result.error("400", "角色信息不能为空");
+            throw new BusinessException("角色信息不能为空");
         }
         if (role.getRoleName() == null || role.getRoleName().trim().isEmpty()) {
-            return Result.error("400", "角色名称不能为空");
+            throw new BusinessException("角色名称不能为空");
         }
         if (role.getRoleCode() == null || role.getRoleCode().trim().isEmpty()) {
-            return Result.error("400", "角色编码不能为空");
+            throw new BusinessException("角色编码不能为空");
         }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {
