@@ -1,71 +1,39 @@
 package com.cupk.aiacademy.pojo;
 
-import com.cupk.aiacademy.common.Difficulty;
-import com.cupk.aiacademy.common.QuestionType;
-import com.cupk.aiacademy.common.RecordStatus;
-import jakarta.persistence.*;
-import lombok.Getter;
-import lombok.Setter;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 
-@Getter
-@Setter
-@Entity
-@Table(name = "t_question")
+@Data
+@TableName("t_question")
 public class Question {
+    @TableId(value = "id", type = IdType.AUTO)
+    private Integer id;
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @TableField("course_id")
+    private Integer courseId;
 
-    @Column(nullable = false, length = 500)
-    private String content;
+    @TableField("teacher_id")
+    private Integer teacherId;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 32)
-    private QuestionType type;
+    @TableField("question_type")
+    private String questionType;
 
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 16)
-    private Difficulty difficulty;
-
-    @Column(nullable = false, precision = 10, scale = 2)
+    private String title;
+    private String options;
+    private String answer;
+    private String analysis;
+    private Integer difficulty;
     private BigDecimal score;
 
-    @Column(length = 200)
-    private String knowledgePoint;
+    @TableField("create_time")
+    private LocalDateTime createTime;
 
-    @Column(length = 1000)
-    private String analysis;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 16)
-    private RecordStatus status;
-
-    @Column(nullable = false)
-    private LocalDateTime createdAt;
-
-    @Column(nullable = false)
-    private LocalDateTime updatedAt;
-
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<QuestionOption> options = new ArrayList<>();
-
-    @OneToMany(mappedBy = "question", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<QuestionAnswer> answers = new ArrayList<>();
-
-    @PrePersist
-    public void prePersist() {
-        createdAt = LocalDateTime.now();
-        updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    public void preUpdate() {
-        updatedAt = LocalDateTime.now();
-    }
+    @TableField("update_time")
+    private LocalDateTime updateTime;
 }

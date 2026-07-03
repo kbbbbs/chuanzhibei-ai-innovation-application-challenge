@@ -2,8 +2,7 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.OperationLog;
@@ -30,7 +29,7 @@ public class OperationLogController {
     private UserMapper userMapper;
 
     @GetMapping
-    public ApiResponse<Page<OperationLog>> pages(@RequestParam(required = false) Integer userId,
+    public Result pages(@RequestParam(required = false) Integer userId,
                         @RequestParam(defaultValue = "") String operation,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -44,62 +43,57 @@ public class OperationLogController {
         }
         queryWrapper.orderByDesc("id");
         logMapper.selectPage(page, queryWrapper);
-        return ApiResponse.success(page);
+        return Result.success(page);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<OperationLog> selectById(@PathVariable Integer id) {
+    public Result selectById(@PathVariable Integer id) {
         OperationLog log = logMapper.selectById(id);
-        if (log == null) {
-            throw new BusinessException("操作日志不存在");
-        }
-        return ApiResponse.success(log);
+        return log == null ? Result.error("404", "操作日志不存在") : Result.success(log);
     }
 
     @PostMapping
-    public ApiResponse<Void> add(@RequestBody OperationLog log) {
-        checkLog(log);
+    public Result add(@RequestBody(required = false) OperationLog log) {
+        Result checkResult = checkLog(log);
+        if (checkResult != null) {
+            return checkResult;
+        }
         log.setCreateTime(LocalDateTime.now());
         int row = logMapper.insert(log);
-        if (row <= 0) {
-            throw new BusinessException("添加失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody OperationLog log) {
+    public Result update(@PathVariable Integer id, @RequestBody OperationLog log) {
         if (logMapper.selectById(id) == null) {
-            throw new BusinessException("操作日志不存在");
+            return Result.error("404", "操作日志不存在");
         }
-        checkLog(log);
+        Result checkResult = checkLog(log);
+        if (checkResult != null) {
+            return checkResult;
+        }
         log.setId(id);
         int row = logMapper.updateById(log);
-        if (row <= 0) {
-            throw new BusinessException("更新失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Integer id) {
+    public Result delete(@PathVariable Integer id) {
         if (logMapper.selectById(id) == null) {
-            throw new BusinessException("操作日志不存在");
+            return Result.error("404", "操作日志不存在");
         }
         int row = logMapper.deleteById(id);
-        if (row <= 0) {
-            throw new BusinessException("删除失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
-    private void checkLog(OperationLog log) {
+    private Result checkLog(OperationLog log) {
         if (log == null) {
-            throw new BusinessException("操作日志信息不能为空");
+            return Result.error("400", "操作日志信息不能为空");
         }
         if (log.getUserId() != null && userMapper.selectById(log.getUserId()) == null) {
-            throw new BusinessException("用户不存在");
+            return Result.error("404", "用户不存在");
         }
+        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

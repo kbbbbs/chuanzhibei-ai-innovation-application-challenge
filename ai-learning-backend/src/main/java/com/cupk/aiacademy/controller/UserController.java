@@ -2,12 +2,13 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.MD5Utils;
+import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.mapper.UserRoleMapper;
+import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
@@ -37,8 +38,11 @@ public class UserController {
     @Autowired
     private UserRoleMapper userRoleMapper;
 
+    @Autowired
+    private CourseMapper courseMapper;
+
     @GetMapping
-    public ApiResponse<Page<User>> pages(@RequestParam(defaultValue = "") String username,
+    public Result pages(@RequestParam(defaultValue = "") String username,
                         @RequestParam(required = false) Integer status,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -53,25 +57,28 @@ public class UserController {
         queryWrapper.orderByDesc("id");
         userMapper.selectPage(page, queryWrapper);
         page.getRecords().forEach(this::fillRole);
-        return ApiResponse.success(page);
+        return Result.success(page);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<User> selectById(@PathVariable Integer id) {
+    public Result selectById(@PathVariable Integer id) {
         User user = userMapper.selectById(id);
         if (user == null) {
-            throw new BusinessException("用户不存在");
+            return Result.error("404", "用户不存在");
         }
         fillRole(user);
-        return ApiResponse.success(user);
+        return Result.success(user);
     }
 
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponse<Void> add(@RequestBody User user) {
-        checkUser(user, false);
+    public Result add(@RequestBody User user) {
+        Result checkResult = checkUser(user, false);
+        if (checkResult != null) {
+            return checkResult;
+        }
         if (userMapper.selectOne(new QueryWrapper<User>().eq("username", user.getUsername().trim())) != null) {
-            throw new BusinessException("用户名已存在");
+            return Result.error("400", "用户名已存在");
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -83,21 +90,24 @@ public class UserController {
         user.setUpdateTime(now);
         userMapper.insert(user);
         saveUserRole(user.getId(), getRoleId(user));
-        return ApiResponse.success(null);
+        return Result.success();
     }
 
     @PutMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
-    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody User user) {
+    public Result update(@PathVariable Integer id, @RequestBody User user) {
         User oldUser = userMapper.selectById(id);
         if (oldUser == null) {
-            throw new BusinessException("用户不存在");
+            return Result.error("404", "用户不存在");
         }
-        checkUser(user, true);
+        Result checkResult = checkUser(user, true);
+        if (checkResult != null) {
+            return checkResult;
+        }
 
         User sameNameUser = userMapper.selectOne(new QueryWrapper<User>().eq("username", user.getUsername().trim()));
         if (sameNameUser != null && !sameNameUser.getId().equals(id)) {
-            throw new BusinessException("用户名已存在");
+            return Result.error("400", "用户名已存在");
         }
 
         user.setId(id);
@@ -112,34 +122,36 @@ public class UserController {
         if (user.getRoleId() != null) {
             saveUserRole(id, user.getRoleId());
         }
-        return ApiResponse.success(null);
+        return Result.success();
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Integer id) {
+    public Result delete(@PathVariable Integer id) {
         if (userMapper.selectById(id) == null) {
-            throw new BusinessException("用户不存在");
+            return Result.error("404", "用户不存在");
+        }
+        Long courseCount = courseMapper.selectCount(new QueryWrapper<Course>().eq("teacher_id", id));
+        if (courseCount > 0) {
+            return Result.error("409", "用户已被课程引用，不能删除");
         }
         int row = userMapper.deleteById(id);
-        if (row <= 0) {
-            throw new BusinessException("删除失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
-    private void checkUser(User user, boolean update) {
+    private Result checkUser(User user, boolean update) {
         if (user == null) {
-            throw new BusinessException("用户信息不能为空");
+            return Result.error("400", "用户信息不能为空");
         }
         if (user.getUsername() == null || user.getUsername().trim().isEmpty()) {
-            throw new BusinessException("用户名不能为空");
+            return Result.error("400", "用户名不能为空");
         }
         if (!update && (user.getPassword() == null || user.getPassword().trim().isEmpty())) {
-            throw new BusinessException("密码不能为空");
+            return Result.error("400", "密码不能为空");
         }
         if (user.getRoleId() != null && roleMapper.selectById(user.getRoleId()) == null) {
-            throw new BusinessException("角色不存在");
+            return Result.error("404", "角色不存在");
         }
+        return null;
     }
 
     private Integer getRoleId(User user) {
