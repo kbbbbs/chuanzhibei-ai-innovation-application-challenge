@@ -1,0 +1,171 @@
+package com.cupk.aiacademy.service;
+
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.ExamStatus;
+import com.cupk.aiacademy.common.PaperStatus;
+import com.cupk.aiacademy.dto.ExamRequestDTO;
+import com.cupk.aiacademy.dto.ExamResponseDTO;
+import com.cupk.aiacademy.mapper.ExamSessionMapper;
+import com.cupk.aiacademy.pojo.ExamPaper;
+import com.cupk.aiacademy.pojo.ExamSession;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Service
+public class ExamService {
+    private final ExamSessionMapper examSessionMapper;
+    private final PaperService paperService;
+
+    public ExamService(ExamSessionMapper examSessionMapper, PaperService paperService) {
+        this.examSessionMapper = examSessionMapper;
+        this.paperService = paperService;
+    }
+
+    @Transactional
+    public ExamResponseDTO create(ExamRequestDTO request) {
+        validateRequest(request);
+        ExamPaper paper = paperService.getEntityById(request.getPaperId());
+        if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.PUBLISHED) {
+            throw new BusinessException("只能使用已发布的试卷创建考试，当前试卷状态：" + PaperStatus.fromCode(paper.getStatus()));
+        }
+        ExamSession exam = new ExamSession();
+        fillExam(exam, request);
+        LocalDateTime now = LocalDateTime.now();
+        exam.setCreateTime(now);
+        exam.setUpdateTime(now);
+        examSessionMapper.insert(exam);
+        return toResponse(exam);
+    }
+
+    @Transactional
+    public ExamResponseDTO update(Long id, ExamRequestDTO request) {
+        validateRequest(request);
+        ExamSession exam = getEntityById(id);
+        ExamStatus status = ExamStatus.fromCode(exam.getStatus());
+        if (status == ExamStatus.PUBLISHED || status == ExamStatus.CLOSED) {
+            throw new BusinessException("已发布或已关闭的考试不允许修改");
+        }
+        ExamPaper paper = paperService.getEntityById(request.getPaperId());
+        if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.PUBLISHED) {
+            throw new BusinessException("只能使用已发布的试卷，当前试卷状态：" + PaperStatus.fromCode(paper.getStatus()));
+        }
+        fillExam(exam, request);
+        exam.setUpdateTime(LocalDateTime.now());
+        examSessionMapper.updateById(exam);
+        return toResponse(exam);
+    }
+
+    @Transactional(readOnly = true)
+    public ExamResponseDTO getById(Long id) {
+        return toResponse(getEntityById(id));
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExamResponseDTO> list() {
+        QueryWrapper<ExamSession> query = new QueryWrapper<>();
+        query.orderByDesc("id");
+        return examSessionMapper.selectList(query).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
+    public ExamResponseDTO publish(Long id) {
+        ExamSession exam = getEntityById(id);
+        ExamStatus status = ExamStatus.fromCode(exam.getStatus());
+        if (status == ExamStatus.PUBLISHED) {
+            return toResponse(exam);
+        }
+        if (status != ExamStatus.DRAFT) {
+            throw new BusinessException("只有草稿状态的考试才能发布，当前状态：" + status);
+        }
+        exam.setStatus(ExamStatus.PUBLISHED.getCode());
+        exam.setUpdateTime(LocalDateTime.now());
+        examSessionMapper.updateById(exam);
+        return toResponse(exam);
+    }
+
+    @Transactional
+    public ExamResponseDTO close(Long id) {
+        ExamSession exam = getEntityById(id);
+        ExamStatus status = ExamStatus.fromCode(exam.getStatus());
+        if (status == ExamStatus.CLOSED) {
+            return toResponse(exam);
+        }
+        if (status != ExamStatus.PUBLISHED) {
+            throw new BusinessException("只有已发布的考试才能关闭，当前状态：" + status);
+        }
+        exam.setStatus(ExamStatus.CLOSED.getCode());
+        exam.setUpdateTime(LocalDateTime.now());
+        examSessionMapper.updateById(exam);
+        return toResponse(exam);
+    }
+
+    public ExamSession getEntityById(Long id) {
+        ExamSession exam = examSessionMapper.selectById(toInt(id, "考试ID"));
+        if (exam == null) {
+            throw new BusinessException("考试不存在: " + id);
+        }
+        return exam;
+    }
+
+    public ExamResponseDTO toResponse(ExamSession exam) {
+        ExamPaper paper = paperService.getEntityById(toLong(exam.getPaperId()));
+        ExamResponseDTO response = new ExamResponseDTO();
+        response.setId(toLong(exam.getId()));
+        response.setClassId(toLong(exam.getClassId()));
+        response.setTeacherId(toLong(exam.getTeacherId()));
+        response.setName(exam.getTitle());
+        response.setPaperId(toLong(exam.getPaperId()));
+        response.setPaperName(paper.getTitle());
+        response.setDescription(exam.getDescription());
+        response.setStartTime(exam.getStartTime());
+        response.setEndTime(exam.getEndTime());
+        response.setDurationMinutes(exam.getDuration());
+        response.setStatus(ExamStatus.fromCode(exam.getStatus()));
+        response.setCreatedAt(exam.getCreateTime());
+        response.setUpdatedAt(exam.getUpdateTime());
+        return response;
+    }
+
+    private void validateRequest(ExamRequestDTO request) {
+        if (request == null) {
+            throw new BusinessException("考试信息不能为空");
+        }
+        if (request.getEndTime().isBefore(request.getStartTime())) {
+            throw new BusinessException("考试结束时间不能早于开始时间");
+        }
+        if (request.getDurationMinutes() == null || request.getDurationMinutes() <= 0) {
+            throw new BusinessException("考试时长必须大于0");
+        }
+    }
+
+    private void fillExam(ExamSession exam, ExamRequestDTO request) {
+        exam.setClassId(toNullableInt(request.getClassId(), "教学班ID"));
+        exam.setTeacherId(toNullableInt(request.getTeacherId(), "教师ID"));
+        exam.setPaperId(toInt(request.getPaperId(), "试卷ID"));
+        exam.setTitle(request.getName());
+        exam.setDescription(request.getDescription());
+        exam.setStartTime(request.getStartTime());
+        exam.setEndTime(request.getEndTime());
+        exam.setDuration(request.getDurationMinutes());
+        exam.setStatus(request.getStatus().getCode());
+    }
+
+    private Integer toNullableInt(Long value, String fieldName) {
+        return value == null ? null : toInt(value, fieldName);
+    }
+
+    private Integer toInt(Long value, String fieldName) {
+        if (value == null || value <= 0 || value > Integer.MAX_VALUE) {
+            throw new BusinessException(fieldName + "不合法");
+        }
+        return value.intValue();
+    }
+
+    private Long toLong(Integer value) {
+        return value == null ? null : value.longValue();
+    }
+}

@@ -21,6 +21,9 @@ public class ExamAnswer {
     @TableField("question_id")
     private Integer questionId;
 
+    @TableField("paper_question_id")
+    private Integer paperQuestionId;
+
     @TableField("student_answer")
     private String studentAnswer;
 
@@ -40,4 +43,6 @@ public class ExamAnswer {
 
     @TableField("grade_time")
     private LocalDateTime gradeTime;
+
+    private String comment;
 }

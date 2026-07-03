@@ -28,8 +28,13 @@ public class Question {
     private String options;
     private String answer;
     private String analysis;
+
+    @TableField("knowledge_point")
+    private String knowledgePoint;
+
     private Integer difficulty;
     private BigDecimal score;
+    private Integer status;
 
     @TableField("create_time")
     private LocalDateTime createTime;

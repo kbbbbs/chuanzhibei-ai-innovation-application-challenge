@@ -24,4 +24,7 @@ public class ExamPaperQuestion {
 
     @TableField("sort_order")
     private Integer sortOrder;
+
+    @TableField("required_answer")
+    private Integer requiredAnswer;
 }

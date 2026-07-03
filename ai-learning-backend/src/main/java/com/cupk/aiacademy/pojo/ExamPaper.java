@@ -27,6 +27,9 @@ public class ExamPaper {
     @TableField("total_score")
     private BigDecimal totalScore;
 
+    @TableField("duration_minutes")
+    private Integer durationMinutes;
+
     private Integer status;
 
     @TableField("create_time")

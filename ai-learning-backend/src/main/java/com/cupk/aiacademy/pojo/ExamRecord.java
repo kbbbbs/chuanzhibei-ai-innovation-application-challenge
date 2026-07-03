@@ -21,6 +21,9 @@ public class ExamRecord {
     @TableField("student_id")
     private Integer studentId;
 
+    @TableField("candidate_id")
+    private String candidateId;
+
     @TableField("start_time")
     private LocalDateTime startTime;
 
@@ -37,6 +40,7 @@ public class ExamRecord {
     private BigDecimal subjectiveScore;
 
     private Integer status;
+    private String comment;
 
     @TableField("create_time")
     private LocalDateTime createTime;

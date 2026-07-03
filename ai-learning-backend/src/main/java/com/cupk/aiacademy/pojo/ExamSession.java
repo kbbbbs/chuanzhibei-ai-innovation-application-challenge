@@ -24,6 +24,7 @@ public class ExamSession {
     private Integer teacherId;
 
     private String title;
+    private String description;
 
     @TableField("start_time")
     private LocalDateTime startTime;
