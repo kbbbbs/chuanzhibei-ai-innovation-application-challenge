@@ -1,8 +1,8 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.dto.ExamRequest;
-import com.cupk.aiacademy.dto.ExamResponse;
+import com.cupk.aiacademy.dto.ExamRequestDTO;
+import com.cupk.aiacademy.dto.ExamResponseDTO;
 import com.cupk.aiacademy.service.ExamService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,32 +18,32 @@ public class ExamController {
     private final ExamService examService;
 
     @PostMapping
-    public ApiResponse<ExamResponse> create(@Valid @RequestBody ExamRequest request) {
+    public ApiResponse<ExamResponseDTO> create(@Valid @RequestBody ExamRequestDTO request) {
         return ApiResponse.success(examService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<ExamResponse> update(@PathVariable Long id, @Valid @RequestBody ExamRequest request) {
+    public ApiResponse<ExamResponseDTO> update(@PathVariable Long id, @Valid @RequestBody ExamRequestDTO request) {
         return ApiResponse.success(examService.update(id, request));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<ExamResponse> getById(@PathVariable Long id) {
+    public ApiResponse<ExamResponseDTO> getById(@PathVariable Long id) {
         return ApiResponse.success(examService.getById(id));
     }
 
     @GetMapping
-    public ApiResponse<List<ExamResponse>> list() {
+    public ApiResponse<List<ExamResponseDTO>> list() {
         return ApiResponse.success(examService.list());
     }
 
     @PostMapping("/{id}/publish")
-    public ApiResponse<ExamResponse> publish(@PathVariable Long id) {
+    public ApiResponse<ExamResponseDTO> publish(@PathVariable Long id) {
         return ApiResponse.success(examService.publish(id));
     }
 
     @PostMapping("/{id}/close")
-    public ApiResponse<ExamResponse> close(@PathVariable Long id) {
+    public ApiResponse<ExamResponseDTO> close(@PathVariable Long id) {
         return ApiResponse.success(examService.close(id));
     }
 }

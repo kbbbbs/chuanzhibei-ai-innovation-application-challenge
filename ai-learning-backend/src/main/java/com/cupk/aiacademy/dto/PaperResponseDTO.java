@@ -10,7 +10,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PaperResponse {
+public class PaperResponseDTO {
     private Long id;
     private String name;
     private String description;

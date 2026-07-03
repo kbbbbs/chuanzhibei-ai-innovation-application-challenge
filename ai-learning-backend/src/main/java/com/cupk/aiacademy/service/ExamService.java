@@ -2,8 +2,9 @@ package com.cupk.aiacademy.service;
 
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.ExamStatus;
-import com.cupk.aiacademy.dto.ExamRequest;
-import com.cupk.aiacademy.dto.ExamResponse;
+import com.cupk.aiacademy.common.PaperStatus;
+import com.cupk.aiacademy.dto.ExamRequestDTO;
+import com.cupk.aiacademy.dto.ExamResponseDTO;
 import com.cupk.aiacademy.pojo.Exam;
 import com.cupk.aiacademy.pojo.Paper;
 import com.cupk.aiacademy.repository.ExamRepository;
@@ -21,39 +22,59 @@ public class ExamService {
     private final PaperService paperService;
 
     @Transactional
-    public ExamResponse create(ExamRequest request) {
+    public ExamResponseDTO create(ExamRequestDTO request) {
+        Paper paper = paperService.getEntityById(request.getPaperId());
+        if (paper.getStatus() != PaperStatus.PUBLISHED) {
+            throw new BusinessException("只能使用已发布的试卷创建考试，当前试卷状态：" + paper.getStatus());
+        }
+        
         Exam exam = new Exam();
         fillExam(exam, request);
         return toResponse(examRepository.save(exam));
     }
 
     @Transactional
-    public ExamResponse update(Long id, ExamRequest request) {
+    public ExamResponseDTO update(Long id, ExamRequestDTO request) {
         Exam exam = getEntityById(id);
+        if (exam.getStatus() == ExamStatus.PUBLISHED || exam.getStatus() == ExamStatus.CLOSED) {
+            throw new BusinessException("已发布或已关闭的考试不允许修改");
+        }
+        
+        Paper paper = paperService.getEntityById(request.getPaperId());
+        if (paper.getStatus() != PaperStatus.PUBLISHED) {
+            throw new BusinessException("只能使用已发布的试卷，当前试卷状态：" + paper.getStatus());
+        }
+        
         fillExam(exam, request);
         return toResponse(exam);
     }
 
     @Transactional(readOnly = true)
-    public ExamResponse getById(Long id) {
+    public ExamResponseDTO getById(Long id) {
         return toResponse(getEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public List<ExamResponse> list() {
+    public List<ExamResponseDTO> list() {
         return examRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     @Transactional
-    public ExamResponse publish(Long id) {
+    public ExamResponseDTO publish(Long id) {
         Exam exam = getEntityById(id);
+        if (exam.getStatus() != ExamStatus.DRAFT) {
+            throw new BusinessException("只有草稿状态的考试才能发布，当前状态：" + exam.getStatus());
+        }
         exam.setStatus(ExamStatus.PUBLISHED);
         return toResponse(exam);
     }
 
     @Transactional
-    public ExamResponse close(Long id) {
+    public ExamResponseDTO close(Long id) {
         Exam exam = getEntityById(id);
+        if (exam.getStatus() != ExamStatus.PUBLISHED) {
+            throw new BusinessException("只有已发布的考试才能关闭，当前状态：" + exam.getStatus());
+        }
         exam.setStatus(ExamStatus.CLOSED);
         return toResponse(exam);
     }
@@ -63,7 +84,7 @@ public class ExamService {
                 .orElseThrow(() -> new BusinessException("考试不存在: " + id));
     }
 
-    private void fillExam(Exam exam, ExamRequest request) {
+    private void fillExam(Exam exam, ExamRequestDTO request) {
         if (request.getEndTime().isBefore(request.getStartTime())) {
             throw new BusinessException("考试结束时间不能早于开始时间");
         }
@@ -77,8 +98,8 @@ public class ExamService {
         exam.setStatus(request.getStatus());
     }
 
-    private ExamResponse toResponse(Exam exam) {
-        ExamResponse response = new ExamResponse();
+    private ExamResponseDTO toResponse(Exam exam) {
+        ExamResponseDTO response = new ExamResponseDTO();
         response.setId(exam.getId());
         response.setName(exam.getName());
         response.setPaperId(exam.getPaper().getId());

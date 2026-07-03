@@ -11,7 +11,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class SubmissionRequests {
+public class SubmissionRequestsDTO {
 
     @Getter
     @Setter
@@ -34,6 +34,7 @@ public class SubmissionRequests {
         @NotNull
         private Long paperQuestionId;
         private String answerContent;
+        private List<String> selectedOptionKeys;
     }
 
     @Getter

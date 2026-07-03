@@ -4,8 +4,8 @@ import com.cupk.aiacademy.common.ApiResponse;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
-import com.cupk.aiacademy.dto.QuestionRequest;
-import com.cupk.aiacademy.dto.QuestionResponse;
+import com.cupk.aiacademy.dto.QuestionRequestDTO;
+import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.service.QuestionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,22 +20,22 @@ public class QuestionController {
     private final QuestionService questionService;
 
     @PostMapping
-    public ApiResponse<QuestionResponse> create(@Valid @RequestBody QuestionRequest request) {
+    public ApiResponse<QuestionResponseDTO> create(@Valid @RequestBody QuestionRequestDTO request) {
         return ApiResponse.success(questionService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<QuestionResponse> update(@PathVariable Long id, @Valid @RequestBody QuestionRequest request) {
+    public ApiResponse<QuestionResponseDTO> update(@PathVariable Long id, @Valid @RequestBody QuestionRequestDTO request) {
         return ApiResponse.success(questionService.update(id, request));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<QuestionResponse> getById(@PathVariable Long id) {
+    public ApiResponse<QuestionResponseDTO> getById(@PathVariable Long id) {
         return ApiResponse.success(questionService.getById(id));
     }
 
     @GetMapping
-    public ApiResponse<Page<QuestionResponse>> list(
+    public ApiResponse<Page<QuestionResponseDTO>> list(
             @RequestParam(required = false) QuestionType type,
             @RequestParam(required = false) Difficulty difficulty,
             @RequestParam(required = false) RecordStatus status,

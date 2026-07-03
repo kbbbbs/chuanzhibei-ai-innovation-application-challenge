@@ -1,8 +1,9 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.dto.SubmissionRequests;
-import com.cupk.aiacademy.dto.SubmissionResponse;
+import com.cupk.aiacademy.dto.StudentSubmissionResponseDTO;
+import com.cupk.aiacademy.dto.SubmissionRequestsDTO;
+import com.cupk.aiacademy.dto.SubmissionResponseDTO;
 import com.cupk.aiacademy.service.SubmissionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -17,40 +18,45 @@ public class SubmissionController {
     private final SubmissionService submissionService;
 
     @PostMapping("/api/exams/{id}/submissions/start")
-    public ApiResponse<SubmissionResponse> start(
+    public ApiResponse<SubmissionResponseDTO> start(
             @PathVariable Long id,
-            @Valid @RequestBody SubmissionRequests.StartSubmissionRequest request) {
-        return ApiResponse.success(submissionService.start(id, request));
+            @RequestParam String candidateId) {
+        return ApiResponse.success(submissionService.start(id, candidateId));
     }
 
     @PostMapping("/api/submissions/{id}/answers")
-    public ApiResponse<SubmissionResponse> saveAnswers(
+    public ApiResponse<SubmissionResponseDTO> saveAnswers(
             @PathVariable Long id,
-            @Valid @RequestBody SubmissionRequests.SaveAnswerRequest request) {
+            @Valid @RequestBody SubmissionRequestsDTO.SaveAnswerRequest request) {
         return ApiResponse.success(submissionService.saveAnswers(id, request));
     }
 
     @PostMapping("/api/submissions/{id}/submit")
-    public ApiResponse<SubmissionResponse> submit(@PathVariable Long id) {
+    public ApiResponse<SubmissionResponseDTO> submit(@PathVariable Long id) {
         return ApiResponse.success(submissionService.submit(id));
     }
 
     @GetMapping("/api/submissions/{id}")
-    public ApiResponse<SubmissionResponse> getById(@PathVariable Long id) {
+    public ApiResponse<SubmissionResponseDTO> getById(@PathVariable Long id) {
         return ApiResponse.success(submissionService.getById(id));
     }
 
+    @GetMapping("/api/submissions/{id}/student")
+    public ApiResponse<StudentSubmissionResponseDTO> getStudentById(@PathVariable Long id) {
+        return ApiResponse.success(submissionService.getStudentSubmissionById(id));
+    }
+
     @GetMapping("/api/submissions")
-    public ApiResponse<List<SubmissionResponse>> list(
+    public ApiResponse<List<SubmissionResponseDTO>> list(
             @RequestParam(required = false) Long examId,
             @RequestParam(required = false) String candidateId) {
         return ApiResponse.success(submissionService.list(examId, candidateId));
     }
 
     @PostMapping("/api/submissions/{id}/grade-subjective")
-    public ApiResponse<SubmissionResponse> manualGrade(
+    public ApiResponse<SubmissionResponseDTO> manualGrade(
             @PathVariable Long id,
-            @Valid @RequestBody SubmissionRequests.ManualGradeRequest request) {
+            @Valid @RequestBody SubmissionRequestsDTO.ManualGradeRequest request) {
         return ApiResponse.success(submissionService.manualGrade(id, request));
     }
 }

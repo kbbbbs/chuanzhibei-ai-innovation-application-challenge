@@ -14,7 +14,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PaperRequest {
+public class PaperRequestDTO {
     @NotBlank
     private String name;
     private String description;

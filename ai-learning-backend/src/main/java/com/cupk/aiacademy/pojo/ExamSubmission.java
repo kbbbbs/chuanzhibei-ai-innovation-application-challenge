@@ -47,6 +47,9 @@ public class ExamSubmission {
     @Column(nullable = false, length = 32)
     private SubmissionStatus status;
 
+    @Column(length = 1000)
+    private String comment;
+
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SubmissionAnswer> answers = new ArrayList<>();
 }

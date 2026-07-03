@@ -12,7 +12,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class SubmissionResponse {
+public class SubmissionResponseDTO {
     private Long id;
     private Long examId;
     private String examName;

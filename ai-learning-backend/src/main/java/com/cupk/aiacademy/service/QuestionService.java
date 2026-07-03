@@ -4,8 +4,8 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
-import com.cupk.aiacademy.dto.QuestionRequest;
-import com.cupk.aiacademy.dto.QuestionResponse;
+import com.cupk.aiacademy.dto.QuestionRequestDTO;
+import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.pojo.Question;
 import com.cupk.aiacademy.pojo.QuestionAnswer;
 import com.cupk.aiacademy.pojo.QuestionOption;
@@ -25,14 +25,18 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
 
     @Transactional
-    public QuestionResponse create(QuestionRequest request) {
+    public QuestionResponseDTO create(QuestionRequestDTO request) {
+        validateQuestionRules(request);
+        
         Question question = new Question();
         fillQuestion(question, request);
         return toResponse(questionRepository.save(question));
     }
 
     @Transactional
-    public QuestionResponse update(Long id, QuestionRequest request) {
+    public QuestionResponseDTO update(Long id, QuestionRequestDTO request) {
+        validateQuestionRules(request);
+        
         Question question = getEntityById(id);
         question.getOptions().clear();
         question.getAnswers().clear();
@@ -41,12 +45,12 @@ public class QuestionService {
     }
 
     @Transactional(readOnly = true)
-    public QuestionResponse getById(Long id) {
+    public QuestionResponseDTO getById(Long id) {
         return toResponse(getEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public Page<QuestionResponse> list(QuestionType type, Difficulty difficulty, RecordStatus status, int page, int size) {
+    public Page<QuestionResponseDTO> list(QuestionType type, Difficulty difficulty, RecordStatus status, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size);
         Page<Question> questionPage;
         if (type != null && difficulty != null && status != null) {
@@ -74,7 +78,42 @@ public class QuestionService {
                 .orElseThrow(() -> new BusinessException("题目不存在: " + id));
     }
 
-    private void fillQuestion(Question question, QuestionRequest request) {
+    private void validateQuestionRules(QuestionRequestDTO request) {
+        if (request.getType() == null) {
+            throw new BusinessException("题目类型不能为空");
+        }
+        
+        boolean isChoiceType = request.getType() == QuestionType.SINGLE_CHOICE 
+                || request.getType() == QuestionType.MULTIPLE_CHOICE 
+                || request.getType() == QuestionType.TRUE_FALSE;
+        
+        if (isChoiceType) {
+            if (request.getOptions() == null || request.getOptions().isEmpty()) {
+                throw new BusinessException("选择题必须包含选项");
+            }
+            
+            int answerCount = request.getAnswers().size();
+            if (request.getType() == QuestionType.SINGLE_CHOICE || request.getType() == QuestionType.TRUE_FALSE) {
+                if (answerCount != 1) {
+                    throw new BusinessException("单选题和判断题必须有且仅有一个正确答案，当前答案数量：" + answerCount);
+                }
+            } else if (request.getType() == QuestionType.MULTIPLE_CHOICE) {
+                if (answerCount < 2) {
+                    throw new BusinessException("多选题必须至少有两个正确答案，当前答案数量：" + answerCount);
+                }
+            }
+        } else {
+            if (request.getOptions() != null && !request.getOptions().isEmpty()) {
+                throw new BusinessException("非选择题不能包含选项");
+            }
+        }
+        
+        if (request.getAnswers() == null || request.getAnswers().isEmpty()) {
+            throw new BusinessException("题目必须包含标准答案");
+        }
+    }
+
+    private void fillQuestion(Question question, QuestionRequestDTO request) {
         question.setContent(request.getContent());
         question.setType(request.getType());
         question.setDifficulty(request.getDifficulty());
@@ -84,7 +123,7 @@ public class QuestionService {
         question.setStatus(request.getStatus());
 
         if (request.getOptions() != null) {
-            for (QuestionRequest.QuestionOptionRequest optionRequest : request.getOptions()) {
+            for (QuestionRequestDTO.QuestionOptionRequest optionRequest : request.getOptions()) {
                 QuestionOption option = new QuestionOption();
                 option.setQuestion(question);
                 option.setOptionKey(optionRequest.getOptionKey());
@@ -94,7 +133,7 @@ public class QuestionService {
             }
         }
 
-        for (QuestionRequest.QuestionAnswerRequest answerRequest : request.getAnswers()) {
+        for (QuestionRequestDTO.QuestionAnswerRequest answerRequest : request.getAnswers()) {
             QuestionAnswer answer = new QuestionAnswer();
             answer.setQuestion(question);
             answer.setAnswerContent(answerRequest.getAnswerContent());
@@ -103,8 +142,8 @@ public class QuestionService {
         }
     }
 
-    private QuestionResponse toResponse(Question question) {
-        QuestionResponse response = new QuestionResponse();
+    private QuestionResponseDTO toResponse(Question question) {
+        QuestionResponseDTO response = new QuestionResponseDTO();
         response.setId(question.getId());
         response.setContent(question.getContent());
         response.setType(question.getType());
@@ -118,7 +157,7 @@ public class QuestionService {
         response.setOptions(question.getOptions().stream()
                 .sorted(Comparator.comparing(QuestionOption::getSortOrder))
                 .map(option -> {
-                    QuestionResponse.OptionResponse item = new QuestionResponse.OptionResponse();
+                    QuestionResponseDTO.OptionResponse item = new QuestionResponseDTO.OptionResponse();
                     item.setId(option.getId());
                     item.setOptionKey(option.getOptionKey());
                     item.setOptionContent(option.getOptionContent());
@@ -129,7 +168,7 @@ public class QuestionService {
         response.setAnswers(question.getAnswers().stream()
                 .sorted(Comparator.comparing(QuestionAnswer::getSortOrder))
                 .map(answer -> {
-                    QuestionResponse.AnswerResponse item = new QuestionResponse.AnswerResponse();
+                    QuestionResponseDTO.AnswerResponse item = new QuestionResponseDTO.AnswerResponse();
                     item.setId(answer.getId());
                     item.setAnswerContent(answer.getAnswerContent());
                     item.setSortOrder(answer.getSortOrder());

@@ -30,6 +30,9 @@ public class SubmissionAnswer {
     @Column(length = 2000)
     private String answerContent;
 
+    @Column(length = 500)
+    private String selectedOptionKeys;
+
     private Boolean correct;
 
     @Column(nullable = false, precision = 10, scale = 2)
