@@ -20,10 +20,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/grade-records")
 public class GradeRecordController {
+    private static final Set<String> VALID_SOURCE_TYPES = Set.of("homework", "exam", "manual", "import");
+
     @Autowired
     private GradeRecordMapper gradeMapper;
 
@@ -113,16 +116,28 @@ public class GradeRecordController {
         if (grade == null) {
             return Result.error("400", "成绩信息不能为空");
         }
-        if (grade.getStudentId() == null || userMapper.selectById(grade.getStudentId()) == null) {
+        if (grade.getStudentId() == null || grade.getStudentId() <= 0) {
+            return Result.error("400", "学生用户不能为空");
+        }
+        if (grade.getClassId() == null || grade.getClassId() <= 0) {
+            return Result.error("400", "教学班不能为空");
+        }
+        if (grade.getCourseId() == null || grade.getCourseId() <= 0) {
+            return Result.error("400", "课程不能为空");
+        }
+        if (grade.getTeacherId() == null || grade.getTeacherId() <= 0) {
+            return Result.error("400", "教师用户不能为空");
+        }
+        if (userMapper.selectById(grade.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
         }
-        if (grade.getClassId() == null || classMapper.selectById(grade.getClassId()) == null) {
+        if (classMapper.selectById(grade.getClassId()) == null) {
             return Result.error("404", "教学班不存在");
         }
-        if (grade.getCourseId() == null || courseMapper.selectById(grade.getCourseId()) == null) {
+        if (courseMapper.selectById(grade.getCourseId()) == null) {
             return Result.error("404", "课程不存在");
         }
-        if (grade.getTeacherId() == null || userMapper.selectById(grade.getTeacherId()) == null) {
+        if (userMapper.selectById(grade.getTeacherId()) == null) {
             return Result.error("404", "教师用户不存在");
         }
         if (grade.getGradeName() == null || grade.getGradeName().trim().isEmpty()) {
@@ -130,6 +145,9 @@ public class GradeRecordController {
         }
         if (grade.getSourceType() == null || grade.getSourceType().trim().isEmpty()) {
             return Result.error("400", "成绩来源不能为空");
+        }
+        if (!VALID_SOURCE_TYPES.contains(grade.getSourceType().trim())) {
+            return Result.error("400", "成绩来源不合法");
         }
         return null;
     }

@@ -58,7 +58,7 @@ public class ClassStudentController {
 
     @PostMapping
     public Result add(@RequestBody ClassStudent classStudent) {
-        Result checkResult = checkClassStudent(classStudent);
+        Result checkResult = checkClassStudent(classStudent, null);
         if (checkResult != null) {
             return checkResult;
         }
@@ -72,7 +72,7 @@ public class ClassStudentController {
         if (classStudentMapper.selectById(id) == null) {
             return Result.error("404", "学生名单记录不存在");
         }
-        Result checkResult = checkClassStudent(classStudent);
+        Result checkResult = checkClassStudent(classStudent, id);
         if (checkResult != null) {
             return checkResult;
         }
@@ -90,15 +90,29 @@ public class ClassStudentController {
         return row > 0 ? Result.success() : Result.error();
     }
 
-    private Result checkClassStudent(ClassStudent classStudent) {
+    private Result checkClassStudent(ClassStudent classStudent, Integer excludeId) {
         if (classStudent == null) {
             return Result.error("400", "学生名单信息不能为空");
         }
-        if (classStudent.getClassId() == null || classMapper.selectById(classStudent.getClassId()) == null) {
+        if (classStudent.getClassId() == null || classStudent.getClassId() <= 0) {
+            return Result.error("400", "教学班不能为空");
+        }
+        if (classStudent.getStudentId() == null || classStudent.getStudentId() <= 0) {
+            return Result.error("400", "学生用户不能为空");
+        }
+        if (classMapper.selectById(classStudent.getClassId()) == null) {
             return Result.error("404", "教学班不存在");
         }
-        if (classStudent.getStudentId() == null || userMapper.selectById(classStudent.getStudentId()) == null) {
+        if (userMapper.selectById(classStudent.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
+        }
+        QueryWrapper<ClassStudent> duplicateQuery = new QueryWrapper<>();
+        duplicateQuery.eq("class_id", classStudent.getClassId()).eq("student_id", classStudent.getStudentId());
+        if (excludeId != null) {
+            duplicateQuery.ne("id", excludeId);
+        }
+        if (classStudentMapper.selectCount(duplicateQuery) > 0) {
+            return Result.error("409", "该学生已加入该教学班");
         }
         return null;
     }

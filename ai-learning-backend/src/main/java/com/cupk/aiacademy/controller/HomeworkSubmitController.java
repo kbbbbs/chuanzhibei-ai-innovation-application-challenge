@@ -100,10 +100,16 @@ public class HomeworkSubmitController {
         if (submit == null) {
             return Result.error("400", "作业提交信息不能为空");
         }
-        if (submit.getHomeworkId() == null || homeworkMapper.selectById(submit.getHomeworkId()) == null) {
+        if (submit.getHomeworkId() == null || submit.getHomeworkId() <= 0) {
+            return Result.error("400", "作业不能为空");
+        }
+        if (submit.getStudentId() == null || submit.getStudentId() <= 0) {
+            return Result.error("400", "学生用户不能为空");
+        }
+        if (homeworkMapper.selectById(submit.getHomeworkId()) == null) {
             return Result.error("404", "作业不存在");
         }
-        if (submit.getStudentId() == null || userMapper.selectById(submit.getStudentId()) == null) {
+        if (userMapper.selectById(submit.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
         }
         if (submit.getGraderId() != null && userMapper.selectById(submit.getGraderId()) == null) {

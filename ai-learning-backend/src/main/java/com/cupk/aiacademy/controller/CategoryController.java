@@ -39,7 +39,7 @@ public class CategoryController {
     }
 
     @PostMapping
-    public Result add(@RequestBody CourseCategory category) {
+    public Result add(@RequestBody(required = false) CourseCategory category) {
         Result checkResult = checkCategory(category);
         if (checkResult != null) {
             return checkResult;

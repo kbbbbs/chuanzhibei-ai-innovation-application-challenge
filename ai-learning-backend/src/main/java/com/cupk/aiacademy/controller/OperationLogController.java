@@ -53,7 +53,7 @@ public class OperationLogController {
     }
 
     @PostMapping
-    public Result add(@RequestBody OperationLog log) {
+    public Result add(@RequestBody(required = false) OperationLog log) {
         Result checkResult = checkLog(log);
         if (checkResult != null) {
             return checkResult;

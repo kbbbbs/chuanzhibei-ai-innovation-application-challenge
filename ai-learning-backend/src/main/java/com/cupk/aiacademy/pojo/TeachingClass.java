@@ -30,6 +30,6 @@ public class TeachingClass {
     @TableField("create_time")
     private LocalDateTime createTime;
 
-    @TableField("update_time")
+    @TableField("update_time")1
     private LocalDateTime updateTime;
 }

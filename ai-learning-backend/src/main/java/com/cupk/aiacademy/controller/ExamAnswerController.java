@@ -95,10 +95,16 @@ public class ExamAnswerController {
         if (answer == null) {
             return Result.error("400", "考试答题信息不能为空");
         }
-        if (answer.getExamRecordId() == null || recordMapper.selectById(answer.getExamRecordId()) == null) {
+        if (answer.getExamRecordId() == null || answer.getExamRecordId() <= 0) {
+            return Result.error("400", "考试记录不能为空");
+        }
+        if (answer.getQuestionId() == null || answer.getQuestionId() <= 0) {
+            return Result.error("400", "题目不能为空");
+        }
+        if (recordMapper.selectById(answer.getExamRecordId()) == null) {
             return Result.error("404", "考试记录不存在");
         }
-        if (answer.getQuestionId() == null || questionMapper.selectById(answer.getQuestionId()) == null) {
+        if (questionMapper.selectById(answer.getQuestionId()) == null) {
             return Result.error("404", "题目不存在");
         }
         if (answer.getGraderId() != null && userMapper.selectById(answer.getGraderId()) == null) {

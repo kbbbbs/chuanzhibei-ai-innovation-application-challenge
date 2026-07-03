@@ -94,10 +94,16 @@ public class GradeImportLogController {
         if (log == null) {
             return Result.error("400", "成绩导入日志不能为空");
         }
-        if (log.getTeacherId() == null || userMapper.selectById(log.getTeacherId()) == null) {
+        if (log.getTeacherId() == null || log.getTeacherId() <= 0) {
+            return Result.error("400", "教师用户不能为空");
+        }
+        if (log.getClassId() == null || log.getClassId() <= 0) {
+            return Result.error("400", "教学班不能为空");
+        }
+        if (userMapper.selectById(log.getTeacherId()) == null) {
             return Result.error("404", "教师用户不存在");
         }
-        if (log.getClassId() == null || classMapper.selectById(log.getClassId()) == null) {
+        if (classMapper.selectById(log.getClassId()) == null) {
             return Result.error("404", "教学班不存在");
         }
         return null;

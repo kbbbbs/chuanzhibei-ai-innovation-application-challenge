@@ -93,10 +93,16 @@ public class ExamPaperQuestionController {
         if (item == null) {
             return Result.error("400", "试卷题目信息不能为空");
         }
-        if (item.getPaperId() == null || paperMapper.selectById(item.getPaperId()) == null) {
+        if (item.getPaperId() == null || item.getPaperId() <= 0) {
+            return Result.error("400", "试卷不能为空");
+        }
+        if (item.getQuestionId() == null || item.getQuestionId() <= 0) {
+            return Result.error("400", "题目不能为空");
+        }
+        if (paperMapper.selectById(item.getPaperId()) == null) {
             return Result.error("404", "试卷不存在");
         }
-        if (item.getQuestionId() == null || questionMapper.selectById(item.getQuestionId()) == null) {
+        if (questionMapper.selectById(item.getQuestionId()) == null) {
             return Result.error("404", "题目不存在");
         }
         return null;

@@ -76,8 +76,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public Result login(@RequestBody User form) {
-        if (isBlank(form.getUsername()) || isBlank(form.getPassword())) {
+    public Result login(@RequestBody(required = false) User form) {
+        if (form == null || isBlank(form.getUsername()) || isBlank(form.getPassword())) {
             return Result.error("请输入用户名和密码");
         }
 
@@ -92,7 +92,12 @@ public class AuthController {
 
         Role role = getUserRole(user.getId());
         String roleCode = role == null ? "student" : role.getRoleCode();
-        String token = jwtUtils.createToken(user.getId(), user.getUsername(), roleCode);
+        String token;
+        try {
+            token = jwtUtils.createToken(user.getId(), user.getUsername(), roleCode);
+        } catch (IllegalStateException e) {
+            return Result.error("500", "登录配置异常，请联系管理员");
+        }
 
         Map<String, Object> data = buildUserInfo(user, roleCode);
         data.put("token", token);

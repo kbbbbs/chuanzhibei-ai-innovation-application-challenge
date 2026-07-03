@@ -19,10 +19,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/questions")
 public class QuestionController {
+    private static final Set<String> VALID_QUESTION_TYPES = Set.of("single", "multiple", "judge", "blank", "short_answer");
+
     @Autowired
     private QuestionMapper questionMapper;
 
@@ -103,14 +106,23 @@ public class QuestionController {
         if (question == null) {
             return Result.error("400", "题目信息不能为空");
         }
-        if (question.getCourseId() == null || courseMapper.selectById(question.getCourseId()) == null) {
+        if (question.getCourseId() == null || question.getCourseId() <= 0) {
+            return Result.error("400", "课程不能为空");
+        }
+        if (question.getTeacherId() == null || question.getTeacherId() <= 0) {
+            return Result.error("400", "教师用户不能为空");
+        }
+        if (courseMapper.selectById(question.getCourseId()) == null) {
             return Result.error("404", "课程不存在");
         }
-        if (question.getTeacherId() == null || userMapper.selectById(question.getTeacherId()) == null) {
+        if (userMapper.selectById(question.getTeacherId()) == null) {
             return Result.error("404", "教师用户不存在");
         }
         if (question.getQuestionType() == null || question.getQuestionType().trim().isEmpty()) {
             return Result.error("400", "题型不能为空");
+        }
+        if (!VALID_QUESTION_TYPES.contains(question.getQuestionType().trim())) {
+            return Result.error("400", "题型不合法");
         }
         if (question.getTitle() == null || question.getTitle().trim().isEmpty()) {
             return Result.error("400", "题干不能为空");

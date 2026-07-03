@@ -97,10 +97,16 @@ public class ExamRecordController {
         if (record == null) {
             return Result.error("400", "考试记录信息不能为空");
         }
-        if (record.getExamSessionId() == null || sessionMapper.selectById(record.getExamSessionId()) == null) {
+        if (record.getExamSessionId() == null || record.getExamSessionId() <= 0) {
+            return Result.error("400", "考试安排不能为空");
+        }
+        if (record.getStudentId() == null || record.getStudentId() <= 0) {
+            return Result.error("400", "学生用户不能为空");
+        }
+        if (sessionMapper.selectById(record.getExamSessionId()) == null) {
             return Result.error("404", "考试安排不存在");
         }
-        if (record.getStudentId() == null || userMapper.selectById(record.getStudentId()) == null) {
+        if (userMapper.selectById(record.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
         }
         return null;
