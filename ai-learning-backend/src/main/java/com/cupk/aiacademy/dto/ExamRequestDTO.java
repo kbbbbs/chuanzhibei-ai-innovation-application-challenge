@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class ExamRequestdto {
+public class ExamRequestDTO {
+    private Long classId;
+    private Long teacherId;
     @NotBlank
     private String name;
     @NotNull

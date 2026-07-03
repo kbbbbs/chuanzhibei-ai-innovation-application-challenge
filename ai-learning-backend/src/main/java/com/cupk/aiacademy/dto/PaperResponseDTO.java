@@ -10,8 +10,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class PaperResponsedto {
+public class PaperResponseDTO {
     private Long id;
+    private Long courseId;
+    private Long teacherId;
     private String name;
     private String description;
     private BigDecimal totalScore;

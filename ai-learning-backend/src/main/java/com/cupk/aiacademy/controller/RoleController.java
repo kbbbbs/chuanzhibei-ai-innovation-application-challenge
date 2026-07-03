@@ -2,10 +2,11 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.mapper.RoleMapper;
+import com.cupk.aiacademy.mapper.UserRoleMapper;
 import com.cupk.aiacademy.pojo.Role;
+import com.cupk.aiacademy.pojo.UserRole;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,8 +26,11 @@ public class RoleController {
     @Autowired
     private RoleMapper roleMapper;
 
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+
     @GetMapping
-    public ApiResponse<Page<Role>> pages(@RequestParam(defaultValue = "") String roleName,
+    public Result pages(@RequestParam(defaultValue = "") String roleName,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Role> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
@@ -36,69 +40,76 @@ public class RoleController {
         }
         queryWrapper.orderByAsc("id");
         roleMapper.selectPage(page, queryWrapper);
-        return ApiResponse.success(page);
+        return Result.success(page);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<Role> selectById(@PathVariable Integer id) {
+    public Result selectById(@PathVariable Integer id) {
         Role role = roleMapper.selectById(id);
-        if (role == null) {
-            throw new BusinessException("角色不存在");
-        }
-        return ApiResponse.success(role);
+        return role == null ? Result.error("404", "角色不存在") : Result.success(role);
     }
 
     @PostMapping
-    public ApiResponse<Void> add(@RequestBody Role role) {
-        checkRole(role);
+    public Result add(@RequestBody Role role) {
+        Result checkResult = checkRole(role, null);
+        if (checkResult != null) {
+            return checkResult;
+        }
         role.setRoleName(role.getRoleName().trim());
         role.setRoleCode(role.getRoleCode().trim());
         role.setCreateTime(LocalDateTime.now());
         int row = roleMapper.insert(role);
-        if (row <= 0) {
-            throw new BusinessException("添加失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody Role role) {
+    public Result update(@PathVariable Integer id, @RequestBody Role role) {
         if (roleMapper.selectById(id) == null) {
-            throw new BusinessException("角色不存在");
+            return Result.error("404", "角色不存在");
         }
-        checkRole(role);
+        Result checkResult = checkRole(role, id);
+        if (checkResult != null) {
+            return checkResult;
+        }
         role.setId(id);
         role.setRoleName(role.getRoleName().trim());
         role.setRoleCode(role.getRoleCode().trim());
         int row = roleMapper.updateById(role);
-        if (row <= 0) {
-            throw new BusinessException("更新失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Integer id) {
+    public Result delete(@PathVariable Integer id) {
         if (roleMapper.selectById(id) == null) {
-            throw new BusinessException("角色不存在");
+            return Result.error("404", "角色不存在");
+        }
+        Long userCount = userRoleMapper.selectCount(new QueryWrapper<UserRole>().eq("role_id", id));
+        if (userCount > 0) {
+            return Result.error("409", "角色已被用户使用，不能删除");
         }
         int row = roleMapper.deleteById(id);
-        if (row <= 0) {
-            throw new BusinessException("删除失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
-    private void checkRole(Role role) {
+    private Result checkRole(Role role, Integer excludeId) {
         if (role == null) {
-            throw new BusinessException("角色信息不能为空");
+            return Result.error("400", "角色信息不能为空");
         }
         if (role.getRoleName() == null || role.getRoleName().trim().isEmpty()) {
-            throw new BusinessException("角色名称不能为空");
+            return Result.error("400", "角色名称不能为空");
         }
         if (role.getRoleCode() == null || role.getRoleCode().trim().isEmpty()) {
-            throw new BusinessException("角色编码不能为空");
+            return Result.error("400", "角色编码不能为空");
         }
+        QueryWrapper<Role> duplicateQuery = new QueryWrapper<>();
+        duplicateQuery.eq("role_code", role.getRoleCode().trim());
+        if (excludeId != null) {
+            duplicateQuery.ne("id", excludeId);
+        }
+        if (roleMapper.selectCount(duplicateQuery) > 0) {
+            return Result.error("409", "角色编码已存在");
+        }
+        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

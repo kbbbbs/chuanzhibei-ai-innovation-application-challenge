@@ -2,8 +2,7 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.GradeRecordMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
@@ -21,10 +20,13 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.util.Set;
 
 @RestController
 @RequestMapping("/grade-records")
 public class GradeRecordController {
+    private static final Set<String> VALID_SOURCE_TYPES = Set.of("homework", "exam", "manual", "import");
+
     @Autowired
     private GradeRecordMapper gradeMapper;
 
@@ -38,7 +40,7 @@ public class GradeRecordController {
     private CourseMapper courseMapper;
 
     @GetMapping
-    public ApiResponse<Page<GradeRecord>> pages(@RequestParam(required = false) Integer studentId,
+    public Result pages(@RequestParam(required = false) Integer studentId,
                         @RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer courseId,
                         @RequestParam(defaultValue = "") String sourceType,
@@ -60,84 +62,94 @@ public class GradeRecordController {
         }
         queryWrapper.orderByDesc("id");
         gradeMapper.selectPage(page, queryWrapper);
-        return ApiResponse.success(page);
+        return Result.success(page);
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<GradeRecord> selectById(@PathVariable Integer id) {
+    public Result selectById(@PathVariable Integer id) {
         GradeRecord grade = gradeMapper.selectById(id);
-        if (grade == null) {
-            throw new BusinessException("成绩记录不存在");
-        }
-        return ApiResponse.success(grade);
+        return grade == null ? Result.error("404", "成绩记录不存在") : Result.success(grade);
     }
 
     @PostMapping
-    public ApiResponse<Void> add(@RequestBody GradeRecord grade) {
-        checkGrade(grade);
+    public Result add(@RequestBody GradeRecord grade) {
+        Result checkResult = checkGrade(grade);
+        if (checkResult != null) {
+            return checkResult;
+        }
         LocalDateTime now = LocalDateTime.now();
         grade.setGradeName(grade.getGradeName().trim());
         grade.setSourceType(grade.getSourceType().trim());
         grade.setCreateTime(now);
         grade.setUpdateTime(now);
         int row = gradeMapper.insert(grade);
-        if (row <= 0) {
-            throw new BusinessException("添加失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody GradeRecord grade) {
+    public Result update(@PathVariable Integer id, @RequestBody GradeRecord grade) {
         if (gradeMapper.selectById(id) == null) {
-            throw new BusinessException("成绩记录不存在");
+            return Result.error("404", "成绩记录不存在");
         }
-        checkGrade(grade);
+        Result checkResult = checkGrade(grade);
+        if (checkResult != null) {
+            return checkResult;
+        }
         grade.setId(id);
         grade.setGradeName(grade.getGradeName().trim());
         grade.setSourceType(grade.getSourceType().trim());
         grade.setUpdateTime(LocalDateTime.now());
         int row = gradeMapper.updateById(grade);
-        if (row <= 0) {
-            throw new BusinessException("更新失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @DeleteMapping("/{id}")
-    public ApiResponse<Void> delete(@PathVariable Integer id) {
+    public Result delete(@PathVariable Integer id) {
         if (gradeMapper.selectById(id) == null) {
-            throw new BusinessException("成绩记录不存在");
+            return Result.error("404", "成绩记录不存在");
         }
         int row = gradeMapper.deleteById(id);
-        if (row <= 0) {
-            throw new BusinessException("删除失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
-    private void checkGrade(GradeRecord grade) {
+    private Result checkGrade(GradeRecord grade) {
         if (grade == null) {
-            throw new BusinessException("成绩信息不能为空");
+            return Result.error("400", "成绩信息不能为空");
         }
-        if (grade.getStudentId() == null || userMapper.selectById(grade.getStudentId()) == null) {
-            throw new BusinessException("学生用户不存在");
+        if (grade.getStudentId() == null || grade.getStudentId() <= 0) {
+            return Result.error("400", "学生用户不能为空");
         }
-        if (grade.getClassId() == null || classMapper.selectById(grade.getClassId()) == null) {
-            throw new BusinessException("教学班不存在");
+        if (grade.getClassId() == null || grade.getClassId() <= 0) {
+            return Result.error("400", "教学班不能为空");
         }
-        if (grade.getCourseId() == null || courseMapper.selectById(grade.getCourseId()) == null) {
-            throw new BusinessException("课程不存在");
+        if (grade.getCourseId() == null || grade.getCourseId() <= 0) {
+            return Result.error("400", "课程不能为空");
         }
-        if (grade.getTeacherId() == null || userMapper.selectById(grade.getTeacherId()) == null) {
-            throw new BusinessException("教师用户不存在");
+        if (grade.getTeacherId() == null || grade.getTeacherId() <= 0) {
+            return Result.error("400", "教师用户不能为空");
+        }
+        if (userMapper.selectById(grade.getStudentId()) == null) {
+            return Result.error("404", "学生用户不存在");
+        }
+        if (classMapper.selectById(grade.getClassId()) == null) {
+            return Result.error("404", "教学班不存在");
+        }
+        if (courseMapper.selectById(grade.getCourseId()) == null) {
+            return Result.error("404", "课程不存在");
+        }
+        if (userMapper.selectById(grade.getTeacherId()) == null) {
+            return Result.error("404", "教师用户不存在");
         }
         if (grade.getGradeName() == null || grade.getGradeName().trim().isEmpty()) {
-            throw new BusinessException("成绩名称不能为空");
+            return Result.error("400", "成绩名称不能为空");
         }
         if (grade.getSourceType() == null || grade.getSourceType().trim().isEmpty()) {
-            throw new BusinessException("成绩来源不能为空");
+            return Result.error("400", "成绩来源不能为空");
         }
+        if (!VALID_SOURCE_TYPES.contains(grade.getSourceType().trim())) {
+            return Result.error("400", "成绩来源不合法");
+        }
+        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

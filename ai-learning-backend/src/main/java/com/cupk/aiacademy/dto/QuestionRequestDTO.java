@@ -16,7 +16,9 @@ import java.util.List;
 
 @Getter
 @Setter
-public class QuestionRequestdto {
+public class QuestionRequestDTO {
+    private Long courseId;
+    private Long teacherId;
     @NotBlank
     private String content;
     @NotNull

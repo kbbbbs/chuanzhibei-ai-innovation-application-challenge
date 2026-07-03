@@ -40,6 +40,11 @@ public class JwtUtils {
     }
 
     private SecretKey getSecretKey() {
-        return Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
+        String key = secret == null ? "" : secret.trim();
+        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT secret must be at least 32 bytes");
+        }
+        return Keys.hmacShaKeyFor(keyBytes);
     }
 }

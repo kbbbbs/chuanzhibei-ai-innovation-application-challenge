@@ -2,8 +2,7 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
@@ -37,7 +36,7 @@ public class HomeworkController {
     private UserMapper userMapper;
 
     @GetMapping("/homeworks")
-    public ApiResponse<Page<Homework>> pages(@RequestParam(required = false) Integer classId,
+    public Result pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer teacherId,
                         @RequestParam(defaultValue = "") String title,
                         @RequestParam(defaultValue = "1") Integer pageNum,
@@ -55,83 +54,78 @@ public class HomeworkController {
         }
         queryWrapper.orderByDesc("id");
         homeworkMapper.selectPage(page, queryWrapper);
-        return ApiResponse.success(page);
+        return Result.success(page);
     }
 
     @GetMapping("/homeworks/{id}")
-    public ApiResponse<Homework> selectById(@PathVariable Integer id) {
+    public Result selectById(@PathVariable Integer id) {
         Homework homework = homeworkMapper.selectById(id);
-        if (homework == null) {
-            throw new BusinessException("作业不存在");
-        }
-        return ApiResponse.success(homework);
+        return homework == null ? Result.error("404", "作业不存在") : Result.success(homework);
     }
 
     @GetMapping("/homeworks/{homeworkId}/submits")
-    public ApiResponse<Object> listSubmits(@PathVariable Integer homeworkId) {
+    public Result listSubmits(@PathVariable Integer homeworkId) {
         if (homeworkMapper.selectById(homeworkId) == null) {
-            throw new BusinessException("作业不存在");
+            return Result.error("404", "作业不存在");
         }
         QueryWrapper<HomeworkSubmit> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("homework_id", homeworkId).orderByDesc("id");
-        return ApiResponse.success(submitMapper.selectList(queryWrapper));
+        return Result.success(submitMapper.selectList(queryWrapper));
     }
 
     @PostMapping("/homeworks")
-    public ApiResponse<Void> add(@RequestBody Homework homework) {
-        checkHomework(homework);
+    public Result add(@RequestBody Homework homework) {
+        Result checkResult = checkHomework(homework);
+        if (checkResult != null) {
+            return checkResult;
+        }
         LocalDateTime now = LocalDateTime.now();
         homework.setTitle(homework.getTitle().trim());
         homework.setCreateTime(now);
         homework.setUpdateTime(now);
         int row = homeworkMapper.insert(homework);
-        if (row <= 0) {
-            throw new BusinessException("添加失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @PutMapping("/homeworks/{id}")
-    public ApiResponse<Void> update(@PathVariable Integer id, @RequestBody Homework homework) {
+    public Result update(@PathVariable Integer id, @RequestBody Homework homework) {
         if (homeworkMapper.selectById(id) == null) {
-            throw new BusinessException("作业不存在");
+            return Result.error("404", "作业不存在");
         }
-        checkHomework(homework);
+        Result checkResult = checkHomework(homework);
+        if (checkResult != null) {
+            return checkResult;
+        }
         homework.setId(id);
         homework.setTitle(homework.getTitle().trim());
         homework.setUpdateTime(LocalDateTime.now());
         int row = homeworkMapper.updateById(homework);
-        if (row <= 0) {
-            throw new BusinessException("更新失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
     @DeleteMapping("/homeworks/{id}")
-    public ApiResponse<Void> delete(@PathVariable Integer id) {
+    public Result delete(@PathVariable Integer id) {
         if (homeworkMapper.selectById(id) == null) {
-            throw new BusinessException("作业不存在");
+            return Result.error("404", "作业不存在");
         }
         int row = homeworkMapper.deleteById(id);
-        if (row <= 0) {
-            throw new BusinessException("删除失败");
-        }
-        return ApiResponse.success(null);
+        return row > 0 ? Result.success() : Result.error();
     }
 
-    private void checkHomework(Homework homework) {
+    private Result checkHomework(Homework homework) {
         if (homework == null) {
-            throw new BusinessException("作业信息不能为空");
+            return Result.error("400", "作业信息不能为空");
         }
         if (homework.getClassId() == null || classMapper.selectById(homework.getClassId()) == null) {
-            throw new BusinessException("教学班不存在");
+            return Result.error("404", "教学班不存在");
         }
         if (homework.getTeacherId() == null || userMapper.selectById(homework.getTeacherId()) == null) {
-            throw new BusinessException("教师用户不存在");
+            return Result.error("404", "教师用户不存在");
         }
         if (homework.getTitle() == null || homework.getTitle().trim().isEmpty()) {
-            throw new BusinessException("作业标题不能为空");
+            return Result.error("400", "作业标题不能为空");
         }
+        return null;
     }
 
     private int fixPageNum(Integer pageNum) {

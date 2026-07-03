@@ -8,8 +8,10 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class ExamResponsedto {
+public class ExamResponseDTO {
     private Long id;
+    private Long classId;
+    private Long teacherId;
     private String name;
     private Long paperId;
     private String paperName;

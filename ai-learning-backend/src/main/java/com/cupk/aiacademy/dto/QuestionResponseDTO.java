@@ -12,8 +12,10 @@ import java.util.List;
 
 @Getter
 @Setter
-public class QuestionResponsedto {
+public class QuestionResponseDTO {
     private Long id;
+    private Long courseId;
+    private Long teacherId;
     private String content;
     private QuestionType type;
     private Difficulty difficulty;
