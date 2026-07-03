@@ -75,9 +75,6 @@ public class ExamService {
     public ExamResponseDTO publish(Long id) {
         ExamSession exam = getEntityById(id);
         ExamStatus status = ExamStatus.fromCode(exam.getStatus());
-        if (status == ExamStatus.PUBLISHED) {
-            return toResponse(exam);
-        }
         if (status != ExamStatus.DRAFT) {
             throw new BusinessException("只有草稿状态的考试才能发布，当前状态：" + status);
         }
@@ -91,9 +88,6 @@ public class ExamService {
     public ExamResponseDTO close(Long id) {
         ExamSession exam = getEntityById(id);
         ExamStatus status = ExamStatus.fromCode(exam.getStatus());
-        if (status == ExamStatus.CLOSED) {
-            return toResponse(exam);
-        }
         if (status != ExamStatus.PUBLISHED) {
             throw new BusinessException("只有已发布的考试才能关闭，当前状态：" + status);
         }

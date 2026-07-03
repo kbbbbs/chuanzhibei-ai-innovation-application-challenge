@@ -56,6 +56,12 @@ public class GlobalExceptionHandler {
         return conflict("数据存在关联或违反完整性约束，操作失败", request);
     }
 
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<Object> handleException(Exception e, HttpServletRequest request) {
+        String message = e.getMessage() == null || e.getMessage().isBlank() ? "服务器内部错误" : e.getMessage();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body("500", message, request));
+    }
+
     private ResponseEntity<Object> badRequest(String message, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body("400", message, request));
     }

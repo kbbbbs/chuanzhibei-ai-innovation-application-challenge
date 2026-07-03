@@ -113,6 +113,57 @@ class ExamWorkflowIntegrationTest {
         assertThrows(RuntimeException.class, () -> submissionService.start(exam.getId(), "student-001"));
     }
 
+    @Test
+    void publishAndCloseMustKeepOriginalStateRules() {
+        var exam = createExam(ExamStatus.DRAFT);
+
+        examService.publish(exam.getId());
+        assertThrows(RuntimeException.class, () -> examService.publish(exam.getId()));
+
+        examService.close(exam.getId());
+        assertThrows(RuntimeException.class, () -> examService.close(exam.getId()));
+    }
+
+    @Test
+    void startShouldPreventDuplicateByCandidateOrStudentIdentity() {
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        var submission = submissionService.start(exam.getId(), null, 1001L);
+        submissionService.submit(submission.getId());
+
+        assertThrows(RuntimeException.class, () -> submissionService.start(exam.getId(), "1001"));
+    }
+
+    private com.cupk.aiacademy.dto.ExamResponseDTO createExam(ExamStatus status) {
+        var single = questionService.create(buildSingleChoiceQuestion());
+
+        PaperRequestDTO paperRequest = new PaperRequestDTO();
+        paperRequest.setName("Java 单选试卷");
+        paperRequest.setDescription("状态规则测试");
+        paperRequest.setDurationMinutes(60);
+        paperRequest.setStatus(PaperStatus.PUBLISHED);
+
+        PaperRequestDTO.PaperQuestionRequest item = new PaperRequestDTO.PaperQuestionRequest();
+        item.setQuestionId(single.getId());
+        item.setSortOrder(1);
+        item.setScore(new BigDecimal("5.00"));
+        item.setRequiredAnswer(true);
+        paperRequest.setQuestions(List.of(item));
+
+        var paper = paperService.create(paperRequest);
+
+        ExamRequestDTO examRequest = new ExamRequestDTO();
+        examRequest.setName("Java 状态规则考试");
+        examRequest.setPaperId(paper.getId());
+        examRequest.setDescription("状态规则测试");
+        examRequest.setStartTime(LocalDateTime.now().minusMinutes(10));
+        examRequest.setEndTime(LocalDateTime.now().plusHours(2));
+        examRequest.setDurationMinutes(60);
+        examRequest.setStatus(status);
+        return examService.create(examRequest);
+    }
+
     private QuestionRequestDTO buildSingleChoiceQuestion() {
         QuestionRequestDTO request = new QuestionRequestDTO();
         request.setContent("Java 的编译结果是？");

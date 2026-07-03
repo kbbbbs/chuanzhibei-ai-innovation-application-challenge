@@ -331,7 +331,9 @@ public class SubmissionService {
     private ExamRecord findExistingRecord(Integer examId, String candidateId, Long studentId) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
         query.eq("exam_session_id", examId);
-        if (!isBlank(candidateId)) {
+        if (!isBlank(candidateId) && studentId != null) {
+            query.and(wrapper -> wrapper.eq("candidate_id", candidateId).or().eq("student_id", toInt(studentId, "学生ID")));
+        } else if (!isBlank(candidateId)) {
             query.eq("candidate_id", candidateId);
         } else if (studentId != null) {
             query.eq("student_id", toInt(studentId, "学生ID"));
