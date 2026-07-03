@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.cupk.aiacademy.mapper")
+@MapperScan(basePackages = "com.cupk.aiacademy.mapper")
 public class MybatisPlusConfiguration {
     @Bean
     public MybatisPlusInterceptor mybatisPlusInterceptor() {
