@@ -4,8 +4,8 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
-import com.cupk.aiacademy.dto.QuestionRequest;
-import com.cupk.aiacademy.dto.QuestionResponse;
+import com.cupk.aiacademy.dto.QuestionRequestdto;
+import com.cupk.aiacademy.dto.QuestionResponsedto;
 import com.cupk.aiacademy.pojo.Question;
 import com.cupk.aiacademy.pojo.QuestionAnswer;
 import com.cupk.aiacademy.pojo.QuestionOption;
@@ -25,14 +25,14 @@ public class QuestionService {
     private final QuestionRepository questionRepository;
 
     @Transactional
-    public QuestionResponse create(QuestionRequest request) {
+    public QuestionResponsedto create(QuestionRequestdto request) {
         Question question = new Question();
         fillQuestion(question, request);
         return toResponse(questionRepository.save(question));
     }
 
     @Transactional
-    public QuestionResponse update(Long id, QuestionRequest request) {
+    public QuestionResponsedto update(Long id, QuestionRequestdto request) {
         Question question = getEntityById(id);
         question.getOptions().clear();
         question.getAnswers().clear();
@@ -41,12 +41,12 @@ public class QuestionService {
     }
 
     @Transactional(readOnly = true)
-    public QuestionResponse getById(Long id) {
+    public QuestionResponsedto getById(Long id) {
         return toResponse(getEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public Page<QuestionResponse> list(QuestionType type, Difficulty difficulty, RecordStatus status, int page, int size) {
+    public Page<QuestionResponsedto> list(QuestionType type, Difficulty difficulty, RecordStatus status, int page, int size) {
         PageRequest pageable = PageRequest.of(page, size);
         Page<Question> questionPage;
         if (type != null && difficulty != null && status != null) {
@@ -74,7 +74,7 @@ public class QuestionService {
                 .orElseThrow(() -> new BusinessException("题目不存在: " + id));
     }
 
-    private void fillQuestion(Question question, QuestionRequest request) {
+    private void fillQuestion(Question question, QuestionRequestdto request) {
         question.setContent(request.getContent());
         question.setType(request.getType());
         question.setDifficulty(request.getDifficulty());
@@ -84,7 +84,7 @@ public class QuestionService {
         question.setStatus(request.getStatus());
 
         if (request.getOptions() != null) {
-            for (QuestionRequest.QuestionOptionRequest optionRequest : request.getOptions()) {
+            for (QuestionRequestdto.QuestionOptionRequest optionRequest : request.getOptions()) {
                 QuestionOption option = new QuestionOption();
                 option.setQuestion(question);
                 option.setOptionKey(optionRequest.getOptionKey());
@@ -94,7 +94,7 @@ public class QuestionService {
             }
         }
 
-        for (QuestionRequest.QuestionAnswerRequest answerRequest : request.getAnswers()) {
+        for (QuestionRequestdto.QuestionAnswerRequest answerRequest : request.getAnswers()) {
             QuestionAnswer answer = new QuestionAnswer();
             answer.setQuestion(question);
             answer.setAnswerContent(answerRequest.getAnswerContent());
@@ -103,8 +103,8 @@ public class QuestionService {
         }
     }
 
-    private QuestionResponse toResponse(Question question) {
-        QuestionResponse response = new QuestionResponse();
+    private QuestionResponsedto toResponse(Question question) {
+        QuestionResponsedto response = new QuestionResponsedto();
         response.setId(question.getId());
         response.setContent(question.getContent());
         response.setType(question.getType());
@@ -118,7 +118,7 @@ public class QuestionService {
         response.setOptions(question.getOptions().stream()
                 .sorted(Comparator.comparing(QuestionOption::getSortOrder))
                 .map(option -> {
-                    QuestionResponse.OptionResponse item = new QuestionResponse.OptionResponse();
+                    QuestionResponsedto.OptionResponse item = new QuestionResponsedto.OptionResponse();
                     item.setId(option.getId());
                     item.setOptionKey(option.getOptionKey());
                     item.setOptionContent(option.getOptionContent());
@@ -129,7 +129,7 @@ public class QuestionService {
         response.setAnswers(question.getAnswers().stream()
                 .sorted(Comparator.comparing(QuestionAnswer::getSortOrder))
                 .map(answer -> {
-                    QuestionResponse.AnswerResponse item = new QuestionResponse.AnswerResponse();
+                    QuestionResponsedto.AnswerResponse item = new QuestionResponsedto.AnswerResponse();
                     item.setId(answer.getId());
                     item.setAnswerContent(answer.getAnswerContent());
                     item.setSortOrder(answer.getSortOrder());

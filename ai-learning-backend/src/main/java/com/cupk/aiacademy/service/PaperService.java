@@ -1,8 +1,8 @@
 package com.cupk.aiacademy.service;
 
 import com.cupk.aiacademy.common.BusinessException;
-import com.cupk.aiacademy.dto.PaperRequest;
-import com.cupk.aiacademy.dto.PaperResponse;
+import com.cupk.aiacademy.dto.PaperRequestdto;
+import com.cupk.aiacademy.dto.PaperResponsedto;
 import com.cupk.aiacademy.pojo.Paper;
 import com.cupk.aiacademy.pojo.PaperQuestion;
 import com.cupk.aiacademy.pojo.Question;
@@ -27,14 +27,14 @@ public class PaperService {
     private final SubmissionAnswerRepository submissionAnswerRepository;
 
     @Transactional
-    public PaperResponse create(PaperRequest request) {
+    public PaperResponsedto create(PaperRequestdto request) {
         Paper paper = new Paper();
         fillPaper(paper, request);
         return toResponse(paperRepository.save(paper));
     }
 
     @Transactional
-    public PaperResponse update(Long id, PaperRequest request) {
+    public PaperResponsedto update(Long id, PaperRequestdto request) {
         Paper paper = getEntityById(id);
         paper.getPaperQuestions().clear();
         fillPaper(paper, request);
@@ -42,12 +42,12 @@ public class PaperService {
     }
 
     @Transactional(readOnly = true)
-    public PaperResponse getById(Long id) {
+    public PaperResponsedto getById(Long id) {
         return toResponse(getEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public List<PaperResponse> list() {
+    public List<PaperResponsedto> list() {
         return paperRepository.findAll().stream().map(this::toResponse).toList();
     }
 
@@ -72,7 +72,7 @@ public class PaperService {
                 .orElseThrow(() -> new BusinessException("试卷不存在: " + id));
     }
 
-    private void fillPaper(Paper paper, PaperRequest request) {
+    private void fillPaper(Paper paper, PaperRequestdto request) {
         paper.setName(request.getName());
         paper.setDescription(request.getDescription());
         paper.setDurationMinutes(request.getDurationMinutes());
@@ -80,7 +80,7 @@ public class PaperService {
         paper.setTotalScore(BigDecimal.ZERO);
 
         BigDecimal totalScore = BigDecimal.ZERO;
-        for (PaperRequest.PaperQuestionRequest item : request.getQuestions()) {
+        for (PaperRequestdto.PaperQuestionRequest item : request.getQuestions()) {
             Question question = questionService.getEntityById(item.getQuestionId());
             PaperQuestion paperQuestion = new PaperQuestion();
             paperQuestion.setPaper(paper);
@@ -101,8 +101,8 @@ public class PaperService {
         paper.setTotalScore(totalScore);
     }
 
-    private PaperResponse toResponse(Paper paper) {
-        PaperResponse response = new PaperResponse();
+    private PaperResponsedto toResponse(Paper paper) {
+        PaperResponsedto response = new PaperResponsedto();
         response.setId(paper.getId());
         response.setName(paper.getName());
         response.setDescription(paper.getDescription());
@@ -114,7 +114,7 @@ public class PaperService {
         response.setPaperQuestions(paper.getPaperQuestions().stream()
                 .sorted(Comparator.comparing(PaperQuestion::getSortOrder))
                 .map(item -> {
-                    PaperResponse.PaperQuestionResponse pq = new PaperResponse.PaperQuestionResponse();
+                    PaperResponsedto.PaperQuestionResponse pq = new PaperResponsedto.PaperQuestionResponse();
                     pq.setId(item.getId());
                     pq.setQuestionId(item.getQuestion().getId());
                     pq.setQuestionContent(item.getQuestion().getContent());

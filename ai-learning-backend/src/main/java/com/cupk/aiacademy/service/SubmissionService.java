@@ -1,8 +1,8 @@
 package com.cupk.aiacademy.service;
 
 import com.cupk.aiacademy.common.*;
-import com.cupk.aiacademy.dto.SubmissionRequests;
-import com.cupk.aiacademy.dto.SubmissionResponse;
+import com.cupk.aiacademy.dto.SubmissionRequestsdto;
+import com.cupk.aiacademy.dto.SubmissionResponsedto;
 import com.cupk.aiacademy.pojo.Exam;
 import com.cupk.aiacademy.pojo.PaperQuestion;
 import com.cupk.aiacademy.pojo.Question;
@@ -34,7 +34,7 @@ public class SubmissionService {
     private final SubmissionAnswerRepository submissionAnswerRepository;
 
     @Transactional
-    public SubmissionResponse start(Long examId, SubmissionRequests.StartSubmissionRequest request) {
+    public SubmissionResponsedto start(Long examId, SubmissionRequestsdto.StartSubmissionRequest request) {
         Exam exam = examService.getEntityById(examId);
         if (exam.getStatus() != ExamStatus.PUBLISHED) {
             throw new BusinessException("考试未发布，不能开始答题");
@@ -61,12 +61,12 @@ public class SubmissionService {
     }
 
     @Transactional
-    public SubmissionResponse saveAnswers(Long submissionId, SubmissionRequests.SaveAnswerRequest request) {
+    public SubmissionResponsedto saveAnswers(Long submissionId, SubmissionRequestsdto.SaveAnswerRequest request) {
         ExamSubmission submission = getEntityById(submissionId);
         if (submission.getStatus() != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷不允许继续作答");
         }
-        for (SubmissionRequests.AnswerItem item : request.getAnswers()) {
+        for (SubmissionRequestsdto.AnswerItem item : request.getAnswers()) {
             SubmissionAnswer answer = submissionAnswerRepository.findBySubmissionIdAndPaperQuestionId(submissionId, item.getPaperQuestionId())
                     .orElseThrow(() -> new BusinessException("答题记录不存在: " + item.getPaperQuestionId()));
             answer.setAnswerContent(item.getAnswerContent());
@@ -76,7 +76,7 @@ public class SubmissionService {
     }
 
     @Transactional
-    public SubmissionResponse submit(Long submissionId) {
+    public SubmissionResponsedto submit(Long submissionId) {
         ExamSubmission submission = getEntityById(submissionId);
         if (submission.getStatus() != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷状态不允许交卷");
@@ -112,9 +112,9 @@ public class SubmissionService {
     }
 
     @Transactional
-    public SubmissionResponse manualGrade(Long submissionId, SubmissionRequests.ManualGradeRequest request) {
+    public SubmissionResponsedto manualGrade(Long submissionId, SubmissionRequestsdto.ManualGradeRequest request) {
         ExamSubmission submission = getEntityById(submissionId);
-        for (SubmissionRequests.ManualGradeItem item : request.getGrades()) {
+        for (SubmissionRequestsdto.ManualGradeItem item : request.getGrades()) {
             SubmissionAnswer answer = submissionAnswerRepository.findById(item.getSubmissionAnswerId())
                     .orElseThrow(() -> new BusinessException("答题记录不存在: " + item.getSubmissionAnswerId()));
             if (!Objects.equals(answer.getSubmission().getId(), submissionId)) {
@@ -137,12 +137,12 @@ public class SubmissionService {
     }
 
     @Transactional(readOnly = true)
-    public SubmissionResponse getById(Long submissionId) {
+    public SubmissionResponsedto getById(Long submissionId) {
         return toResponse(getEntityById(submissionId));
     }
 
     @Transactional(readOnly = true)
-    public List<SubmissionResponse> list(Long examId, String candidateId) {
+    public List<SubmissionResponsedto> list(Long examId, String candidateId) {
         List<ExamSubmission> submissions;
         if (examId != null && candidateId != null) {
             submissions = examSubmissionRepository.findByExamIdAndCandidateId(examId, candidateId);
@@ -178,8 +178,8 @@ public class SubmissionService {
         };
     }
 
-    private SubmissionResponse toResponse(ExamSubmission submission) {
-        SubmissionResponse response = new SubmissionResponse();
+    private SubmissionResponsedto toResponse(ExamSubmission submission) {
+        SubmissionResponsedto response = new SubmissionResponsedto();
         response.setId(submission.getId());
         response.setExamId(submission.getExam().getId());
         response.setExamName(submission.getExam().getName());
@@ -193,7 +193,7 @@ public class SubmissionService {
         response.setAnswers(submission.getAnswers().stream()
                 .sorted(Comparator.comparing(answer -> answer.getPaperQuestion().getSortOrder()))
                 .map(answer -> {
-                    SubmissionResponse.SubmissionAnswerResponse item = new SubmissionResponse.SubmissionAnswerResponse();
+                    SubmissionResponsedto.SubmissionAnswerResponse item = new SubmissionResponsedto.SubmissionAnswerResponse();
                     item.setId(answer.getId());
                     item.setPaperQuestionId(answer.getPaperQuestion().getId());
                     item.setQuestionId(answer.getPaperQuestion().getQuestion().getId());

@@ -1,8 +1,8 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.dto.PaperRequest;
-import com.cupk.aiacademy.dto.PaperResponse;
+import com.cupk.aiacademy.dto.PaperRequestdto;
+import com.cupk.aiacademy.dto.PaperResponsedto;
 import com.cupk.aiacademy.service.PaperService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -18,22 +18,22 @@ public class PaperController {
     private final PaperService paperService;
 
     @PostMapping
-    public ApiResponse<PaperResponse> create(@Valid @RequestBody PaperRequest request) {
+    public ApiResponse<PaperResponsedto> create(@Valid @RequestBody PaperRequestdto request) {
         return ApiResponse.success(paperService.create(request));
     }
 
     @PutMapping("/{id}")
-    public ApiResponse<PaperResponse> update(@PathVariable Long id, @Valid @RequestBody PaperRequest request) {
+    public ApiResponse<PaperResponsedto> update(@PathVariable Long id, @Valid @RequestBody PaperRequestdto request) {
         return ApiResponse.success(paperService.update(id, request));
     }
 
     @GetMapping("/{id}")
-    public ApiResponse<PaperResponse> getById(@PathVariable Long id) {
+    public ApiResponse<PaperResponsedto> getById(@PathVariable Long id) {
         return ApiResponse.success(paperService.getById(id));
     }
 
     @GetMapping
-    public ApiResponse<List<PaperResponse>> list() {
+    public ApiResponse<List<PaperResponsedto>> list() {
         return ApiResponse.success(paperService.list());
     }
 

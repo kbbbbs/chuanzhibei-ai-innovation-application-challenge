@@ -2,8 +2,8 @@ package com.cupk.aiacademy.service;
 
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.ExamStatus;
-import com.cupk.aiacademy.dto.ExamRequest;
-import com.cupk.aiacademy.dto.ExamResponse;
+import com.cupk.aiacademy.dto.ExamRequestdto;
+import com.cupk.aiacademy.dto.ExamResponsedto;
 import com.cupk.aiacademy.pojo.Exam;
 import com.cupk.aiacademy.pojo.Paper;
 import com.cupk.aiacademy.repository.ExamRepository;
@@ -21,38 +21,38 @@ public class ExamService {
     private final PaperService paperService;
 
     @Transactional
-    public ExamResponse create(ExamRequest request) {
+    public ExamResponsedto create(ExamRequestdto request) {
         Exam exam = new Exam();
         fillExam(exam, request);
         return toResponse(examRepository.save(exam));
     }
 
     @Transactional
-    public ExamResponse update(Long id, ExamRequest request) {
+    public ExamResponsedto update(Long id, ExamRequestdto request) {
         Exam exam = getEntityById(id);
         fillExam(exam, request);
         return toResponse(exam);
     }
 
     @Transactional(readOnly = true)
-    public ExamResponse getById(Long id) {
+    public ExamResponsedto getById(Long id) {
         return toResponse(getEntityById(id));
     }
 
     @Transactional(readOnly = true)
-    public List<ExamResponse> list() {
+    public List<ExamResponsedto> list() {
         return examRepository.findAll().stream().map(this::toResponse).toList();
     }
 
     @Transactional
-    public ExamResponse publish(Long id) {
+    public ExamResponsedto publish(Long id) {
         Exam exam = getEntityById(id);
         exam.setStatus(ExamStatus.PUBLISHED);
         return toResponse(exam);
     }
 
     @Transactional
-    public ExamResponse close(Long id) {
+    public ExamResponsedto close(Long id) {
         Exam exam = getEntityById(id);
         exam.setStatus(ExamStatus.CLOSED);
         return toResponse(exam);
@@ -63,7 +63,7 @@ public class ExamService {
                 .orElseThrow(() -> new BusinessException("考试不存在: " + id));
     }
 
-    private void fillExam(Exam exam, ExamRequest request) {
+    private void fillExam(Exam exam, ExamRequestdto request) {
         if (request.getEndTime().isBefore(request.getStartTime())) {
             throw new BusinessException("考试结束时间不能早于开始时间");
         }
@@ -77,8 +77,8 @@ public class ExamService {
         exam.setStatus(request.getStatus());
     }
 
-    private ExamResponse toResponse(Exam exam) {
-        ExamResponse response = new ExamResponse();
+    private ExamResponsedto toResponse(Exam exam) {
+        ExamResponsedto response = new ExamResponsedto();
         response.setId(exam.getId());
         response.setName(exam.getName());
         response.setPaperId(exam.getPaper().getId());
