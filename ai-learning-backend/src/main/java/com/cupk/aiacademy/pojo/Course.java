@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 @TableName("t_course")
@@ -45,4 +46,7 @@ public class Course {
 
     @TableField("updated_at")
     private LocalDateTime updatedAt;
+
+    @TableField(exist = false)
+    private List<Chapter> chapters;
 }
