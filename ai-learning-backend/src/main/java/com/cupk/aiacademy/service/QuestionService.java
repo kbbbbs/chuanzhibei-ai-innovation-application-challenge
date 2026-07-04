@@ -10,19 +10,22 @@ import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.mapper.QuestionMapper;
 import com.cupk.aiacademy.pojo.Question;
+import com.cupk.aiacademy.weknora.service.WeKnoraService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 public class QuestionService {
@@ -35,10 +38,13 @@ public class QuestionService {
 
     private final QuestionMapper questionMapper;
     private final ObjectMapper objectMapper;
+    private final WeKnoraService weKnoraService;
 
-    public QuestionService(QuestionMapper questionMapper, ObjectMapper objectMapper) {
+    public QuestionService(QuestionMapper questionMapper, ObjectMapper objectMapper,
+                           WeKnoraService weKnoraService) {
         this.questionMapper = questionMapper;
         this.objectMapper = objectMapper;
+        this.weKnoraService = weKnoraService;
     }
 
     @Transactional
@@ -107,6 +113,166 @@ public class QuestionService {
         Question question = getEntityById(id);
         questionMapper.deleteById(question.getId());
     }
+
+    // ==================== PDF 提取 ====================
+
+    private static final String EXTRACTION_PROMPT = """
+            你是EduLoop智教云环平台的题库构建助手。请仔细阅读上传的教学文档，提取其中所有的题目。
+            严格按照以下JSON数组格式返回，不要输出任何JSON之外的内容，不要用markdown代码块包裹：
+            [
+              {
+                "type": "SINGLE_CHOICE",
+                "content": "题目题干内容",
+                "options": [{"optionKey": "A", "optionContent": "选项内容", "sortOrder": 1}],
+                "answers": [{"answerContent": "正确答案", "sortOrder": 1}],
+                "analysis": "题目解析，帮助学生理解知识点",
+                "knowledgePoint": "知识点",
+                "difficulty": "EASY",
+                "score": 5
+              }
+            ]
+            type取值：SINGLE_CHOICE/MULTIPLE_CHOICE/TRUE_FALSE/FILL_BLANK/SHORT_ANSWER
+            difficulty取值：EASY/MEDIUM/HARD
+            选择题必须包含options数组，非选择题不需要options。
+            TRUE_FALSE的options为[{"optionKey":"A","optionContent":"正确","sortOrder":1},{"optionKey":"B","optionContent":"错误","sortOrder":2}]，答案填A或B。
+            如果文档中没有找到任何题目，返回空数组[]。""";
+
+    public List<QuestionRequestDTO> extractQuestions(MultipartFile file, Long courseId, Long teacherId) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("上传文件不能为空");
+        }
+        String originalName = file.getOriginalFilename();
+        if (originalName == null || !originalName.toLowerCase().endsWith(".pdf")) {
+            throw new BusinessException("仅支持PDF文件");
+        }
+
+        String kbId = findOrCreateQuestionKB();
+
+        // 1. 上传 PDF 到 WeKnora 知识库
+        byte[] fileBytes;
+        try {
+            fileBytes = file.getBytes();
+        } catch (Exception e) {
+            throw new BusinessException("读取文件失败: " + e.getMessage());
+        }
+        var uploadResult = weKnoraService.uploadFile(kbId, fileBytes, originalName);
+        if (uploadResult.getCode() != null && !"200".equals(uploadResult.getCode())) {
+            throw new BusinessException("上传文档到知识库失败: " + uploadResult.getMsg());
+        }
+
+        // 2. 创建会话
+        var sessionReq = new com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest();
+        sessionReq.setKnowledgeBaseId(kbId);
+        sessionReq.setTitle("EduLoop题库提取-" + System.currentTimeMillis());
+        var sessionResult = weKnoraService.createSession(sessionReq);
+        if (sessionResult.getCode() != null && !"200".equals(sessionResult.getCode())) {
+            throw new BusinessException("创建会话失败: " + sessionResult.getMsg());
+        }
+        String sessionId = extractSessionId(sessionResult);
+
+        // 3. 调用 AI 提取题目
+        String rawResponse;
+        try {
+            rawResponse = weKnoraService.chatSync(sessionId, EXTRACTION_PROMPT);
+        } catch (Exception e) {
+            throw new BusinessException("AI提取失败: " + e.getMessage());
+        }
+
+        // 4. 解析 JSON
+        List<QuestionRequestDTO> questions = parseExtractedJson(rawResponse, courseId, teacherId);
+        return questions;
+    }
+
+    public List<Map<String, Object>> batchCreate(List<QuestionRequestDTO> requests) {
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (int i = 0; i < requests.size(); i++) {
+            QuestionRequestDTO req = requests.get(i);
+            Map<String, Object> item = new HashMap<>();
+            item.put("index", i);
+            try {
+                validateQuestionRules(req);
+                create(req);
+                item.put("success", true);
+            } catch (Exception e) {
+                item.put("success", false);
+                item.put("error", e.getMessage());
+            }
+            results.add(item);
+        }
+        return results;
+    }
+
+    // ==================== helper ====================
+
+    private String findOrCreateQuestionKB() {
+        var kbResult = weKnoraService.listKnowledgeBases();
+        String kbName = "EduLoop题库";
+        if ("200".equals(kbResult.getCode()) && kbResult.getData() != null) {
+            Object data = kbResult.getData();
+            if (data instanceof List<?> kbs) {
+                for (Object kb : kbs) {
+                    if (kb instanceof Map<?, ?> m && kbName.equals(m.get("name"))) {
+                        Object id = m.get("id");
+                        return id != null ? id.toString() : null;
+                    }
+                }
+            }
+        }
+        // 不存在则创建
+        var createResult = weKnoraService.createKnowledgeBase(kbName, "EduLoop智教云环平台题库，支持PDF自动提取题目");
+        if ("200".equals(createResult.getCode()) && createResult.getData() instanceof Map<?, ?> m) {
+            Object id = m.get("id");
+            if (id != null) return id.toString();
+        }
+        throw new BusinessException("无法获取或创建知识库，请确认WeKnora服务可用");
+    }
+
+    @SuppressWarnings("unchecked")
+    private String extractSessionId(com.cupk.aiacademy.common.Result result) {
+        if (result.getData() instanceof Map<?, ?> m) {
+            Object id = m.get("id");
+            if (id != null) return id.toString();
+            Object sessionId = m.get("session_id");
+            if (sessionId != null) return sessionId.toString();
+        }
+        throw new BusinessException("无法获取会话ID");
+    }
+
+    private List<QuestionRequestDTO> parseExtractedJson(String rawResponse, Long courseId, Long teacherId) {
+        if (rawResponse == null || rawResponse.trim().isEmpty()) {
+            return List.of();
+        }
+        String cleaned = rawResponse.trim();
+        // 去除可能的 markdown 代码块标记
+        if (cleaned.startsWith("```")) {
+            int start = cleaned.indexOf('\n');
+            if (start > 0) {
+                int end = cleaned.lastIndexOf("```");
+                cleaned = end > start ? cleaned.substring(start, end).trim() : cleaned.substring(start).trim();
+            }
+        }
+        try {
+            List<QuestionRequestDTO> questions = objectMapper.readValue(cleaned,
+                    objectMapper.getTypeFactory().constructCollectionType(List.class, QuestionRequestDTO.class));
+            if (questions != null) {
+                for (QuestionRequestDTO q : questions) {
+                    if (q.getCourseId() == null) q.setCourseId(courseId);
+                    if (q.getTeacherId() == null) q.setTeacherId(teacherId);
+                    if (q.getStatus() == null) q.setStatus(RecordStatus.ACTIVE);
+                    if (q.getDifficulty() == null) q.setDifficulty(Difficulty.MEDIUM);
+                    if (q.getScore() == null) q.setScore(BigDecimal.valueOf(5));
+                }
+            }
+            return questions != null ? questions : List.of();
+        } catch (Exception e) {
+            log.warn("解析AI提取结果失败, rawResponse前200字符: {}",
+                    rawResponse.length() > 200 ? rawResponse.substring(0, 200) : rawResponse);
+            throw new BusinessException("AI返回数据格式异常，请重试。原始响应前200字符: " +
+                    (rawResponse.length() > 200 ? rawResponse.substring(0, 200) : rawResponse));
+        }
+    }
+
+    private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
 
     public Question getEntityById(Long id) {
         Question question = questionMapper.selectById(toInt(id, "题目ID"));

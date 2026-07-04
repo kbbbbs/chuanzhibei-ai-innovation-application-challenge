@@ -6,7 +6,11 @@ import com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest;
 import com.cupk.aiacademy.weknora.service.WeKnoraService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/weknora")
@@ -18,6 +22,13 @@ public class WeKnoraController {
     @GetMapping("/knowledge-bases")
     public Result listKnowledgeBases() {
         return weKnoraService.listKnowledgeBases();
+    }
+
+    @PostMapping("/knowledge-bases")
+    public Result createKnowledgeBase(@RequestBody Map<String, String> body) {
+        return weKnoraService.createKnowledgeBase(
+            body.getOrDefault("name", "未命名知识库"),
+            body.getOrDefault("description", ""));
     }
 
     @PostMapping("/search")
@@ -60,8 +71,11 @@ public class WeKnoraController {
 
     @PostMapping("/knowledge-bases/{kbId}/upload")
     public Result uploadFile(@PathVariable String kbId,
-                              @RequestParam String fileName,
-                              @RequestBody byte[] fileBytes) {
-        return weKnoraService.uploadFile(kbId, fileBytes, fileName);
+                              @RequestParam("file") MultipartFile file) {
+        try {
+            return weKnoraService.uploadFile(kbId, file.getBytes(), file.getOriginalFilename());
+        } catch (IOException e) {
+            return Result.error("读取文件失败: " + e.getMessage());
+        }
     }
 }

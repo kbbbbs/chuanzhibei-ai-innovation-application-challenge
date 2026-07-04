@@ -24,7 +24,10 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -129,6 +132,104 @@ public class PaperLocalServiceImpl implements PaperLocalService {
             return Result.success(imported);
         } catch (Exception e) {
             return Result.error("导入论文失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public Result getCourseDirections(String keyword) {
+        try {
+            List<Paper> papers = directKeywordSearch(keyword);
+
+            Map<String, Object> result = new LinkedHashMap<>();
+            result.put("paperCount", papers.size());
+
+            // 提取出现最多的研究方向（venue）
+            Map<String, Long> venueCounts = papers.stream()
+                .filter(p -> p.getVenue() != null && !p.getVenue().isEmpty())
+                .collect(Collectors.groupingBy(Paper::getVenue, Collectors.counting()));
+            List<String> topVenues = venueCounts.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .limit(5)
+                .map(Map.Entry::getKey)
+                .toList();
+            result.put("directions", topVenues);
+
+            // 抽取代表性论文标题
+            List<String> sampleTitles = papers.stream()
+                .limit(5)
+                .map(Paper::getTitle)
+                .toList();
+            result.put("sampleTitles", sampleTitles);
+
+            // 论文发表的年份范围
+            if (!papers.isEmpty()) {
+                int minYear = papers.stream().mapToInt(p -> p.getYear() != null ? p.getYear() : Integer.MAX_VALUE).min().orElse(0);
+                int maxYear = papers.stream().mapToInt(p -> p.getYear() != null ? p.getYear() : 0).max().orElse(0);
+                result.put("yearRange", minYear + "-" + maxYear);
+            }
+
+            return Result.success(result);
+        } catch (Exception e) {
+            return Result.error("获取论文方向失败: " + e.getMessage());
+        }
+    }
+
+    // 各课程对应的英文学术搜索词
+    private static final Map<String, String[]> COURSE_TERMS = new LinkedHashMap<>();
+    static {
+        COURSE_TERMS.put("java",    new String[]{"Java", "Spring", "concurrency", "JVM"});
+        COURSE_TERMS.put("vue",     new String[]{"Vue", "frontend", "component", "reactive"});
+        COURSE_TERMS.put("mysql",   new String[]{"MySQL", "database", "SQL", "index", "query"});
+        COURSE_TERMS.put("数据库",   new String[]{"MySQL", "database", "SQL", "index"});
+        COURSE_TERMS.put("算法",     new String[]{"algorithm", "sorting", "graph", "hash"});
+        COURSE_TERMS.put("数据结构", new String[]{"data structure", "algorithm", "linked", "graph"});
+        COURSE_TERMS.put("英语",     new String[]{"academic", "writing", "English", "citation"});
+        COURSE_TERMS.put("学术",     new String[]{"academic", "discourse", "citation"});
+        COURSE_TERMS.put("写作",     new String[]{"writing", "academic", "rhetoric"});
+        COURSE_TERMS.put("前端",     new String[]{"frontend", "Vue", "component"});
+        COURSE_TERMS.put("后端",     new String[]{"Java", "Spring", "database"});
+    }
+
+    private List<Paper> directKeywordSearch(String keyword) {
+        List<Paper> merged = new ArrayList<>();
+        java.util.Set<Integer> seen = new java.util.HashSet<>();
+
+        if (keyword == null || keyword.isBlank()) return merged;
+
+        String lower = keyword.toLowerCase(java.util.Locale.ROOT);
+
+        // 1. 提取英文词直接搜索 (handles "Java程序设计" → "Java")
+        for (String part : keyword.split("[^A-Za-z0-9]+")) {
+            if (part.length() >= 2) searchAndMerge(part, merged, seen);
+        }
+
+        // 2. 根据关键词匹配课程领域
+        for (Map.Entry<String, String[]> entry : COURSE_TERMS.entrySet()) {
+            if (lower.contains(entry.getKey())) {
+                for (String term : entry.getValue()) {
+                    searchAndMerge(term, merged, seen);
+                }
+            }
+        }
+
+        // 3. 兜底：搜索通用学术关键词确保中文课程有结果
+        if (merged.size() < 5) {
+            for (String term : new String[]{"algorithm", "database", "Vue", "Java", "academic", "frontend"}) {
+                searchAndMerge(term, merged, seen);
+            }
+        }
+
+        return merged;
+    }
+
+    private void searchAndMerge(String term, List<Paper> merged, java.util.Set<Integer> seen) {
+        if (term == null || term.length() < 2) return;
+        QueryWrapper<Paper> w = new QueryWrapper<>();
+        w.like("title", term).or().like("abstract_text", term);
+        w.orderByDesc("citation_count");
+        w.last("LIMIT 10");
+        for (Paper p : paperMapper.selectList(w)) {
+            if (seen.add(p.getId())) merged.add(p);
         }
     }
 

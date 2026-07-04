@@ -6,4 +6,5 @@ public interface PaperLocalService {
     Result search(String keyword, Integer page, Integer size);
     Result getDetail(String paperId);
     Result importFromArxiv(String keyword, Integer maxResults);
+    Result getCourseDirections(String keyword);
 }

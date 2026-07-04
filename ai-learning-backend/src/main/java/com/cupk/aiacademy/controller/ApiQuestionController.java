@@ -4,6 +4,7 @@ import com.cupk.aiacademy.common.ApiResponse;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.service.QuestionService;
@@ -18,6 +19,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/questions")
@@ -59,5 +64,26 @@ public class ApiQuestionController {
     public ApiResponse<Void> delete(@PathVariable Long id) {
         questionService.delete(id);
         return ApiResponse.success(null, "删除成功");
+    }
+
+    @PostMapping("/extract")
+    public ApiResponse<List<QuestionRequestDTO>> extract(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam Long courseId) {
+        Integer userId = UserContext.getCurrentUserId();
+        return ApiResponse.success(questionService.extractQuestions(file, courseId, userId.longValue()));
+    }
+
+    @PostMapping("/batch")
+    public ApiResponse<Map<String, Object>> batchCreate(@RequestBody List<QuestionRequestDTO> requests) {
+        List<Map<String, Object>> items = questionService.batchCreate(requests);
+        long successCount = items.stream().filter(m -> Boolean.TRUE.equals(m.get("success"))).count();
+        long failCount = items.size() - successCount;
+        Map<String, Object> summary = new java.util.HashMap<>();
+        summary.put("total", items.size());
+        summary.put("success", successCount);
+        summary.put("fail", failCount);
+        summary.put("items", items);
+        return ApiResponse.success(summary);
     }
 }

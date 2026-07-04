@@ -115,6 +115,18 @@ export const layoutChildren = [
     component: () => import('../views/student/MyGrades.vue'),
     meta: { title: '我的成绩', icon: 'DataLine', roles: ['admin', 'student'] }
   },
+  {
+    path: 'paper-search',
+    name: 'PaperSearch',
+    component: () => import('../views/student/PaperSearch.vue'),
+    meta: { title: '论文查询', icon: 'Search', roles: ['admin', 'teacher', 'student'] }
+  },
+  {
+    path: 'knowledge-base',
+    name: 'KnowledgeBase',
+    component: () => import('../views/student/KnowledgeBase.vue'),
+    meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'] }
+  },
 
   // Admin routes
   {
