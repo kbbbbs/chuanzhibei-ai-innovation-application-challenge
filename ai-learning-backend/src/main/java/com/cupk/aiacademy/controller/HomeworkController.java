@@ -39,7 +39,7 @@ public class HomeworkController {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
+    @Autowired(required = false)
     private AuthUtils authUtils;
 
     @GetMapping("/homeworks")
@@ -104,7 +104,7 @@ public class HomeworkController {
 
         // Permission check: teacher can only modify their own homework
         AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !authUtils.isAdmin(user) && homework.getTeacherId() != null
+        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
                 && !homework.getTeacherId().equals(user.getUserId())) {
             return Result.error("403", "无权限修改此作业");
         }
@@ -130,7 +130,7 @@ public class HomeworkController {
 
         // Permission check: teacher can only delete their own homework
         AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !authUtils.isAdmin(user) && homework.getTeacherId() != null
+        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
                 && !homework.getTeacherId().equals(user.getUserId())) {
             return Result.error("403", "无权限删除此作业");
         }
@@ -161,5 +161,9 @@ public class HomeworkController {
 
     private int fixPageSize(Integer pageSize) {
         return pageSize == null || pageSize <= 0 ? 10 : pageSize;
+    }
+
+    private boolean isAdmin(AuthUtils.LoginUser user) {
+        return authUtils != null && authUtils.isAdmin(user);
     }
 }

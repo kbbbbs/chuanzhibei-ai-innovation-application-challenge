@@ -36,7 +36,7 @@ public class CourseController {
     @Autowired
     private UserMapper userMapper;
 
-    @Autowired
+    @Autowired(required = false)
     private AuthUtils authUtils;
 
     @GetMapping
@@ -94,7 +94,7 @@ public class CourseController {
 
         // Permission check: teacher can only modify their own courses
         AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !authUtils.isAdmin(user) && course.getTeacherId() != null
+        if (user != null && !isAdmin(user) && course.getTeacherId() != null
                 && !course.getTeacherId().equals(user.getUserId())) {
             return Result.error("403", "无权限修改此课程");
         }
@@ -120,7 +120,7 @@ public class CourseController {
 
         // Permission check: teacher can only delete their own courses
         AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !authUtils.isAdmin(user) && course.getTeacherId() != null
+        if (user != null && !isAdmin(user) && course.getTeacherId() != null
                 && !course.getTeacherId().equals(user.getUserId())) {
             return Result.error("403", "无权限删除此课程");
         }
@@ -159,5 +159,9 @@ public class CourseController {
             return Result.error("404", "教师用户不存在");
         }
         return null;
+    }
+
+    private boolean isAdmin(AuthUtils.LoginUser user) {
+        return authUtils != null && authUtils.isAdmin(user);
     }
 }

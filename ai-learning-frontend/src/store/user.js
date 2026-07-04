@@ -12,16 +12,16 @@ export const useUserStore = defineStore('user', {
   actions: {
     setUser(data) {
       this.token = data.token
-      this.userId = data.userId
+      this.userId = data.userId == null ? '' : String(data.userId)
       this.username = data.username
       this.nickname = data.nickname || data.username
-      this.roleCode = data.roleCode
+      this.roleCode = (data.roleCode || '').toLowerCase()
 
       localStorage.setItem('token', data.token)
-      localStorage.setItem('userId', data.userId)
+      localStorage.setItem('userId', this.userId)
       localStorage.setItem('username', data.username)
       localStorage.setItem('nickname', data.nickname || data.username)
-      localStorage.setItem('roleCode', data.roleCode)
+      localStorage.setItem('roleCode', this.roleCode)
     },
 
     logout() {
@@ -30,7 +30,11 @@ export const useUserStore = defineStore('user', {
       this.username = ''
       this.nickname = ''
       this.roleCode = ''
-      localStorage.clear()
+      localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('username')
+      localStorage.removeItem('nickname')
+      localStorage.removeItem('roleCode')
     }
   },
 

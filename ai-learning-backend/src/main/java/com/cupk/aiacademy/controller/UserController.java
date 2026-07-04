@@ -45,6 +45,7 @@ public class UserController {
 
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String username,
+                        @RequestParam(required = false) String roleCode,
                         @RequestParam(required = false) Integer status,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -55,6 +56,15 @@ public class UserController {
         }
         if (status != null) {
             queryWrapper.eq("status", status);
+        }
+        if (roleCode != null && !roleCode.trim().isEmpty()) {
+            Role role = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode.trim().toLowerCase()));
+            if (role == null) {
+                page.setRecords(java.util.List.of());
+                page.setTotal(0);
+                return Result.success(page);
+            }
+            queryWrapper.inSql("id", "select user_id from t_user_role where role_id = " + role.getId());
         }
         queryWrapper.orderByDesc("id");
         userMapper.selectPage(page, queryWrapper);
@@ -76,6 +86,7 @@ public class UserController {
     @Transactional(rollbackFor = Exception.class)
     public Result add(@Valid @RequestBody UserDto request) {
         User user = request.toEntity();
+        applyRoleCode(user, request.getRoleCode());
         Result checkResult = checkUser(user, false);
         if (checkResult != null) {
             return checkResult;
@@ -100,6 +111,7 @@ public class UserController {
     @Transactional(rollbackFor = Exception.class)
     public Result update(@PathVariable Integer id, @Valid @RequestBody UserDto request) {
         User user = request.toEntity();
+        applyRoleCode(user, request.getRoleCode());
         User oldUser = userMapper.selectById(id);
         if (oldUser == null) {
             return Result.error("404", "用户不存在");
@@ -164,6 +176,16 @@ public class UserController {
         }
         Role role = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", "student"));
         return role == null ? null : role.getId();
+    }
+
+    private void applyRoleCode(User user, String roleCode) {
+        if (user == null || roleCode == null || roleCode.trim().isEmpty() || user.getRoleId() != null) {
+            return;
+        }
+        Role role = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode.trim().toLowerCase()));
+        if (role != null) {
+            user.setRoleId(role.getId());
+        }
     }
 
     private void saveUserRole(Integer userId, Integer roleId) {

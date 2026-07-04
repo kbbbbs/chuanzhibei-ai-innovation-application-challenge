@@ -7,10 +7,12 @@ import com.cupk.aiacademy.service.ExamService;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -40,8 +42,8 @@ public class ExamController {
     }
 
     @GetMapping
-    public ApiResponse<List<ExamResponseDTO>> list() {
-        return ApiResponse.success(examService.list());
+    public ApiResponse<List<ExamResponseDTO>> list(@RequestParam(required = false) Long teacherId) {
+        return ApiResponse.success(examService.list(teacherId));
     }
 
     @PostMapping("/{id}/publish")
@@ -52,5 +54,11 @@ public class ExamController {
     @PostMapping("/{id}/close")
     public ApiResponse<ExamResponseDTO> close(@PathVariable Long id) {
         return ApiResponse.success(examService.close(id));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        examService.delete(id);
+        return ApiResponse.success(null, "删除成功");
     }
 }
