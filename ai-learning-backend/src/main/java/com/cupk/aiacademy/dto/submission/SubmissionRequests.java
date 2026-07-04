@@ -6,6 +6,7 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,6 +19,7 @@ public class SubmissionRequests {
     @Setter
     public static class StartSubmissionRequest {
         @NotBlank
+        @Size(max = 64)
         private String candidateId;
     }
 
@@ -34,6 +36,7 @@ public class SubmissionRequests {
     public static class AnswerItem {
         @NotNull
         private Long paperQuestionId;
+        @Size(max = 2000)
         private String answerContent;
     }
 
@@ -53,6 +56,7 @@ public class SubmissionRequests {
         @NotNull
         @DecimalMin("0")
         private BigDecimal score;
+        @Size(max = 1000)
         private String comment;
     }
 }

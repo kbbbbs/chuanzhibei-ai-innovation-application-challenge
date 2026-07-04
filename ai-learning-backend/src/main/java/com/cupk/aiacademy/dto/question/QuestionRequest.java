@@ -9,6 +9,8 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -19,15 +21,18 @@ import java.util.List;
 @Setter
 public class QuestionRequest {
     @NotBlank
+    @Size(max = 500)
     private String content;
     @NotNull
     private QuestionType type;
     @NotNull
     private Difficulty difficulty;
     @NotNull
-    @DecimalMin("0")
+    @DecimalMin("0.01")
     private BigDecimal score;
+    @Size(max = 200)
     private String knowledgePoint;
+    @Size(max = 1000)
     private String analysis;
     @NotNull
     private RecordStatus status;
@@ -41,10 +46,13 @@ public class QuestionRequest {
     @Setter
     public static class QuestionOptionRequest {
         @NotBlank
+        @Size(max = 8)
         private String optionKey;
         @NotBlank
+        @Size(max = 300)
         private String optionContent;
         @NotNull
+        @Positive
         private Integer sortOrder;
     }
 
@@ -52,8 +60,10 @@ public class QuestionRequest {
     @Setter
     public static class QuestionAnswerRequest {
         @NotBlank
+        @Size(max = 500)
         private String answerContent;
         @NotNull
+        @Positive
         private Integer sortOrder;
     }
 }

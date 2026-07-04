@@ -3,9 +3,11 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.ChapterDto;
 import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Chapter;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -62,7 +64,8 @@ public class ChapterController {
     }
 
     @PostMapping("/chapters")
-    public Result add(@RequestBody Chapter chapter) {
+    public Result add(@Valid @RequestBody ChapterDto request) {
+        Chapter chapter = request.toEntity();
         Result checkResult = checkChapter(chapter);
         if (checkResult != null) {
             return checkResult;
@@ -77,7 +80,8 @@ public class ChapterController {
     }
 
     @PutMapping("/chapters/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Chapter chapter) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody ChapterDto request) {
+        Chapter chapter = request.toEntity();
         if (chapterMapper.selectById(id) == null) {
             return Result.error("404", "章节不存在");
         }

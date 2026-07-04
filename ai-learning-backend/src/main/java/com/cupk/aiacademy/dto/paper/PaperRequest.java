@@ -7,6 +7,8 @@ import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -17,9 +19,12 @@ import java.util.List;
 @Setter
 public class PaperRequest {
     @NotBlank
+    @Size(max = 200)
     private String name;
+    @Size(max = 1000)
     private String description;
     @NotNull
+    @Positive
     private Integer durationMinutes;
     @NotNull
     private PaperStatus status;
@@ -35,7 +40,7 @@ public class PaperRequest {
         @NotNull
         private Integer sortOrder;
         @NotNull
-        @DecimalMin("0")
+        @DecimalMin("0.01")
         private BigDecimal score;
         @NotNull
         private Boolean requiredAnswer;
