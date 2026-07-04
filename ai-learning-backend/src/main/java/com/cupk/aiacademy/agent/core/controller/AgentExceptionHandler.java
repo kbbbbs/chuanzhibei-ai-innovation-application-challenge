@@ -1,8 +1,6 @@
-package com.cupk.aiacademy.agent.core.controller;
+package com.cupk.aiacademy.agent.controller;
 
-import com.cupk.aiacademy.agent.action.AgentActionController;
-import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
-import com.cupk.aiacademy.agent.definition.controller.AgentDefinitionController;
+import com.cupk.aiacademy.agent.exception.AgentModelCallException;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Result;
 import jakarta.validation.ConstraintViolationException;
@@ -34,7 +32,7 @@ import java.util.stream.Collectors;
  * 保证 /api/agent/** 的成功和失败响应结构一致，同时避免影响其他团队维护的全局模块。
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes = {ChatController.class, AgentDefinitionController.class, AgentActionController.class})
+@RestControllerAdvice(assignableTypes = {ChatController.class, AgentDefinitionController.class})
 public class AgentExceptionHandler {
 
     /**
