@@ -71,9 +71,11 @@ import AppEmpty from '@/components/AppEmpty.vue'
 import { getCourses, deleteCourse } from '@/utils/course'
 import { getCategories } from '@/utils/course'
 import { getRecords, getTotal } from '@/utils/apiHelpers'
+import { useUserStore } from '@/store/user'
 
 const router = useRouter()
 const { confirmDelete } = useConfirm()
+const userStore = useUserStore()
 
 const loading = ref(false)
 const deleteLoading = ref(false)
@@ -101,7 +103,13 @@ const loadCourses = async () => {
     }
     const res = await getCourses(params)
     if (res.code === '200') {
-      courses.value = getRecords(res.data)
+      const allCourses = getRecords(res.data)
+      // 过滤：只显示 teacherId 等于当前用户 ID 的课程
+      if (userStore.userId) {
+        courses.value = allCourses.filter(course => course.teacherId == userStore.userId)
+      } else {
+        courses.value = allCourses
+      }
       pagination.total = getTotal(res.data)
     }
   } catch (e) {

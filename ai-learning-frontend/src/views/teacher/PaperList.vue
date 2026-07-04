@@ -23,6 +23,7 @@
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button size="small" type="success" @click="handleCopy(row)">拷贝</el-button>
           </template>
         </el-table-column>
         <template #empty>
@@ -321,7 +322,7 @@ const handleCreate = () => {
 
 const handleEdit = async (row) => {
   if (row.status === 1) {
-    ElMessage.warning('已发布试卷不能直接修改，请新建草稿试卷或先在后端归档处理')
+    ElMessage.warning('已发布试卷不能直接修改，请拷贝试卷副本')
     return
   }
   try {
@@ -425,6 +426,40 @@ const handleDelete = async (row) => {
     // 全局已提示
   } finally {
     deleteLoading.value = false
+  }
+}
+
+const handleCopy = async (row) => {
+  try {
+    const res = await request.get(`/api/papers/${row.id}`)
+    if (res.code === '200' && res.data) {
+      const data = res.data
+      // 填充表单（标题加副本后缀，状态设为草稿）
+      Object.assign(form, {
+        id: null,
+        courseId: data.courseId,
+        teacherId: data.teacherId || currentUserId(userStore),
+        title: (data.name || '') + ' - 副本',
+        description: data.description || '',
+        duration: data.durationMinutes ?? 60,
+        totalScore: data.totalScore ?? 0,
+        status: 0,
+        selectedQuestions: (data.paperQuestions || []).map(pq => ({
+          id: pq.questionId,
+          questionText: pq.questionContent || '',
+          score: pq.score
+        }))
+      })
+      // 复用 buildRequestDTO 创建试卷
+      const copyData = buildRequestDTO()
+      const createRes = await request.post('/api/papers', copyData)
+      if (createRes.code === '200') {
+        ElMessage.success('试卷拷贝成功')
+        loadPapers()
+      }
+    }
+  } catch (e) {
+    // 全局已提示
   }
 }
 

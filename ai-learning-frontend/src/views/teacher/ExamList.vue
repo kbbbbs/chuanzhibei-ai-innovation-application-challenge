@@ -32,6 +32,7 @@
           <template #default="{ row }">
             <el-button size="small" @click="handleGrading(row)">批改</el-button>
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.status === 1" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -82,7 +83,7 @@
           <el-radio-group v-model="form.status">
             <el-radio :label="0">未开始</el-radio>
             <el-radio :label="1">进行中</el-radio>
-            <el-radio :label="2">已结束</el-radio>
+<!--            <el-radio :label="2">已结束</el-radio>-->
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -350,6 +351,22 @@ const handleDelete = async (row) => {
 
 const handleGrading = (row) => {
   router.push(`/exams/${row.id}/grading`)
+}
+
+const handleEnd = async (row) => {
+  try {
+    const confirmed = await confirmDelete('确认结束此考试？结束后将无法恢复')
+    if (!confirmed) return
+    
+    // 调用专用的 close 接口
+    const res = await request.post(`/api/exams/${row.id}/close`)
+    if (res.code === '200') {
+      ElMessage.success('考试已结束')
+      loadExams()
+    }
+  } catch (e) {
+    // 全局已提示
+  }
 }
 
 onMounted(() => {
