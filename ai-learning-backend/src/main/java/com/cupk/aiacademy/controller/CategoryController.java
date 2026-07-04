@@ -53,8 +53,8 @@ public class CategoryController {
     }
 
     @PostMapping
-    public Result add(@Valid @RequestBody CourseCategoryDto request) {
-        CourseCategory category = request.toEntity();
+    public Result add(@Valid @RequestBody(required = false) CourseCategoryDto request) {
+        CourseCategory category = request == null ? null : request.toEntity();
         Result checkResult = checkCategory(category);
         if (checkResult != null) {
             return checkResult;

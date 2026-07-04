@@ -97,3 +97,14 @@ export const submitExam = (submissionId) => {
 export const gradeSubjective = (submissionId, data) => {
   return request.post(`/api/submissions/${submissionId}/grade-subjective`, data)
 }
+
+// PDF extract & batch
+export const extractQuestions = (formData) => {
+  return request.post('/api/questions/extract', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' }
+  })
+}
+
+export const batchCreateQuestions = (data) => {
+  return request.post('/api/questions/batch', data)
+}

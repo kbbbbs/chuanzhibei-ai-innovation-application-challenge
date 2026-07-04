@@ -55,8 +55,8 @@ public class OperationLogController {
     }
 
     @PostMapping
-    public Result add(@Valid @RequestBody OperationLogDto request) {
-        OperationLog log = request.toEntity();
+    public Result add(@Valid @RequestBody(required = false) OperationLogDto request) {
+        OperationLog log = request == null ? null : request.toEntity();
         Result checkResult = checkLog(log);
         if (checkResult != null) {
             return checkResult;

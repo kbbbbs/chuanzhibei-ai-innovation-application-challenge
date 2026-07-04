@@ -67,8 +67,8 @@ public class LearningProgressController {
     }
 
     @PostMapping
-    public Result add(@Valid @RequestBody LearningProgressDto request) {
-        LearningProgress progress = request.toEntity();
+    public Result add(@RequestBody LearningProgressDto request) {
+        LearningProgress progress = request == null ? null : request.toEntity();
         Result checkResult = checkProgress(progress);
         if (checkResult != null) {
             return checkResult;
@@ -81,14 +81,14 @@ public class LearningProgressController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @Valid @RequestBody LearningProgressDto request) {
-        LearningProgress progress = request.toEntity();
-        if (progressMapper.selectById(id) == null) {
-            return Result.error("404", "学习进度不存在");
-        }
+    public Result update(@PathVariable Integer id, @RequestBody LearningProgressDto request) {
+        LearningProgress progress = request == null ? null : request.toEntity();
         Result checkResult = checkProgress(progress);
         if (checkResult != null) {
             return checkResult;
+        }
+        if (progressMapper.selectById(id) == null) {
+            return Result.error("404", "学习进度不存在");
         }
         progress.setId(id);
         progress.setUpdateTime(LocalDateTime.now());
@@ -109,13 +109,22 @@ public class LearningProgressController {
         if (progress == null) {
             return Result.error("400", "学习进度信息不能为空");
         }
-        if (progress.getClassId() == null || classMapper.selectById(progress.getClassId()) == null) {
+        if (progress.getClassId() == null || progress.getClassId() <= 0) {
+            return Result.error("400", "教学班不能为空");
+        }
+        if (progress.getStudentId() == null || progress.getStudentId() <= 0) {
+            return Result.error("400", "学生用户不能为空");
+        }
+        if (progress.getLessonId() == null || progress.getLessonId() <= 0) {
+            return Result.error("400", "课时不能为空");
+        }
+        if (classMapper.selectById(progress.getClassId()) == null) {
             return Result.error("404", "教学班不存在");
         }
-        if (progress.getStudentId() == null || userMapper.selectById(progress.getStudentId()) == null) {
+        if (userMapper.selectById(progress.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
         }
-        if (progress.getLessonId() == null || lessonMapper.selectById(progress.getLessonId()) == null) {
+        if (lessonMapper.selectById(progress.getLessonId()) == null) {
             return Result.error("404", "课时不存在");
         }
         if (progress.getProgress() != null && (progress.getProgress() < 0 || progress.getProgress() > 100)) {

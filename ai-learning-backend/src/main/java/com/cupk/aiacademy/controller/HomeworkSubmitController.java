@@ -59,8 +59,8 @@ public class HomeworkSubmitController {
     }
 
     @PostMapping
-    public Result add(@Valid @RequestBody HomeworkSubmitDto request) {
-        HomeworkSubmit submit = request.toEntity();
+    public Result add(@RequestBody HomeworkSubmitDto request) {
+        HomeworkSubmit submit = request == null ? null : request.toEntity();
         Result checkResult = checkSubmit(submit);
         if (checkResult != null) {
             return checkResult;
@@ -76,8 +76,8 @@ public class HomeworkSubmitController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkSubmitDto request) {
-        HomeworkSubmit submit = request.toEntity();
+    public Result update(@PathVariable Integer id, @RequestBody HomeworkSubmitDto request) {
+        HomeworkSubmit submit = request == null ? null : request.toEntity();
         if (submitMapper.selectById(id) == null) {
             return Result.error("404", "作业提交不存在");
         }

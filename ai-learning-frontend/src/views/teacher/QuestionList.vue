@@ -4,7 +4,10 @@
       <template #header>
         <div class="card-header">
           <span>题库管理</span>
-          <el-button type="primary" @click="handleCreate">新建题目</el-button>
+          <div class="header-actions">
+            <el-button type="success" @click="openPdfDialog">PDF上传</el-button>
+            <el-button type="primary" @click="handleCreate">新建题目</el-button>
+          </div>
         </div>
       </template>
 
@@ -127,11 +130,95 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
       </template>
     </el-dialog>
+
+    <!-- PDF Upload Dialog -->
+    <el-dialog v-model="pdfDialogVisible" title="PDF 上传提取题目" width="800px" :close-on-click-modal="false">
+      <!-- Step 1: Upload -->
+      <div v-if="pdfStep === 1">
+        <el-form label-width="100px">
+          <el-form-item label="选择课程" required>
+            <el-select v-model="pdfCourseId" placeholder="请选择课程">
+              <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="上传PDF">
+            <el-upload
+              ref="uploadRef"
+              :auto-upload="false"
+              :limit="1"
+              accept=".pdf"
+              drag
+              :on-change="handlePdfChange"
+              :on-remove="handlePdfRemove"
+            >
+              <el-icon class="el-icon--upload"><i class="el-icon-upload" /></el-icon>
+              <div class="el-upload__text">拖拽PDF文件到此处或<em>点击上传</em></div>
+              <template #tip>
+                <div class="el-upload__tip">仅支持PDF文件，大小不超过50MB</div>
+              </template>
+            </el-upload>
+          </el-form-item>
+        </el-form>
+      </div>
+
+      <!-- Step 2: Extracting -->
+      <div v-else-if="pdfStep === 2" class="extracting-wrap">
+        <el-icon class="is-loading" :size="48"><i class="el-icon-loading" /></el-icon>
+        <p class="extracting-text">正在使用 AI 解析文档，请稍候...</p>
+      </div>
+
+      <!-- Step 3: Preview -->
+      <div v-else-if="pdfStep === 3">
+        <div v-if="extractedQuestions.length > 0">
+          <el-alert :title="`共提取 ${extractedQuestions.length} 道题目，请确认后保存`" type="success" :closable="false" style="margin-bottom:16px" />
+          <el-table :data="extractedQuestions" border stripe max-height="400">
+            <el-table-column type="index" label="#" width="50" />
+            <el-table-column label="题型" width="90">
+              <template #default="{ row }">
+                <el-tag :type="tagByType(row.type)" size="small">{{ typeLabel(row.type) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="content" label="题干" show-overflow-tooltip />
+            <el-table-column label="难度" width="80">
+              <template #default="{ row }">{{ row.difficulty || 'MEDIUM' }}</template>
+            </el-table-column>
+            <el-table-column label="分值" width="70">
+              <template #default="{ row }">{{ row.score }}</template>
+            </el-table-column>
+            <el-table-column label="操作" width="70" fixed="right">
+              <template #default="{ $index }">
+                <el-button size="small" type="danger" @click="extractedQuestions.splice($index, 1)">删除</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+        </div>
+        <el-empty v-else description="未提取到任何题目" />
+      </div>
+
+      <!-- Step 4: Save Result -->
+      <div v-else-if="pdfStep === 4">
+        <el-result
+          :icon="batchResult.fail > 0 ? 'warning' : 'success'"
+          :title="`保存完成`"
+          :sub-title="`成功 ${batchResult.success} 条，失败 ${batchResult.fail} 条，共 ${batchResult.total} 条`"
+        />
+      </div>
+
+      <template #footer>
+        <el-button @click="closePdfDialog">{{ pdfStep >= 4 ? '关闭' : '取消' }}</el-button>
+        <el-button v-if="pdfStep === 1" type="primary" :disabled="!canExtract" @click="startExtract">
+          开始提取
+        </el-button>
+        <el-button v-if="pdfStep === 3 && extractedQuestions.length > 0" type="primary" :loading="batchSaving" @click="saveExtractedQuestions">
+          确认保存到题库
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
@@ -139,6 +226,7 @@ import AppEmpty from '@/components/AppEmpty.vue'
 import { getCourses } from '@/utils/course'
 import { currentUserId, enumName, getRecords, getTotal, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
+import { extractQuestions, batchCreateQuestions } from '@/api/exam'
 
 const userStore = useUserStore()
 const { confirmDelete } = useConfirm()
@@ -177,6 +265,102 @@ const form = reactive({
   difficulty: 'medium',
   score: 5
 })
+
+// ---- PDF 上传相关 ----
+const uploadRef = ref(null)
+const pdfDialogVisible = ref(false)
+const pdfStep = ref(1)
+const pdfCourseId = ref(null)
+const pdfFile = ref(null)
+const extractedQuestions = ref([])
+const batchSaving = ref(false)
+const batchResult = reactive({ total: 0, success: 0, fail: 0 })
+
+const canExtract = computed(() => pdfCourseId.value && pdfFile.value)
+const TYPE_LABEL_MAP = {
+  SINGLE_CHOICE: '单选题',
+  MULTIPLE_CHOICE: '多选题',
+  TRUE_FALSE: '判断题',
+  FILL_BLANK: '填空题',
+  SHORT_ANSWER: '简答题'
+}
+const TYPE_TAG_MAP = {
+  SINGLE_CHOICE: 'primary',
+  MULTIPLE_CHOICE: 'success',
+  TRUE_FALSE: 'warning',
+  FILL_BLANK: 'info',
+  SHORT_ANSWER: ''
+}
+
+const tagByType = (type) => TYPE_TAG_MAP[type] || ''
+const typeLabel = (type) => TYPE_LABEL_MAP[type] || type
+
+function openPdfDialog() {
+  pdfStep.value = 1
+  pdfCourseId.value = null
+  pdfFile.value = null
+  extractedQuestions.value = []
+  pdfDialogVisible.value = true
+  uploadRef.value?.clearFiles()
+}
+
+function closePdfDialog() {
+  pdfDialogVisible.value = false
+  if (pdfStep.value >= 4) {
+    loadQuestions()
+  }
+}
+
+function handlePdfChange(file) {
+  pdfFile.value = file.raw
+}
+
+function handlePdfRemove() {
+  pdfFile.value = null
+}
+
+async function startExtract() {
+  if (!canExtract.value) return
+  pdfStep.value = 2
+  try {
+    const formData = new FormData()
+    formData.append('file', pdfFile.value)
+    formData.append('courseId', pdfCourseId.value)
+    const res = await extractQuestions(formData)
+    if (res.code === '200' && res.data) {
+      extractedQuestions.value = res.data
+      pdfStep.value = 3
+    } else {
+      ElMessage.error(res.msg || '提取失败')
+      pdfStep.value = 1
+    }
+  } catch (e) {
+    ElMessage.error('提取失败，请重试')
+    pdfStep.value = 1
+  }
+}
+
+async function saveExtractedQuestions() {
+  if (extractedQuestions.value.length === 0) return
+  batchSaving.value = true
+  try {
+    const res = await batchCreateQuestions(extractedQuestions.value)
+    if (res.code === '200' && res.data) {
+      Object.assign(batchResult, {
+        total: res.data.total,
+        success: res.data.success,
+        fail: res.data.fail
+      })
+      pdfStep.value = 4
+    } else {
+      ElMessage.error(res.msg || '保存失败')
+    }
+  } catch (e) {
+    ElMessage.error('保存失败，请重试')
+  } finally {
+    batchSaving.value = false
+  }
+}
 
 const rules = {
   courseId: [{ required: true, message: '请选择课程', trigger: 'change' }],
@@ -513,6 +697,11 @@ onMounted(() => {
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
@@ -526,5 +715,16 @@ onMounted(() => {
 
 .option-input {
   flex: 1;
+}
+
+.extracting-wrap {
+  text-align: center;
+  padding: 60px 0;
+}
+
+.extracting-text {
+  margin-top: 20px;
+  font-size: 16px;
+  color: #606266;
 }
 </style>

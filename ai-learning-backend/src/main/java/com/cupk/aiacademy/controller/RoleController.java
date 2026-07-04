@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.RoleDto;
 import com.cupk.aiacademy.mapper.RoleMapper;
+import com.cupk.aiacademy.mapper.UserRoleMapper;
 import com.cupk.aiacademy.pojo.Role;
+import com.cupk.aiacademy.pojo.UserRole;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,6 +27,9 @@ import java.time.LocalDateTime;
 public class RoleController {
     @Autowired
     private RoleMapper roleMapper;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
 
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String roleName,
@@ -49,7 +54,7 @@ public class RoleController {
     @PostMapping
     public Result add(@Valid @RequestBody RoleDto request) {
         Role role = request.toEntity();
-        Result checkResult = checkRole(role);
+        Result checkResult = checkRole(role, null);
         if (checkResult != null) {
             return checkResult;
         }
@@ -66,7 +71,7 @@ public class RoleController {
         if (roleMapper.selectById(id) == null) {
             return Result.error("404", "角色不存在");
         }
-        Result checkResult = checkRole(role);
+        Result checkResult = checkRole(role, id);
         if (checkResult != null) {
             return checkResult;
         }
@@ -82,11 +87,15 @@ public class RoleController {
         if (roleMapper.selectById(id) == null) {
             return Result.error("404", "角色不存在");
         }
+        Long userCount = userRoleMapper.selectCount(new QueryWrapper<UserRole>().eq("role_id", id));
+        if (userCount > 0) {
+            return Result.error("409", "角色已被用户使用，不能删除");
+        }
         int row = roleMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
 
-    private Result checkRole(Role role) {
+    private Result checkRole(Role role, Integer excludeId) {
         if (role == null) {
             return Result.error("400", "角色信息不能为空");
         }
@@ -95,6 +104,14 @@ public class RoleController {
         }
         if (role.getRoleCode() == null || role.getRoleCode().trim().isEmpty()) {
             return Result.error("400", "角色编码不能为空");
+        }
+        QueryWrapper<Role> duplicateQuery = new QueryWrapper<>();
+        duplicateQuery.eq("role_code", role.getRoleCode().trim());
+        if (excludeId != null) {
+            duplicateQuery.ne("id", excludeId);
+        }
+        if (roleMapper.selectCount(duplicateQuery) > 0) {
+            return Result.error("409", "角色编码已存在");
         }
         return null;
     }

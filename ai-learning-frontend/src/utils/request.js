@@ -7,7 +7,9 @@ const request = axios.create({
 })
 
 request.interceptors.request.use(config => {
-  config.headers['Content-Type'] = 'application/json;charset=utf-8'
+  if (!(config.data instanceof FormData)) {
+    config.headers['Content-Type'] = 'application/json;charset=utf-8'
+  }
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = 'Bearer ' + token

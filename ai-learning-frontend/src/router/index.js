@@ -136,6 +136,18 @@ export const layoutChildren = [
     component: () => import('../views/student/IntelligentRecommendation.vue'),
     meta: { title: '智能推荐', icon: 'Aim', roles: ['admin', 'student'], requiresAuth: true }
   },
+  {
+    path: 'paper-search',
+    name: 'PaperSearch',
+    component: () => import('../views/student/PaperSearch.vue'),
+    meta: { title: '论文查询', icon: 'Search', roles: ['admin', 'teacher', 'student'] }
+  },
+  {
+    path: 'knowledge-base',
+    name: 'KnowledgeBase',
+    component: () => import('../views/student/KnowledgeBase.vue'),
+    meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'] }
+  },
 
   // Admin routes
   {

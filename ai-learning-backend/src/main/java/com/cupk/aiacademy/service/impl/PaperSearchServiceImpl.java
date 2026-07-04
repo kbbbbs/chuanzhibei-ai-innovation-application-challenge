@@ -43,6 +43,9 @@ public class PaperSearchServiceImpl implements PaperSearchService {
             }
             Response response = client.newCall(reqBuilder.build()).execute();
 
+            if (response.code() == 429) {
+                return Result.error("429", "Semantic Scholar 请求过于频繁，请稍后重试或使用 arXiv / OpenAlex 数据源");
+            }
             if (!response.isSuccessful()) {
                 return Result.error("Semantic Scholar API returned " + response.code());
             }
@@ -70,6 +73,9 @@ public class PaperSearchServiceImpl implements PaperSearchService {
             }
             Response response = client.newCall(reqBuilder.build()).execute();
 
+            if (response.code() == 429) {
+                return Result.error("429", "Semantic Scholar 请求过于频繁，请稍后重试或使用 arXiv / OpenAlex 数据源");
+            }
             if (!response.isSuccessful()) {
                 return Result.error("Semantic Scholar API returned " + response.code());
             }

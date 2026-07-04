@@ -145,6 +145,69 @@ public class WeKnoraServiceImpl implements WeKnoraService {
         return streamChat("/api/v1/agent-chat/" + sessionId, query);
     }
 
+    @Override
+    public Result createKnowledgeBase(String name, String description) {
+        try {
+            Map<String, Object> body = new LinkedHashMap<>();
+            body.put("name", name);
+            body.put("description", description);
+            return Result.success(JSON.parse(post("/api/v1/knowledge-bases", body)));
+        } catch (Exception e) {
+            log.error("WeKnora createKnowledgeBase error", e);
+            return Result.error("创建知识库失败: " + e.getMessage());
+        }
+    }
+
+    @Override
+    public String chatSync(String sessionId, String query) {
+        StringBuilder result = new StringBuilder();
+        try {
+            Map<String, Object> bodyMap = new LinkedHashMap<>();
+            bodyMap.put("query", query);
+            String jsonBody = JSON.toJSONString(bodyMap);
+
+            Request httpRequest = new Request.Builder()
+                    .url(config.getBaseUrl() + "/api/v1/knowledge-chat/" + sessionId)
+                    .header("X-API-Key", config.getApiKey())
+                    .header("Content-Type", "application/json")
+                    .post(RequestBody.create(jsonBody, JSON_TYPE))
+                    .build();
+
+            try (Response response = client.newCall(httpRequest).execute()) {
+                if (!response.isSuccessful() || response.body() == null) {
+                    throw new IOException("WeKnora " + response.code());
+                }
+
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(response.body().byteStream(), "UTF-8"));
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    if (line.startsWith("data:")) {
+                        String data = line.substring(5).trim();
+                        if ("[DONE]".equals(data)) {
+                            break;
+                        }
+                        try {
+                            Map<String, Object> parsed = JSON.parseObject(data, Map.class);
+                            Object content = parsed.get("content");
+                            if (content == null) content = parsed.get("answer");
+                            if (content == null) content = parsed.get("text");
+                            if (content != null) {
+                                result.append(content.toString());
+                            }
+                        } catch (Exception e) {
+                            result.append(data);
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("WeKnora chatSync error", e);
+            throw new RuntimeException("AI对话失败: " + e.getMessage());
+        }
+        return result.toString();
+    }
+
     private SseEmitter streamChat(String path, String query) {
         SseEmitter emitter = new SseEmitter(300_000L);
 

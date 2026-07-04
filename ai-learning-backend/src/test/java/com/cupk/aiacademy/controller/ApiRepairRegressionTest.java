@@ -33,6 +33,7 @@ import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
+import com.cupk.aiacademy.service.CourseResourceService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -135,6 +136,9 @@ class ApiRepairRegressionTest {
 
     @MockitoBean
     private GradeRecordMapper gradeRecordMapper;
+
+    @MockitoBean
+    private CourseResourceService courseResourceService;
 
     @Test
     void loginNullBodyReturnsUnifiedResult() throws Exception {

@@ -5,9 +5,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.MD5Utils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.UserDto;
+import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.mapper.UserRoleMapper;
+import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
@@ -37,6 +39,9 @@ public class UserController {
 
     @Autowired
     private UserRoleMapper userRoleMapper;
+
+    @Autowired
+    private CourseMapper courseMapper;
 
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String username,
@@ -140,6 +145,10 @@ public class UserController {
     public Result delete(@PathVariable Integer id) {
         if (userMapper.selectById(id) == null) {
             return Result.error("404", "用户不存在");
+        }
+        Long courseCount = courseMapper.selectCount(new QueryWrapper<Course>().eq("teacher_id", id));
+        if (courseCount > 0) {
+            return Result.error("409", "用户已被课程引用，不能删除");
         }
         int row = userMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();

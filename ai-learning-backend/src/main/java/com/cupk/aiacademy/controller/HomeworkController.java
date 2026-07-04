@@ -2,7 +2,9 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
@@ -95,8 +97,8 @@ public class HomeworkController {
 
     @PutMapping("/homeworks/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkDto request) {
-        Homework homework = request.toEntity();
-        if (homeworkMapper.selectById(id) == null) {
+        Homework homework = homeworkMapper.selectById(id);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
 
@@ -121,7 +123,8 @@ public class HomeworkController {
 
     @DeleteMapping("/homeworks/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (homeworkMapper.selectById(id) == null) {
+        Homework homework = homeworkMapper.selectById(id);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
 
