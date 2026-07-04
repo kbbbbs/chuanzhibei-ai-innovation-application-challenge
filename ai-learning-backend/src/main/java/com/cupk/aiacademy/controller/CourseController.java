@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.CourseDto;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Course;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -64,7 +66,8 @@ public class CourseController {
     }
 
     @PostMapping
-    public Result add(@RequestBody Course course) {
+    public Result add(@Valid @RequestBody CourseDto request) {
+        Course course = request.toEntity();
         Result checkResult = checkCourse(course);
         if (checkResult != null) {
             return checkResult;
@@ -78,7 +81,8 @@ public class CourseController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Course course) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody CourseDto request) {
+        Course course = request.toEntity();
         if (courseMapper.selectById(id) == null) {
             return Result.error("404", "课程不存在");
         }

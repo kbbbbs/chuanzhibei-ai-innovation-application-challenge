@@ -3,12 +3,14 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -74,7 +76,8 @@ public class HomeworkController {
     }
 
     @PostMapping("/homeworks")
-    public Result add(@RequestBody Homework homework) {
+    public Result add(@Valid @RequestBody HomeworkDto request) {
+        Homework homework = request.toEntity();
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -88,7 +91,8 @@ public class HomeworkController {
     }
 
     @PutMapping("/homeworks/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Homework homework) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkDto request) {
+        Homework homework = request.toEntity();
         if (homeworkMapper.selectById(id) == null) {
             return Result.error("404", "作业不存在");
         }

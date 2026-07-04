@@ -1,21 +1,26 @@
-package com.cupk.aiacademy.dto;
+// 文件: src/main/java/com/cupk/aiacademy/dto/submission/SubmissionRequests.java
+package com.cupk.aiacademy.dto.submission;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.util.List;
 
-public class SubmissionRequestsDTO {
+public class SubmissionRequests {
+
     @Getter
     @Setter
     public static class StartSubmissionRequest {
+        @NotBlank
+        @Size(max = 64)
         private String candidateId;
-        private Long studentId;
     }
 
     @Getter
@@ -31,14 +36,13 @@ public class SubmissionRequestsDTO {
     public static class AnswerItem {
         @NotNull
         private Long paperQuestionId;
+        @Size(max = 2000)
         private String answerContent;
-        private List<String> selectedOptionKeys;
     }
 
     @Getter
     @Setter
     public static class ManualGradeRequest {
-        private Long graderId;
         @NotEmpty
         @Valid
         private List<ManualGradeItem> grades;
@@ -52,6 +56,7 @@ public class SubmissionRequestsDTO {
         @NotNull
         @DecimalMin("0")
         private BigDecimal score;
+        @Size(max = 1000)
         private String comment;
     }
 }

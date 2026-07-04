@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.ClassStudentDto;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.ClassStudent;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,8 +59,9 @@ public class ClassStudentController {
     }
 
     @PostMapping
-    public Result add(@RequestBody ClassStudent classStudent) {
-        Result checkResult = checkClassStudent(classStudent, null);
+    public Result add(@Valid @RequestBody ClassStudentDto request) {
+        ClassStudent classStudent = request.toEntity();
+        Result checkResult = checkClassStudent(classStudent);
         if (checkResult != null) {
             return checkResult;
         }
@@ -68,11 +71,12 @@ public class ClassStudentController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody ClassStudent classStudent) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody ClassStudentDto request) {
+        ClassStudent classStudent = request.toEntity();
         if (classStudentMapper.selectById(id) == null) {
             return Result.error("404", "学生名单记录不存在");
         }
-        Result checkResult = checkClassStudent(classStudent, id);
+        Result checkResult = checkClassStudent(classStudent);
         if (checkResult != null) {
             return checkResult;
         }
@@ -90,29 +94,15 @@ public class ClassStudentController {
         return row > 0 ? Result.success() : Result.error();
     }
 
-    private Result checkClassStudent(ClassStudent classStudent, Integer excludeId) {
+    private Result checkClassStudent(ClassStudent classStudent) {
         if (classStudent == null) {
             return Result.error("400", "学生名单信息不能为空");
         }
-        if (classStudent.getClassId() == null || classStudent.getClassId() <= 0) {
-            return Result.error("400", "教学班不能为空");
-        }
-        if (classStudent.getStudentId() == null || classStudent.getStudentId() <= 0) {
-            return Result.error("400", "学生用户不能为空");
-        }
-        if (classMapper.selectById(classStudent.getClassId()) == null) {
+        if (classStudent.getClassId() == null || classMapper.selectById(classStudent.getClassId()) == null) {
             return Result.error("404", "教学班不存在");
         }
-        if (userMapper.selectById(classStudent.getStudentId()) == null) {
+        if (classStudent.getStudentId() == null || userMapper.selectById(classStudent.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
-        }
-        QueryWrapper<ClassStudent> duplicateQuery = new QueryWrapper<>();
-        duplicateQuery.eq("class_id", classStudent.getClassId()).eq("student_id", classStudent.getStudentId());
-        if (excludeId != null) {
-            duplicateQuery.ne("id", excludeId);
-        }
-        if (classStudentMapper.selectCount(duplicateQuery) > 0) {
-            return Result.error("409", "该学生已加入该教学班");
         }
         return null;
     }
