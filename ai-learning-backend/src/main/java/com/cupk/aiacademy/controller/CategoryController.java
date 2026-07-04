@@ -7,6 +7,7 @@ import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.CourseCategory;
+import com.cupk.aiacademy.service.CourseResourceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,11 +34,22 @@ public class CategoryController {
     @Autowired
     private CourseMapper courseMapper;
 
+    @Autowired
+    private CourseResourceService courseResourceService;
+
     @GetMapping
     public Result list() {
         QueryWrapper<CourseCategory> queryWrapper = new QueryWrapper<>();
         queryWrapper.orderByAsc("id");
         return Result.success(categoryMapper.selectList(queryWrapper));
+    }
+
+    @GetMapping("/{categoryId}/courses")
+    public Result listCourses(@PathVariable Integer categoryId,
+                              @RequestParam(required = false) Integer status,
+                              @RequestParam(defaultValue = "1") Integer pageNum,
+                              @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(courseResourceService.listCoursesByCategory(categoryId, status, pageNum, pageSize));
     }
 
     @PostMapping
