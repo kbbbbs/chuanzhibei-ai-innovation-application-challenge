@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.MD5Utils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.UserDto;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
@@ -12,6 +13,7 @@ import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -72,7 +74,8 @@ public class UserController {
 
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
-    public Result add(@RequestBody User user) {
+    public Result add(@Valid @RequestBody UserDto request) {
+        User user = request.toEntity();
         Result checkResult = checkUser(user, false);
         if (checkResult != null) {
             return checkResult;
@@ -95,7 +98,8 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
-    public Result update(@PathVariable Integer id, @RequestBody User user) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody UserDto request) {
+        User user = request.toEntity();
         User oldUser = userMapper.selectById(id);
         if (oldUser == null) {
             return Result.error("404", "用户不存在");

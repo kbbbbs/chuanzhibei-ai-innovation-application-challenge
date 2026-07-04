@@ -3,11 +3,13 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.GradeRecordDto;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.GradeRecordMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.GradeRecord;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -72,7 +74,8 @@ public class GradeRecordController {
     }
 
     @PostMapping
-    public Result add(@RequestBody GradeRecord grade) {
+    public Result add(@Valid @RequestBody GradeRecordDto request) {
+        GradeRecord grade = request.toEntity();
         Result checkResult = checkGrade(grade);
         if (checkResult != null) {
             return checkResult;
@@ -87,7 +90,8 @@ public class GradeRecordController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody GradeRecord grade) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody GradeRecordDto request) {
+        GradeRecord grade = request.toEntity();
         if (gradeMapper.selectById(id) == null) {
             return Result.error("404", "成绩记录不存在");
         }
