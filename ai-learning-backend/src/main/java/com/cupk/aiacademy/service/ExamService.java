@@ -65,8 +65,11 @@ public class ExamService {
     }
 
     @Transactional(readOnly = true)
-    public List<ExamResponseDTO> list() {
+    public List<ExamResponseDTO> list(Long teacherId) {
         QueryWrapper<ExamSession> query = new QueryWrapper<>();
+        if (teacherId != null && teacherId > 0) {
+            query.eq("teacher_id", teacherId);
+        }
         query.orderByDesc("id");
         return examSessionMapper.selectList(query).stream().map(this::toResponse).toList();
     }
@@ -82,6 +85,16 @@ public class ExamService {
         exam.setUpdateTime(LocalDateTime.now());
         examSessionMapper.updateById(exam);
         return toResponse(exam);
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        ExamSession exam = getEntityById(id);
+        ExamStatus status = ExamStatus.fromCode(exam.getStatus());
+        if (status == ExamStatus.PUBLISHED) {
+            throw new BusinessException("进行中的考试不允许删除，请先关闭");
+        }
+        examSessionMapper.deleteById(exam.getId());
     }
 
     @Transactional
@@ -106,14 +119,19 @@ public class ExamService {
     }
 
     public ExamResponseDTO toResponse(ExamSession exam) {
-        ExamPaper paper = paperService.getEntityById(toLong(exam.getPaperId()));
+        ExamPaper paper = null;
+        try {
+            paper = paperService.getEntityById(toLong(exam.getPaperId()));
+        } catch (BusinessException ignored) {
+            // 试卷可能已被删除
+        }
         ExamResponseDTO response = new ExamResponseDTO();
         response.setId(toLong(exam.getId()));
         response.setClassId(toLong(exam.getClassId()));
         response.setTeacherId(toLong(exam.getTeacherId()));
         response.setName(exam.getTitle());
         response.setPaperId(toLong(exam.getPaperId()));
-        response.setPaperName(paper.getTitle());
+        response.setPaperName(paper != null ? paper.getTitle() : "试卷已删除");
         response.setDescription(exam.getDescription());
         response.setStartTime(exam.getStartTime());
         response.setEndTime(exam.getEndTime());
@@ -127,6 +145,12 @@ public class ExamService {
     private void validateRequest(ExamRequestDTO request) {
         if (request == null) {
             throw new BusinessException("考试信息不能为空");
+        }
+        if (request.getStartTime() == null) {
+            throw new BusinessException("考试开始时间不能为空");
+        }
+        if (request.getEndTime() == null) {
+            throw new BusinessException("考试结束时间不能为空");
         }
         if (request.getEndTime().isBefore(request.getStartTime())) {
             throw new BusinessException("考试结束时间不能早于开始时间");

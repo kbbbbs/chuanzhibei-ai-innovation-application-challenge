@@ -2,13 +2,17 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.UserContext;
+import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -34,6 +38,9 @@ public class HomeworkController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired(required = false)
+    private AuthUtils authUtils;
 
     @GetMapping("/homeworks")
     public Result pages(@RequestParam(required = false) Integer classId,
@@ -74,7 +81,8 @@ public class HomeworkController {
     }
 
     @PostMapping("/homeworks")
-    public Result add(@RequestBody Homework homework) {
+    public Result add(@Valid @RequestBody HomeworkDto request) {
+        Homework homework = request.toEntity();
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -88,10 +96,20 @@ public class HomeworkController {
     }
 
     @PutMapping("/homeworks/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Homework homework) {
-        if (homeworkMapper.selectById(id) == null) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkDto request) {
+        Homework homework = homeworkMapper.selectById(id);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
+
+        // Permission check: teacher can only modify their own homework
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
+                && !homework.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限修改此作业");
+        }
+
+        homework = request.toEntity();
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -105,9 +123,18 @@ public class HomeworkController {
 
     @DeleteMapping("/homeworks/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (homeworkMapper.selectById(id) == null) {
+        Homework homework = homeworkMapper.selectById(id);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
+
+        // Permission check: teacher can only delete their own homework
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
+                && !homework.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限删除此作业");
+        }
+
         int row = homeworkMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -134,5 +161,9 @@ public class HomeworkController {
 
     private int fixPageSize(Integer pageSize) {
         return pageSize == null || pageSize <= 0 ? 10 : pageSize;
+    }
+
+    private boolean isAdmin(AuthUtils.LoginUser user) {
+        return authUtils != null && authUtils.isAdmin(user);
     }
 }

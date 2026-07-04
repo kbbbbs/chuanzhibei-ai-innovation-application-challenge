@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.RoleDto;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserRoleMapper;
 import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.UserRole;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -50,7 +52,8 @@ public class RoleController {
     }
 
     @PostMapping
-    public Result add(@RequestBody Role role) {
+    public Result add(@Valid @RequestBody RoleDto request) {
+        Role role = request.toEntity();
         Result checkResult = checkRole(role, null);
         if (checkResult != null) {
             return checkResult;
@@ -63,7 +66,8 @@ public class RoleController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Role role) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody RoleDto request) {
+        Role role = request.toEntity();
         if (roleMapper.selectById(id) == null) {
             return Result.error("404", "角色不存在");
         }

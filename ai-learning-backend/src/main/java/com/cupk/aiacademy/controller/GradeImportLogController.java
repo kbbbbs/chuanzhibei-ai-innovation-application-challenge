@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.GradeImportLogDto;
 import com.cupk.aiacademy.mapper.GradeImportLogMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.GradeImportLog;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +59,8 @@ public class GradeImportLogController {
     }
 
     @PostMapping
-    public Result add(@RequestBody GradeImportLog log) {
+    public Result add(@RequestBody GradeImportLogDto request) {
+        GradeImportLog log = request == null ? null : request.toEntity();
         Result checkResult = checkLog(log);
         if (checkResult != null) {
             return checkResult;
@@ -68,7 +71,8 @@ public class GradeImportLogController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody GradeImportLog log) {
+    public Result update(@PathVariable Integer id, @RequestBody GradeImportLogDto request) {
+        GradeImportLog log = request == null ? null : request.toEntity();
         if (logMapper.selectById(id) == null) {
             return Result.error("404", "成绩导入日志不存在");
         }

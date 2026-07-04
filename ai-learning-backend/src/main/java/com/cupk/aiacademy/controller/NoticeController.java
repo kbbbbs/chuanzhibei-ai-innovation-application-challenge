@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.NoticeDto;
 import com.cupk.aiacademy.mapper.NoticeMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Notice;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,7 +63,8 @@ public class NoticeController {
     }
 
     @PostMapping
-    public Result add(@RequestBody Notice notice) {
+    public Result add(@Valid @RequestBody NoticeDto request) {
+        Notice notice = request.toEntity();
         Result checkResult = checkNotice(notice);
         if (checkResult != null) {
             return checkResult;
@@ -73,7 +76,8 @@ public class NoticeController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody Notice notice) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody NoticeDto request) {
+        Notice notice = request.toEntity();
         if (noticeMapper.selectById(id) == null) {
             return Result.error("404", "通知不存在");
         }

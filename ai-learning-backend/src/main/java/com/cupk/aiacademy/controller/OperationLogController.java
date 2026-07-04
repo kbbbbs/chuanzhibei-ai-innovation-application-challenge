@@ -3,9 +3,11 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.OperationLogDto;
 import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.OperationLog;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -53,7 +55,8 @@ public class OperationLogController {
     }
 
     @PostMapping
-    public Result add(@RequestBody(required = false) OperationLog log) {
+    public Result add(@Valid @RequestBody(required = false) OperationLogDto request) {
+        OperationLog log = request == null ? null : request.toEntity();
         Result checkResult = checkLog(log);
         if (checkResult != null) {
             return checkResult;
@@ -64,7 +67,8 @@ public class OperationLogController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody OperationLog log) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody OperationLogDto request) {
+        OperationLog log = request.toEntity();
         if (logMapper.selectById(id) == null) {
             return Result.error("404", "操作日志不存在");
         }

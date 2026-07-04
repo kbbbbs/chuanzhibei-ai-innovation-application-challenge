@@ -2,11 +2,13 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.CourseCategoryDto;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.CourseCategory;
 import com.cupk.aiacademy.service.CourseResourceService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -51,7 +53,8 @@ public class CategoryController {
     }
 
     @PostMapping
-    public Result add(@RequestBody(required = false) CourseCategory category) {
+    public Result add(@Valid @RequestBody(required = false) CourseCategoryDto request) {
+        CourseCategory category = request == null ? null : request.toEntity();
         Result checkResult = checkCategory(category);
         if (checkResult != null) {
             return checkResult;
@@ -66,7 +69,8 @@ public class CategoryController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody CourseCategory category) {
+    public Result update(@PathVariable Integer id, @Valid @RequestBody CourseCategoryDto request) {
+        CourseCategory category = request.toEntity();
         if (categoryMapper.selectById(id) == null) {
             return Result.error("404", "分类不存在");
         }

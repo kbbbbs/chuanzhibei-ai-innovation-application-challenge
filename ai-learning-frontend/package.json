@@ -12,10 +12,12 @@
     "@element-plus/icons-vue": "^2.3.2",
     "axios": "^1.18.1",
     "element-plus": "^2.14.2",
-    "vue-router": "^4.6.4",
-    "vue": "^3.5.38"
+    "pinia": "^3.0.4",
+    "vue": "^3.5.38",
+    "vue-router": "^4.6.4"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@vitejs/plugin-vue": "^6.0.7",
     "vite": "^8.1.0"
   }

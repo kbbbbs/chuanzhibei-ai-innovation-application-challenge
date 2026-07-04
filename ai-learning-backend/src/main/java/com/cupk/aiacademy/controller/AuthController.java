@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.JwtUtils;
 import com.cupk.aiacademy.common.MD5Utils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.UserDto;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.mapper.UserRoleMapper;
@@ -11,6 +12,7 @@ import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
 import io.jsonwebtoken.Claims;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -39,7 +41,7 @@ public class AuthController {
     private JwtUtils jwtUtils;
 
     @PostMapping("/register")
-    public Result register(@RequestBody User form) {
+    public Result register(@Valid @RequestBody UserDto form) {
         if (isBlank(form.getUsername()) || isBlank(form.getPassword())) {
             return Result.error("用户名和密码不能为空");
         }
@@ -49,9 +51,14 @@ public class AuthController {
             return Result.error("用户名已存在");
         }
 
-        Role studentRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", "student"));
-        if (studentRole == null) {
-            return Result.error("学生角色未初始化");
+        String roleCode = isBlank(form.getRoleCode()) ? "student" : form.getRoleCode().trim().toLowerCase();
+        if (!"student".equals(roleCode) && !"teacher".equals(roleCode)) {
+            return Result.error("注册角色只能选择学生或教师");
+        }
+
+        Role registerRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode));
+        if (registerRole == null) {
+            return Result.error("角色未初始化: " + roleCode);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -69,14 +76,14 @@ public class AuthController {
 
         UserRole userRole = new UserRole();
         userRole.setUserId(user.getId());
-        userRole.setRoleId(studentRole.getId());
+        userRole.setRoleId(registerRole.getId());
         userRoleMapper.insert(userRole);
 
         return Result.success();
     }
 
     @PostMapping("/login")
-    public Result login(@RequestBody(required = false) User form) {
+    public Result login(@Valid @RequestBody(required = false) UserDto form) {
         if (form == null || isBlank(form.getUsername()) || isBlank(form.getPassword())) {
             return Result.error("请输入用户名和密码");
         }

@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.HomeworkSubmitDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +59,8 @@ public class HomeworkSubmitController {
     }
 
     @PostMapping
-    public Result add(@RequestBody HomeworkSubmit submit) {
+    public Result add(@RequestBody HomeworkSubmitDto request) {
+        HomeworkSubmit submit = request == null ? null : request.toEntity();
         Result checkResult = checkSubmit(submit);
         if (checkResult != null) {
             return checkResult;
@@ -73,7 +76,8 @@ public class HomeworkSubmitController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody HomeworkSubmit submit) {
+    public Result update(@PathVariable Integer id, @RequestBody HomeworkSubmitDto request) {
+        HomeworkSubmit submit = request == null ? null : request.toEntity();
         if (submitMapper.selectById(id) == null) {
             return Result.error("404", "作业提交不存在");
         }

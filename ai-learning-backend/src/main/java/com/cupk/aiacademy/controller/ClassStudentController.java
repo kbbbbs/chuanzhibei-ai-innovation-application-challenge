@@ -3,10 +3,12 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.ClassStudentDto;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.ClassStudent;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,8 +58,29 @@ public class ClassStudentController {
         return classStudent == null ? Result.error("404", "学生名单记录不存在") : Result.success(classStudent);
     }
 
+    @GetMapping("/class/{classId}")
+    public Result listByClass(@PathVariable Integer classId) {
+        if (classMapper.selectById(classId) == null) {
+            return Result.error("404", "教学班不存在");
+        }
+        QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_id", classId).orderByDesc("id");
+        return Result.success(classStudentMapper.selectList(queryWrapper));
+    }
+
+    @GetMapping("/student/{studentId}")
+    public Result listByStudent(@PathVariable Integer studentId) {
+        if (userMapper.selectById(studentId) == null) {
+            return Result.error("404", "学生用户不存在");
+        }
+        QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("student_id", studentId).orderByDesc("id");
+        return Result.success(classStudentMapper.selectList(queryWrapper));
+    }
+
     @PostMapping
-    public Result add(@RequestBody ClassStudent classStudent) {
+    public Result add(@RequestBody ClassStudentDto request) {
+        ClassStudent classStudent = request == null ? null : request.toEntity();
         Result checkResult = checkClassStudent(classStudent, null);
         if (checkResult != null) {
             return checkResult;
@@ -68,7 +91,8 @@ public class ClassStudentController {
     }
 
     @PutMapping("/{id}")
-    public Result update(@PathVariable Integer id, @RequestBody ClassStudent classStudent) {
+    public Result update(@PathVariable Integer id, @RequestBody ClassStudentDto request) {
+        ClassStudent classStudent = request == null ? null : request.toEntity();
         if (classStudentMapper.selectById(id) == null) {
             return Result.error("404", "学生名单记录不存在");
         }

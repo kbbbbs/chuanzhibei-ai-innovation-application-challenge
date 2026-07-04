@@ -1,0 +1,99 @@
+import request from '@/utils/request'
+
+// Question APIs
+export const getQuestions = (params) => {
+  return request.get('/api/questions', { params })
+}
+
+export const getQuestionById = (id) => {
+  return request.get(`/api/questions/${id}`)
+}
+
+export const createQuestion = (data) => {
+  return request.post('/api/questions', data)
+}
+
+export const updateQuestion = (id, data) => {
+  return request.put(`/api/questions/${id}`, data)
+}
+
+export const deleteQuestion = (id) => {
+  return request.delete(`/api/questions/${id}`)
+}
+
+// Paper APIs
+export const getPapers = (params) => {
+  return request.get('/api/papers', { params })
+}
+
+export const getPaperById = (id) => {
+  return request.get(`/api/papers/${id}`)
+}
+
+export const createPaper = (data) => {
+  return request.post('/api/papers', data)
+}
+
+export const updatePaper = (id, data) => {
+  return request.put(`/api/papers/${id}`, data)
+}
+
+export const deletePaper = (id) => {
+  return request.delete(`/api/papers/${id}`)
+}
+
+// Exam APIs
+export const getExams = (params) => {
+  return request.get('/api/exams', { params })
+}
+
+export const getExamById = (id) => {
+  return request.get(`/api/exams/${id}`)
+}
+
+export const createExam = (data) => {
+  return request.post('/api/exams', data)
+}
+
+export const updateExam = (id, data) => {
+  return request.put(`/api/exams/${id}`, data)
+}
+
+export const publishExam = (id) => {
+  return request.post(`/api/exams/${id}/publish`)
+}
+
+export const closeExam = (id) => {
+  return request.post(`/api/exams/${id}/close`)
+}
+
+// Submission APIs
+export const startExam = (examId, candidateId) => {
+  return request.post(`/api/exams/${examId}/submissions/start`, null, {
+    params: { candidateId }
+  })
+}
+
+export const getSubmissions = (params) => {
+  return request.get('/api/submissions', { params })
+}
+
+export const getSubmissionById = (id) => {
+  return request.get(`/api/submissions/${id}`)
+}
+
+export const getStudentSubmission = (id) => {
+  return request.get(`/api/submissions/${id}/student`)
+}
+
+export const saveAnswers = (submissionId, data) => {
+  return request.post(`/api/submissions/${submissionId}/answers`, data)
+}
+
+export const submitExam = (submissionId) => {
+  return request.post(`/api/submissions/${submissionId}/submit`)
+}
+
+export const gradeSubjective = (submissionId, data) => {
+  return request.post(`/api/submissions/${submissionId}/grade-subjective`, data)
+}
