@@ -2,7 +2,9 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
@@ -36,6 +38,9 @@ public class HomeworkController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private AuthUtils authUtils;
 
     @GetMapping("/homeworks")
     public Result pages(@RequestParam(required = false) Integer classId,
@@ -92,10 +97,19 @@ public class HomeworkController {
 
     @PutMapping("/homeworks/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkDto request) {
-        Homework homework = request.toEntity();
-        if (homeworkMapper.selectById(id) == null) {
+        Homework homework = homeworkMapper.selectById(id);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
+
+        // Permission check: teacher can only modify their own homework
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !authUtils.isAdmin(user) && homework.getTeacherId() != null
+                && !homework.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限修改此作业");
+        }
+
+        homework = request.toEntity();
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -109,9 +123,18 @@ public class HomeworkController {
 
     @DeleteMapping("/homeworks/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (homeworkMapper.selectById(id) == null) {
+        Homework homework = homeworkMapper.selectById(id);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
+
+        // Permission check: teacher can only delete their own homework
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !authUtils.isAdmin(user) && homework.getTeacherId() != null
+                && !homework.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限删除此作业");
+        }
+
         int row = homeworkMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }

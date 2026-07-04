@@ -22,9 +22,11 @@
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/store/user'
 import request from '@/utils/request.js'
 
 const router = useRouter()
+const userStore = useUserStore()
 const data = reactive({
   form: {
     username: '',
@@ -40,11 +42,7 @@ const login = () => {
 
   request.post('/auth/login', data.form).then(res => {
     if (res.code === '200') {
-      localStorage.setItem('token', res.data.token)
-      localStorage.setItem('userId', res.data.userId)
-      localStorage.setItem('username', res.data.username)
-      localStorage.setItem('nickname', res.data.nickname || res.data.username)
-      localStorage.setItem('roleCode', res.data.roleCode)
+      userStore.setUser(res.data)
       ElMessage.success('登录成功')
       router.push('/')
     }

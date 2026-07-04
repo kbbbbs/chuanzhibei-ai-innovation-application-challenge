@@ -2,7 +2,9 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.CourseDto;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
@@ -33,6 +35,9 @@ public class CourseController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private AuthUtils authUtils;
 
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String title,
@@ -82,14 +87,23 @@ public class CourseController {
 
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody CourseDto request) {
-        Course course = request.toEntity();
-        if (courseMapper.selectById(id) == null) {
+        Course course = courseMapper.selectById(id);
+        if (course == null) {
             return Result.error("404", "课程不存在");
         }
-        Result checkResult = checkCourse(course);
+
+        // Permission check: teacher can only modify their own courses
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !authUtils.isAdmin(user) && course.getTeacherId() != null
+                && !course.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限修改此课程");
+        }
+
+        Result checkResult = checkCourse(request.toEntity());
         if (checkResult != null) {
             return checkResult;
         }
+        course = request.toEntity();
         course.setId(id);
         course.setTitle(course.getTitle().trim());
         course.setUpdatedAt(LocalDateTime.now());
@@ -99,9 +113,18 @@ public class CourseController {
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (courseMapper.selectById(id) == null) {
+        Course course = courseMapper.selectById(id);
+        if (course == null) {
             return Result.error("404", "课程不存在");
         }
+
+        // Permission check: teacher can only delete their own courses
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !authUtils.isAdmin(user) && course.getTeacherId() != null
+                && !course.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限删除此课程");
+        }
+
         int row = courseMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
