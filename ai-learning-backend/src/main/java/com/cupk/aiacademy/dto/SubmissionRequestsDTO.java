@@ -1,11 +1,11 @@
-// 文件: src/main/java/com/cupk/aiacademy/dto/submission/SubmissionRequests.java
-package com.cupk.aiacademy.dto.submission;
+package com.cupk.aiacademy.dto;
 
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
 import lombok.Getter;
 import lombok.Setter;
@@ -13,7 +13,7 @@ import lombok.Setter;
 import java.math.BigDecimal;
 import java.util.List;
 
-public class SubmissionRequests {
+public class SubmissionRequestsDTO {
 
     @Getter
     @Setter
@@ -36,6 +36,9 @@ public class SubmissionRequests {
     public static class AnswerItem {
         @NotNull
         private Long paperQuestionId;
+
+        private List<String> selectedOptionKeys;
+
         @Size(max = 2000)
         private String answerContent;
     }
@@ -43,6 +46,9 @@ public class SubmissionRequests {
     @Getter
     @Setter
     public static class ManualGradeRequest {
+        @Positive
+        private Long graderId;
+
         @NotEmpty
         @Valid
         private List<ManualGradeItem> grades;
