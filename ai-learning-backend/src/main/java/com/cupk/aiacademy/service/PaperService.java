@@ -75,10 +75,26 @@ public class PaperService {
     }
 
     @Transactional(readOnly = true)
-    public List<PaperResponseDTO> list() {
+    public List<PaperResponseDTO> list(Long teacherId) {
         QueryWrapper<ExamPaper> query = new QueryWrapper<>();
+        if (teacherId != null && teacherId > 0) {
+            query.eq("teacher_id", teacherId);
+        }
         query.orderByDesc("id");
         return paperMapper.selectList(query).stream().map(this::toResponse).toList();
+    }
+
+    @Transactional
+    public void delete(Long id) {
+        ExamPaper paper = getEntityById(id);
+        PaperStatus status = PaperStatus.fromCode(paper.getStatus());
+        if (status == PaperStatus.PUBLISHED) {
+            throw new BusinessException("已发布的试卷不允许删除，请先改为草稿状态");
+        }
+        QueryWrapper<ExamPaperQuestion> deleteQuery = new QueryWrapper<>();
+        deleteQuery.eq("paper_id", paper.getId());
+        paperQuestionMapper.delete(deleteQuery);
+        paperMapper.deleteById(paper.getId());
     }
 
     @Transactional

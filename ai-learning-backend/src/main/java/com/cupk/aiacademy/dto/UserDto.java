@@ -38,6 +38,9 @@ public class UserDto {
     @Positive
     private Integer roleId;
 
+    @Size(max = 50)
+    private String roleCode;
+
     public User toEntity() {
         User user = new User();
         user.setUsername(username);

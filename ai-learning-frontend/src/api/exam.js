@@ -22,8 +22,8 @@ export const deleteQuestion = (id) => {
 }
 
 // Paper APIs
-export const getPapers = () => {
-  return request.get('/api/papers')
+export const getPapers = (params) => {
+  return request.get('/api/papers', { params })
 }
 
 export const getPaperById = (id) => {
@@ -43,8 +43,8 @@ export const deletePaper = (id) => {
 }
 
 // Exam APIs
-export const getExams = () => {
-  return request.get('/api/exams')
+export const getExams = (params) => {
+  return request.get('/api/exams', { params })
 }
 
 export const getExamById = (id) => {

@@ -2,12 +2,12 @@ import axios from 'axios'
 import { ElMessage } from 'element-plus'
 
 const request = axios.create({
-  baseURL: 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 30000,
 })
 
 request.interceptors.request.use(config => {
-  config.headers['content-Type'] = 'application/json;charset=utf-8'
+  config.headers['Content-Type'] = 'application/json;charset=utf-8'
   const token = localStorage.getItem('token')
   if (token) {
     config.headers.Authorization = 'Bearer ' + token
@@ -17,20 +17,57 @@ request.interceptors.request.use(config => {
   return Promise.reject(error)
 })
 
+function normalizeResponse(data) {
+  // 兼容考试分支 ApiResponse { success, data, message }
+  if (data && typeof data.success === 'boolean') {
+    return {
+      code: data.success ? '200' : '500',
+      msg: data.message || (data.success ? '请求成功' : '请求失败'),
+      data: data.data,
+    }
+  }
+  if (data && data.code !== undefined) {
+    return {
+      ...data,
+      code: String(data.code),
+      msg: data.msg || data.message || (String(data.code) === '200' ? '请求成功' : '请求失败'),
+    }
+  }
+  return data
+}
+
 request.interceptors.response.use(response => {
   let res = response.data
   if (typeof res === 'string') {
-    res = res ? JSON.parse(res) : res
+    try {
+      res = res ? JSON.parse(res) : res
+    } catch {
+      return res
+    }
   }
-  if (res.code && res.code !== '200') {
+
+  res = normalizeResponse(res)
+
+  if (res && res.code && res.code !== '200') {
     ElMessage.error(res.msg || '请求失败')
   }
   return res
 }, error => {
-  if (error.response && error.response.status === 401) {
-    ElMessage.error('登录已过期')
+  const status = error.response?.status
+  if (status === 401) {
+    ElMessage.error('登录已过期，请重新登录')
+    localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    localStorage.removeItem('username')
+    localStorage.removeItem('nickname')
+    localStorage.removeItem('roleCode')
+    window.location.href = '/login'
+  } else if (status === 403) {
+    ElMessage.error('无权限访问该资源')
+  } else if (status >= 500) {
+    ElMessage.error('服务器异常，请稍后重试')
   } else {
-    ElMessage.error('接口请求失败')
+    ElMessage.error(error.message || '网络请求失败')
   }
   return Promise.reject(error)
 })

@@ -55,8 +55,9 @@ public class SubmissionController {
     @GetMapping("/api/submissions")
     public ApiResponse<List<SubmissionResponseDTO>> list(
             @RequestParam(required = false) Long examId,
-            @RequestParam(required = false) String candidateId) {
-        return ApiResponse.success(submissionService.list(examId, candidateId));
+            @RequestParam(required = false) String candidateId,
+            @RequestParam(required = false) Long studentId) {
+        return ApiResponse.success(submissionService.list(examId, candidateId, studentId));
     }
 
     @PostMapping("/api/submissions/{id}/grade-subjective")

@@ -1,6 +1,6 @@
 <template>
   <el-container class="layout-container">
-    <el-aside width="200px" class="layout-aside">
+    <el-aside v-if="userStore.isLoggedIn" width="200px" class="layout-aside">
       <div class="logo">EduLoop 智教云环</div>
       <el-menu
         :default-active="activeMenu"
@@ -8,7 +8,7 @@
         class="el-menu-vertical"
       >
         <template v-for="route in menuRoutes" :key="route.path">
-          <el-menu-item :index="route.path" v-if="!route.meta.hidden">
+          <el-menu-item :index="resolveMenuPath(route)" v-if="!route.meta.hidden">
             <el-icon><component :is="route.meta.icon" /></el-icon>
             <span>{{ route.meta.title }}</span>
           </el-menu-item>
@@ -18,10 +18,13 @@
 
     <el-container>
       <el-header class="layout-header">
-        <el-breadcrumb separator="/">
-          <el-breadcrumb-item>首页</el-breadcrumb-item>
-          <el-breadcrumb-item v-if="currentRoute.meta.title">{{ currentRoute.meta.title }}</el-breadcrumb-item>
-        </el-breadcrumb>
+        <div class="header-brand">
+          <span class="header-title">AI智学平台</span>
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item>首页</el-breadcrumb-item>
+            <el-breadcrumb-item v-if="currentRoute.meta.title">{{ currentRoute.meta.title }}</el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
         <el-dropdown @command="handleCommand">
           <span class="user-dropdown">
             <el-icon><User /></el-icon>
@@ -46,6 +49,7 @@
 import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
+import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
 
 const router = useRouter()
@@ -53,16 +57,19 @@ const route = useRoute()
 const userStore = useUserStore()
 
 const currentRoute = computed(() => route)
-const activeMenu = computed(() => route.path)
+const resolveMenuPath = (routeRecord) => `/${routeRecord.path}`.replace(/\/+/g, '/')
+
+const activeMenu = computed(() => {
+  const firstSegment = route.path.split('/').filter(Boolean)[0]
+  return firstSegment ? `/${firstSegment}` : '/home'
+})
 
 // Filter menu routes based on user role
 const menuRoutes = computed(() => {
-  const allRoutes = router.getRoutes()
-  const layoutChildren = allRoutes.find(r => r.path === '/')?.children || []
-
   return layoutChildren.filter(route => {
     if (route.meta?.hidden) return false
     if (!route.meta?.roles) return true
+    if (userStore.roleCode === 'admin') return true
     return route.meta.roles.includes(userStore.roleCode)
   })
 })
@@ -103,6 +110,18 @@ const handleCommand = (command) => {
   background: #FFFFFF;
   border-bottom: 1px solid #E7E1D7;
   padding: 0 20px;
+}
+
+.header-brand {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1F2421;
 }
 
 .user-dropdown {
