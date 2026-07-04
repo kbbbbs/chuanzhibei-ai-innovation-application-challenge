@@ -73,6 +73,8 @@ public class QuestionService {
             QuestionType type,
             Difficulty difficulty,
             RecordStatus status,
+            Long courseId,
+            Long teacherId,
             int page,
             int size) {
         int pageIndex = Math.max(page, 0);
@@ -87,6 +89,12 @@ public class QuestionService {
         }
         if (status != null) {
             query.eq("status", status.getCode());
+        }
+        if (courseId != null && courseId > 0) {
+            query.eq("course_id", courseId);
+        }
+        if (teacherId != null && teacherId > 0) {
+            query.eq("teacher_id", teacherId);
         }
         query.orderByDesc("id");
         questionMapper.selectPage(mpPage, query);

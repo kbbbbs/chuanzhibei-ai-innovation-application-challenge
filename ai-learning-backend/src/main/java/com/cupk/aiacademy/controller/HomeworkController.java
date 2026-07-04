@@ -37,6 +37,9 @@ public class HomeworkController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired(required = false)
+    private AuthUtils authUtils;
+
     @GetMapping("/homeworks")
     public Result pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer teacherId,
@@ -96,6 +99,15 @@ public class HomeworkController {
         if (homeworkMapper.selectById(id) == null) {
             return Result.error("404", "作业不存在");
         }
+
+        // Permission check: teacher can only modify their own homework
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
+                && !homework.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限修改此作业");
+        }
+
+        homework = request.toEntity();
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -112,6 +124,14 @@ public class HomeworkController {
         if (homeworkMapper.selectById(id) == null) {
             return Result.error("404", "作业不存在");
         }
+
+        // Permission check: teacher can only delete their own homework
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
+                && !homework.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限删除此作业");
+        }
+
         int row = homeworkMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -138,5 +158,9 @@ public class HomeworkController {
 
     private int fixPageSize(Integer pageSize) {
         return pageSize == null || pageSize <= 0 ? 10 : pageSize;
+    }
+
+    private boolean isAdmin(AuthUtils.LoginUser user) {
+        return authUtils != null && authUtils.isAdmin(user);
     }
 }

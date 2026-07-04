@@ -15,6 +15,7 @@ import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.LearningProgress;
 import com.cupk.aiacademy.pojo.Lesson;
 import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.CourseResourceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -55,6 +56,9 @@ public class CourseResourceController {
 
     @Autowired
     private AuthUtils authUtils;
+
+    @Autowired
+    private CourseResourceService courseResourceService;
 
     @GetMapping("/courses/{id}/resource-tree")
     public Result resourceTree(@PathVariable Integer id) {
@@ -190,73 +194,16 @@ public class CourseResourceController {
         if (loginUser == null) {
             return Result.error("401", "登录状态已失效");
         }
-        if (!authUtils.isStudent(loginUser)) {
-            return Result.error("403", "只有学生可以更新学习进度");
+        if (form == null) {
+            return Result.error("400", "学习进度信息不能为空");
         }
-        if (form == null || form.getClassId() == null || form.getClassId() <= 0) {
-            return Result.error("400", "教学班不能为空");
-        }
-        Integer progressValue = form.getProgress() == null ? 0 : form.getProgress();
-        Integer learnedSeconds = form.getLearnedSeconds() == null ? 0 : form.getLearnedSeconds();
-        Integer lastPosition = form.getLastPosition() == null ? 0 : form.getLastPosition();
-        if (progressValue < 0 || progressValue > 100) {
-            return Result.error("400", "学习进度应在0到100之间");
-        }
-        if (learnedSeconds < 0 || lastPosition < 0) {
-            return Result.error("400", "学习时长和播放位置不能小于0");
-        }
-
-        TeachingClass teachingClass = teachingClassMapper.selectById(form.getClassId());
-        if (teachingClass == null) {
-            return Result.error("404", "教学班不存在");
-        }
-        Lesson lesson = lessonMapper.selectById(lessonId);
-        if (lesson == null) {
-            return Result.error("404", "课时不存在");
-        }
-        Chapter chapter = chapterMapper.selectById(lesson.getChapterId());
-        if (chapter == null || !teachingClass.getCourseId().equals(chapter.getCourseId())) {
-            return Result.error("400", "课时不属于该教学班课程");
-        }
-
-        QueryWrapper<ClassStudent> classStudentQuery = new QueryWrapper<>();
-        classStudentQuery.eq("class_id", form.getClassId())
-                .eq("student_id", loginUser.getUserId())
-                .eq("status", 1);
-        if (classStudentMapper.selectCount(classStudentQuery) <= 0) {
-            return Result.error("403", "学生未加入该教学班");
-        }
-
-        QueryWrapper<LearningProgress> progressQuery = new QueryWrapper<>();
-        progressQuery.eq("class_id", form.getClassId())
-                .eq("student_id", loginUser.getUserId())
-                .eq("lesson_id", lessonId)
-                .orderByDesc("id");
-        List<LearningProgress> oldProgressList = learningProgressMapper.selectList(progressQuery);
-
-        LocalDateTime now = LocalDateTime.now();
-        LearningProgress progress;
-        if (oldProgressList.isEmpty()) {
-            progress = new LearningProgress();
-            progress.setClassId(form.getClassId());
-            progress.setStudentId(loginUser.getUserId());
-            progress.setLessonId(lessonId);
-            progress.setCreateTime(now);
-        } else {
-            progress = oldProgressList.get(0);
-        }
-        progress.setProgress(progressValue);
-        progress.setLearnedSeconds(learnedSeconds);
-        progress.setLastPosition(lastPosition);
-        progress.setLastLearnTime(now);
-        progress.setUpdateTime(now);
-
-        if (progress.getId() == null) {
-            learningProgressMapper.insert(progress);
-        } else {
-            learningProgressMapper.updateById(progress);
-        }
-        return Result.success(progress);
+        return Result.success(courseResourceService.upsertLessonProgress(
+                lessonId,
+                form.getClassId(),
+                form.getProgress(),
+                form.getLearnedSeconds(),
+                form.getLastPosition(),
+                loginUser));
     }
 
     private AuthUtils.LoginUser parseLoginUser(String authorization) {

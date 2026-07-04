@@ -48,9 +48,11 @@ public class ApiQuestionController {
             @RequestParam(required = false) QuestionType type,
             @RequestParam(required = false) Difficulty difficulty,
             @RequestParam(required = false) RecordStatus status,
+            @RequestParam(required = false) Long courseId,
+            @RequestParam(required = false) Long teacherId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.success(questionService.list(type, difficulty, status, page, size));
+        return ApiResponse.success(questionService.list(type, difficulty, status, courseId, teacherId, page, size));
     }
 
     @DeleteMapping("/{id}")

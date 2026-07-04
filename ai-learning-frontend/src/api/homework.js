@@ -1,4 +1,5 @@
 import request from '@/utils/request'
+import { formatLocalDateTime } from '@/utils/apiHelpers'
 
 // Homework APIs
 export const getHomeworks = (params) => {
@@ -46,6 +47,6 @@ export const gradeHomework = (id, data) => {
   return request.put(`/homework-submits/${id}`, {
     ...data,
     gradeStatus: 1,
-    gradeTime: new Date().toISOString()
+    gradeTime: formatLocalDateTime(new Date())
   })
 }

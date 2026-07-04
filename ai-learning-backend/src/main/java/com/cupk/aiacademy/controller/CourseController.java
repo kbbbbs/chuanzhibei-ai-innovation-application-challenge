@@ -8,6 +8,7 @@ import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.service.CourseResourceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +35,12 @@ public class CourseController {
 
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired(required = false)
+    private AuthUtils authUtils;
+
+    @Autowired
+    private CourseResourceService courseResourceService;
 
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String title,
@@ -58,6 +66,18 @@ public class CourseController {
         courseMapper.selectPage(page, queryWrapper);
         return Result.success(page);
     }
+
+    @GetMapping("/my")
+    public Result myCourses(@RequestHeader(value = "Authorization", required = false) String authorization,
+                            @RequestParam(defaultValue = "1") Integer pageNum,
+                            @RequestParam(defaultValue = "10") Integer pageSize) {
+        AuthUtils.LoginUser loginUser = parseLoginUser(authorization);
+        if (loginUser == null) {
+            return Result.error("401", "登录状态已失效");
+        }
+        return Result.success(courseResourceService.listMyCourses(loginUser, pageNum, pageSize));
+    }
+
 
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
@@ -102,6 +122,14 @@ public class CourseController {
         if (courseMapper.selectById(id) == null) {
             return Result.error("404", "课程不存在");
         }
+
+        // Permission check: teacher can only delete their own courses
+        AuthUtils.LoginUser user = UserContext.get();
+        if (user != null && !isAdmin(user) && course.getTeacherId() != null
+                && !course.getTeacherId().equals(user.getUserId())) {
+            return Result.error("403", "无权限删除此课程");
+        }
+
         int row = courseMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -117,6 +145,46 @@ public class CourseController {
         course.setUpdatedAt(LocalDateTime.now());
         int row = courseMapper.updateById(course);
         return row > 0 ? Result.success() : Result.error();
+    }
+
+    @GetMapping("/{courseId}/my-grade-records")
+    public Result myGradeRecords(@PathVariable Integer courseId,
+                                 @RequestHeader(value = "Authorization", required = false) String authorization,
+                                 @RequestParam(defaultValue = "") String sourceType,
+                                 @RequestParam(defaultValue = "1") Integer pageNum,
+                                 @RequestParam(defaultValue = "10") Integer pageSize) {
+        AuthUtils.LoginUser loginUser = parseLoginUser(authorization);
+        if (loginUser == null) {
+            return Result.error("401", "登录状态已失效");
+        }
+        return Result.success(courseResourceService.listMyGradeRecords(courseId, loginUser, sourceType, pageNum, pageSize));
+    }
+
+    @GetMapping("/{courseId}/exam-papers")
+    public Result examPapers(@PathVariable Integer courseId,
+                             @RequestParam(required = false) Integer status,
+                             @RequestParam(defaultValue = "1") Integer pageNum,
+                             @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(courseResourceService.listCourseExamPapers(courseId, status, pageNum, pageSize));
+    }
+
+    @GetMapping("/{courseId}/my-learning-progress")
+    public Result myLearningProgress(@PathVariable Integer courseId,
+                                     @RequestHeader(value = "Authorization", required = false) String authorization,
+                                     @RequestParam(required = false) Integer classId) {
+        AuthUtils.LoginUser loginUser = parseLoginUser(authorization);
+        if (loginUser == null) {
+            return Result.error("401", "登录状态已失效");
+        }
+        return Result.success(courseResourceService.listMyCourseLearningProgress(courseId, classId, loginUser));
+    }
+
+    private AuthUtils.LoginUser parseLoginUser(String authorization) {
+        try {
+            return authUtils.requireLogin(authorization);
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private Result checkCourse(Course course) {
@@ -136,5 +204,9 @@ public class CourseController {
             return Result.error("404", "教师用户不存在");
         }
         return null;
+    }
+
+    private boolean isAdmin(AuthUtils.LoginUser user) {
+        return authUtils != null && authUtils.isAdmin(user);
     }
 }

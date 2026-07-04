@@ -58,6 +58,26 @@ public class ClassStudentController {
         return classStudent == null ? Result.error("404", "学生名单记录不存在") : Result.success(classStudent);
     }
 
+    @GetMapping("/class/{classId}")
+    public Result listByClass(@PathVariable Integer classId) {
+        if (classMapper.selectById(classId) == null) {
+            return Result.error("404", "教学班不存在");
+        }
+        QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("class_id", classId).orderByDesc("id");
+        return Result.success(classStudentMapper.selectList(queryWrapper));
+    }
+
+    @GetMapping("/student/{studentId}")
+    public Result listByStudent(@PathVariable Integer studentId) {
+        if (userMapper.selectById(studentId) == null) {
+            return Result.error("404", "学生用户不存在");
+        }
+        QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("student_id", studentId).orderByDesc("id");
+        return Result.success(classStudentMapper.selectList(queryWrapper));
+    }
+
     @PostMapping
     public Result add(@Valid @RequestBody ClassStudentDto request) {
         ClassStudent classStudent = request.toEntity();

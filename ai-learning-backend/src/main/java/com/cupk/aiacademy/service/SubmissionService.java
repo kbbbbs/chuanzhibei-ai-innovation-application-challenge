@@ -226,12 +226,20 @@ public class SubmissionService {
 
     @Transactional(readOnly = true)
     public List<SubmissionResponseDTO> list(Long examId, String candidateId) {
+        return list(examId, candidateId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
         if (examId != null) {
             query.eq("exam_session_id", toInt(examId, "考试ID"));
         }
         if (!isBlank(candidateId)) {
             query.eq("candidate_id", candidateId);
+        }
+        if (studentId != null) {
+            query.eq("student_id", toInt(studentId, "学生ID"));
         }
         query.orderByDesc("id");
         return recordMapper.selectList(query).stream().map(this::toResponse).toList();

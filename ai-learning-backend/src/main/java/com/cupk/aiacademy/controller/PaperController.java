@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
@@ -41,8 +42,14 @@ public class PaperController {
     }
 
     @GetMapping
-    public ApiResponse<List<PaperResponseDTO>> list() {
-        return ApiResponse.success(paperService.list());
+    public ApiResponse<List<PaperResponseDTO>> list(@RequestParam(required = false) Long teacherId) {
+        return ApiResponse.success(paperService.list(teacherId));
+    }
+
+    @DeleteMapping("/{id}")
+    public ApiResponse<Void> delete(@PathVariable Long id) {
+        paperService.delete(id);
+        return ApiResponse.success(null, "删除成功");
     }
 
     @DeleteMapping("/{id}/questions/{paperQuestionId}")

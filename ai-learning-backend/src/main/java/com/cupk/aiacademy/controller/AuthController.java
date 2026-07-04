@@ -49,9 +49,14 @@ public class AuthController {
             return Result.error("用户名已存在");
         }
 
-        Role studentRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", "student"));
-        if (studentRole == null) {
-            return Result.error("学生角色未初始化");
+        String roleCode = isBlank(form.getRoleCode()) ? "student" : form.getRoleCode().trim().toLowerCase();
+        if (!"student".equals(roleCode) && !"teacher".equals(roleCode)) {
+            return Result.error("注册角色只能选择学生或教师");
+        }
+
+        Role registerRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode));
+        if (registerRole == null) {
+            return Result.error("角色未初始化: " + roleCode);
         }
 
         LocalDateTime now = LocalDateTime.now();
@@ -69,7 +74,7 @@ public class AuthController {
 
         UserRole userRole = new UserRole();
         userRole.setUserId(user.getId());
-        userRole.setRoleId(studentRole.getId());
+        userRole.setRoleId(registerRole.getId());
         userRoleMapper.insert(userRole);
 
         return Result.success();

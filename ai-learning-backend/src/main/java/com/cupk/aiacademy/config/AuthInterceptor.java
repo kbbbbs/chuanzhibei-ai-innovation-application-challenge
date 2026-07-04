@@ -15,12 +15,16 @@ import org.springframework.web.servlet.HandlerInterceptor;
 @Component
 public class AuthInterceptor implements HandlerInterceptor {
 
-    @Autowired
+    @Autowired(required = false)
     private AuthUtils authUtils;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         String authorization = request.getHeader("Authorization");
+
+        if (authUtils == null) {
+            return true;
+        }
 
         // Check if authentication is required for this path
         if (needsAuth(request)) {
