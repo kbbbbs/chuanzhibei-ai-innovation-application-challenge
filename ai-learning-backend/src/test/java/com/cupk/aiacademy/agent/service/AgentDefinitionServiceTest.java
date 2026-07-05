@@ -4,6 +4,7 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.dto.AgentCreateRequest;
 import com.cupk.aiacademy.mapper.AgentDefinitionMapper;
 import com.cupk.aiacademy.pojo.AgentDefinition;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -41,6 +42,8 @@ class AgentDefinitionServiceTest {
         verify(agentDefinitionMapper).insert(captor.capture());
         assertEquals("deepseek-test", captor.getValue().getModel());
         assertEquals(new BigDecimal("0.30"), captor.getValue().getTemperature());
+        assertEquals("[\"kb-java\"]", captor.getValue().getKnowledgeBaseIds());
+        assertEquals("[\"paper_search\"]", captor.getValue().getEnabledTools());
     }
 
     @Test
@@ -52,6 +55,30 @@ class AgentDefinitionServiceTest {
                 () -> service.createDefinition(request(1)));
 
         assertEquals("Agent 编码已存在", exception.getMessage());
+    }
+
+    @Test
+    void createDefinitionRejectsInvalidKnowledgeBaseIds() {
+        AgentDefinitionService service = newService();
+        AgentCreateRequest request = request(1);
+        request.setKnowledgeBaseIds("not-json");
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.createDefinition(request));
+
+        assertEquals("knowledgeBaseIds 必须是 JSON 数组", exception.getMessage());
+    }
+
+    @Test
+    void createDefinitionRejectsNonArrayEnabledTools() {
+        AgentDefinitionService service = newService();
+        AgentCreateRequest request = request(1);
+        request.setEnabledTools("{\"tool\":\"paper_search\"}");
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.createDefinition(request));
+
+        assertEquals("enabledTools 必须是 JSON 数组", exception.getMessage());
     }
 
     @Test
@@ -77,7 +104,7 @@ class AgentDefinitionServiceTest {
     }
 
     private AgentDefinitionService newService() {
-        return new AgentDefinitionService(agentDefinitionMapper);
+        return new AgentDefinitionService(agentDefinitionMapper, new ObjectMapper());
     }
 
     private AgentCreateRequest request(Integer status) {

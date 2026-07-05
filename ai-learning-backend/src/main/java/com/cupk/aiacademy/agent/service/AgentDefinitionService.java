@@ -1,6 +1,9 @@
 package com.cupk.aiacademy.agent.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.dto.AgentCreateRequest;
 import com.cupk.aiacademy.mapper.AgentDefinitionMapper;
@@ -22,9 +25,11 @@ public class AgentDefinitionService {
     private static final int INACTIVE_STATUS = 0;
 
     private final AgentDefinitionMapper agentDefinitionMapper;
+    private final ObjectMapper objectMapper;
 
-    public AgentDefinitionService(AgentDefinitionMapper agentDefinitionMapper) {
+    public AgentDefinitionService(AgentDefinitionMapper agentDefinitionMapper, ObjectMapper objectMapper) {
         this.agentDefinitionMapper = agentDefinitionMapper;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional(readOnly = true)
@@ -96,6 +101,8 @@ public class AgentDefinitionService {
         if (request.getStatus() != null) {
             normalizeStatus(request.getStatus());
         }
+        normalizeJsonArray(request.getKnowledgeBaseIds(), "knowledgeBaseIds");
+        normalizeJsonArray(request.getEnabledTools(), "enabledTools");
     }
 
     private void applyRequest(AgentDefinition agent, AgentCreateRequest request) {
@@ -105,8 +112,8 @@ public class AgentDefinitionService {
         agent.setSystemPrompt(trimToNull(request.getSystemPrompt()));
         agent.setModel(trimToNull(request.getModel()));
         agent.setTemperature(request.getTemperature());
-        agent.setKnowledgeBaseIds(trimToNull(request.getKnowledgeBaseIds()));
-        agent.setEnabledTools(trimToNull(request.getEnabledTools()));
+        agent.setKnowledgeBaseIds(normalizeJsonArray(request.getKnowledgeBaseIds(), "knowledgeBaseIds"));
+        agent.setEnabledTools(normalizeJsonArray(request.getEnabledTools(), "enabledTools"));
         agent.setStatus(request.getStatus() == null ? ACTIVE_STATUS : normalizeStatus(request.getStatus()));
     }
 
@@ -144,6 +151,21 @@ public class AgentDefinitionService {
 
     private String trimToNull(String value) {
         return isBlank(value) ? null : value.trim();
+    }
+
+    private String normalizeJsonArray(String value, String fieldName) {
+        if (isBlank(value)) {
+            return null;
+        }
+        try {
+            JsonNode jsonNode = objectMapper.readTree(value.trim());
+            if (!jsonNode.isArray()) {
+                throw new BusinessException(fieldName + " 必须是 JSON 数组");
+            }
+            return objectMapper.writeValueAsString(jsonNode);
+        } catch (JsonProcessingException e) {
+            throw new BusinessException(fieldName + " 必须是 JSON 数组");
+        }
     }
 
     private boolean isBlank(String value) {
