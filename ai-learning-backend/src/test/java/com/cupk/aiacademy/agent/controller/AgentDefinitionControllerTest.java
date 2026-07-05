@@ -13,14 +13,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -111,6 +116,41 @@ class AgentDefinitionControllerTest {
                 .andExpect(jsonPath("$.msg").value("只有管理员可以维护 Agent 定义"));
 
         verify(agentDefinitionService, never()).updateStatus(eq(1), eq(0));
+    }
+
+    @Test
+    void uploadMarkdownDocumentReturnsResultShape() throws Exception {
+        loginAs("admin");
+        when(agentDefinitionService.uploadMarkdownDocument(eq(1), eq("kb-java"), any(MultipartFile.class)))
+                .thenReturn(Map.of("agentId", 1, "knowledgeBaseId", "kb-java", "fileName", "intro.md"));
+        MockMultipartFile file = new MockMultipartFile("file", "intro.md",
+                "text/markdown", "# Java".getBytes());
+
+        mockMvc.perform(multipart("/api/agent/definitions/1/knowledge-documents")
+                        .file(file)
+                        .param("knowledgeBaseId", "kb-java"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.agentId").value(1))
+                .andExpect(jsonPath("$.data.knowledgeBaseId").value("kb-java"))
+                .andExpect(jsonPath("$.data.fileName").value("intro.md"));
+    }
+
+    @Test
+    void uploadMarkdownDocumentRejectsNonAdmin() throws Exception {
+        loginAs("student");
+        MockMultipartFile file = new MockMultipartFile("file", "intro.md",
+                "text/markdown", "# Java".getBytes());
+
+        mockMvc.perform(multipart("/api/agent/definitions/1/knowledge-documents")
+                        .file(file)
+                        .param("knowledgeBaseId", "kb-java"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("403"))
+                .andExpect(jsonPath("$.msg").value("只有管理员可以维护 Agent 定义"));
+
+        verify(agentDefinitionService, never())
+                .uploadMarkdownDocument(eq(1), eq("kb-java"), any(MultipartFile.class));
     }
 
     private void loginAs(String roleCode) {
