@@ -1,8 +1,6 @@
 import request from '@/utils/request'
 import { ElMessage } from 'element-plus'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
-
 // ==================== 知识库 ====================
 
 export function listKnowledgeBases() {
@@ -45,13 +43,16 @@ export function uploadFile(kbId, file) {
 
 // ==================== SSE 流式问答 ====================
 
-export function weKnoraStreamChat(mode, sessionId, query, callbacks = {}) {
+export function weKnoraStreamChat(mode, sessionId, query, knowledgeBaseIds, callbacks = {}) {
   const token = localStorage.getItem('token')
   const endpoint = mode === 'agent'
     ? `/api/weknora/agent-chat/${sessionId}`
     : `/api/weknora/knowledge-chat/${sessionId}`
 
-  const url = `${API_BASE}${endpoint}?query=${encodeURIComponent(query)}`
+  let url = `${endpoint}?query=${encodeURIComponent(query)}`
+  if (knowledgeBaseIds && knowledgeBaseIds.length > 0) {
+    url += `&knowledgeBaseIds=${encodeURIComponent(knowledgeBaseIds.join(','))}`
+  }
 
   fetch(url, {
     method: 'POST',

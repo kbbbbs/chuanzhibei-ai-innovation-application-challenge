@@ -15,7 +15,6 @@
             <el-option label="本地数据库" value="local" />
             <el-option label="arXiv" value="arxiv" />
             <el-option label="OpenAlex" value="openalex" />
-            <el-option label="Semantic Scholar" value="semantic_scholar" />
           </el-select>
         </el-form-item>
         <el-form-item>
@@ -54,9 +53,24 @@
     </el-card>
 
     <el-card style="margin-top: 16px" v-loading="loading">
-      <el-table :data="papers" border stripe>
+      <div v-if="hasSearched && total === 0 && !loading" class="search-empty">
+        <template v-if="searchForm.source !== 'local' && isChinese(searchForm.keyword)">
+          「{{ searchForm.keyword }}」是中文关键词，{{ sourceLabel(searchForm.source) }} 为英文论文库，中文检索结果有限。
+          <el-button type="primary" link @click="switchToLocal">切换到本地数据库</el-button>
+          <span style="margin:0 8px;color:#c0c4cc">|</span>
+          或尝试英文关键词，如 Machine Learning / Deep Learning / Neural Network
+        </template>
+        <template v-else-if="searchForm.source !== 'local'">
+          「{{ searchForm.keyword }}」在 {{ sourceLabel(searchForm.source) }} 中未找到结果，建议尝试其他来源或更换关键词。
+        </template>
+        <template v-else>
+          本地数据库中未找到「{{ searchForm.keyword }}」相关论文，可从 arXiv 或 OpenAlex 导入论文到本地。
+        </template>
+      </div>
+
+      <el-table :data="papers" border stripe v-if="!hasSearched || total > 0">
         <template #empty>
-          <AppEmpty v-if="!loading" description="请搜索论文关键词" />
+          <AppEmpty v-if="!loading && !hasSearched" description="请输入关键词搜索论文" />
         </template>
         <el-table-column prop="title" label="论文标题" min-width="280" show-overflow-tooltip />
         <el-table-column label="作者" min-width="160" show-overflow-tooltip>
@@ -71,12 +85,12 @@
           </template>
         </el-table-column>
         <el-table-column prop="venue" label="来源" width="160" show-overflow-tooltip />
-        <el-table-column label="操作" width="120" fixed="right">
+        <el-table-column label="操作" width="150" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handleDetail(row)">详情</el-button>
-            <el-button v-if="row.url" size="small" @click="window.open(row.url, '_blank')">
-              原文
-            </el-button>
+            <div class="action-btns">
+              <el-button size="small" type="primary" @click="handleDetail(row)">详情</el-button>
+              <el-button v-if="row.openAccessPdf?.url || row.url" size="small" @click="openPdf(row)">原文</el-button>
+            </div>
           </template>
         </el-table-column>
       </el-table>
@@ -106,9 +120,7 @@
         <h4>摘要</h4>
         <p style="line-height: 1.8; color: #303133">{{ detail.abstractText || '暂无摘要' }}</p>
         <div style="margin-top: 16px" v-if="detail.openAccessPdf?.url || detail.url">
-          <el-button type="primary" @click="window.open(detail.openAccessPdf?.url || detail.url, '_blank')">
-            查看全文
-          </el-button>
+          <el-button type="primary" @click="openPdf(detail)">查看全文</el-button>
         </div>
       </template>
     </el-dialog>
@@ -183,9 +195,6 @@ const handleSearch = async () => {
         papers.value = []
         total.value = 0
       }
-    } else if (res.code === '429' && searchForm.source === 'semantic_scholar') {
-      ElMessage.warning('Semantic Scholar 请求频率限制，已自动切换为 arXiv，请重试')
-      searchForm.source = 'arxiv'
     } else {
       papers.value = []
       total.value = 0
@@ -220,6 +229,21 @@ const handleImport = async () => {
   } finally {
     importing.value = false
   }
+}
+
+function isChinese(str) {
+  return /[一-龥]/.test(str)
+}
+function sourceLabel(src) {
+  return { arxiv: 'arXiv', openalex: 'OpenAlex', local: '本地数据库' }[src] || src
+}
+function switchToLocal() {
+  searchForm.source = 'local'
+  handleSearch()
+}
+
+function openPdf(row) {
+  window.open(row.openAccessPdf?.url || row.url, '_blank')
 }
 
 const handleDetail = async (row) => {
@@ -261,4 +285,6 @@ onMounted(() => { loadRecommend() })
 .rec-title { font-weight: 500; font-size: 14px; color: #303133; }
 .rec-meta { font-size: 12px; color: #909399; margin-bottom: 4px; }
 .rec-abstract { font-size: 12px; color: #909399; line-height: 1.6; }
+.search-empty { text-align: center; padding: 32px 20px; color: #909399; font-size: 14px; line-height: 1.8; }
+.action-btns { display: flex; gap: 4px; }
 </style>

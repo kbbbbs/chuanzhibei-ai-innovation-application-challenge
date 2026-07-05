@@ -1,7 +1,6 @@
 <template>
   <div class="kb-page">
     <div class="kb-left">
-      <!-- KB list -->
       <div class="panel">
         <div class="panel-title">📚 知识库</div>
         <div v-loading="kbLoading" class="panel-body">
@@ -10,26 +9,22 @@
             :class="['kb-item', { active: selectedKb?.id === kb.id }]"
             @click="selectKb(kb)">
             <span class="kb-name">{{ kb.name }}</span>
+            <span class="kb-count">{{ kb.knowledge_count || 0 }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Upload -->
       <div class="panel" v-if="selectedKb">
-        <div class="panel-title">📄 上传资料</div>
-        <div class="panel-body">
-          <el-upload :auto-upload="false" :limit="1" accept=".pdf,.txt,.md,.doc,.docx" drag
-            :on-change="e => uploadFile = e.raw" :show-file-list="false" class="upload-drag">
-            <span>拖拽或点击上传</span>
-          </el-upload>
-          <div v-if="uploadFile" class="upload-bar">
-            <el-tag closable @close="uploadFile=null">{{ uploadFile.name }}</el-tag>
-            <el-button type="primary" size="small" :loading="uploading" @click="doUpload">上传</el-button>
+        <div class="panel-title">📄 {{ selectedKb.name }} · 课件</div>
+        <div class="panel-body scroll-y" v-loading="filesLoading" style="max-height:200px">
+          <div v-if="files.length === 0 && !filesLoading" class="empty-hint">暂无课件</div>
+          <div v-for="f in files" :key="f.id" class="file-item" @click="openFilePreview(f)">
+            <span class="file-icon">{{ fileIcon(f) }}</span>
+            <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
           </div>
         </div>
       </div>
 
-      <!-- Sessions -->
       <div class="panel flex-1" v-if="selectedKb">
         <div class="panel-title">
           💬 对话记录
@@ -47,7 +42,6 @@
       </div>
     </div>
 
-    <!-- Right: chat -->
     <div class="kb-right">
       <div class="chat-panel">
         <div class="panel-title">
@@ -65,7 +59,7 @@
           </div>
           <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
             <span class="msg-who">{{ msg.role === 'user' ? '我' : '📖' }}</span>
-            <div class="msg-text">{{ msg.content }}</div>
+            <div class="msg-text" v-html="renderMarkdown(msg.content)"></div>
           </div>
           <div v-if="chatLoading" class="msg assistant"><span class="msg-who">📖</span><span class="msg-text dim">思考中…</span></div>
         </div>
@@ -75,7 +69,6 @@
         </div>
       </div>
 
-      <!-- Search -->
       <div class="search-panel" v-if="selectedKb">
         <div class="panel-title clickable" @click="searchOpen = !searchOpen">
           🔍 知识检索 <span class="search-sub">{{ searchOpen ? '收起' : '展开' }}{{ searchTotal > 0 ? ' · '+searchTotal+'条' : '' }}</span>
@@ -91,7 +84,7 @@
                 <el-tag size="small" type="info" effect="plain" v-if="r.score" class="hit-score">{{ (r.score*100).toFixed(0) }}%</el-tag>
               </div>
               <div class="hit-preview" v-if="expandedHit !== i">{{ cleanContent(r).slice(0, 120) }}…</div>
-              <div class="hit-full" v-else>{{ cleanContent(r) }}</div>
+              <div class="hit-full" v-else v-html="renderMarkdown(cleanContent(r))"></div>
               <div class="hit-actions" v-if="expandedHit === i">
                 <el-button size="small" type="primary" :loading="chatLoading" @click.stop="askAbout(r)">让学伴讲解</el-button>
               </div>
@@ -101,6 +94,15 @@
         </div>
       </div>
     </div>
+
+    <!-- File Content Dialog -->
+    <el-dialog v-model="previewVisible" :title="previewTitle" width="750px">
+      <div v-loading="previewLoading" class="preview-doc">
+        <div v-if="!previewLoading && previewText" class="preview-text" v-html="renderMarkdown(previewText)"></div>
+        <div v-else-if="previewLoading" style="text-align:center;padding:40px;color:#909399">加载中…</div>
+        <div v-else style="text-align:center;padding:40px;color:#909399">该文件暂无文字内容，请通过「智能学伴」搜索相关内容进行学习。</div>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -108,35 +110,41 @@
 import { ref, reactive, computed, nextTick, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Search } from '@element-plus/icons-vue'
+import { renderMarkdown } from '@/utils/markdown'
 import { useUserStore } from '@/store/user'
 import * as kbApi from '@/api/knowledgeBase'
+
+function unwrapData(data) {
+  while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined)
+    data = data.data
+  return data
+}
 
 const userStore = useUserStore()
 const userId = computed(() => userStore.userId || 'anonymous')
 
 const kbs = ref([]); const selectedKb = ref(null); const kbLoading = ref(false)
-const uploadFile = ref(null); const uploading = ref(false)
+const files = ref([]); const filesLoading = ref(false)
 const sessions = ref([]); const currentSessionId = ref(null)
 const historyMap = reactive(loadHistories())
 const messages = ref([])
 const chatLoading = ref(false); const inputText = ref(''); const chatRef = ref(null)
 const searchOpen = ref(false); const searchQuery = ref(''); const searchResults = ref([]); const searchLoading = ref(false); const searchTotal = ref(0)
 const expandedHit = ref(-1)
+const previewVisible = ref(false); const previewLoading = ref(false)
+const previewTitle = ref(''); const previewText = ref('')
 
-// Per-user session tracking
 function mySessionKey() { return 'kb_my_sessions_' + userId.value }
-function loadMySessions() {
-  try { return JSON.parse(localStorage.getItem(mySessionKey()) || '[]') } catch { return [] }
-}
+function loadMySessions() { try { return JSON.parse(localStorage.getItem(mySessionKey()) || '[]') } catch { return [] } }
 function saveMySessions(ids) { localStorage.setItem(mySessionKey(), JSON.stringify(ids)) }
 
 function cleanTitle(r) {
-  const t = r.title || r.file_name || ''
-  return t.replace(/\.\w+$/, '').slice(0, 40) || '知识片段'
+  const t = r.knowledge_title || r.title || r.file_name || ''
+  return t.replace(/\.\w+$/, '').replace(/^新建文件夹\//g, '').slice(0, 50) || '知识片段'
 }
 function cleanContent(r) {
   const c = r.content || r.text || ''
-  return c.replace(/<!--[^>]*-->/g, '').replace(/\n{3,}/g, '\n\n').replace(/\s+$/gm, '').trim()
+  return c.replace(/<!--[\s\S]*?-->/g, '').replace(/!\[\]\(local:\/\/[^)]+\)/g, '').replace(/\n{3,}/g, '\n\n').trim()
 }
 
 const exampleQuestions = ['请总结核心知识点', '重点和难点是什么', '给我出几道练习题']
@@ -147,53 +155,74 @@ function loadHistories() {
     const map = {}
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i)
-      if (k && k.startsWith('kb_history_')) {
-        map[k.replace('kb_history_', '')] = JSON.parse(localStorage.getItem(k))
-      }
+      if (k && k.startsWith('kb_history_')) { map[k.replace('kb_history_', '')] = JSON.parse(localStorage.getItem(k)) }
     }
     return map
   } catch { return {} }
 }
 function saveHistory(id) {
-  if (id && historyMap[id] && historyMap[id].length > 0) {
-    localStorage.setItem(historyKey(id), JSON.stringify(historyMap[id]))
-  }
+  if (id && historyMap[id] && historyMap[id].length > 0) localStorage.setItem(historyKey(id), JSON.stringify(historyMap[id]))
+}
+
+function fileIcon(f) {
+  const t = (f.file_type || f.type || '').toLowerCase()
+  if (t.includes('pdf')) return '📑'
+  if (t.includes('doc') || t.includes('word')) return '📝'
+  if (t.includes('ppt') || t.includes('pptx')) return '🖥'
+  if (t.includes('txt') || t.includes('md')) return '📃'
+  return '📎'
 }
 
 const loadKBs = async () => {
   kbLoading.value = true
   try {
     const res = await kbApi.listKnowledgeBases()
-    if (res.code === '200' && res.data) kbs.value = Array.isArray(res.data) ? res.data : (res.data.data || [])
+    if (res.code === '200' && res.data) kbs.value = Array.isArray(unwrapData(res.data)) ? unwrapData(res.data) : []
   } catch { kbs.value = [] } finally { kbLoading.value = false }
+}
+
+async function loadFiles() {
+  if (!selectedKb.value) return
+  filesLoading.value = true
+  try {
+    const res = await kbApi.listKnowledge(selectedKb.value.id)
+    if (res.code === '200') files.value = unwrapData(res.data) || []
+  } finally { filesLoading.value = false }
 }
 
 const selectKb = async (kb) => {
   if (currentSessionId.value) saveHistory(currentSessionId.value)
   selectedKb.value = kb; currentSessionId.value = null; messages.value = []
+  files.value = []
+  loadFiles()
   const myIds = loadMySessions()
   try {
     const res = await kbApi.listSessions()
     if (res.code === '200' && res.data) {
-      const all = Array.isArray(res.data) ? res.data : (res.data.data || [])
+      const all = unwrapData(res.data) || []
       sessions.value = all.filter(s => myIds.includes(s.id))
       if (sessions.value.length > 0) {
-        const last = sessions.value[0]
-        currentSessionId.value = last.id
-        messages.value = historyMap[last.id] || []
+        currentSessionId.value = sessions.value[0].id
+        messages.value = historyMap[sessions.value[0].id] || []
       }
     }
   } catch { sessions.value = [] }
 }
 
-const doUpload = async () => {
-  if (!uploadFile.value || !selectedKb.value) return
-  uploading.value = true
+async function openFilePreview(f) {
+  previewTitle.value = f.title || f.file_name || f.id
+  previewText.value = ''
+  previewVisible.value = true
+  previewLoading.value = true
   try {
-    const res = await kbApi.uploadToKB(selectedKb.value.id, uploadFile.value)
-    if (res.code === '200') { ElMessage.success('上传成功'); uploadFile.value = null }
-    else ElMessage.error(res.msg || '上传失败')
-  } catch { ElMessage.error('上传失败') } finally { uploading.value = false }
+    const res = await kbApi.getKnowledgeContent(selectedKb.value.id, f.id)
+    if (res.code === '200') {
+      const data = unwrapData(res.data) || []
+      const chunks = Array.isArray(data) ? data : []
+      previewText.value = chunks.map(c => cleanContent(c)).filter(Boolean).join('\n\n')
+    }
+  } catch { /* skip */ }
+  finally { previewLoading.value = false }
 }
 
 const newSession = async () => {
@@ -201,20 +230,17 @@ const newSession = async () => {
   try {
     const res = await kbApi.createSession({ knowledgeBaseId: selectedKb.value.id, title: '新对话' })
     if (res.code === '200' && res.data) {
-      const id = res.data.id || (res.data.data && res.data.data.id) || res.data.session_id
+      const data = unwrapData(res.data); const id = data?.id || data?.session_id
       if (id) {
         if (currentSessionId.value) saveHistory(currentSessionId.value)
         currentSessionId.value = id; sessions.value.unshift({ id, title: '新对话' }); messages.value = []
         registerSession(id)
-      } else ElMessage.error('创建对话失败')
-    } else ElMessage.error(res.msg || '创建对话失败')
-  } catch { ElMessage.error('创建对话失败') }
+      }
+    }
+  } catch { /* skip */ }
 }
 
-function registerSession(id) {
-  const ids = loadMySessions()
-  if (!ids.includes(id)) { ids.unshift(id); saveMySessions(ids) }
-}
+function registerSession(id) { const ids = loadMySessions(); if (!ids.includes(id)) { ids.unshift(id); saveMySessions(ids) } }
 
 const switchSession = (s) => {
   if (currentSessionId.value === s.id) return
@@ -232,30 +258,29 @@ const removeSession = async (id) => {
   } catch { ElMessage.error('删除失败') }
 }
 
+async function ensureSession() {
+  if (currentSessionId.value) return true
+  try {
+    const res = await kbApi.createSession({ knowledgeBaseId: selectedKb.value.id, title: '新对话' })
+    if (res.code === '200' && res.data) {
+      const data = unwrapData(res.data); const id = data?.id || data?.session_id
+      if (id) { currentSessionId.value = id; sessions.value.unshift({ id, title: '新对话' }); registerSession(id); return true }
+    }
+  } catch { /* fall through */ }
+  return false
+}
+
 const sendMessage = async () => {
   const q = inputText.value.trim(); if (!q || !selectedKb.value || chatLoading.value) return
   inputText.value = ''
-  // auto-create session if none
-  if (!currentSessionId.value) {
-    try {
-      const title = '新对话'
-      const res = await kbApi.createSession({ knowledgeBaseId: selectedKb.value.id, title })
-      if (res.code === '200' && res.data) {
-        const id = res.data.id || (res.data.data && res.data.data.id) || res.data.session_id
-        if (id) {
-          currentSessionId.value = id
-          sessions.value.unshift({ id, title })
-          registerSession(id)
-        } else { ElMessage.error('创建对话失败'); return }
-      } else { ElMessage.error('创建对话失败'); return }
-    } catch { ElMessage.error('创建对话失败'); return }
-  }
+  if (!(await ensureSession())) { ElMessage.error('创建对话失败'); return }
 
   messages.value.push({ role: 'user', content: q })
   const aiIdx = messages.value.length; messages.value.push({ role: 'assistant', content: '' })
   chatLoading.value = true; await nextTick(); scrollBottom()
 
-  const url = `http://localhost:8080/api/weknora/knowledge-chat/${currentSessionId.value}?query=${encodeURIComponent(q)}`
+  let url = `/api/weknora/knowledge-chat/${currentSessionId.value}?query=${encodeURIComponent(q)}`
+  if (selectedKb.value?.id) url += `&knowledgeBaseIds=${encodeURIComponent(selectedKb.value.id)}`
   try {
     const resp = await fetch(url, { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } })
     const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf = ''
@@ -266,24 +291,11 @@ const sendMessage = async () => {
       for (const line of lines) {
         if (!line.startsWith('data:')) continue
         const raw = line.substring(5).trim(); if (raw === '[DONE]') continue
-        try {
-          const j = JSON.parse(raw)
-          if (j.response_type !== 'answer') continue
-          if (j.content) messages.value[aiIdx].content += j.content
-        } catch { /* skip */ }
+        try { const j = JSON.parse(raw); if (j.response_type !== 'answer') continue; if (j.content) messages.value[aiIdx].content += j.content } catch { /* skip */ }
       }
       scrollBottom()
     }
-    if (currentSessionId.value) {
-      historyMap[currentSessionId.value] = [...messages.value]
-      saveHistory(currentSessionId.value)
-    }
-    // update session title based on conversation content
-    const sid = currentSessionId.value
-    const cur = sessions.value.find(s => s.id === sid)
-    if (cur && cur.title === '新对话' && messages.value.length >= 2) {
-      cur.title = q.length > 15 ? q.slice(0, 15) + '…' : q
-    }
+    if (currentSessionId.value) { historyMap[currentSessionId.value] = [...messages.value]; saveHistory(currentSessionId.value) }
   } catch { if (!messages.value[aiIdx].content) messages.value[aiIdx].content = '回复中断' }
   finally { chatLoading.value = false }
 }
@@ -296,8 +308,11 @@ const doSearch = async () => {
   try {
     const res = await kbApi.searchKB({ knowledgeBaseIds: [selectedKb.value.id], query: searchQuery.value.trim() })
     if (res.code === '200' && res.data) {
-      searchResults.value = Array.isArray(res.data) ? res.data : (res.data.data || res.data.results || [])
-      searchTotal.value = searchResults.value.length
+      const searchData = unwrapData(res.data)
+      let list = Array.isArray(searchData) ? searchData : (searchData?.results || [])
+      list.sort((a, b) => (b.score || 0) - (a.score || 0))
+      searchResults.value = list
+      searchTotal.value = list.length
     }
   } catch { searchResults.value = [] } finally { searchLoading.value = false }
 }
@@ -324,25 +339,22 @@ onMounted(loadKBs)
 .panel-body.scroll-y { flex: 1; overflow-y: auto; }
 .empty-hint { color: #c0c4cc; text-align: center; padding: 16px 0; font-size: 13px; }
 
-/* KB items */
-.kb-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; }
+.kb-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
 .kb-item:hover { background: #f5f7fa; }
 .kb-item.active { background: #ecf5ff; border-left: 3px solid #409eff; }
-.kb-name { font-size: 13px; }
+.kb-name { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.kb-count { font-size: 11px; color: #909399; background: #f0f0f0; padding: 1px 8px; border-radius: 10px; flex-shrink: 0; margin-left: 8px; }
 
-/* Upload */
-.upload-drag { width: 100%; }
-.upload-drag :deep(.el-upload) { width: 100%; }
-.upload-drag :deep(.el-upload-dragger) { width: 100%; padding: 12px; }
-.upload-bar { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
+.file-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
+.file-item:hover { background: #f5f7fa; }
+.file-icon { font-size: 16px; flex-shrink: 0; }
+.file-name { font-size: 12px; color: #303133; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
 
-/* Sessions */
 .session-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
 .session-item:hover { background: #f5f7fa; }
 .session-item.active { background: #ecf5ff; }
 .session-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
 
-/* Chat */
 .chat-panel { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; }
 .chat-msgs { flex: 1; overflow-y: auto; padding: 12px; background: #fbf9f5; }
 .chat-welcome { text-align: center; padding: 40px 16px; }
@@ -357,12 +369,19 @@ onMounted(loadKBs)
 .msg-who { width: 28px; height: 28px; border-radius: 50%; background: #409eff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
 .msg.user .msg-who { background: #67c23a; }
 .msg-text { max-width: 72%; padding: 8px 12px; border-radius: 10px; background: #fff; font-size: 14px; line-height: 1.7; color: #303133; white-space: pre-wrap; word-break: break-word; }
+.msg-text :deep(p) { margin: 0 0 6px; }
+.msg-text :deep(p:last-child) { margin-bottom: 0; }
+.msg-text :deep(ul), .msg-text :deep(ol) { margin: 4px 0; padding-left: 20px; }
+.msg-text :deep(li) { margin-bottom: 2px; }
+.msg-text :deep(h2), .msg-text :deep(h3), .msg-text :deep(h4) { margin: 8px 0 4px; }
+.msg-text :deep(strong) { font-weight: 600; }
+.msg-text :deep(code) { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 3px; font-size: .9em; }
+.msg-text :deep(pre) { background: #1e1e1e; color: #d4d4d4; padding: 10px 14px; border-radius: 6px; overflow-x: auto; margin: 8px 0; font-size: .85rem; line-height: 1.5; }
+.msg-text :deep(pre code) { background: none; padding: 0; font-size: inherit; }
 .msg.user .msg-text { background: #ecf5ff; }
 .msg-text.dim { color: #909399; font-size: 13px; }
-
 .chat-bar { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid #ebeef5; }
 
-/* Search */
 .search-panel { background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; }
 .search-sub { font-size:12px;color:#909399;font-weight:400;margin-left:4px }
 .search-input { margin-bottom: 8px }
@@ -376,4 +395,17 @@ onMounted(loadKBs)
 .hit-preview { font-size: 12px; color: #909399; line-height: 1.6; }
 .hit-full { font-size: 12px; color: #606266; line-height: 1.6; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
 .hit-actions { margin-top: 8px; }
+
+/* Preview dialog */
+.preview-doc { min-height: 120px; }
+.preview-text { max-height: 520px; overflow-y: auto; font-size: 14px; color: #303133; line-height: 1.85; }
+.preview-text :deep(p) { margin: 0 0 10px; }
+.preview-text :deep(ul), .preview-text :deep(ol) { margin: 6px 0; padding-left: 22px; }
+.preview-text :deep(table) { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
+.preview-text :deep(th) { background: #f5f7fa; padding: 6px 10px; border: 1px solid #e5e7eb; text-align: left; font-weight: 600; }
+.preview-text :deep(td) { padding: 6px 10px; border: 1px solid #e5e7eb; }
+.preview-text :deep(strong) { font-weight: 600; }
+.preview-text :deep(h2), .preview-text :deep(h3), .preview-text :deep(h4) { margin: 12px 0 6px; }
+.preview-text :deep(pre) { background: #1e1e1e; color: #d4d4d4; padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 10px 0; font-size: .85rem; line-height: 1.6; }
+.preview-text :deep(pre code) { background: none; padding: 0; }
 </style>

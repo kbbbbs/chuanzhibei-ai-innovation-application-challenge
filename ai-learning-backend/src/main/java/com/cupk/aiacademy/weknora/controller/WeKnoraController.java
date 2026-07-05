@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.weknora.controller;
 
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.weknora.dto.WeKnoraChatRequest;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSearchRequest;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest;
 import com.cupk.aiacademy.weknora.service.WeKnoraService;
@@ -58,15 +59,36 @@ public class WeKnoraController {
 
     @PostMapping("/knowledge-chat/{sessionId}")
     public SseEmitter knowledgeChat(@PathVariable String sessionId,
-                                     @RequestParam String query) {
-        return weKnoraService.knowledgeChat(sessionId, query);
+                                     @RequestParam(required = false) String query,
+                                     @RequestBody(required = false) WeKnoraChatRequest body,
+                                     @RequestParam(required = false) String knowledgeBaseIds) {
+        String q = query;
+        String kbIds = knowledgeBaseIds;
+        if (body != null) {
+            q = body.getQuery();
+            if (body.getKnowledgeBaseIds() != null && !body.getKnowledgeBaseIds().isEmpty()) {
+                kbIds = String.join(",", body.getKnowledgeBaseIds());
+            }
+        }
+        return weKnoraService.knowledgeChat(sessionId, q, kbIds);
     }
 
     @PostMapping("/agent-chat/{sessionId}")
     public SseEmitter agentChat(@PathVariable String sessionId,
-                                 @RequestParam String query,
-                                 @RequestParam(required = false) String agentId) {
-        return weKnoraService.agentChat(sessionId, query, agentId);
+                                 @RequestParam(required = false) String query,
+                                 @RequestParam(required = false) String agentId,
+                                 @RequestBody(required = false) WeKnoraChatRequest body,
+                                 @RequestParam(required = false) String knowledgeBaseIds) {
+        String q = query;
+        String aId = agentId;
+        String kbIds = knowledgeBaseIds;
+        if (body != null) {
+            q = body.getQuery();
+            if (body.getKnowledgeBaseIds() != null && !body.getKnowledgeBaseIds().isEmpty()) {
+                kbIds = String.join(",", body.getKnowledgeBaseIds());
+            }
+        }
+        return weKnoraService.agentChat(sessionId, q, aId, kbIds);
     }
 
     @PostMapping("/knowledge-bases/{kbId}/upload")
@@ -77,5 +99,36 @@ public class WeKnoraController {
         } catch (IOException e) {
             return Result.error("读取文件失败: " + e.getMessage());
         }
+    }
+
+    @DeleteMapping("/knowledge-bases/{kbId}")
+    public Result deleteKnowledgeBase(@PathVariable String kbId) {
+        return weKnoraService.deleteKnowledgeBase(kbId);
+    }
+
+    @GetMapping("/knowledge-bases/{kbId}/knowledge")
+    public Result listKnowledge(@PathVariable String kbId,
+                                 @RequestParam(defaultValue = "50") int limit,
+                                 @RequestParam(defaultValue = "0") int offset) {
+        return weKnoraService.listKnowledge(kbId, limit, offset);
+    }
+
+    @DeleteMapping("/knowledge/{knowledgeId}")
+    public Result deleteKnowledge(@PathVariable String knowledgeId) {
+        return weKnoraService.deleteKnowledge(knowledgeId);
+    }
+
+    @PutMapping("/knowledge-bases/{kbId}")
+    public Result updateKnowledgeBase(@PathVariable String kbId,
+                                       @RequestBody Map<String, String> body) {
+        return weKnoraService.updateKnowledgeBase(kbId,
+            body.getOrDefault("name", ""),
+            body.getOrDefault("description", ""));
+    }
+
+    @GetMapping("/knowledge-bases/{kbId}/knowledge/{knowledgeId}/content")
+    public Result getKnowledgeContent(@PathVariable String kbId,
+                                       @PathVariable String knowledgeId) {
+        return weKnoraService.getKnowledgeContent(kbId, knowledgeId);
     }
 }

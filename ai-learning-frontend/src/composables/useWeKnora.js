@@ -2,19 +2,27 @@ import { ref, readonly } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as weknoraApi from '../api/weknora.js'
 
+function unwrapData(data) {
+  while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined) {
+    data = data.data
+  }
+  return data
+}
+
 export function useWeKnora() {
   const messages = ref([])
   const sessions = ref([])
   const knowledgeBases = ref([])
   const loading = ref(false)
   const currentSessionId = ref(null)
+  const currentKbId = ref(null)
   const error = ref(null)
 
   async function loadKnowledgeBases() {
     try {
       loading.value = true
       const res = await weknoraApi.listKnowledgeBases()
-      knowledgeBases.value = res.data || []
+      knowledgeBases.value = unwrapData(res.data) || []
       return knowledgeBases.value
     } catch (e) {
       error.value = e
@@ -29,8 +37,9 @@ export function useWeKnora() {
     try {
       loading.value = true
       const res = await weknoraApi.createSession({ knowledgeBaseId, title })
-      const data = res.data
+      const data = unwrapData(res.data)
       currentSessionId.value = data?.id || data?.session_id
+      currentKbId.value = knowledgeBaseId
       messages.value = []
       return currentSessionId.value
     } catch (e) {
@@ -46,7 +55,7 @@ export function useWeKnora() {
     try {
       loading.value = true
       const res = await weknoraApi.listSessions()
-      sessions.value = res.data || []
+      sessions.value = unwrapData(res.data) || []
       return sessions.value
     } catch (e) {
       error.value = e
@@ -97,8 +106,11 @@ export function useWeKnora() {
       loading.value = true
       error.value = null
 
-      weknoraApi.weKnoraStreamChat(mode, currentSessionId.value, query, {
+      weknoraApi.weKnoraStreamChat(mode, currentSessionId.value, query, currentKbId.value ? [currentKbId.value] : null, {
         onMessage(data) {
+          // 过滤掉 thinking/tool_call/tool_result/agent_query，只显示 answer
+          const type = data.response_type
+          if (type && type !== 'answer' && type !== 'complete') return
           const chunk = data.content || data.answer || data.text || ''
           messages.value[aiIndex].content += chunk
         },

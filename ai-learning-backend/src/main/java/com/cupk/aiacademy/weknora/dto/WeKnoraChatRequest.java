@@ -4,12 +4,12 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.Map;
+import java.util.List;
 
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class WeKnoraChatRequest {
     private String query;
-    private String knowledgeBaseId;
-    private String agentId;
-    private Map<String, Object> params;
+    private List<String> knowledgeBaseIds;
 }

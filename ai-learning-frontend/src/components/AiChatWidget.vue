@@ -8,7 +8,10 @@
         <span>AI 智能伴学与教学助手</span>
       </div>
       <div class="header-controls">
-        <el-select v-model="currentMode" size="small" class="mode-select" @change="handleModeChange" style="width: 140px">
+        <el-select v-model="selectedKbId" size="small" class="kb-select" placeholder="选择知识库" @change="handleKbChange" style="width: 130px">
+          <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
+        </el-select>
+        <el-select v-model="currentMode" size="small" class="mode-select" @change="handleModeChange" style="width: 130px">
           <el-option label="知识库 RAG" value="knowledge" />
           <el-option label="Agent 智能体" value="agent" />
         </el-select>
@@ -17,10 +20,15 @@
 
     <!-- Mode switch for floating dialog -->
     <div class="dialog-top-bar" v-else>
-      <el-radio-group v-model="currentMode" size="small">
-        <el-radio-button label="knowledge">知识库问答 (RAG)</el-radio-button>
-        <el-radio-button label="agent">Agent 智能助手</el-radio-button>
-      </el-radio-group>
+      <div class="dialog-left">
+        <el-radio-group v-model="currentMode" size="small">
+          <el-radio-button label="knowledge">知识库问答 (RAG)</el-radio-button>
+          <el-radio-button label="agent">Agent 智能助手</el-radio-button>
+        </el-radio-group>
+        <el-select v-model="selectedKbId" size="small" placeholder="选择知识库" @change="handleKbChange" style="width: 140px; margin-left: 12px">
+          <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
+        </el-select>
+      </div>
       <el-button type="primary" link size="small" @click="handleNewSession">
         <el-icon><RefreshRight /></el-icon> 新对话
       </el-button>
@@ -30,11 +38,13 @@
     <div class="chat-messages" ref="messagesContainer">
       <div class="welcome-msg" v-if="messages.length === 0">
         <div class="welcome-icon"><el-icon><ChatDotRound /></el-icon></div>
-        <h4>您好，我是您的专属 AI 助手！</h4>
-        <p>您可以问我任何关于课程内容、习题解答，或让我帮您搜索文献、编写大纲。</p>
-        <div class="quick-prompts">
-          <span class="prompt-chip" @click="sendQuick('请帮我总结一下关系型数据库的范式理论。')">💡 总结数据库范式理论</span>
-          <span class="prompt-chip" @click="sendQuick('我想备课关于Python数据分析的公开课，请给出提纲。')">💡 生成Python备课大纲</span>
+        <h4 v-if="selectedKbId">您好，我是您的专属 AI 助手！</h4>
+        <h4 v-else>请先选择一个知识库</h4>
+        <p v-if="selectedKbId">您可以问我任何关于课程内容、习题解答，或让我帮您搜索文献、编写大纲。</p>
+        <p v-else>在顶部下拉菜单中选择要使用的知识库</p>
+        <div class="quick-prompts" v-if="selectedKbId">
+          <span class="prompt-chip" @click="sendQuick('请帮我总结一下本课程的核心知识点。')">总结核心知识点</span>
+          <span class="prompt-chip" @click="sendQuick('本课程的重点和难点是什么？')">重点和难点是什么</span>
         </div>
       </div>
 
@@ -54,7 +64,7 @@
         </div>
 
         <div class="msg-bubble" :class="{ 'streaming': msg.streaming, 'error': msg.error }">
-          <div class="bubble-content" v-if="msg.content">{{ msg.content }}</div>
+          <div class="bubble-content" v-if="msg.content" v-html="renderMarkdown(msg.content)"></div>
           <div class="typing-indicator" v-else-if="msg.streaming">
             <span></span><span></span><span></span>
           </div>
@@ -71,15 +81,16 @@
         :rows="inline ? 2 : 3"
         placeholder="输入您的问题，按 Ctrl + Enter 快速发送..."
         resize="none"
+        :disabled="!selectedKbId"
         @keydown.ctrl.enter="handleSend"
       />
       <div class="input-actions">
-        <span class="tip-text">WeKnora 引擎支持</span>
+        <span class="tip-text">{{ selectedKbId ? 'WeKnora 引擎支持' : '请先选择知识库' }}</span>
         <el-button
           type="primary"
           class="send-btn"
           :loading="loading"
-          :disabled="!inputQuery.trim()"
+          :disabled="!inputQuery.trim() || !selectedKbId"
           @click="handleSend"
         >
           发送
@@ -91,8 +102,9 @@
 </template>
 
 <script setup>
-import { ref, onMounted, nextTick, watch } from 'vue'
+import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useWeKnora } from '@/composables/useWeKnora'
+import { renderMarkdown } from '@/utils/markdown'
 import { Cpu, User, ChatDotRound, Position, RefreshRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 
@@ -106,12 +118,15 @@ const props = defineProps({
 const {
   messages,
   loading,
+  knowledgeBases,
   currentSessionId,
+  loadKnowledgeBases,
   createNewSession,
   sendMessage
 } = useWeKnora()
 
 const currentMode = ref('knowledge')
+const selectedKbId = ref('')
 const inputQuery = ref('')
 const messagesContainer = ref(null)
 
@@ -127,14 +142,22 @@ watch(messages, () => {
 }, { deep: true })
 
 onMounted(async () => {
-  if (!currentSessionId.value) {
-    await handleNewSession()
+  await loadKnowledgeBases()
+  if (knowledgeBases.value.length > 0) {
+    selectedKbId.value = knowledgeBases.value[0].id
+    await createNewSession(selectedKbId.value, '智能学习助手会话')
   }
 })
 
+const handleKbChange = async (kbId) => {
+  messages.value = []
+  await createNewSession(kbId, '智能学习助手会话')
+}
+
 const handleNewSession = async () => {
-  // Use a default KB ID or null if none loaded
-  await createNewSession(null, '智能学习助手会话')
+  if (!selectedKbId.value) return
+  messages.value = []
+  await createNewSession(selectedKbId.value, '智能学习助手会话')
 }
 
 const handleModeChange = () => {
@@ -148,12 +171,12 @@ const sendQuick = (text) => {
 
 const handleSend = async () => {
   const query = inputQuery.value.trim()
-  if (!query || loading.value) return
+  if (!query || loading.value || !selectedKbId.value) return
 
   inputQuery.value = ''
   try {
     if (!currentSessionId.value) {
-      await handleNewSession()
+      await createNewSession(selectedKbId.value, '智能学习助手会话')
     }
     await sendMessage(currentMode.value, query)
   } catch (e) {
@@ -205,6 +228,28 @@ const handleSend = async () => {
   font-size: 1rem;
 }
 
+.header-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.kb-select :deep(.el-input__wrapper),
+.mode-select :deep(.el-input__wrapper) {
+  background: rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.3);
+  box-shadow: none;
+}
+
+.kb-select :deep(.el-input__inner),
+.mode-select :deep(.el-input__inner) {
+  color: #fff;
+}
+
+.kb-select :deep(.el-select__caret),
+.mode-select :deep(.el-select__caret) {
+  color: rgba(255,255,255,0.7);
+}
+
 .ai-logo {
   font-size: 20px;
 }
@@ -231,6 +276,11 @@ const handleSend = async () => {
   padding: 8px 16px;
   background: #F8FAFC;
   border-bottom: 1px solid var(--border-color);
+}
+
+.dialog-left {
+  display: flex;
+  align-items: center;
 }
 
 /* Messages */
@@ -377,6 +427,20 @@ const handleSend = async () => {
   color: #EF4444;
   font-size: 0.85rem;
 }
+
+/* Markdown rendered content */
+:deep(.bubble-content p) { margin: 0 0 6px; }
+:deep(.bubble-content p:last-child) { margin-bottom: 0; }
+:deep(.bubble-content ul), :deep(.bubble-content ol) { margin: 4px 0; padding-left: 20px; }
+:deep(.bubble-content li) { margin-bottom: 2px; }
+:deep(.bubble-content h2) { font-size: 1.1rem; margin: 8px 0 4px; }
+:deep(.bubble-content h3) { font-size: 1rem; margin: 6px 0 3px; }
+:deep(.bubble-content h4) { font-size: 0.95rem; margin: 4px 0 2px; }
+:deep(.bubble-content strong) { font-weight: 600; }
+:deep(.bubble-content code) { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
+:deep(.bubble-content pre) { background: #1e1e1e; color: #d4d4d4; padding: 10px 14px; border-radius: 6px; overflow-x: auto; margin: 8px 0; font-size: 0.85rem; line-height: 1.5; }
+:deep(.bubble-content pre code) { background: none; padding: 0; font-size: inherit; }
+:deep(.bubble-content hr) { border: none; border-top: 1px solid #e5e7eb; margin: 8px 0; }
 
 /* Input Area */
 .chat-input-area {

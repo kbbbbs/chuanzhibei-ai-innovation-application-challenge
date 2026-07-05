@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class ArxivSearchServiceImpl implements ArxivSearchService {
 
-    private static final String API_BASE = "http://export.arxiv.org/api/query";
+    private static final String API_BASE = "https://export.arxiv.org/api/query";
     private static final int ARXIV_MAX = 100;
     private static final String ATOM_NS = "http://www.w3.org/2005/Atom";
     private static final String OPENSEARCH_NS = "http://a9.com/-/spec/opensearch/1.1/";
@@ -27,6 +27,7 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
     private final OkHttpClient client = new OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
+        .followRedirects(true)
         .build();
 
     @Override

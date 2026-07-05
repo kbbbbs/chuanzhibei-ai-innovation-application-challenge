@@ -21,6 +21,12 @@ public class Result {
         return result;
     }
 
+    public static Result success(Object data, String msg) {
+        Result result = success(data);
+        result.setMsg(msg);
+        return result;
+    }
+
     public static Result error() {
         Result result = new Result();
         result.setCode("500");

@@ -86,6 +86,12 @@ export const layoutChildren = [
     component: () => import('../views/teacher/IntelligentResourceGen.vue'),
     meta: { title: '智能资源生成', icon: 'Lightning', roles: ['admin', 'teacher'], requiresAuth: true }
   },
+  {
+    path: 'teacher-knowledge-base',
+    name: 'TeacherKnowledgeBase',
+    component: () => import('../views/teacher/TeacherKnowledgeBase.vue'),
+    meta: { title: '知识库管理', icon: 'Collection', roles: ['admin', 'teacher'], requiresAuth: true }
+  },
 
   // Student routes
   {

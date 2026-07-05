@@ -95,6 +95,9 @@
                   <el-dropdown-item command="exams">
                     <el-icon><Checked /></el-icon> 考试与成绩发布
                   </el-dropdown-item>
+                  <el-dropdown-item command="teacher-knowledge-base">
+                    <el-icon><Collection /></el-icon> 知识库管理
+                  </el-dropdown-item>
                 </template>
 
                 <el-dropdown-item divided command="logout" class="logout-item">
@@ -160,7 +163,7 @@ import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
 import {
   House, DataBoard, Aim, Lightning, Cpu, School, Tickets, Checked,
-  DataLine, Reading, Edit, Document, SwitchButton, User, Menu
+  DataLine, Reading, Edit, Document, SwitchButton, User, Menu, Collection
 } from '@element-plus/icons-vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
 
