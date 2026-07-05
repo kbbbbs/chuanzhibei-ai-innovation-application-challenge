@@ -12,6 +12,8 @@ import com.cupk.aiacademy.mapper.AgentSessionMapper;
 import com.cupk.aiacademy.pojo.AgentDefinition;
 import com.cupk.aiacademy.pojo.AgentMessage;
 import com.cupk.aiacademy.pojo.AgentSession;
+import com.cupk.aiacademy.weknora.service.WeKnoraService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,11 +31,14 @@ import reactor.core.publisher.Flux;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
@@ -56,6 +61,12 @@ class AgentChatServiceTest {
 
     @Mock
     private AgentMessageMapper messageMapper;
+
+    @Mock
+    private WeKnoraService weKnoraService;
+
+    @Mock
+    private AgentToolService agentToolService;
 
     @AfterEach
     void clearUserContext() {
@@ -150,6 +161,67 @@ class AgentChatServiceTest {
         assertEquals("deepseek-test", options.getModel());
         assertEquals(0.3, options.getTemperature());
     }
+
+    @Test
+    void chatAddsKnowledgeSearchResultToPromptWhenAgentHasKnowledgeBases() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setKnowledgeBaseIds("[\"kb-java\",2]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(messageMapper.selectList(any())).thenReturn(List.of());
+        when(weKnoraService.search(any())).thenReturn(com.cupk.aiacademy.common.Result.success(Map.of(
+                "data", List.of(
+                        Map.of("content", "递归是函数调用自身的方式。"),
+                        Map.of("text", "递归必须设置终止条件。")
+                )
+        )));
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+
+        service.chat(1, chatRequest("什么是递归"));
+
+        verify(weKnoraService).search(argThat(request ->
+                request != null
+                        && request.getKnowledgeBaseIds().equals(List.of("kb-java", "2"))
+                        && "什么是递归".equals(request.getQuery())));
+        ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).call(captor.capture());
+        String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
+        assertTrue(systemPrompt.contains("知识库参考资料"));
+        assertTrue(systemPrompt.contains("递归是函数调用自身的方式。"));
+        assertTrue(systemPrompt.contains("递归必须设置终止条件。"));
+        assertEquals("什么是递归", captor.getValue().getInstructions()
+                .get(captor.getValue().getInstructions().size() - 1).getContent());
+    }
+
+    @Test
+    void chatAddsEnabledToolResultToPrompt() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_search\",\"learning_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(messageMapper.selectList(any())).thenReturn(List.of());
+        when(agentToolService.buildToolContext(
+                org.mockito.ArgumentMatchers.eq(List.of("course_search", "learning_plan")),
+                org.mockito.ArgumentMatchers.eq("推荐一下 Java 学习计划"),
+                org.mockito.ArgumentMatchers.anyInt(),
+                org.mockito.ArgumentMatchers.anyInt()
+        )).thenReturn("[course_search]\n课程ID=1；名称=Java 基础\n[learning_plan]\n建议每天学习 30 分钟");
+        when(chatModel.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+
+        service.chat(1, chatRequest("推荐一下 Java 学习计划"));
+
+        ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModel).call(captor.capture());
+        String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
+        assertTrue(systemPrompt.contains("工具调用结果"));
+        assertTrue(systemPrompt.contains("课程ID=1；名称=Java 基础"));
+        assertTrue(systemPrompt.contains("建议每天学习 30 分钟"));
+    }
+
 
     @Test
     void chatRecordsFailureMessageWhenModelCallFails() {
@@ -285,7 +357,8 @@ class AgentChatServiceTest {
     }
 
     private AgentChatService newService(AgentChatProperties chatProperties) {
-        return new AgentChatService(chatModel, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper, Runnable::run);
+        return new AgentChatService(chatModel, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
+                Runnable::run, new ObjectMapper(), weKnoraService, agentToolService);
     }
 
     private AgentChatProperties chatProperties(int historyMessageLimit, int historyMaxCharacters) {

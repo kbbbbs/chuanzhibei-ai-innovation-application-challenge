@@ -27,7 +27,8 @@ public class AgentDefinitionService {
     private final AgentDefinitionMapper agentDefinitionMapper;
     private final ObjectMapper objectMapper;
 
-    public AgentDefinitionService(AgentDefinitionMapper agentDefinitionMapper, ObjectMapper objectMapper) {
+    public AgentDefinitionService(AgentDefinitionMapper agentDefinitionMapper,
+                                  ObjectMapper objectMapper) {
         this.agentDefinitionMapper = agentDefinitionMapper;
         this.objectMapper = objectMapper;
     }
@@ -101,8 +102,8 @@ public class AgentDefinitionService {
         if (request.getStatus() != null) {
             normalizeStatus(request.getStatus());
         }
-        normalizeJsonArray(request.getKnowledgeBaseIds(), "knowledgeBaseIds");
-        normalizeJsonArray(request.getEnabledTools(), "enabledTools");
+        normalizeJsonArrayField(request.getKnowledgeBaseIds(), "knowledgeBaseIds");
+        normalizeJsonArrayField(request.getEnabledTools(), "enabledTools");
     }
 
     private void applyRequest(AgentDefinition agent, AgentCreateRequest request) {
@@ -112,9 +113,25 @@ public class AgentDefinitionService {
         agent.setSystemPrompt(trimToNull(request.getSystemPrompt()));
         agent.setModel(trimToNull(request.getModel()));
         agent.setTemperature(request.getTemperature());
-        agent.setKnowledgeBaseIds(normalizeJsonArray(request.getKnowledgeBaseIds(), "knowledgeBaseIds"));
-        agent.setEnabledTools(normalizeJsonArray(request.getEnabledTools(), "enabledTools"));
+        agent.setKnowledgeBaseIds(normalizeJsonArrayField(request.getKnowledgeBaseIds(), "knowledgeBaseIds"));
+        agent.setEnabledTools(normalizeJsonArrayField(request.getEnabledTools(), "enabledTools"));
         agent.setStatus(request.getStatus() == null ? ACTIVE_STATUS : normalizeStatus(request.getStatus()));
+    }
+
+    private String normalizeJsonArrayField(String value, String fieldName) {
+        String trimmed = trimToNull(value);
+        if (trimmed == null) {
+            return null;
+        }
+        try {
+            JsonNode jsonNode = objectMapper.readTree(trimmed);
+            if (!jsonNode.isArray()) {
+                throw new BusinessException(fieldName + " 必须是 JSON 数组");
+            }
+            return objectMapper.writeValueAsString(jsonNode);
+        } catch (JsonProcessingException e) {
+            throw new BusinessException(fieldName + " 必须是 JSON 数组");
+        }
     }
 
     private AgentDefinition ensureDefinition(Integer agentId) {
@@ -151,21 +168,6 @@ public class AgentDefinitionService {
 
     private String trimToNull(String value) {
         return isBlank(value) ? null : value.trim();
-    }
-
-    private String normalizeJsonArray(String value, String fieldName) {
-        if (isBlank(value)) {
-            return null;
-        }
-        try {
-            JsonNode jsonNode = objectMapper.readTree(value.trim());
-            if (!jsonNode.isArray()) {
-                throw new BusinessException(fieldName + " 必须是 JSON 数组");
-            }
-            return objectMapper.writeValueAsString(jsonNode);
-        } catch (JsonProcessingException e) {
-            throw new BusinessException(fieldName + " 必须是 JSON 数组");
-        }
     }
 
     private boolean isBlank(String value) {

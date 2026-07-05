@@ -2,6 +2,7 @@ package com.cupk.aiacademy.agent.controller;
 
 import com.cupk.aiacademy.agent.service.AgentDefinitionService;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.AgentCreateRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,18 +41,37 @@ public class AgentDefinitionController {
 
     @PostMapping
     public Result createDefinition(@Valid @RequestBody AgentCreateRequest request) {
+        Result forbidden = requireAdmin();
+        if (forbidden != null) {
+            return forbidden;
+        }
         return Result.success(agentDefinitionService.createDefinition(request));
     }
 
     @PutMapping("/{agentId}")
     public Result updateDefinition(@PathVariable Integer agentId,
-                                   @Valid @RequestBody AgentCreateRequest request) {
+                                    @Valid @RequestBody AgentCreateRequest request) {
+        Result forbidden = requireAdmin();
+        if (forbidden != null) {
+            return forbidden;
+        }
         return Result.success(agentDefinitionService.updateDefinition(agentId, request));
     }
 
     @PutMapping("/{agentId}/status")
     public Result updateStatus(@PathVariable Integer agentId,
-                               @RequestParam Integer status) {
+                                @RequestParam Integer status) {
+        Result forbidden = requireAdmin();
+        if (forbidden != null) {
+            return forbidden;
+        }
         return Result.success(agentDefinitionService.updateStatus(agentId, status));
+    }
+
+    private Result requireAdmin() {
+        if (!"admin".equals(UserContext.getCurrentRoleCode())) {
+            return Result.error("403", "只有管理员可以维护 Agent 定义");
+        }
+        return null;
     }
 }

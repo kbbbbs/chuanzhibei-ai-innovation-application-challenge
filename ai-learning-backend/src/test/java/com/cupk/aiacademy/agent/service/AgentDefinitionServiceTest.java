@@ -42,7 +42,7 @@ class AgentDefinitionServiceTest {
         verify(agentDefinitionMapper).insert(captor.capture());
         assertEquals("deepseek-test", captor.getValue().getModel());
         assertEquals(new BigDecimal("0.30"), captor.getValue().getTemperature());
-        assertEquals("[\"kb-java\"]", captor.getValue().getKnowledgeBaseIds());
+        assertEquals("[\"kb-java\",2]", captor.getValue().getKnowledgeBaseIds());
         assertEquals("[\"paper_search\"]", captor.getValue().getEnabledTools());
     }
 
@@ -55,30 +55,6 @@ class AgentDefinitionServiceTest {
                 () -> service.createDefinition(request(1)));
 
         assertEquals("Agent 编码已存在", exception.getMessage());
-    }
-
-    @Test
-    void createDefinitionRejectsInvalidKnowledgeBaseIds() {
-        AgentDefinitionService service = newService();
-        AgentCreateRequest request = request(1);
-        request.setKnowledgeBaseIds("not-json");
-
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> service.createDefinition(request));
-
-        assertEquals("knowledgeBaseIds 必须是 JSON 数组", exception.getMessage());
-    }
-
-    @Test
-    void createDefinitionRejectsNonArrayEnabledTools() {
-        AgentDefinitionService service = newService();
-        AgentCreateRequest request = request(1);
-        request.setEnabledTools("{\"tool\":\"paper_search\"}");
-
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> service.createDefinition(request));
-
-        assertEquals("enabledTools 必须是 JSON 数组", exception.getMessage());
     }
 
     @Test
@@ -103,6 +79,54 @@ class AgentDefinitionServiceTest {
         verify(agentDefinitionMapper).updateById(updated);
     }
 
+    @Test
+    void createDefinitionRejectsInvalidKnowledgeBaseIdsJson() {
+        AgentDefinitionService service = newService();
+        AgentCreateRequest request = request(1);
+        request.setKnowledgeBaseIds("not-json");
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.createDefinition(request));
+
+        assertEquals("knowledgeBaseIds 必须是 JSON 数组", exception.getMessage());
+    }
+
+    @Test
+    void createDefinitionRejectsNonArrayKnowledgeBaseIdsJson() {
+        AgentDefinitionService service = newService();
+        AgentCreateRequest request = request(1);
+        request.setKnowledgeBaseIds("{\"id\":\"kb-java\"}");
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.createDefinition(request));
+
+        assertEquals("knowledgeBaseIds 必须是 JSON 数组", exception.getMessage());
+    }
+
+    @Test
+    void createDefinitionRejectsInvalidEnabledToolsJson() {
+        AgentDefinitionService service = newService();
+        AgentCreateRequest request = request(1);
+        request.setEnabledTools("course_search");
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.createDefinition(request));
+
+        assertEquals("enabledTools 必须是 JSON 数组", exception.getMessage());
+    }
+
+    @Test
+    void createDefinitionRejectsNonArrayEnabledToolsJson() {
+        AgentDefinitionService service = newService();
+        AgentCreateRequest request = request(1);
+        request.setEnabledTools("{\"tool\":\"course_search\"}");
+
+        BusinessException exception = assertThrows(BusinessException.class,
+                () -> service.createDefinition(request));
+
+        assertEquals("enabledTools 必须是 JSON 数组", exception.getMessage());
+    }
+
     private AgentDefinitionService newService() {
         return new AgentDefinitionService(agentDefinitionMapper, new ObjectMapper());
     }
@@ -115,8 +139,8 @@ class AgentDefinitionServiceTest {
         request.setSystemPrompt("你是 Java 课程助教。");
         request.setModel("  deepseek-test  ");
         request.setTemperature(new BigDecimal("0.30"));
-        request.setKnowledgeBaseIds("[\"kb-java\"]");
-        request.setEnabledTools("[\"paper_search\"]");
+        request.setKnowledgeBaseIds("[  \"kb-java\" , 2 ]");
+        request.setEnabledTools("[ \"paper_search\" ]");
         request.setStatus(status);
         return request;
     }
