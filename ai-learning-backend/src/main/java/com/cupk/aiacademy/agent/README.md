@@ -86,7 +86,6 @@ Agent 定义保存在 `t_agent` 表中。当前聊天逻辑会使用以下字段
 - `temperature`：模型温度，范围 `0.00` 到 `2.00`。
 - `status`：`1` 表示启用，`0` 表示停用。
 
-`knowledgeBaseIds` 和 `enabledTools` 当前只作为配置字段保存，暂未接入实际知识库检索或工具调用。
 
 ### 3.1 查询 Agent 列表
 
@@ -113,7 +112,6 @@ Authorization: Bearer <token>
 
 ```http
 POST /api/agent/definitions
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -139,15 +137,12 @@ Content-Type: application/json
 | `systemPrompt` | 否 | 系统提示词 |
 | `model` | 否 | 模型名称，最大 100 字 |
 | `temperature` | 否 | 温度，范围 `0.00` 到 `2.00` |
-| `knowledgeBaseIds` | 否 | 预留字段，建议用 JSON 字符串保存 |
-| `enabledTools` | 否 | 预留字段，建议用 JSON 字符串保存 |
 | `status` | 否 | `1` 启用，`0` 停用，默认启用 |
 
 ### 3.4 修改 Agent
 
 ```http
 PUT /api/agent/definitions/{agentId}
-Authorization: Bearer <token>
 Content-Type: application/json
 
 {
@@ -167,7 +162,6 @@ Content-Type: application/json
 
 ```http
 PUT /api/agent/definitions/{agentId}/status?status=0
-Authorization: Bearer <token>
 ```
 
 `status=0` 表示停用，`status=1` 表示启用。停用后的 Agent 不能再创建新会话或继续聊天。
@@ -403,14 +397,7 @@ agent:
 
 暂未完成：
 
-- `knowledgeBaseIds` 的知识库检索逻辑。
-- `enabledTools` 的工具调用逻辑。
-- Agent 权限分级，例如只允许管理员维护 Agent 定义。
 - 前端页面接入。
 
 ## 8. 下一步建议
 
-1. 校验并解析 `knowledgeBaseIds` 和 `enabledTools`，避免保存不可用配置。
-2. 接入知识库检索，把命中的课程资料加入 Prompt。
-3. 接入工具调用，例如课程查询、作业查询、学习计划生成。
-4. 给 Agent 定义管理接口增加角色权限限制。

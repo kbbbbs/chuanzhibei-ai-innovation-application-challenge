@@ -2,14 +2,26 @@ package com.cupk.aiacademy.agent.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.AgentCreateRequest;
 import com.cupk.aiacademy.mapper.AgentDefinitionMapper;
 import com.cupk.aiacademy.pojo.AgentDefinition;
+import com.cupk.aiacademy.weknora.service.WeKnoraService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 /**
  * Agent 定义管理服务。
@@ -22,9 +34,15 @@ public class AgentDefinitionService {
     private static final int INACTIVE_STATUS = 0;
 
     private final AgentDefinitionMapper agentDefinitionMapper;
+    private final ObjectMapper objectMapper;
+    private final WeKnoraService weKnoraService;
 
-    public AgentDefinitionService(AgentDefinitionMapper agentDefinitionMapper) {
+    public AgentDefinitionService(AgentDefinitionMapper agentDefinitionMapper,
+                                   ObjectMapper objectMapper,
+                                   WeKnoraService weKnoraService) {
         this.agentDefinitionMapper = agentDefinitionMapper;
+        this.objectMapper = objectMapper;
+        this.weKnoraService = weKnoraService;
     }
 
     @Transactional(readOnly = true)
@@ -83,6 +101,42 @@ public class AgentDefinitionService {
         return agent;
     }
 
+    @Transactional
+    public Map<String, Object> uploadMarkdownDocument(Integer agentId, String knowledgeBaseId, MultipartFile file) {
+        AgentDefinition agent = ensureDefinition(agentId);
+        String kbId = trimToNull(knowledgeBaseId);
+        if (kbId == null) {
+            throw new BusinessException("knowledgeBaseId 不能为空");
+        }
+        String fileName = validateMarkdownFile(file);
+        if (weKnoraService == null) {
+            throw new BusinessException("知识库服务不可用");
+        }
+
+        Result uploadResult;
+        try {
+            uploadResult = weKnoraService.uploadFile(kbId, file.getBytes(), fileName);
+        } catch (IOException e) {
+            throw new BusinessException("Markdown 文档读取失败");
+        }
+        if (uploadResult == null || !"200".equals(uploadResult.getCode())) {
+            String message = uploadResult == null || isBlank(uploadResult.getMsg())
+                    ? "Markdown 文档上传失败"
+                    : "Markdown 文档上传失败: " + uploadResult.getMsg();
+            throw new BusinessException(message);
+        }
+
+        boolean attached = attachKnowledgeBase(agent, kbId);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("agentId", agent.getId());
+        data.put("knowledgeBaseId", kbId);
+        data.put("fileName", fileName);
+        data.put("attached", attached);
+        data.put("knowledgeBaseIds", agent.getKnowledgeBaseIds());
+        data.put("uploadResult", uploadResult.getData());
+        return data;
+    }
+
     private void validateRequest(AgentCreateRequest request) {
         if (request == null) {
             throw new BusinessException("Agent 信息不能为空");
@@ -96,6 +150,8 @@ public class AgentDefinitionService {
         if (request.getStatus() != null) {
             normalizeStatus(request.getStatus());
         }
+        normalizeJsonArrayField(request.getKnowledgeBaseIds(), "knowledgeBaseIds");
+        normalizeJsonArrayField(request.getEnabledTools(), "enabledTools");
     }
 
     private void applyRequest(AgentDefinition agent, AgentCreateRequest request) {
@@ -105,9 +161,79 @@ public class AgentDefinitionService {
         agent.setSystemPrompt(trimToNull(request.getSystemPrompt()));
         agent.setModel(trimToNull(request.getModel()));
         agent.setTemperature(request.getTemperature());
-        agent.setKnowledgeBaseIds(trimToNull(request.getKnowledgeBaseIds()));
-        agent.setEnabledTools(trimToNull(request.getEnabledTools()));
+        agent.setKnowledgeBaseIds(normalizeJsonArrayField(request.getKnowledgeBaseIds(), "knowledgeBaseIds"));
+        agent.setEnabledTools(normalizeJsonArrayField(request.getEnabledTools(), "enabledTools"));
         agent.setStatus(request.getStatus() == null ? ACTIVE_STATUS : normalizeStatus(request.getStatus()));
+    }
+
+    private String normalizeJsonArrayField(String value, String fieldName) {
+        String trimmed = trimToNull(value);
+        if (trimmed == null) {
+            return null;
+        }
+        try {
+            JsonNode jsonNode = objectMapper.readTree(trimmed);
+            if (!jsonNode.isArray()) {
+                throw new BusinessException(fieldName + " 必须是 JSON 数组");
+            }
+            return objectMapper.writeValueAsString(jsonNode);
+        } catch (JsonProcessingException e) {
+            throw new BusinessException(fieldName + " 必须是 JSON 数组");
+        }
+    }
+
+    private String validateMarkdownFile(MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new BusinessException("Markdown 文档不能为空");
+        }
+        String fileName = StringUtils.getFilename(file.getOriginalFilename());
+        if (isBlank(fileName)) {
+            throw new BusinessException("Markdown 文件名不能为空");
+        }
+        String lowerName = fileName.toLowerCase(Locale.ROOT);
+        if (!lowerName.endsWith(".md") && !lowerName.endsWith(".markdown")) {
+            throw new BusinessException("只支持上传 Markdown 文档(.md/.markdown)");
+        }
+        return fileName;
+    }
+
+    private boolean attachKnowledgeBase(AgentDefinition agent, String knowledgeBaseId) {
+        ArrayNode knowledgeBaseIds = knowledgeBaseIdsArray(agent.getKnowledgeBaseIds());
+        for (JsonNode item : knowledgeBaseIds) {
+            if (knowledgeBaseId.equals(item.asText())) {
+                agent.setKnowledgeBaseIds(writeArray(knowledgeBaseIds));
+                return false;
+            }
+        }
+        knowledgeBaseIds.add(knowledgeBaseId);
+        agent.setKnowledgeBaseIds(writeArray(knowledgeBaseIds));
+        agent.setUpdateTime(LocalDateTime.now());
+        agentDefinitionMapper.updateById(agent);
+        return true;
+    }
+
+    private ArrayNode knowledgeBaseIdsArray(String value) {
+        String trimmed = trimToNull(value);
+        if (trimmed == null) {
+            return objectMapper.createArrayNode();
+        }
+        try {
+            JsonNode jsonNode = objectMapper.readTree(trimmed);
+            if (!jsonNode.isArray()) {
+                throw new BusinessException("Agent 已保存的 knowledgeBaseIds 格式错误");
+            }
+            return (ArrayNode) jsonNode;
+        } catch (JsonProcessingException e) {
+            throw new BusinessException("Agent 已保存的 knowledgeBaseIds 格式错误");
+        }
+    }
+
+    private String writeArray(ArrayNode arrayNode) {
+        try {
+            return objectMapper.writeValueAsString(arrayNode);
+        } catch (JsonProcessingException e) {
+            throw new BusinessException("knowledgeBaseIds 保存失败");
+        }
     }
 
     private AgentDefinition ensureDefinition(Integer agentId) {
