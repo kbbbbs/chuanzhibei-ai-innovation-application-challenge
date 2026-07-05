@@ -4,10 +4,10 @@ import com.cupk.aiacademy.common.ApiResponse;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
-import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.service.QuestionService;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,9 +28,11 @@ import java.util.Map;
 @RequestMapping("/api/questions")
 public class ApiQuestionController {
     private final QuestionService questionService;
+    private final PermissionService permissionService;
 
-    public ApiQuestionController(QuestionService questionService) {
+    public ApiQuestionController(QuestionService questionService, PermissionService permissionService) {
         this.questionService = questionService;
+        this.permissionService = permissionService;
     }
 
     @PostMapping
@@ -70,8 +72,17 @@ public class ApiQuestionController {
     public ApiResponse<List<QuestionRequestDTO>> extract(
             @RequestParam("file") MultipartFile file,
             @RequestParam Long courseId) {
-        Integer userId = UserContext.getCurrentUserId();
-        return ApiResponse.success(questionService.extractQuestions(file, courseId, userId.longValue()));
+        permissionService.requireTeacherOrAdmin();
+        var course = permissionService.getCourse(courseId.intValue());
+        var user = permissionService.currentUser();
+        Integer teacherId;
+        if ("teacher".equals(user.getRoleCode())) {
+            permissionService.requireCourseTeacher(course);
+            teacherId = user.getUserId();
+        } else {
+            teacherId = course.getTeacherId();
+        }
+        return ApiResponse.success(questionService.extractQuestions(file, courseId, teacherId.longValue()));
     }
 
     @PostMapping("/batch")

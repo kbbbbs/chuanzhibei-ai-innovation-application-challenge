@@ -296,6 +296,7 @@ const handleSubmit = async () => {
   try {
     await formRef.value.validate()
   } catch (e) {
+    console.error('表单验证失败:', e)
     return
   }
 
@@ -305,7 +306,15 @@ const handleSubmit = async () => {
     return
   }
 
+  // 校验开始时间不能是过去时间
+  const now = new Date()
+  if (form.startTime && form.startTime < now) {
+    ElMessage.warning('考试开始时间不能早于当前时间')
+    return
+  }
+
   const data = buildRequestDTO()
+  console.log('提交数据:', JSON.stringify(data, null, 2))
 
   submitLoading.value = true
   try {
@@ -316,13 +325,25 @@ const handleSubmit = async () => {
       res = await request.post('/api/exams', data)
     }
 
+    console.log('响应数据:', res)
+
     if (res.code === '200') {
       ElMessage.success('保存成功')
       dialogVisible.value = false
       loadExams()
+    } else {
+      ElMessage.error(res.message || '保存失败')
     }
   } catch (e) {
-    // 全局已提示
+    console.error('请求失败详情:', e)
+    console.error('响应状态:', e.response?.status)
+    console.error('响应数据:', e.response?.data)
+
+    const errorMsg = e.response?.data?.message ||
+                     e.response?.data?.msg ||
+                     e.message ||
+                     '保存失败'
+    ElMessage.error(errorMsg)
   } finally {
     submitLoading.value = false
   }

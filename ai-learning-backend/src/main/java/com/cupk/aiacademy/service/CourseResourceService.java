@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.PaperStatus;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
@@ -74,7 +76,10 @@ public class CourseResourceService {
         Page<Course> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize, 10));
         QueryWrapper<Course> query = new QueryWrapper<>();
         query.eq("category_id", categoryId);
-        if (status != null) {
+        AuthUtils.LoginUser loginUser = UserContext.get();
+        if (authUtils.isStudent(loginUser)) {
+            query.eq("status", 1);
+        } else if (status != null) {
             query.eq("status", status);
         }
         query.orderByDesc("id");
@@ -151,12 +156,27 @@ public class CourseResourceService {
     }
 
     @Transactional(readOnly = true)
-    public Page<ExamPaper> listCourseExamPapers(Integer courseId, Integer status, Integer pageNum, Integer pageSize) {
+    public Page<ExamPaper> listCourseExamPapers(Integer courseId,
+                                                Integer status,
+                                                Integer pageNum,
+                                                Integer pageSize,
+                                                AuthUtils.LoginUser loginUser) {
         getCourse(courseId);
         Page<ExamPaper> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize, 10));
         QueryWrapper<ExamPaper> query = new QueryWrapper<>();
         query.eq("course_id", courseId);
-        if (status != null) {
+        if (authUtils.isStudent(loginUser)) {
+            if (!findStudentCourseIds(loginUser.getUserId(), courseId).contains(courseId)) {
+                return page;
+            }
+            query.eq("status", PaperStatus.PUBLISHED.getCode());
+        } else if (authUtils.isTeacher(loginUser)) {
+            Course course = getCourse(courseId);
+            requireCourseTeacher(course, loginUser);
+            if (status != null) {
+                query.eq("status", status);
+            }
+        } else if (status != null) {
             query.eq("status", status);
         }
         query.orderByDesc("id");

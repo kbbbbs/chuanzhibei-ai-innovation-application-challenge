@@ -1,5 +1,12 @@
 package com.cupk.aiacademy.common;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.cupk.aiacademy.mapper.RoleMapper;
+import com.cupk.aiacademy.mapper.UserMapper;
+import com.cupk.aiacademy.mapper.UserRoleMapper;
+import com.cupk.aiacademy.pojo.Role;
+import com.cupk.aiacademy.pojo.User;
+import com.cupk.aiacademy.pojo.UserRole;
 import io.jsonwebtoken.Claims;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +16,15 @@ import org.springframework.stereotype.Component;
 public class AuthUtils {
     @Autowired
     private JwtUtils jwtUtils;
+
+    @Autowired
+    private UserMapper userMapper;
+
+    @Autowired
+    private UserRoleMapper userRoleMapper;
+
+    @Autowired
+    private RoleMapper roleMapper;
 
     public LoginUser requireLogin(String authorization) {
         if (authorization == null || !authorization.startsWith("Bearer ")) {
@@ -20,12 +36,17 @@ public class AuthUtils {
             throw new IllegalArgumentException("登录状态已失效");
         }
 
-        LoginUser user = new LoginUser();
-        user.setUserId(((Number) userIdValue).intValue());
-        user.setUsername(claims.getSubject());
-        Object roleCodeValue = claims.get("roleCode");
-        user.setRoleCode(roleCodeValue == null ? "student" : roleCodeValue.toString());
-        return user;
+        Integer userId = ((Number) userIdValue).intValue();
+        User dbUser = userMapper.selectById(userId);
+        if (dbUser == null || dbUser.getStatus() == null || dbUser.getStatus() == 0) {
+            throw new IllegalArgumentException("登录状态已失效");
+        }
+
+        LoginUser loginUser = new LoginUser();
+        loginUser.setUserId(userId);
+        loginUser.setUsername(dbUser.getUsername() == null ? claims.getSubject() : dbUser.getUsername());
+        loginUser.setRoleCode(findRoleCode(userId));
+        return loginUser;
     }
 
     public boolean isAdmin(LoginUser user) {
@@ -38,6 +59,18 @@ public class AuthUtils {
 
     public boolean isStudent(LoginUser user) {
         return user != null && "student".equals(user.getRoleCode());
+    }
+
+    public String findRoleCode(Integer userId) {
+        if (userId == null) {
+            return "student";
+        }
+        UserRole userRole = userRoleMapper.selectOne(new QueryWrapper<UserRole>().eq("user_id", userId));
+        if (userRole == null || userRole.getRoleId() == null) {
+            return "student";
+        }
+        Role role = roleMapper.selectById(userRole.getRoleId());
+        return role == null || role.getRoleCode() == null ? "student" : role.getRoleCode();
     }
 
     @Data

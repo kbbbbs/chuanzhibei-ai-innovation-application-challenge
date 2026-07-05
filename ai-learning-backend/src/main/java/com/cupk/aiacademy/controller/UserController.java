@@ -2,7 +2,8 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.common.MD5Utils;
+import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.common.PasswordUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.UserDto;
 import com.cupk.aiacademy.mapper.CourseMapper;
@@ -13,6 +14,7 @@ import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Role;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +45,9 @@ public class UserController {
     @Autowired
     private CourseMapper courseMapper;
 
+    @Autowired
+    private PermissionService permissionService;
+
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String username,
                         @RequestParam(required = false) String roleCode,
@@ -51,20 +56,28 @@ public class UserController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<User> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        AuthUtils.LoginUser loginUser = permissionService.currentUser();
         if (username != null && !username.trim().isEmpty()) {
             queryWrapper.like("username", username.trim());
         }
         if (status != null) {
             queryWrapper.eq("status", status);
         }
-        if (roleCode != null && !roleCode.trim().isEmpty()) {
-            Role role = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode.trim().toLowerCase()));
-            if (role == null) {
+        if ("admin".equals(loginUser.getRoleCode())) {
+            if (!applyRoleFilter(page, queryWrapper, roleCode)) {
+                return Result.success(page);
+            }
+        } else if ("teacher".equals(loginUser.getRoleCode())) {
+            if (roleCode != null && !roleCode.trim().isEmpty() && !"student".equals(roleCode.trim().toLowerCase())) {
                 page.setRecords(java.util.List.of());
                 page.setTotal(0);
                 return Result.success(page);
             }
-            queryWrapper.inSql("id", "select user_id from t_user_role where role_id = " + role.getId());
+            if (!applyRoleFilter(page, queryWrapper, "student")) {
+                return Result.success(page);
+            }
+        } else {
+            queryWrapper.eq("id", loginUser.getUserId());
         }
         queryWrapper.orderByDesc("id");
         userMapper.selectPage(page, queryWrapper);
@@ -79,12 +92,20 @@ public class UserController {
             return Result.error("404", "用户不存在");
         }
         fillRole(user);
+        AuthUtils.LoginUser loginUser = permissionService.currentUser();
+        boolean allowed = "admin".equals(loginUser.getRoleCode())
+                || ("teacher".equals(loginUser.getRoleCode()) && "student".equals(user.getRoleCode()))
+                || ("student".equals(loginUser.getRoleCode()) && loginUser.getUserId().equals(id));
+        if (!allowed) {
+            return Result.error("403", "无权限查看该用户");
+        }
         return Result.success(user);
     }
 
     @PostMapping
     @Transactional(rollbackFor = Exception.class)
     public Result add(@Valid @RequestBody UserDto request) {
+        permissionService.requireAdmin();
         User user = request.toEntity();
         applyRoleCode(user, request.getRoleCode());
         Result checkResult = checkUser(user, false);
@@ -97,7 +118,7 @@ public class UserController {
 
         LocalDateTime now = LocalDateTime.now();
         user.setUsername(user.getUsername().trim());
-        user.setPassword(MD5Utils.md5(user.getPassword()));
+        user.setPassword(PasswordUtils.encode(user.getPassword()));
         user.setNickname(user.getNickname() == null || user.getNickname().trim().isEmpty() ? user.getUsername() : user.getNickname().trim());
         user.setStatus(user.getStatus() == null ? 1 : user.getStatus());
         user.setCreateTime(now);
@@ -110,6 +131,7 @@ public class UserController {
     @PutMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
     public Result update(@PathVariable Integer id, @Valid @RequestBody UserDto request) {
+        permissionService.requireAdmin();
         User user = request.toEntity();
         applyRoleCode(user, request.getRoleCode());
         User oldUser = userMapper.selectById(id);
@@ -131,7 +153,7 @@ public class UserController {
         if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
             user.setPassword(oldUser.getPassword());
         } else if (!user.getPassword().equals(oldUser.getPassword())) {
-            user.setPassword(MD5Utils.md5(user.getPassword()));
+            user.setPassword(PasswordUtils.encode(user.getPassword()));
         }
         user.setUpdateTime(LocalDateTime.now());
         userMapper.updateById(user);
@@ -143,6 +165,7 @@ public class UserController {
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
+        permissionService.requireAdmin();
         if (userMapper.selectById(id) == null) {
             return Result.error("404", "用户不存在");
         }
@@ -207,6 +230,20 @@ public class UserController {
                 user.setRoleCode(role.getRoleCode());
             }
         }
+    }
+
+    private boolean applyRoleFilter(Page<User> page, QueryWrapper<User> queryWrapper, String roleCode) {
+        if (roleCode == null || roleCode.trim().isEmpty()) {
+            return true;
+        }
+        Role role = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode.trim().toLowerCase()));
+        if (role == null) {
+            page.setRecords(java.util.List.of());
+            page.setTotal(0);
+            return false;
+        }
+        queryWrapper.inSql("id", "select user_id from t_user_role where role_id = " + role.getId());
+        return true;
     }
 
     private int fixPageNum(Integer pageNum) {

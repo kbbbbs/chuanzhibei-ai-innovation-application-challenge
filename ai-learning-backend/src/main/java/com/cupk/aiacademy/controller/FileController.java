@@ -111,10 +111,14 @@ public class FileController {
     @DeleteMapping
     public Result delete(@RequestParam String url,
                          @RequestHeader(value = "Authorization", required = false) String authorization) {
+        AuthUtils.LoginUser loginUser;
         try {
-            authUtils.requireLogin(authorization);
+            loginUser = authUtils.requireLogin(authorization);
         } catch (Exception e) {
             return Result.error("401", "登录状态已失效");
+        }
+        if (!authUtils.isAdmin(loginUser)) {
+            return Result.error("403", "仅管理员可删除文件");
         }
 
         String prefix = normalizeUrlPrefix(urlPrefix);

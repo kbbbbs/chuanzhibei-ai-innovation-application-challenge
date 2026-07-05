@@ -8,6 +8,7 @@ import com.cupk.aiacademy.dto.PaperResponseDTO;
 import com.cupk.aiacademy.mapper.ExamAnswerMapper;
 import com.cupk.aiacademy.mapper.ExamPaperMapper;
 import com.cupk.aiacademy.mapper.ExamPaperQuestionMapper;
+import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.ExamPaperQuestion;
 import com.cupk.aiacademy.pojo.Question;
@@ -27,15 +28,18 @@ public class PaperService {
     private final ExamPaperQuestionMapper paperQuestionMapper;
     private final ExamAnswerMapper examAnswerMapper;
     private final QuestionService questionService;
+    private final PermissionService permissionService;
 
     public PaperService(ExamPaperMapper paperMapper,
                         ExamPaperQuestionMapper paperQuestionMapper,
                         ExamAnswerMapper examAnswerMapper,
-                        QuestionService questionService) {
+                        QuestionService questionService,
+                        PermissionService permissionService) {
         this.paperMapper = paperMapper;
         this.paperQuestionMapper = paperQuestionMapper;
         this.examAnswerMapper = examAnswerMapper;
         this.questionService = questionService;
+        this.permissionService = permissionService;
     }
 
     @Transactional
@@ -53,8 +57,9 @@ public class PaperService {
 
     @Transactional
     public PaperResponseDTO update(Long id, PaperRequestDTO request) {
-        validateRequest(request);
         ExamPaper paper = getEntityById(id);
+        permissionService.requirePaperTeacher(paper);
+        validateRequest(request);
         PaperStatus status = PaperStatus.fromCode(paper.getStatus());
         if (status == PaperStatus.PUBLISHED || status == PaperStatus.ARCHIVED) {
             throw new BusinessException("已发布或已归档的试卷不允许修改");
@@ -71,13 +76,24 @@ public class PaperService {
 
     @Transactional(readOnly = true)
     public PaperResponseDTO getById(Long id) {
-        return toResponse(getEntityById(id));
+        ExamPaper paper = getEntityById(id);
+        requireReadablePaper(paper);
+        return toResponse(paper);
     }
 
     @Transactional(readOnly = true)
     public List<PaperResponseDTO> list(Long teacherId) {
         QueryWrapper<ExamPaper> query = new QueryWrapper<>();
-        if (teacherId != null && teacherId > 0) {
+        var user = permissionService.currentUser();
+        if ("teacher".equals(user.getRoleCode())) {
+            query.eq("teacher_id", user.getUserId());
+        } else if ("student".equals(user.getRoleCode())) {
+            List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
+            if (courseIds.isEmpty()) {
+                return List.of();
+            }
+            query.in("course_id", courseIds).eq("status", PaperStatus.PUBLISHED.getCode());
+        } else if (teacherId != null && teacherId > 0) {
             query.eq("teacher_id", teacherId);
         }
         query.orderByDesc("id");
@@ -87,6 +103,7 @@ public class PaperService {
     @Transactional
     public void delete(Long id) {
         ExamPaper paper = getEntityById(id);
+        permissionService.requirePaperTeacher(paper);
         PaperStatus status = PaperStatus.fromCode(paper.getStatus());
         if (status == PaperStatus.PUBLISHED) {
             throw new BusinessException("已发布的试卷不允许删除，请先改为草稿状态");
@@ -100,6 +117,7 @@ public class PaperService {
     @Transactional
     public void removePaperQuestion(Long paperId, Long paperQuestionId) {
         ExamPaper paper = getEntityById(paperId);
+        permissionService.requirePaperTeacher(paper);
         PaperStatus status = PaperStatus.fromCode(paper.getStatus());
         if (status == PaperStatus.PUBLISHED || status == PaperStatus.ARCHIVED) {
             throw new BusinessException("已发布或已归档的试卷不允许删除题目");
@@ -150,6 +168,7 @@ public class PaperService {
         if (request == null) {
             throw new BusinessException("试卷信息不能为空");
         }
+        prepareForWrite(request);
         if (request.getQuestions() == null || request.getQuestions().isEmpty()) {
             throw new BusinessException("试卷必须包含至少一道题目");
         }
@@ -165,7 +184,51 @@ public class PaperService {
             if (item.getSortOrder() == null || !sortOrders.add(item.getSortOrder())) {
                 throw new BusinessException("试卷中题目序号不能重复，序号：" + item.getSortOrder());
             }
-            questionService.getEntityById(item.getQuestionId());
+            Question question = questionService.getEntityById(item.getQuestionId());
+            if (!java.util.Objects.equals(request.getCourseId().intValue(), question.getCourseId())) {
+                throw new BusinessException("题目不属于当前试卷课程，题目ID：" + item.getQuestionId());
+            }
+            if (!java.util.Objects.equals(request.getTeacherId().intValue(), question.getTeacherId())) {
+                throw new BusinessException("题目不属于当前试卷教师，题目ID：" + item.getQuestionId());
+            }
+        }
+    }
+
+    private void prepareForWrite(PaperRequestDTO request) {
+        permissionService.requireTeacherOrAdmin();
+        if (request.getCourseId() == null) {
+            throw new BusinessException("课程不能为空");
+        }
+        Course course = permissionService.getCourse(toInt(request.getCourseId(), "课程ID"));
+        var user = permissionService.currentUser();
+        if ("teacher".equals(user.getRoleCode())) {
+            permissionService.requireCourseTeacher(course);
+            request.setTeacherId(user.getUserId().longValue());
+        } else {
+            Integer teacherId = course.getTeacherId();
+            if (teacherId == null || teacherId <= 0) {
+                teacherId = toNullableInt(request.getTeacherId(), "教师ID");
+            }
+            permissionService.requireUserRole(teacherId, "teacher", "教师用户不存在或角色不正确");
+            request.setTeacherId(teacherId.longValue());
+        }
+    }
+
+    private void requireReadablePaper(ExamPaper paper) {
+        var user = permissionService.currentUser();
+        if ("admin".equals(user.getRoleCode())) {
+            return;
+        }
+        if ("teacher".equals(user.getRoleCode())) {
+            permissionService.requirePaperTeacher(paper);
+            return;
+        }
+        if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.PUBLISHED) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该试卷");
+        }
+        List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
+        if (paper.getCourseId() == null || !courseIds.contains(paper.getCourseId())) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该试卷");
         }
     }
 

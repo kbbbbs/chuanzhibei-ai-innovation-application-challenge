@@ -2,8 +2,10 @@ package com.cupk.aiacademy.common;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpMethod;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -34,5 +36,16 @@ class GlobalExceptionHandlerTest {
         Result body = assertInstanceOf(Result.class, response.getBody());
         assertEquals("500", body.getCode());
         assertEquals("服务器内部错误", body.getMsg());
+    }
+
+    @Test
+    void missingRouteReturnsNotFoundResult() {
+        MockHttpServletRequest request = new MockHttpServletRequest("GET", "/questions");
+
+        ResponseEntity<Object> response = handler.handleNotFound(new NoResourceFoundException(HttpMethod.GET, "/questions"), request);
+
+        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        Result body = assertInstanceOf(Result.class, response.getBody());
+        assertEquals("404", body.getCode());
     }
 }

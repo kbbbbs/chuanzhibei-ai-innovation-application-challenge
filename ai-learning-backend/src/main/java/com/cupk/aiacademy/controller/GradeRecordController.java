@@ -2,6 +2,7 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.GradeRecordDto;
 import com.cupk.aiacademy.mapper.CourseMapper;
@@ -9,6 +10,8 @@ import com.cupk.aiacademy.mapper.GradeRecordMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.GradeRecord;
+import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,6 +44,12 @@ public class GradeRecordController {
     @Autowired
     private CourseMapper courseMapper;
 
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private AuthUtils authUtils;
+
     @GetMapping
     public Result pages(@RequestParam(required = false) Integer studentId,
                         @RequestParam(required = false) Integer classId,
@@ -50,11 +59,30 @@ public class GradeRecordController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<GradeRecord> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<GradeRecord> queryWrapper = new QueryWrapper<>();
-        if (studentId != null && studentId > 0) {
-            queryWrapper.eq("student_id", studentId);
-        }
-        if (classId != null && classId > 0) {
-            queryWrapper.eq("class_id", classId);
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isStudent(user)) {
+            queryWrapper.eq("student_id", user.getUserId());
+        } else if (authUtils.isTeacher(user)) {
+            if (classId != null && classId > 0) {
+                permissionService.requireClassTeacher(classId);
+                queryWrapper.eq("class_id", classId);
+            } else {
+                java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+                if (classIds.isEmpty()) {
+                    return Result.success(page);
+                }
+                queryWrapper.in("class_id", classIds);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
+        } else {
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
+            if (classId != null && classId > 0) {
+                queryWrapper.eq("class_id", classId);
+            }
         }
         if (courseId != null && courseId > 0) {
             queryWrapper.eq("course_id", courseId);
@@ -70,12 +98,18 @@ public class GradeRecordController {
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
         GradeRecord grade = gradeMapper.selectById(id);
-        return grade == null ? Result.error("404", "成绩记录不存在") : Result.success(grade);
+        if (grade == null) {
+            return Result.error("404", "成绩记录不存在");
+        }
+        checkGradeReadPermission(grade);
+        return Result.success(grade);
     }
 
     @PostMapping
     public Result add(@Valid @RequestBody GradeRecordDto request) {
+        permissionService.requireTeacherOrAdmin();
         GradeRecord grade = request.toEntity();
+        applyGradeTeacher(grade);
         Result checkResult = checkGrade(grade);
         if (checkResult != null) {
             return checkResult;
@@ -92,9 +126,12 @@ public class GradeRecordController {
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody GradeRecordDto request) {
         GradeRecord grade = request.toEntity();
-        if (gradeMapper.selectById(id) == null) {
+        GradeRecord old = gradeMapper.selectById(id);
+        if (old == null) {
             return Result.error("404", "成绩记录不存在");
         }
+        checkGradeWritePermission(old);
+        applyGradeTeacher(grade);
         Result checkResult = checkGrade(grade);
         if (checkResult != null) {
             return checkResult;
@@ -109,9 +146,11 @@ public class GradeRecordController {
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (gradeMapper.selectById(id) == null) {
+        GradeRecord grade = gradeMapper.selectById(id);
+        if (grade == null) {
             return Result.error("404", "成绩记录不存在");
         }
+        checkGradeWritePermission(grade);
         int row = gradeMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -135,7 +174,8 @@ public class GradeRecordController {
         if (userMapper.selectById(grade.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
         }
-        if (classMapper.selectById(grade.getClassId()) == null) {
+        TeachingClass teachingClass = classMapper.selectById(grade.getClassId());
+        if (teachingClass == null) {
             return Result.error("404", "教学班不存在");
         }
         if (courseMapper.selectById(grade.getCourseId()) == null) {
@@ -143,6 +183,15 @@ public class GradeRecordController {
         }
         if (userMapper.selectById(grade.getTeacherId()) == null) {
             return Result.error("404", "教师用户不存在");
+        }
+        if (!teachingClass.getCourseId().equals(grade.getCourseId())) {
+            return Result.error("400", "成绩课程与教学班课程不一致");
+        }
+        if (!teachingClass.getTeacherId().equals(grade.getTeacherId())) {
+            return Result.error("400", "成绩教师与教学班教师不一致");
+        }
+        if (!permissionService.isStudentInClass(grade.getClassId(), grade.getStudentId())) {
+            return Result.error("400", "学生未加入该教学班");
         }
         if (grade.getGradeName() == null || grade.getGradeName().trim().isEmpty()) {
             return Result.error("400", "成绩名称不能为空");
@@ -154,6 +203,39 @@ public class GradeRecordController {
             return Result.error("400", "成绩来源不合法");
         }
         return null;
+    }
+
+    private void applyGradeTeacher(GradeRecord grade) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            grade.setTeacherId(user.getUserId());
+        } else if (grade.getClassId() != null && (grade.getTeacherId() == null || grade.getTeacherId() <= 0)) {
+            TeachingClass teachingClass = classMapper.selectById(grade.getClassId());
+            if (teachingClass != null) {
+                grade.setTeacherId(teachingClass.getTeacherId());
+            }
+        }
+    }
+
+    private void checkGradeReadPermission(GradeRecord grade) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isAdmin(user)) {
+            return;
+        }
+        if (authUtils.isStudent(user)) {
+            if (!user.getUserId().equals(grade.getStudentId())) {
+                throw new com.cupk.aiacademy.common.ForbiddenException("只能查看自己的成绩");
+            }
+            return;
+        }
+        permissionService.requireClassTeacher(grade.getClassId());
+    }
+
+    private void checkGradeWritePermission(GradeRecord grade) {
+        permissionService.requireTeacherOrAdmin();
+        if (!authUtils.isAdmin(permissionService.currentUser())) {
+            permissionService.requireClassTeacher(grade.getClassId());
+        }
     }
 
     private int fixPageNum(Integer pageNum) {

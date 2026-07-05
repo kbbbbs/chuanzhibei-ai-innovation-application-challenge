@@ -8,9 +8,9 @@ import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.CourseDto;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
-import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,14 +35,14 @@ public class CourseController {
     @Autowired
     private CourseCategoryMapper categoryMapper;
 
-    @Autowired
-    private UserMapper userMapper;
-
     @Autowired(required = false)
     private AuthUtils authUtils;
 
     @Autowired
     private CourseResourceService courseResourceService;
+
+    @Autowired
+    private PermissionService permissionService;
 
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String title,
@@ -55,13 +55,18 @@ public class CourseController {
 
         Page<Course> page = new Page<>(pageNum, pageSize);
         QueryWrapper<Course> queryWrapper = new QueryWrapper<>();
+        AuthUtils.LoginUser loginUser = permissionService.currentUser();
         if (title != null && !title.trim().isEmpty()) {
             queryWrapper.like("title", title.trim());
         }
         if (categoryId != null && categoryId > 0) {
             queryWrapper.eq("category_id", categoryId);
         }
-        if (teacherId != null && teacherId > 0) {
+        if (authUtils.isTeacher(loginUser)) {
+            queryWrapper.eq("teacher_id", loginUser.getUserId());
+        } else if (authUtils.isStudent(loginUser)) {
+            queryWrapper.eq("status", 1);
+        } else if (teacherId != null && teacherId > 0) {
             queryWrapper.eq("teacher_id", teacherId);
         }
         queryWrapper.orderByDesc("id");
@@ -89,7 +94,12 @@ public class CourseController {
 
     @PostMapping
     public Result add(@Valid @RequestBody CourseDto request) {
+        permissionService.requireTeacherOrAdmin();
         Course course = request.toEntity();
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            course.setTeacherId(user.getUserId());
+        }
         Result checkResult = checkCourse(course);
         if (checkResult != null) {
             return checkResult;
@@ -109,18 +119,20 @@ public class CourseController {
             return Result.error("404", "课程不存在");
         }
 
-        // Permission check: teacher can only modify their own courses
-        AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !isAdmin(user) && course.getTeacherId() != null
-                && !course.getTeacherId().equals(user.getUserId())) {
-            return Result.error("403", "无权限修改此课程");
-        }
+        permissionService.requireCourseTeacher(course);
 
-        Result checkResult = checkCourse(request.toEntity());
+        Course newCourse = request.toEntity();
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            newCourse.setTeacherId(user.getUserId());
+        } else if (newCourse.getTeacherId() == null) {
+            newCourse.setTeacherId(course.getTeacherId());
+        }
+        Result checkResult = checkCourse(newCourse);
         if (checkResult != null) {
             return checkResult;
         }
-        course = request.toEntity();
+        course = newCourse;
         course.setId(id);
         course.setTitle(course.getTitle().trim());
         course.setUpdatedAt(LocalDateTime.now());
@@ -135,12 +147,7 @@ public class CourseController {
             return Result.error("404", "课程不存在");
         }
 
-        // Permission check: teacher can only delete their own courses
-        AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !isAdmin(user) && course.getTeacherId() != null
-                && !course.getTeacherId().equals(user.getUserId())) {
-            return Result.error("403", "无权限删除此课程");
-        }
+        permissionService.requireCourseTeacher(course);
 
         int row = courseMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
@@ -177,7 +184,7 @@ public class CourseController {
                              @RequestParam(required = false) Integer status,
                              @RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(courseResourceService.listCourseExamPapers(courseId, status, pageNum, pageSize));
+        return Result.success(courseResourceService.listCourseExamPapers(courseId, status, pageNum, pageSize, UserContext.get()));
     }
 
     @GetMapping("/{courseId}/my-learning-progress")
@@ -212,13 +219,15 @@ public class CourseController {
         if (categoryMapper.selectById(course.getCategoryId()) == null) {
             return Result.error("404", "课程分类不存在");
         }
-        if (course.getTeacherId() != null && userMapper.selectById(course.getTeacherId()) == null) {
-            return Result.error("404", "教师用户不存在");
+        if (course.getTeacherId() == null || course.getTeacherId() <= 0) {
+            return Result.error("400", "教师用户不能为空");
+        }
+        try {
+            permissionService.requireUserRole(course.getTeacherId(), "teacher", "教师用户不存在或角色不正确");
+        } catch (RuntimeException e) {
+            return Result.error("404", e.getMessage());
         }
         return null;
     }
 
-    private boolean isAdmin(AuthUtils.LoginUser user) {
-        return authUtils != null && authUtils.isAdmin(user);
-    }
 }

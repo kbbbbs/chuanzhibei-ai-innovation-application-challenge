@@ -12,6 +12,8 @@ import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
+import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -42,6 +44,9 @@ public class HomeworkController {
     @Autowired(required = false)
     private AuthUtils authUtils;
 
+    @Autowired
+    private PermissionService permissionService;
+
     @GetMapping("/homeworks")
     public Result pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer teacherId,
@@ -50,11 +55,35 @@ public class HomeworkController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Homework> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<Homework> queryWrapper = new QueryWrapper<>();
-        if (classId != null && classId > 0) {
-            queryWrapper.eq("class_id", classId);
-        }
-        if (teacherId != null && teacherId > 0) {
-            queryWrapper.eq("teacher_id", teacherId);
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (isTeacher(user)) {
+            if (classId != null && classId > 0) {
+                permissionService.requireClassTeacher(classId);
+                queryWrapper.eq("class_id", classId);
+            } else {
+                java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+                if (classIds.isEmpty()) {
+                    return Result.success(page);
+                }
+                queryWrapper.in("class_id", classIds);
+            }
+            queryWrapper.eq("teacher_id", user.getUserId());
+        } else if (authUtils.isStudent(user)) {
+            java.util.List<Integer> classIds = permissionService.studentClassIds(user.getUserId());
+            if (classIds.isEmpty()) {
+                return Result.success(page);
+            }
+            queryWrapper.in("class_id", classIds);
+            if (classId != null && classId > 0) {
+                queryWrapper.eq("class_id", classId);
+            }
+        } else {
+            if (classId != null && classId > 0) {
+                queryWrapper.eq("class_id", classId);
+            }
+            if (teacherId != null && teacherId > 0) {
+                queryWrapper.eq("teacher_id", teacherId);
+            }
         }
         if (title != null && !title.trim().isEmpty()) {
             queryWrapper.like("title", title.trim());
@@ -67,7 +96,11 @@ public class HomeworkController {
     @GetMapping("/homeworks/{id}")
     public Result selectById(@PathVariable Integer id) {
         Homework homework = homeworkMapper.selectById(id);
-        return homework == null ? Result.error("404", "作业不存在") : Result.success(homework);
+        if (homework == null) {
+            return Result.error("404", "作业不存在");
+        }
+        checkHomeworkReadPermission(homework);
+        return Result.success(homework);
     }
 
     @GetMapping("/homeworks/{homeworkId}/submits")
@@ -75,6 +108,8 @@ public class HomeworkController {
         if (homeworkMapper.selectById(homeworkId) == null) {
             return Result.error("404", "作业不存在");
         }
+        Homework homework = homeworkMapper.selectById(homeworkId);
+        permissionService.requireHomeworkTeacher(homework);
         QueryWrapper<HomeworkSubmit> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("homework_id", homeworkId).orderByDesc("id");
         return Result.success(submitMapper.selectList(queryWrapper));
@@ -82,7 +117,9 @@ public class HomeworkController {
 
     @PostMapping("/homeworks")
     public Result add(@Valid @RequestBody HomeworkDto request) {
+        permissionService.requireTeacherOrAdmin();
         Homework homework = request.toEntity();
+        applyHomeworkTeacher(homework);
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -102,14 +139,10 @@ public class HomeworkController {
             return Result.error("404", "作业不存在");
         }
 
-        // Permission check: teacher can only modify their own homework
-        AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
-                && !homework.getTeacherId().equals(user.getUserId())) {
-            return Result.error("403", "无权限修改此作业");
-        }
+        permissionService.requireHomeworkTeacher(homework);
 
         homework = request.toEntity();
+        applyHomeworkTeacher(homework);
         Result checkResult = checkHomework(homework);
         if (checkResult != null) {
             return checkResult;
@@ -128,12 +161,7 @@ public class HomeworkController {
             return Result.error("404", "作业不存在");
         }
 
-        // Permission check: teacher can only delete their own homework
-        AuthUtils.LoginUser user = UserContext.get();
-        if (user != null && !isAdmin(user) && homework.getTeacherId() != null
-                && !homework.getTeacherId().equals(user.getUserId())) {
-            return Result.error("403", "无权限删除此作业");
-        }
+        permissionService.requireHomeworkTeacher(homework);
 
         int row = homeworkMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
@@ -143,11 +171,20 @@ public class HomeworkController {
         if (homework == null) {
             return Result.error("400", "作业信息不能为空");
         }
-        if (homework.getClassId() == null || classMapper.selectById(homework.getClassId()) == null) {
+        TeachingClass teachingClass = homework.getClassId() == null ? null : classMapper.selectById(homework.getClassId());
+        if (teachingClass == null) {
             return Result.error("404", "教学班不存在");
         }
-        if (homework.getTeacherId() == null || userMapper.selectById(homework.getTeacherId()) == null) {
-            return Result.error("404", "教师用户不存在");
+        if (homework.getTeacherId() == null || homework.getTeacherId() <= 0) {
+            return Result.error("400", "教师用户不能为空");
+        }
+        try {
+            permissionService.requireUserRole(homework.getTeacherId(), "teacher", "教师用户不存在或角色不正确");
+        } catch (RuntimeException e) {
+            return Result.error("404", e.getMessage());
+        }
+        if (!homework.getTeacherId().equals(teachingClass.getTeacherId())) {
+            return Result.error("400", "作业教师必须与教学班教师一致");
         }
         if (homework.getTitle() == null || homework.getTitle().trim().isEmpty()) {
             return Result.error("400", "作业标题不能为空");
@@ -165,5 +202,35 @@ public class HomeworkController {
 
     private boolean isAdmin(AuthUtils.LoginUser user) {
         return authUtils != null && authUtils.isAdmin(user);
+    }
+
+    private boolean isTeacher(AuthUtils.LoginUser user) {
+        return authUtils != null && authUtils.isTeacher(user);
+    }
+
+    private void applyHomeworkTeacher(Homework homework) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (isTeacher(user)) {
+            homework.setTeacherId(user.getUserId());
+        } else if (homework.getClassId() != null && (homework.getTeacherId() == null || homework.getTeacherId() <= 0)) {
+            TeachingClass teachingClass = classMapper.selectById(homework.getClassId());
+            if (teachingClass != null) {
+                homework.setTeacherId(teachingClass.getTeacherId());
+            }
+        }
+    }
+
+    private void checkHomeworkReadPermission(Homework homework) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (isAdmin(user)) {
+            return;
+        }
+        if (isTeacher(user)) {
+            permissionService.requireHomeworkTeacher(homework);
+            return;
+        }
+        if (!permissionService.isStudentInClass(homework.getClassId(), user.getUserId())) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该作业");
+        }
     }
 }

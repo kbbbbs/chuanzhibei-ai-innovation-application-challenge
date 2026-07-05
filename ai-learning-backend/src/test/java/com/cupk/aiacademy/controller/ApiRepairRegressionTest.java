@@ -1,8 +1,10 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.JwtUtils;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
+import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.ExamAnswerMapper;
@@ -34,6 +36,8 @@ import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.service.PermissionService;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -41,6 +45,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -59,13 +64,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         ClassStudentController.class,
         LearningProgressController.class,
         HomeworkSubmitController.class,
-        ExamPaperQuestionController.class,
-        ExamRecordController.class,
-        ExamAnswerController.class,
         GradeImportLogController.class,
         RoleController.class,
         UserController.class,
-        QuestionController.class,
         GradeRecordController.class,
         CourseController.class
 })
@@ -87,6 +88,9 @@ class ApiRepairRegressionTest {
     private JwtUtils jwtUtils;
 
     @MockitoBean
+    private AuthUtils authUtils;
+
+    @MockitoBean
     private CourseCategoryMapper categoryMapper;
 
     @MockitoBean
@@ -106,6 +110,9 @@ class ApiRepairRegressionTest {
 
     @MockitoBean
     private LessonMapper lessonMapper;
+
+    @MockitoBean
+    private ChapterMapper chapterMapper;
 
     @MockitoBean
     private HomeworkSubmitMapper homeworkSubmitMapper;
@@ -139,6 +146,35 @@ class ApiRepairRegressionTest {
 
     @MockitoBean
     private CourseResourceService courseResourceService;
+
+    @MockitoBean
+    private PermissionService permissionService;
+
+    @BeforeEach
+    void setUpPermission() {
+        AuthUtils.LoginUser admin = new AuthUtils.LoginUser();
+        admin.setUserId(1);
+        admin.setUsername("admin");
+        admin.setRoleCode("admin");
+        when(permissionService.currentUser()).thenReturn(admin);
+        when(authUtils.requireLogin(any())).thenReturn(admin);
+        when(authUtils.isAdmin(any())).thenAnswer(invocation -> {
+            AuthUtils.LoginUser user = invocation.getArgument(0);
+            return user != null && "admin".equals(user.getRoleCode());
+        });
+        when(authUtils.isTeacher(any())).thenAnswer(invocation -> {
+            AuthUtils.LoginUser user = invocation.getArgument(0);
+            return user != null && "teacher".equals(user.getRoleCode());
+        });
+        when(authUtils.isStudent(any())).thenAnswer(invocation -> {
+            AuthUtils.LoginUser user = invocation.getArgument(0);
+            return user != null && "student".equals(user.getRoleCode());
+        });
+    }
+
+    private MockHttpServletRequestBuilder authed(MockHttpServletRequestBuilder builder) {
+        return builder.header("Authorization", "Bearer test-token");
+    }
 
     @Test
     void loginNullBodyReturnsUnifiedResult() throws Exception {
@@ -179,46 +215,34 @@ class ApiRepairRegressionTest {
 
     @Test
     void nullBodyCreateApisReturnUnifiedBadRequestResult() throws Exception {
-        mockMvc.perform(post("/categories").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(authed(post("/categories").contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
 
-        mockMvc.perform(post("/operation-logs").contentType(MediaType.APPLICATION_JSON))
+        mockMvc.perform(authed(post("/operation-logs").contentType(MediaType.APPLICATION_JSON)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
     }
 
     @Test
     void emptyObjectApisReturnBadRequestBeforeLookup() throws Exception {
-        mockMvc.perform(post("/class-students").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(authed(post("/class-students").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
 
-        mockMvc.perform(post("/learning-progress").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(authed(post("/learning-progress").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
 
-        mockMvc.perform(post("/homework-submits").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(authed(post("/homework-submits").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
 
-        mockMvc.perform(post("/exam-paper-questions").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(authed(post("/grade-import-logs").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
 
-        mockMvc.perform(post("/exam-records").contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("400"));
-
-        mockMvc.perform(post("/exam-answers").contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("400"));
-
-        mockMvc.perform(post("/grade-import-logs").contentType(MediaType.APPLICATION_JSON).content("{}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("400"));
-
-        mockMvc.perform(put("/learning-progress/9001").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mockMvc.perform(authed(put("/learning-progress/9001").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
     }
@@ -227,9 +251,9 @@ class ApiRepairRegressionTest {
     void duplicateRoleCodeReturnsConflictResult() throws Exception {
         when(roleMapper.selectCount(any())).thenReturn(1L);
 
-        mockMvc.perform(post("/roles")
+        mockMvc.perform(authed(post("/roles")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"roleName\":\"dup\",\"roleCode\":\"student\"}"))
+                        .content("{\"roleName\":\"dup\",\"roleCode\":\"student\"}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("409"));
     }
@@ -240,9 +264,9 @@ class ApiRepairRegressionTest {
         when(userMapper.selectById(3)).thenReturn(new User());
         when(classStudentMapper.selectCount(any())).thenReturn(1L);
 
-        mockMvc.perform(post("/class-students")
+        mockMvc.perform(authed(post("/class-students")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"classId\":1,\"studentId\":3,\"status\":1}"))
+                        .content("{\"classId\":1,\"studentId\":3,\"status\":1}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("409"));
     }
@@ -252,46 +276,44 @@ class ApiRepairRegressionTest {
         when(roleMapper.selectById(1)).thenReturn(new Role());
         when(userRoleMapper.selectCount(any())).thenReturn(1L);
 
-        mockMvc.perform(delete("/roles/1"))
+        mockMvc.perform(authed(delete("/roles/1")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("409"));
 
         when(userMapper.selectById(2)).thenReturn(new User());
         when(courseMapper.selectCount(any())).thenReturn(1L);
 
-        mockMvc.perform(delete("/users/2"))
+        mockMvc.perform(authed(delete("/users/2")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("409"));
     }
 
     @Test
-    void invalidQuestionTypeAndGradeSourceReturnBadRequestResult() throws Exception {
-        when(courseMapper.selectById(1)).thenReturn(new Course());
-        when(userMapper.selectById(2)).thenReturn(new User());
-
-        mockMvc.perform(post("/questions")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"courseId\":1,\"teacherId\":2,\"questionType\":\"invalid_type\",\"title\":\"题目\"}"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("400"));
-
+    void invalidGradeSourceReturnBadRequestResult() throws Exception {
         when(userMapper.selectById(3)).thenReturn(new User());
-        when(teachingClassMapper.selectById(1)).thenReturn(new TeachingClass());
+        when(userMapper.selectById(2)).thenReturn(new User());
+        when(courseMapper.selectById(1)).thenReturn(new Course());
+        TeachingClass teachingClass = new TeachingClass();
+        teachingClass.setId(1);
+        teachingClass.setCourseId(1);
+        teachingClass.setTeacherId(2);
+        when(teachingClassMapper.selectById(1)).thenReturn(teachingClass);
+        when(permissionService.isStudentInClass(1, 3)).thenReturn(true);
 
-        mockMvc.perform(post("/grade-records")
+        mockMvc.perform(authed(post("/grade-records")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"studentId\":3,\"classId\":1,\"courseId\":1,\"teacherId\":2,\"gradeName\":\"期末\",\"sourceType\":\"bad_source\"}"))
+                        .content("{\"studentId\":3,\"classId\":1,\"courseId\":1,\"teacherId\":2,\"gradeName\":\"期末\",\"sourceType\":\"bad_source\"}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
     }
 
     @Test
     void invalidQueryParametersReturnHttp400WithResult() throws Exception {
-        mockMvc.perform(get("/courses").param("pageNum", "abc").param("pageSize", "5"))
+        mockMvc.perform(authed(get("/courses").param("pageNum", "abc").param("pageSize", "5")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("400"));
 
-        mockMvc.perform(get("/users").param("status", "enabled"))
+        mockMvc.perform(authed(get("/users").param("status", "enabled")))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("400"));
     }

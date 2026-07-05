@@ -2,12 +2,15 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.ClassStudentDto;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.ClassStudent;
+import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,6 +37,12 @@ public class ClassStudentController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private AuthUtils authUtils;
+
     @GetMapping
     public Result pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer studentId,
@@ -41,11 +50,33 @@ public class ClassStudentController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<ClassStudent> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
-        if (classId != null && classId > 0) {
-            queryWrapper.eq("class_id", classId);
-        }
-        if (studentId != null && studentId > 0) {
-            queryWrapper.eq("student_id", studentId);
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            if (classId != null && classId > 0) {
+                permissionService.requireClassTeacher(classId);
+                queryWrapper.eq("class_id", classId);
+            } else {
+                java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+                if (classIds.isEmpty()) {
+                    return Result.success(page);
+                }
+                queryWrapper.in("class_id", classIds);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
+        } else if (authUtils.isStudent(user)) {
+            queryWrapper.eq("student_id", user.getUserId());
+            if (classId != null && classId > 0) {
+                queryWrapper.eq("class_id", classId);
+            }
+        } else {
+            if (classId != null && classId > 0) {
+                queryWrapper.eq("class_id", classId);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
         }
         queryWrapper.orderByDesc("id");
         classStudentMapper.selectPage(page, queryWrapper);
@@ -55,7 +86,11 @@ public class ClassStudentController {
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
         ClassStudent classStudent = classStudentMapper.selectById(id);
-        return classStudent == null ? Result.error("404", "学生名单记录不存在") : Result.success(classStudent);
+        if (classStudent == null) {
+            return Result.error("404", "学生名单记录不存在");
+        }
+        checkReadPermission(classStudent);
+        return Result.success(classStudent);
     }
 
     @GetMapping("/class/{classId}")
@@ -63,6 +98,7 @@ public class ClassStudentController {
         if (classMapper.selectById(classId) == null) {
             return Result.error("404", "教学班不存在");
         }
+        permissionService.requireClassTeacher(classId);
         QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("class_id", classId).orderByDesc("id");
         return Result.success(classStudentMapper.selectList(queryWrapper));
@@ -73,8 +109,20 @@ public class ClassStudentController {
         if (userMapper.selectById(studentId) == null) {
             return Result.error("404", "学生用户不存在");
         }
+        AuthUtils.LoginUser user = permissionService.currentUser();
         QueryWrapper<ClassStudent> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("student_id", studentId).orderByDesc("id");
+        if (authUtils.isStudent(user)) {
+            if (!user.getUserId().equals(studentId)) {
+                return Result.error("403", "只能查看自己的班级");
+            }
+        } else if (authUtils.isTeacher(user)) {
+            java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+            if (classIds.isEmpty()) {
+                return Result.success(java.util.List.of());
+            }
+            queryWrapper.in("class_id", classIds);
+        }
         return Result.success(classStudentMapper.selectList(queryWrapper));
     }
 
@@ -85,6 +133,7 @@ public class ClassStudentController {
         if (checkResult != null) {
             return checkResult;
         }
+        permissionService.requireClassTeacher(classStudent.getClassId());
         classStudent.setJoinTime(LocalDateTime.now());
         int row = classStudentMapper.insert(classStudent);
         return row > 0 ? Result.success() : Result.error();
@@ -93,13 +142,16 @@ public class ClassStudentController {
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @RequestBody ClassStudentDto request) {
         ClassStudent classStudent = request == null ? null : request.toEntity();
-        if (classStudentMapper.selectById(id) == null) {
+        ClassStudent old = classStudentMapper.selectById(id);
+        if (old == null) {
             return Result.error("404", "学生名单记录不存在");
         }
+        permissionService.requireClassTeacher(old.getClassId());
         Result checkResult = checkClassStudent(classStudent, id);
         if (checkResult != null) {
             return checkResult;
         }
+        permissionService.requireClassTeacher(classStudent.getClassId());
         classStudent.setId(id);
         int row = classStudentMapper.updateById(classStudent);
         return row > 0 ? Result.success() : Result.error();
@@ -107,9 +159,11 @@ public class ClassStudentController {
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (classStudentMapper.selectById(id) == null) {
+        ClassStudent old = classStudentMapper.selectById(id);
+        if (old == null) {
             return Result.error("404", "学生名单记录不存在");
         }
+        permissionService.requireClassTeacher(old.getClassId());
         int row = classStudentMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -124,11 +178,14 @@ public class ClassStudentController {
         if (classStudent.getStudentId() == null || classStudent.getStudentId() <= 0) {
             return Result.error("400", "学生用户不能为空");
         }
-        if (classMapper.selectById(classStudent.getClassId()) == null) {
+        TeachingClass teachingClass = classMapper.selectById(classStudent.getClassId());
+        if (teachingClass == null) {
             return Result.error("404", "教学班不存在");
         }
-        if (userMapper.selectById(classStudent.getStudentId()) == null) {
-            return Result.error("404", "学生用户不存在");
+        try {
+            permissionService.requireUserRole(classStudent.getStudentId(), "student", "学生用户不存在或角色不正确");
+        } catch (RuntimeException e) {
+            return Result.error("404", e.getMessage());
         }
         QueryWrapper<ClassStudent> duplicateQuery = new QueryWrapper<>();
         duplicateQuery.eq("class_id", classStudent.getClassId()).eq("student_id", classStudent.getStudentId());
@@ -139,6 +196,20 @@ public class ClassStudentController {
             return Result.error("409", "该学生已加入该教学班");
         }
         return null;
+    }
+
+    private void checkReadPermission(ClassStudent classStudent) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isAdmin(user)) {
+            return;
+        }
+        if (authUtils.isTeacher(user)) {
+            permissionService.requireClassTeacher(classStudent.getClassId());
+            return;
+        }
+        if (!user.getUserId().equals(classStudent.getStudentId())) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("只能查看自己的班级");
+        }
     }
 
     private int fixPageNum(Integer pageNum) {

@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-@RestController
+// Legacy CRUD controller disabled; use /api/submissions instead.
 @RequestMapping("/exam-answers")
 public class ExamAnswerController {
     @Autowired

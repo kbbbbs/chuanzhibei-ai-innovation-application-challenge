@@ -4,11 +4,13 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
+import com.cupk.aiacademy.common.ForbiddenException;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.mapper.QuestionMapper;
+import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Question;
 import com.cupk.aiacademy.weknora.service.WeKnoraService;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -39,17 +41,21 @@ public class QuestionService {
     private final QuestionMapper questionMapper;
     private final ObjectMapper objectMapper;
     private final WeKnoraService weKnoraService;
+    private final PermissionService permissionService;
 
     public QuestionService(QuestionMapper questionMapper, ObjectMapper objectMapper,
-                           WeKnoraService weKnoraService) {
+                           WeKnoraService weKnoraService,
+                           PermissionService permissionService) {
         this.questionMapper = questionMapper;
         this.objectMapper = objectMapper;
         this.weKnoraService = weKnoraService;
+        this.permissionService = permissionService;
     }
 
     @Transactional
     public QuestionResponseDTO create(QuestionRequestDTO request) {
         validateQuestionRules(request);
+        prepareForWrite(request, null);
         Question question = new Question();
         fillQuestion(question, request);
         LocalDateTime now = LocalDateTime.now();
@@ -63,6 +69,8 @@ public class QuestionService {
     public QuestionResponseDTO update(Long id, QuestionRequestDTO request) {
         validateQuestionRules(request);
         Question question = getEntityById(id);
+        requireQuestionTeacher(question);
+        prepareForWrite(request, question);
         fillQuestion(question, request);
         question.setUpdateTime(LocalDateTime.now());
         questionMapper.updateById(question);
@@ -71,7 +79,9 @@ public class QuestionService {
 
     @Transactional(readOnly = true)
     public QuestionResponseDTO getById(Long id) {
-        return toResponse(getEntityById(id));
+        Question question = getEntityById(id);
+        boolean includeAnswers = canReadWithAnswers(question);
+        return toResponse(question, includeAnswers);
     }
 
     @Transactional(readOnly = true)
@@ -93,24 +103,57 @@ public class QuestionService {
         if (difficulty != null) {
             query.eq("difficulty", difficulty.getCode());
         }
-        if (status != null) {
-            query.eq("status", status.getCode());
+        boolean includeAnswers = true;
+        var user = permissionService.currentUser();
+        if (permissionService.isTeacher()) {
+            query.eq("teacher_id", user.getUserId());
+        } else if (permissionService.isStudent()) {
+            includeAnswers = false;
+            query.eq("status", RecordStatus.ACTIVE.getCode());
+            List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
+            if (courseIds.isEmpty()) {
+                return new PageImpl<>(List.of(), PageRequest.of(pageIndex, pageSize), 0);
+            }
+            if (courseId != null && courseId > 0) {
+                if (!courseIds.contains(courseId.intValue())) {
+                    return new PageImpl<>(List.of(), PageRequest.of(pageIndex, pageSize), 0);
+                }
+                query.eq("course_id", courseId);
+            } else {
+                query.in("course_id", courseIds);
+            }
+        } else {
+            if (teacherId != null && teacherId > 0) {
+                query.eq("teacher_id", teacherId);
+            }
+            if (courseId != null && courseId > 0) {
+                query.eq("course_id", courseId);
+            }
+            if (status != null) {
+                query.eq("status", status.getCode());
+            }
         }
-        if (courseId != null && courseId > 0) {
-            query.eq("course_id", courseId);
-        }
-        if (teacherId != null && teacherId > 0) {
-            query.eq("teacher_id", teacherId);
+        if ("teacher".equals(user.getRoleCode())) {
+            if (status != null) {
+                query.eq("status", status.getCode());
+            }
+            if (courseId != null && courseId > 0) {
+                query.eq("course_id", courseId);
+            }
         }
         query.orderByDesc("id");
         questionMapper.selectPage(mpPage, query);
-        List<QuestionResponseDTO> records = mpPage.getRecords().stream().map(this::toResponse).toList();
+        boolean finalIncludeAnswers = includeAnswers;
+        List<QuestionResponseDTO> records = mpPage.getRecords().stream()
+                .map(question -> toResponse(question, finalIncludeAnswers))
+                .toList();
         return new PageImpl<>(records, PageRequest.of(pageIndex, pageSize), mpPage.getTotal());
     }
 
     @Transactional
     public void delete(Long id) {
         Question question = getEntityById(id);
+        requireQuestionTeacher(question);
         questionMapper.deleteById(question.getId());
     }
 
@@ -138,6 +181,7 @@ public class QuestionService {
             如果文档中没有找到任何题目，返回空数组[]。""";
 
     public List<QuestionRequestDTO> extractQuestions(MultipartFile file, Long courseId, Long teacherId) {
+        permissionService.requireTeacherOrAdmin();
         if (file == null || file.isEmpty()) {
             throw new BusinessException("上传文件不能为空");
         }
@@ -283,6 +327,10 @@ public class QuestionService {
     }
 
     public QuestionResponseDTO toResponse(Question question) {
+        return toResponse(question, true);
+    }
+
+    public QuestionResponseDTO toResponse(Question question, boolean includeAnswers) {
         QuestionResponseDTO response = new QuestionResponseDTO();
         response.setId(toLong(question.getId()));
         response.setCourseId(toLong(question.getCourseId()));
@@ -297,8 +345,66 @@ public class QuestionService {
         response.setCreatedAt(question.getCreateTime());
         response.setUpdatedAt(question.getUpdateTime());
         response.setOptions(parseOptions(question));
-        response.setAnswers(parseAnswers(question));
+        response.setAnswers(includeAnswers ? parseAnswers(question) : null);
         return response;
+    }
+
+    private void prepareForWrite(QuestionRequestDTO request, Question oldQuestion) {
+        permissionService.requireTeacherOrAdmin();
+        if (request.getCourseId() == null) {
+            throw new BusinessException("课程不能为空");
+        }
+        Course course = permissionService.getCourse(toInt(request.getCourseId(), "课程ID"));
+        var user = permissionService.currentUser();
+        if ("teacher".equals(user.getRoleCode())) {
+            permissionService.requireCourseTeacher(course);
+            request.setTeacherId(user.getUserId().longValue());
+        } else {
+            Integer teacherId = course.getTeacherId();
+            if (teacherId == null || teacherId <= 0) {
+                teacherId = toNullableInt(request.getTeacherId(), "教师ID");
+            }
+            permissionService.requireUserRole(teacherId, "teacher", "教师用户不存在或角色不正确");
+            request.setTeacherId(teacherId.longValue());
+        }
+        if (oldQuestion != null && !"admin".equals(user.getRoleCode())
+                && oldQuestion.getTeacherId() != null
+                && !oldQuestion.getTeacherId().equals(user.getUserId())) {
+            throw new ForbiddenException("无权修改该题目");
+        }
+    }
+
+    private void requireQuestionTeacher(Question question) {
+        var user = permissionService.currentUser();
+        if ("admin".equals(user.getRoleCode())) {
+            return;
+        }
+        if ("teacher".equals(user.getRoleCode()) && question.getTeacherId() != null
+                && question.getTeacherId().equals(user.getUserId())) {
+            return;
+        }
+        throw new ForbiddenException("无权维护该题目");
+    }
+
+    private boolean canReadWithAnswers(Question question) {
+        var user = permissionService.currentUser();
+        if ("admin".equals(user.getRoleCode())) {
+            return true;
+        }
+        if ("teacher".equals(user.getRoleCode())) {
+            if (question.getTeacherId() != null && question.getTeacherId().equals(user.getUserId())) {
+                return true;
+            }
+            throw new ForbiddenException("无权查看该题目");
+        }
+        if (question.getStatus() != null && question.getStatus() != RecordStatus.ACTIVE.getCode()) {
+            throw new ForbiddenException("无权查看该题目");
+        }
+        List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
+        if (question.getCourseId() == null || !courseIds.contains(question.getCourseId())) {
+            throw new ForbiddenException("无权查看该题目");
+        }
+        return false;
     }
 
     public List<QuestionResponseDTO.OptionResponse> parseOptions(Question question) {

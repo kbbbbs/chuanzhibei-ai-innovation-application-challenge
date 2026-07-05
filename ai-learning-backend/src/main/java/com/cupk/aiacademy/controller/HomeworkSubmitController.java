@@ -2,12 +2,15 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.HomeworkSubmitDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
+import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -34,6 +37,12 @@ public class HomeworkSubmitController {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private AuthUtils authUtils;
+
     @GetMapping
     public Result pages(@RequestParam(required = false) Integer homeworkId,
                         @RequestParam(required = false) Integer studentId,
@@ -41,11 +50,50 @@ public class HomeworkSubmitController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<HomeworkSubmit> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<HomeworkSubmit> queryWrapper = new QueryWrapper<>();
-        if (homeworkId != null && homeworkId > 0) {
-            queryWrapper.eq("homework_id", homeworkId);
-        }
-        if (studentId != null && studentId > 0) {
-            queryWrapper.eq("student_id", studentId);
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isStudent(user)) {
+            queryWrapper.eq("student_id", user.getUserId());
+            if (homeworkId != null && homeworkId > 0) {
+                Homework homework = homeworkMapper.selectById(homeworkId);
+                if (homework == null || !permissionService.isStudentInClass(homework.getClassId(), user.getUserId())) {
+                    return Result.success(page);
+                }
+                queryWrapper.eq("homework_id", homeworkId);
+            }
+        } else if (authUtils.isTeacher(user)) {
+            if (homeworkId != null && homeworkId > 0) {
+                Homework homework = homeworkMapper.selectById(homeworkId);
+                if (homework == null) {
+                    return Result.error("404", "作业不存在");
+                }
+                permissionService.requireHomeworkTeacher(homework);
+                queryWrapper.eq("homework_id", homeworkId);
+            } else {
+                java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+                if (classIds.isEmpty()) {
+                    return Result.success(page);
+                }
+                QueryWrapper<Homework> homeworkQuery = new QueryWrapper<>();
+                homeworkQuery.in("class_id", classIds);
+                java.util.List<Integer> homeworkIds = homeworkMapper.selectList(homeworkQuery).stream()
+                        .map(Homework::getId)
+                        .filter(id -> id != null && id > 0)
+                        .toList();
+                if (homeworkIds.isEmpty()) {
+                    return Result.success(page);
+                }
+                queryWrapper.in("homework_id", homeworkIds);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
+        } else {
+            if (homeworkId != null && homeworkId > 0) {
+                queryWrapper.eq("homework_id", homeworkId);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
         }
         queryWrapper.orderByDesc("id");
         submitMapper.selectPage(page, queryWrapper);
@@ -55,12 +103,25 @@ public class HomeworkSubmitController {
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
         HomeworkSubmit submit = submitMapper.selectById(id);
-        return submit == null ? Result.error("404", "作业提交不存在") : Result.success(submit);
+        if (submit == null) {
+            return Result.error("404", "作业提交不存在");
+        }
+        checkSubmitReadPermission(submit);
+        return Result.success(submit);
     }
 
     @PostMapping
     public Result add(@RequestBody HomeworkSubmitDto request) {
+        permissionService.requireStudent();
         HomeworkSubmit submit = request == null ? null : request.toEntity();
+        if (submit != null) {
+            submit.setStudentId(permissionService.currentUser().getUserId());
+            submit.setScore(null);
+            submit.setFeedback(null);
+            submit.setGradeStatus(0);
+            submit.setGraderId(null);
+            submit.setGradeTime(null);
+        }
         Result checkResult = checkSubmit(submit);
         if (checkResult != null) {
             return checkResult;
@@ -78,8 +139,36 @@ public class HomeworkSubmitController {
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @RequestBody HomeworkSubmitDto request) {
         HomeworkSubmit submit = request == null ? null : request.toEntity();
-        if (submitMapper.selectById(id) == null) {
+        HomeworkSubmit old = submitMapper.selectById(id);
+        if (old == null) {
             return Result.error("404", "作业提交不存在");
+        }
+        if (submit == null) {
+            return Result.error("400", "作业提交信息不能为空");
+        }
+        if (authUtils.isStudent(permissionService.currentUser())) {
+            if (!permissionService.currentUser().getUserId().equals(old.getStudentId())) {
+                return Result.error("403", "只能修改自己的作业提交");
+            }
+            submit.setHomeworkId(old.getHomeworkId());
+            submit.setStudentId(old.getStudentId());
+            submit.setScore(old.getScore());
+            submit.setFeedback(old.getFeedback());
+            submit.setGradeStatus(old.getGradeStatus());
+            submit.setGraderId(old.getGraderId());
+            submit.setGradeTime(old.getGradeTime());
+        } else {
+            Homework homework = homeworkMapper.selectById(old.getHomeworkId());
+            if (homework == null) {
+                return Result.error("404", "作业不存在");
+            }
+            permissionService.requireHomeworkTeacher(homework);
+            submit.setHomeworkId(old.getHomeworkId());
+            submit.setStudentId(old.getStudentId());
+            submit.setGraderId(permissionService.currentUser().getUserId());
+            if (submit.getGradeTime() == null) {
+                submit.setGradeTime(LocalDateTime.now());
+            }
         }
         Result checkResult = checkSubmit(submit);
         if (checkResult != null) {
@@ -93,9 +182,15 @@ public class HomeworkSubmitController {
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (submitMapper.selectById(id) == null) {
+        HomeworkSubmit submit = submitMapper.selectById(id);
+        if (submit == null) {
             return Result.error("404", "作业提交不存在");
         }
+        Homework homework = homeworkMapper.selectById(submit.getHomeworkId());
+        if (homework == null) {
+            return Result.error("404", "作业不存在");
+        }
+        permissionService.requireHomeworkTeacher(homework);
         int row = submitMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -110,16 +205,40 @@ public class HomeworkSubmitController {
         if (submit.getStudentId() == null || submit.getStudentId() <= 0) {
             return Result.error("400", "学生用户不能为空");
         }
-        if (homeworkMapper.selectById(submit.getHomeworkId()) == null) {
+        Homework homework = homeworkMapper.selectById(submit.getHomeworkId());
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
-        if (userMapper.selectById(submit.getStudentId()) == null) {
-            return Result.error("404", "学生用户不存在");
+        try {
+            permissionService.requireUserRole(submit.getStudentId(), "student", "学生用户不存在或角色不正确");
+        } catch (RuntimeException e) {
+            return Result.error("404", e.getMessage());
+        }
+        if (!permissionService.isStudentInClass(homework.getClassId(), submit.getStudentId())) {
+            return Result.error("400", "学生未加入作业所属教学班");
         }
         if (submit.getGraderId() != null && userMapper.selectById(submit.getGraderId()) == null) {
             return Result.error("404", "批改教师不存在");
         }
         return null;
+    }
+
+    private void checkSubmitReadPermission(HomeworkSubmit submit) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isAdmin(user)) {
+            return;
+        }
+        if (authUtils.isStudent(user)) {
+            if (!user.getUserId().equals(submit.getStudentId())) {
+                throw new com.cupk.aiacademy.common.ForbiddenException("只能查看自己的作业提交");
+            }
+            return;
+        }
+        Homework homework = homeworkMapper.selectById(submit.getHomeworkId());
+        if (homework == null) {
+            throw new com.cupk.aiacademy.common.BusinessException("作业不存在");
+        }
+        permissionService.requireHomeworkTeacher(homework);
     }
 
     private int fixPageNum(Integer pageNum) {

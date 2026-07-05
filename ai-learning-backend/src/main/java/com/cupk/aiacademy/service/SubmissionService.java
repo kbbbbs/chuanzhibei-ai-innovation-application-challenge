@@ -39,32 +39,45 @@ public class SubmissionService {
     private final ExamRecordMapper recordMapper;
     private final ExamAnswerMapper answerMapper;
     private final ExamPaperQuestionMapper paperQuestionMapper;
+    private final PermissionService permissionService;
 
     public SubmissionService(ExamService examService,
                              QuestionService questionService,
                              ExamSessionMapper examSessionMapper,
                              ExamRecordMapper recordMapper,
                              ExamAnswerMapper answerMapper,
-                             ExamPaperQuestionMapper paperQuestionMapper) {
+                             ExamPaperQuestionMapper paperQuestionMapper,
+                             PermissionService permissionService) {
         this.examService = examService;
         this.questionService = questionService;
         this.examSessionMapper = examSessionMapper;
         this.recordMapper = recordMapper;
         this.answerMapper = answerMapper;
         this.paperQuestionMapper = paperQuestionMapper;
+        this.permissionService = permissionService;
     }
 
     @Transactional
     public SubmissionResponseDTO start(Long examId, String candidateId) {
-        return start(examId, candidateId, parseCandidateStudentId(candidateId));
+        permissionService.requireStudent();
+        Long studentId = permissionService.currentUser().getUserId().longValue();
+        return start(examId, String.valueOf(studentId), studentId);
     }
 
     @Transactional
     public SubmissionResponseDTO start(Long examId, String candidateId, Long studentId) {
+        permissionService.requireStudent();
+        Long currentStudentId = permissionService.currentUser().getUserId().longValue();
+        studentId = currentStudentId;
+        candidateId = String.valueOf(currentStudentId);
         ExamSession exam = examService.getEntityById(examId);
         if (ExamStatus.fromCode(exam.getStatus()) != ExamStatus.PUBLISHED) {
             throw new BusinessException("考试未发布，不能开始答题");
         }
+        if (exam.getClassId() == null) {
+            throw new BusinessException("考试未绑定教学班");
+        }
+        permissionService.requireStudentInClass(exam.getClassId(), currentStudentId.intValue());
         LocalDateTime now = LocalDateTime.now();
         if (exam.getStartTime() != null && now.isBefore(exam.getStartTime())) {
             throw new BusinessException("考试尚未开始，当前时间：" + now + "，开始时间：" + exam.getStartTime());
@@ -114,6 +127,7 @@ public class SubmissionService {
     @Transactional
     public SubmissionResponseDTO saveAnswers(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
         ExamRecord record = getEntityById(submissionId);
+        requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷不允许继续作答");
         }
@@ -135,6 +149,7 @@ public class SubmissionService {
     @Transactional
     public SubmissionResponseDTO submit(Long submissionId) {
         ExamRecord record = getEntityById(submissionId);
+        requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷状态不允许交卷");
         }
@@ -178,6 +193,7 @@ public class SubmissionService {
     @Transactional
     public SubmissionResponseDTO manualGrade(Long submissionId, SubmissionRequestsDTO.ManualGradeRequest request) {
         ExamRecord record = getEntityById(submissionId);
+        requireTeacherRecord(record);
         if (request == null || request.getGrades() == null || request.getGrades().isEmpty()) {
             throw new BusinessException("批改结果不能为空");
         }
@@ -198,7 +214,7 @@ public class SubmissionService {
             answer.setComment(item.getComment());
             answer.setIsCorrect(null);
             answer.setGradeStatus(JudgeStatus.MANUALLY_GRADED.getCode());
-            answer.setGraderId(toNullableInt(request.getGraderId(), "批改教师ID"));
+            answer.setGraderId(permissionService.currentUser().getUserId());
             answer.setGradeTime(LocalDateTime.now());
             answerMapper.updateById(answer);
         }
@@ -216,12 +232,16 @@ public class SubmissionService {
 
     @Transactional(readOnly = true)
     public SubmissionResponseDTO getById(Long submissionId) {
-        return toResponse(getEntityById(submissionId));
+        ExamRecord record = getEntityById(submissionId);
+        requireReadableRecord(record);
+        return toResponse(record);
     }
 
     @Transactional(readOnly = true)
     public StudentSubmissionResponseDTO getStudentSubmissionById(Long submissionId) {
-        return toStudentResponse(getEntityById(submissionId));
+        ExamRecord record = getEntityById(submissionId);
+        requireReadableRecord(record);
+        return toStudentResponse(record);
     }
 
     @Transactional(readOnly = true)
@@ -232,13 +252,33 @@ public class SubmissionService {
     @Transactional(readOnly = true)
     public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
-        if (examId != null) {
+        var user = permissionService.currentUser();
+        if ("student".equals(user.getRoleCode())) {
+            query.eq("student_id", user.getUserId());
+        } else if ("teacher".equals(user.getRoleCode())) {
+            if (examId != null) {
+                ExamSession exam = examService.getEntityById(examId);
+                permissionService.requireExamTeacher(exam);
+                query.eq("exam_session_id", toInt(examId, "考试ID"));
+            } else {
+                QueryWrapper<ExamSession> examQuery = new QueryWrapper<>();
+                examQuery.eq("teacher_id", user.getUserId());
+                List<Integer> examIds = examSessionMapper.selectList(examQuery).stream()
+                        .map(ExamSession::getId)
+                        .filter(id -> id != null && id > 0)
+                        .toList();
+                if (examIds.isEmpty()) {
+                    return List.of();
+                }
+                query.in("exam_session_id", examIds);
+            }
+        } else if (examId != null) {
             query.eq("exam_session_id", toInt(examId, "考试ID"));
         }
-        if (!isBlank(candidateId)) {
+        if (!"student".equals(user.getRoleCode()) && !isBlank(candidateId)) {
             query.eq("candidate_id", candidateId);
         }
-        if (studentId != null) {
+        if (!"student".equals(user.getRoleCode()) && studentId != null) {
             query.eq("student_id", toInt(studentId, "学生ID"));
         }
         query.orderByDesc("id");
@@ -437,6 +477,31 @@ public class SubmissionService {
         } catch (NumberFormatException ignored) {
             return null;
         }
+    }
+
+    private void requireStudentRecord(ExamRecord record) {
+        permissionService.requireStudent();
+        Integer currentUserId = permissionService.currentUser().getUserId();
+        if (record.getStudentId() == null || !record.getStudentId().equals(currentUserId)) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("只能操作自己的答卷");
+        }
+    }
+
+    private void requireTeacherRecord(ExamRecord record) {
+        ExamSession exam = examSessionMapper.selectById(record.getExamSessionId());
+        if (exam == null) {
+            throw new BusinessException("考试不存在");
+        }
+        permissionService.requireExamTeacher(exam);
+    }
+
+    private void requireReadableRecord(ExamRecord record) {
+        var user = permissionService.currentUser();
+        if ("student".equals(user.getRoleCode())) {
+            requireStudentRecord(record);
+            return;
+        }
+        requireTeacherRecord(record);
     }
 
     private String normalize(String value) {

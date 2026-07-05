@@ -9,6 +9,7 @@ import com.cupk.aiacademy.dto.ExamResponseDTO;
 import com.cupk.aiacademy.mapper.ExamSessionMapper;
 import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.ExamSession;
+import com.cupk.aiacademy.pojo.TeachingClass;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,15 +20,20 @@ import java.util.List;
 public class ExamService {
     private final ExamSessionMapper examSessionMapper;
     private final PaperService paperService;
+    private final PermissionService permissionService;
 
-    public ExamService(ExamSessionMapper examSessionMapper, PaperService paperService) {
+    public ExamService(ExamSessionMapper examSessionMapper,
+                       PaperService paperService,
+                       PermissionService permissionService) {
         this.examSessionMapper = examSessionMapper;
         this.paperService = paperService;
+        this.permissionService = permissionService;
     }
 
     @Transactional
     public ExamResponseDTO create(ExamRequestDTO request) {
         validateRequest(request);
+        prepareForWrite(request);
         ExamPaper paper = paperService.getEntityById(request.getPaperId());
         if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.PUBLISHED) {
             throw new BusinessException("只能使用已发布的试卷创建考试，当前试卷状态：" + PaperStatus.fromCode(paper.getStatus()));
@@ -45,6 +51,8 @@ public class ExamService {
     public ExamResponseDTO update(Long id, ExamRequestDTO request) {
         validateRequest(request);
         ExamSession exam = getEntityById(id);
+        permissionService.requireExamTeacher(exam);
+        prepareForWrite(request);
         ExamStatus status = ExamStatus.fromCode(exam.getStatus());
         if (status == ExamStatus.PUBLISHED || status == ExamStatus.CLOSED) {
             throw new BusinessException("已发布或已关闭的考试不允许修改");
@@ -61,13 +69,24 @@ public class ExamService {
 
     @Transactional(readOnly = true)
     public ExamResponseDTO getById(Long id) {
-        return toResponse(getEntityById(id));
+        ExamSession exam = getEntityById(id);
+        requireReadableExam(exam);
+        return toResponse(exam);
     }
 
     @Transactional(readOnly = true)
     public List<ExamResponseDTO> list(Long teacherId) {
         QueryWrapper<ExamSession> query = new QueryWrapper<>();
-        if (teacherId != null && teacherId > 0) {
+        var user = permissionService.currentUser();
+        if ("teacher".equals(user.getRoleCode())) {
+            query.eq("teacher_id", user.getUserId());
+        } else if ("student".equals(user.getRoleCode())) {
+            List<Integer> classIds = permissionService.studentClassIds(user.getUserId());
+            if (classIds.isEmpty()) {
+                return List.of();
+            }
+            query.in("class_id", classIds).ne("status", ExamStatus.DRAFT.getCode());
+        } else if (teacherId != null && teacherId > 0) {
             query.eq("teacher_id", teacherId);
         }
         query.orderByDesc("id");
@@ -77,6 +96,7 @@ public class ExamService {
     @Transactional
     public ExamResponseDTO publish(Long id) {
         ExamSession exam = getEntityById(id);
+        permissionService.requireExamTeacher(exam);
         ExamStatus status = ExamStatus.fromCode(exam.getStatus());
         if (status != ExamStatus.DRAFT) {
             throw new BusinessException("只有草稿状态的考试才能发布，当前状态：" + status);
@@ -90,6 +110,7 @@ public class ExamService {
     @Transactional
     public void delete(Long id) {
         ExamSession exam = getEntityById(id);
+        permissionService.requireExamTeacher(exam);
         ExamStatus status = ExamStatus.fromCode(exam.getStatus());
         if (status == ExamStatus.PUBLISHED) {
             throw new BusinessException("进行中的考试不允许删除，请先关闭");
@@ -100,6 +121,7 @@ public class ExamService {
     @Transactional
     public ExamResponseDTO close(Long id) {
         ExamSession exam = getEntityById(id);
+        permissionService.requireExamTeacher(exam);
         ExamStatus status = ExamStatus.fromCode(exam.getStatus());
         if (status != ExamStatus.PUBLISHED) {
             throw new BusinessException("只有已发布的考试才能关闭，当前状态：" + status);
@@ -157,6 +179,51 @@ public class ExamService {
         }
         if (request.getDurationMinutes() == null || request.getDurationMinutes() <= 0) {
             throw new BusinessException("考试时长必须大于0");
+        }
+        if (request.getStatus() == null) {
+            throw new BusinessException("考试状态不能为空");
+        }
+    }
+
+    private void prepareForWrite(ExamRequestDTO request) {
+        permissionService.requireTeacherOrAdmin();
+        if (request.getClassId() == null) {
+            throw new BusinessException("教学班不能为空");
+        }
+        TeachingClass teachingClass = permissionService.getTeachingClass(toInt(request.getClassId(), "教学班ID"));
+        ExamPaper paper = paperService.getEntityById(request.getPaperId());
+        if (paper.getCourseId() == null || !paper.getCourseId().equals(teachingClass.getCourseId())) {
+            throw new BusinessException("试卷课程与教学班课程不一致");
+        }
+        if (paper.getTeacherId() == null || !paper.getTeacherId().equals(teachingClass.getTeacherId())) {
+            throw new BusinessException("试卷教师与教学班教师不一致");
+        }
+        var user = permissionService.currentUser();
+        if ("teacher".equals(user.getRoleCode())) {
+            if (!paper.getTeacherId().equals(user.getUserId())) {
+                throw new com.cupk.aiacademy.common.ForbiddenException("无权使用该试卷创建考试");
+            }
+            permissionService.requireClassTeacher(teachingClass);
+            request.setTeacherId(user.getUserId().longValue());
+        } else {
+            request.setTeacherId(paper.getTeacherId().longValue());
+        }
+    }
+
+    private void requireReadableExam(ExamSession exam) {
+        var user = permissionService.currentUser();
+        if ("admin".equals(user.getRoleCode())) {
+            return;
+        }
+        if ("teacher".equals(user.getRoleCode())) {
+            permissionService.requireExamTeacher(exam);
+            return;
+        }
+        if (ExamStatus.fromCode(exam.getStatus()) == ExamStatus.DRAFT) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该考试");
+        }
+        if (!permissionService.isStudentInClass(exam.getClassId(), user.getUserId())) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该考试");
         }
     }
 

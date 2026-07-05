@@ -2,13 +2,19 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.LearningProgressDto;
+import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.LearningProgressMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
+import com.cupk.aiacademy.pojo.Chapter;
 import com.cupk.aiacademy.pojo.LearningProgress;
+import com.cupk.aiacademy.pojo.Lesson;
+import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -38,6 +44,15 @@ public class LearningProgressController {
     @Autowired
     private LessonMapper lessonMapper;
 
+    @Autowired
+    private ChapterMapper chapterMapper;
+
+    @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
+    private AuthUtils authUtils;
+
     @GetMapping
     public Result pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer studentId,
@@ -46,11 +61,36 @@ public class LearningProgressController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<LearningProgress> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<LearningProgress> queryWrapper = new QueryWrapper<>();
-        if (classId != null && classId > 0) {
-            queryWrapper.eq("class_id", classId);
-        }
-        if (studentId != null && studentId > 0) {
-            queryWrapper.eq("student_id", studentId);
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isStudent(user)) {
+            queryWrapper.eq("student_id", user.getUserId());
+            if (classId != null && classId > 0) {
+                if (!permissionService.isStudentInClass(classId, user.getUserId())) {
+                    return Result.success(page);
+                }
+                queryWrapper.eq("class_id", classId);
+            }
+        } else if (authUtils.isTeacher(user)) {
+            if (classId != null && classId > 0) {
+                permissionService.requireClassTeacher(classId);
+                queryWrapper.eq("class_id", classId);
+            } else {
+                java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+                if (classIds.isEmpty()) {
+                    return Result.success(page);
+                }
+                queryWrapper.in("class_id", classIds);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
+        } else {
+            if (classId != null && classId > 0) {
+                queryWrapper.eq("class_id", classId);
+            }
+            if (studentId != null && studentId > 0) {
+                queryWrapper.eq("student_id", studentId);
+            }
         }
         if (lessonId != null && lessonId > 0) {
             queryWrapper.eq("lesson_id", lessonId);
@@ -63,12 +103,21 @@ public class LearningProgressController {
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
         LearningProgress progress = progressMapper.selectById(id);
-        return progress == null ? Result.error("404", "学习进度不存在") : Result.success(progress);
+        if (progress == null) {
+            return Result.error("404", "学习进度不存在");
+        }
+        checkProgressReadPermission(progress);
+        return Result.success(progress);
     }
 
     @PostMapping
     public Result add(@RequestBody LearningProgressDto request) {
         LearningProgress progress = request == null ? null : request.toEntity();
+        if (progress != null && authUtils.isStudent(permissionService.currentUser())) {
+            progress.setStudentId(permissionService.currentUser().getUserId());
+        } else if (progress != null) {
+            permissionService.requireAdmin();
+        }
         Result checkResult = checkProgress(progress);
         if (checkResult != null) {
             return checkResult;
@@ -87,8 +136,19 @@ public class LearningProgressController {
         if (checkResult != null) {
             return checkResult;
         }
-        if (progressMapper.selectById(id) == null) {
+        LearningProgress old = progressMapper.selectById(id);
+        if (old == null) {
             return Result.error("404", "学习进度不存在");
+        }
+        if (authUtils.isStudent(permissionService.currentUser())) {
+            if (!permissionService.currentUser().getUserId().equals(old.getStudentId())) {
+                return Result.error("403", "只能修改自己的学习进度");
+            }
+            progress.setClassId(old.getClassId());
+            progress.setStudentId(old.getStudentId());
+            progress.setLessonId(old.getLessonId());
+        } else {
+            permissionService.requireAdmin();
         }
         progress.setId(id);
         progress.setUpdateTime(LocalDateTime.now());
@@ -98,8 +158,16 @@ public class LearningProgressController {
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (progressMapper.selectById(id) == null) {
+        LearningProgress progress = progressMapper.selectById(id);
+        if (progress == null) {
             return Result.error("404", "学习进度不存在");
+        }
+        if (authUtils.isStudent(permissionService.currentUser())) {
+            if (!permissionService.currentUser().getUserId().equals(progress.getStudentId())) {
+                return Result.error("403", "只能删除自己的学习进度");
+            }
+        } else {
+            permissionService.requireAdmin();
         }
         int row = progressMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
@@ -118,19 +186,42 @@ public class LearningProgressController {
         if (progress.getLessonId() == null || progress.getLessonId() <= 0) {
             return Result.error("400", "课时不能为空");
         }
-        if (classMapper.selectById(progress.getClassId()) == null) {
+        TeachingClass teachingClass = classMapper.selectById(progress.getClassId());
+        if (teachingClass == null) {
             return Result.error("404", "教学班不存在");
         }
         if (userMapper.selectById(progress.getStudentId()) == null) {
             return Result.error("404", "学生用户不存在");
         }
-        if (lessonMapper.selectById(progress.getLessonId()) == null) {
+        Lesson lesson = lessonMapper.selectById(progress.getLessonId());
+        if (lesson == null) {
             return Result.error("404", "课时不存在");
+        }
+        Chapter chapter = chapterMapper.selectById(lesson.getChapterId());
+        if (chapter == null || !teachingClass.getCourseId().equals(chapter.getCourseId())) {
+            return Result.error("400", "课时不属于教学班课程");
+        }
+        if (!permissionService.isStudentInClass(progress.getClassId(), progress.getStudentId())) {
+            return Result.error("400", "学生未加入该教学班");
         }
         if (progress.getProgress() != null && (progress.getProgress() < 0 || progress.getProgress() > 100)) {
             return Result.error("400", "学习进度应在0到100之间");
         }
         return null;
+    }
+
+    private void checkProgressReadPermission(LearningProgress progress) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isAdmin(user)) {
+            return;
+        }
+        if (authUtils.isStudent(user)) {
+            if (!user.getUserId().equals(progress.getStudentId())) {
+                throw new com.cupk.aiacademy.common.ForbiddenException("只能查看自己的学习进度");
+            }
+            return;
+        }
+        permissionService.requireClassTeacher(progress.getClassId());
     }
 
     private int fixPageNum(Integer pageNum) {

@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
-@RestController
+// Legacy CRUD controller disabled; use /api/exams instead.
 @RequestMapping("/exam-sessions")
 public class ExamSessionController {
     @Autowired

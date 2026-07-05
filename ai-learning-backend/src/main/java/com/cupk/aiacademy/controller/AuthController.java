@@ -2,7 +2,7 @@ package com.cupk.aiacademy.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.JwtUtils;
-import com.cupk.aiacademy.common.MD5Utils;
+import com.cupk.aiacademy.common.PasswordUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.UserDto;
 import com.cupk.aiacademy.mapper.RoleMapper;
@@ -52,8 +52,8 @@ public class AuthController {
         }
 
         String roleCode = isBlank(form.getRoleCode()) ? "student" : form.getRoleCode().trim().toLowerCase();
-        if (!"student".equals(roleCode) && !"teacher".equals(roleCode)) {
-            return Result.error("注册角色只能选择学生或教师");
+        if (!"student".equals(roleCode)) {
+            return Result.error("注册仅开放学生角色，教师账号请联系管理员创建");
         }
 
         Role registerRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", roleCode));
@@ -64,7 +64,7 @@ public class AuthController {
         LocalDateTime now = LocalDateTime.now();
         User user = new User();
         user.setUsername(form.getUsername());
-        user.setPassword(MD5Utils.md5(form.getPassword()));
+        user.setPassword(PasswordUtils.encode(form.getPassword()));
         user.setNickname(isBlank(form.getNickname()) ? form.getUsername() : form.getNickname());
         user.setEmail(form.getEmail());
         user.setPhone(form.getPhone());
@@ -93,8 +93,14 @@ public class AuthController {
             return Result.error("用户名或密码错误");
         }
 
-        if (!MD5Utils.md5(form.getPassword()).equals(user.getPassword())) {
+        if (!PasswordUtils.matches(form.getPassword(), user.getPassword())) {
             return Result.error("用户名或密码错误");
+        }
+
+        if (PasswordUtils.needsUpgrade(user.getPassword())) {
+            user.setPassword(PasswordUtils.encode(form.getPassword()));
+            user.setUpdateTime(LocalDateTime.now());
+            userMapper.updateById(user);
         }
 
         Role role = getUserRole(user.getId());
@@ -121,7 +127,7 @@ public class AuthController {
             Claims claims = jwtUtils.parseToken(authorization.substring(7));
             Integer userId = ((Number) claims.get("userId")).intValue();
             User user = userMapper.selectById(userId);
-            if (user == null) {
+            if (user == null || user.getStatus() == null || user.getStatus() == 0) {
                 return Result.error("用户不存在");
             }
             Role role = getUserRole(user.getId());

@@ -13,6 +13,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import java.util.stream.Collectors;
 
@@ -44,6 +46,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<Object> handleBusiness(BusinessException e, HttpServletRequest request) {
         return badRequest(e.getMessage(), request);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<Object> handleForbidden(ForbiddenException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body("403", e.getMessage(), request));
+    }
+
+    @ExceptionHandler({NoHandlerFoundException.class, NoResourceFoundException.class})
+    public ResponseEntity<Object> handleNotFound(Exception e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body("404", "接口不存在", request));
     }
 
     @ExceptionHandler(DuplicateKeyException.class)
