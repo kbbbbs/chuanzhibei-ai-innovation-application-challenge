@@ -95,7 +95,6 @@ public class AgentToolSupport {
     }
 
     public boolean applyChapterVisibility(QueryWrapper<Chapter> query) {
-        query.eq("status", Chapter.STATUS_NORMAL);
         List<Integer> courseIds = findVisibleCourseIds();
         if (courseIds == null) {
             return true;
