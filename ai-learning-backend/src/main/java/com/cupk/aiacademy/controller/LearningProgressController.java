@@ -113,18 +113,14 @@ public class LearningProgressController {
     @PostMapping
     public Result add(@RequestBody LearningProgressDto request) {
         LearningProgress progress = request == null ? null : request.toEntity();
-        if (progress != null && authUtils.isStudent(permissionService.currentUser())) {
-            progress.setStudentId(permissionService.currentUser().getUserId());
-        } else if (progress != null) {
-            permissionService.requireAdmin();
+        if (progress != null) {
+            applyProgressOwnerForCreate(progress);
         }
         Result checkResult = checkProgress(progress);
         if (checkResult != null) {
             return checkResult;
         }
-        LocalDateTime now = LocalDateTime.now();
-        progress.setCreateTime(now);
-        progress.setUpdateTime(now);
+        stampProgressForCreate(progress);
         int row = progressMapper.insert(progress);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -144,14 +140,11 @@ public class LearningProgressController {
             if (!permissionService.currentUser().getUserId().equals(old.getStudentId())) {
                 return Result.error("403", "只能修改自己的学习进度");
             }
-            progress.setClassId(old.getClassId());
-            progress.setStudentId(old.getStudentId());
-            progress.setLessonId(old.getLessonId());
+            preserveProgressIdentity(progress, old);
         } else {
             permissionService.requireAdmin();
         }
-        progress.setId(id);
-        progress.setUpdateTime(LocalDateTime.now());
+        stampProgressForUpdate(progress, id);
         int row = progressMapper.updateById(progress);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -171,6 +164,32 @@ public class LearningProgressController {
         }
         int row = progressMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
+    }
+
+    private void applyProgressOwnerForCreate(LearningProgress progress) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isStudent(user)) {
+            progress.setStudentId(user.getUserId());
+        } else {
+            permissionService.requireAdmin();
+        }
+    }
+
+    private void preserveProgressIdentity(LearningProgress progress, LearningProgress old) {
+        progress.setClassId(old.getClassId());
+        progress.setStudentId(old.getStudentId());
+        progress.setLessonId(old.getLessonId());
+    }
+
+    private void stampProgressForCreate(LearningProgress progress) {
+        LocalDateTime now = LocalDateTime.now();
+        progress.setCreateTime(now);
+        progress.setUpdateTime(now);
+    }
+
+    private void stampProgressForUpdate(LearningProgress progress, Integer id) {
+        progress.setId(id);
+        progress.setUpdateTime(LocalDateTime.now());
     }
 
     private Result checkProgress(LearningProgress progress) {

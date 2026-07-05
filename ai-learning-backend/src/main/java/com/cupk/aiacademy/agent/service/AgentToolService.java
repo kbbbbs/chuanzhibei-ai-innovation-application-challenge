@@ -4,20 +4,17 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.UserContext;
-import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.LearningProgressMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
-import com.cupk.aiacademy.mapper.TeachingClassMapper;
-import com.cupk.aiacademy.pojo.ClassStudent;
+import com.cupk.aiacademy.service.PermissionService;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
 import com.cupk.aiacademy.pojo.LearningProgress;
 import com.cupk.aiacademy.pojo.Lesson;
-import com.cupk.aiacademy.pojo.TeachingClass;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,23 +50,20 @@ public class AgentToolService {
     private final HomeworkSubmitMapper homeworkSubmitMapper;
     private final LearningProgressMapper learningProgressMapper;
     private final LessonMapper lessonMapper;
-    private final TeachingClassMapper teachingClassMapper;
-    private final ClassStudentMapper classStudentMapper;
+    private final PermissionService permissionService;
 
     public AgentToolService(CourseMapper courseMapper,
                             HomeworkMapper homeworkMapper,
                             HomeworkSubmitMapper homeworkSubmitMapper,
                             LearningProgressMapper learningProgressMapper,
                             LessonMapper lessonMapper,
-                            TeachingClassMapper teachingClassMapper,
-                            ClassStudentMapper classStudentMapper) {
+                            PermissionService permissionService) {
         this.courseMapper = courseMapper;
         this.homeworkMapper = homeworkMapper;
         this.homeworkSubmitMapper = homeworkSubmitMapper;
         this.learningProgressMapper = learningProgressMapper;
         this.lessonMapper = lessonMapper;
-        this.teachingClassMapper = teachingClassMapper;
-        this.classStudentMapper = classStudentMapper;
+        this.permissionService = permissionService;
     }
 
     @Transactional(readOnly = true)
@@ -166,7 +160,7 @@ public class AgentToolService {
 
     private String buildLearningProgressSection(int maxItems) {
         AuthUtils.LoginUser user = UserContext.get();
-        if (!isStudent(user)) {
+        if (!permissionService.isStudent(user)) {
             return "学习进度工具仅返回学生本人的学习记录；当前用户没有可读取的个人学习进度。";
         }
         List<LearningProgress> progressList = listStudentProgress(user.getUserId(), maxItems);
@@ -189,7 +183,7 @@ public class AgentToolService {
 
     private String buildLearningPlanSection(int maxItems) {
         AuthUtils.LoginUser user = UserContext.get();
-        if (!isStudent(user)) {
+        if (!permissionService.isStudent(user)) {
             return "学习计划工具需要学生账号的个人学习进度；当前用户没有可生成计划的个人进度。";
         }
         List<LearningProgress> progressList = listStudentProgress(user.getUserId(), maxItems);
@@ -234,7 +228,7 @@ public class AgentToolService {
     }
 
     private String buildSubmitStatus(Integer homeworkId, AuthUtils.LoginUser user) {
-        if (!isStudent(user) || homeworkId == null) {
+        if (!permissionService.isStudent(user) || homeworkId == null) {
             return "未按当前角色查询个人提交";
         }
         QueryWrapper<HomeworkSubmit> query = new QueryWrapper<>();
@@ -253,15 +247,15 @@ public class AgentToolService {
 
     private boolean applyCourseVisibility(QueryWrapper<Course> query) {
         AuthUtils.LoginUser user = UserContext.get();
-        if (isStudent(user)) {
-            List<Integer> courseIds = findStudentCourseIds(user.getUserId());
+        if (permissionService.isStudent(user)) {
+            List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
             if (courseIds.isEmpty()) {
                 return false;
             }
             query.in("id", courseIds);
-        } else if (isTeacher(user)) {
+        } else if (permissionService.isTeacher(user)) {
             query.eq("teacher_id", user.getUserId());
-        } else if (!isAdmin(user)) {
+        } else if (!permissionService.isAdmin(user)) {
             query.eq("status", 1);
         }
         return true;
@@ -269,45 +263,18 @@ public class AgentToolService {
 
     private boolean applyHomeworkVisibility(QueryWrapper<Homework> query) {
         AuthUtils.LoginUser user = UserContext.get();
-        if (isStudent(user)) {
-            List<Integer> classIds = findStudentClassIds(user.getUserId());
+        if (permissionService.isStudent(user)) {
+            List<Integer> classIds = permissionService.studentClassIds(user.getUserId());
             if (classIds.isEmpty()) {
                 return false;
             }
             query.in("class_id", classIds);
-        } else if (isTeacher(user)) {
+        } else if (permissionService.isTeacher(user)) {
             query.eq("teacher_id", user.getUserId());
-        } else if (!isAdmin(user)) {
+        } else if (!permissionService.isAdmin(user)) {
             query.eq("status", 1);
         }
         return true;
-    }
-
-    private List<Integer> findStudentCourseIds(Integer studentId) {
-        List<Integer> classIds = findStudentClassIds(studentId);
-        if (classIds.isEmpty()) {
-            return List.of();
-        }
-        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds);
-        return teachingClassMapper.selectList(query).stream()
-                .map(TeachingClass::getCourseId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
-    }
-
-    private List<Integer> findStudentClassIds(Integer studentId) {
-        if (studentId == null) {
-            return List.of();
-        }
-        QueryWrapper<ClassStudent> query = new QueryWrapper<>();
-        query.eq("student_id", studentId).eq("status", 1);
-        return classStudentMapper.selectList(query).stream()
-                .map(ClassStudent::getClassId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
     }
 
     private void applyKeywordFilter(QueryWrapper<?> query, List<String> terms, String... columns) {
@@ -391,18 +358,6 @@ public class AgentToolService {
 
     private Lesson safeLesson(Integer lessonId) {
         return lessonId == null ? null : lessonMapper.selectById(lessonId);
-    }
-
-    private boolean isStudent(AuthUtils.LoginUser user) {
-        return user != null && "student".equals(user.getRoleCode());
-    }
-
-    private boolean isTeacher(AuthUtils.LoginUser user) {
-        return user != null && "teacher".equals(user.getRoleCode());
-    }
-
-    private boolean isAdmin(AuthUtils.LoginUser user) {
-        return user != null && "admin".equals(user.getRoleCode());
     }
 
     private String value(Object value) {

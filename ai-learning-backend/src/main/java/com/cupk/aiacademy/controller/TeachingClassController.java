@@ -8,8 +8,8 @@ import com.cupk.aiacademy.dto.TeachingClassDto;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
-import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.ClassStudent;
+import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.service.CourseResourceService;
 import com.cupk.aiacademy.service.PermissionService;
@@ -37,9 +37,6 @@ public class TeachingClassController {
 
     @Autowired
     private CourseMapper courseMapper;
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired
     private CourseResourceService courseResourceService;
@@ -123,18 +120,12 @@ public class TeachingClassController {
     public Result add(@Valid @RequestBody TeachingClassDto request) {
         permissionService.requireTeacherOrAdmin();
         TeachingClass teachingClass = request.toEntity();
-        AuthUtils.LoginUser user = permissionService.currentUser();
-        if (authUtils.isTeacher(user)) {
-            teachingClass.setTeacherId(user.getUserId());
-        }
+        applyTeachingClassTeacher(teachingClass, null);
         Result checkResult = checkTeachingClass(teachingClass);
         if (checkResult != null) {
             return checkResult;
         }
-        LocalDateTime now = LocalDateTime.now();
-        teachingClass.setClassName(teachingClass.getClassName().trim());
-        teachingClass.setCreateTime(now);
-        teachingClass.setUpdateTime(now);
+        stampTeachingClassForCreate(teachingClass);
         int row = classMapper.insert(teachingClass);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -147,19 +138,12 @@ public class TeachingClassController {
         }
         permissionService.requireClassTeacher(oldClass);
         TeachingClass teachingClass = request.toEntity();
-        AuthUtils.LoginUser user = permissionService.currentUser();
-        if (authUtils.isTeacher(user)) {
-            teachingClass.setTeacherId(user.getUserId());
-        } else if (teachingClass.getTeacherId() == null) {
-            teachingClass.setTeacherId(oldClass.getTeacherId());
-        }
+        applyTeachingClassTeacher(teachingClass, oldClass);
         Result checkResult = checkTeachingClass(teachingClass);
         if (checkResult != null) {
             return checkResult;
         }
-        teachingClass.setId(id);
-        teachingClass.setClassName(teachingClass.getClassName().trim());
-        teachingClass.setUpdateTime(LocalDateTime.now());
+        stampTeachingClassForUpdate(teachingClass, id);
         int row = classMapper.updateById(teachingClass);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -183,14 +167,36 @@ public class TeachingClassController {
         }
     }
 
+    private void applyTeachingClassTeacher(TeachingClass teachingClass, TeachingClass oldClass) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            teachingClass.setTeacherId(user.getUserId());
+        } else if (teachingClass.getTeacherId() == null && oldClass != null) {
+            teachingClass.setTeacherId(oldClass.getTeacherId());
+        }
+    }
+
+    private void stampTeachingClassForCreate(TeachingClass teachingClass) {
+        LocalDateTime now = LocalDateTime.now();
+        teachingClass.setClassName(teachingClass.getClassName().trim());
+        teachingClass.setCreateTime(now);
+        teachingClass.setUpdateTime(now);
+    }
+
+    private void stampTeachingClassForUpdate(TeachingClass teachingClass, Integer id) {
+        teachingClass.setId(id);
+        teachingClass.setClassName(teachingClass.getClassName().trim());
+        teachingClass.setUpdateTime(LocalDateTime.now());
+    }
+
     private Result checkTeachingClass(TeachingClass teachingClass) {
         if (teachingClass == null) {
             return Result.error("400", "教学班信息不能为空");
         }
-        if (teachingClass.getCourseId() == null || courseMapper.selectById(teachingClass.getCourseId()) == null) {
+        Course course = teachingClass.getCourseId() == null ? null : courseMapper.selectById(teachingClass.getCourseId());
+        if (course == null) {
             return Result.error("404", "课程不存在");
         }
-        com.cupk.aiacademy.pojo.Course course = courseMapper.selectById(teachingClass.getCourseId());
         if (teachingClass.getTeacherId() == null || teachingClass.getTeacherId() <= 0) {
             return Result.error("400", "教师用户不能为空");
         }

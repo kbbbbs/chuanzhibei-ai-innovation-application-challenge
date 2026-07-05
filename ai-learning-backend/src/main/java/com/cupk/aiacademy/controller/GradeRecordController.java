@@ -114,11 +114,7 @@ public class GradeRecordController {
         if (checkResult != null) {
             return checkResult;
         }
-        LocalDateTime now = LocalDateTime.now();
-        grade.setGradeName(grade.getGradeName().trim());
-        grade.setSourceType(grade.getSourceType().trim());
-        grade.setCreateTime(now);
-        grade.setUpdateTime(now);
+        stampGradeForCreate(grade);
         int row = gradeMapper.insert(grade);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -136,10 +132,7 @@ public class GradeRecordController {
         if (checkResult != null) {
             return checkResult;
         }
-        grade.setId(id);
-        grade.setGradeName(grade.getGradeName().trim());
-        grade.setSourceType(grade.getSourceType().trim());
-        grade.setUpdateTime(LocalDateTime.now());
+        stampGradeForUpdate(grade, id);
         int row = gradeMapper.updateById(grade);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -215,6 +208,21 @@ public class GradeRecordController {
                 grade.setTeacherId(teachingClass.getTeacherId());
             }
         }
+    }
+
+    private void stampGradeForCreate(GradeRecord grade) {
+        LocalDateTime now = LocalDateTime.now();
+        grade.setGradeName(grade.getGradeName().trim());
+        grade.setSourceType(grade.getSourceType().trim());
+        grade.setCreateTime(now);
+        grade.setUpdateTime(now);
+    }
+
+    private void stampGradeForUpdate(GradeRecord grade, Integer id) {
+        grade.setId(id);
+        grade.setGradeName(grade.getGradeName().trim());
+        grade.setSourceType(grade.getSourceType().trim());
+        grade.setUpdateTime(LocalDateTime.now());
     }
 
     private void checkGradeReadPermission(GradeRecord grade) {

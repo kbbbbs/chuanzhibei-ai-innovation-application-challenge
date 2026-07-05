@@ -53,12 +53,24 @@ public class PermissionService {
         return authUtils.isAdmin(currentUser());
     }
 
+    public boolean isAdmin(AuthUtils.LoginUser user) {
+        return authUtils.isAdmin(user);
+    }
+
     public boolean isTeacher() {
         return authUtils.isTeacher(currentUser());
     }
 
+    public boolean isTeacher(AuthUtils.LoginUser user) {
+        return authUtils.isTeacher(user);
+    }
+
     public boolean isStudent() {
         return authUtils.isStudent(currentUser());
+    }
+
+    public boolean isStudent(AuthUtils.LoginUser user) {
+        return authUtils.isStudent(user);
     }
 
     public void requireAdmin() {

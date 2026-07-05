@@ -56,74 +56,7 @@ public class OpenAlexSearchServiceImpl implements OpenAlexSearchService {
             List<PaperSearchResponse.Paper> papers = new ArrayList<>();
             if (results != null) {
                 for (int i = 0; i < results.size(); i++) {
-                    JSONObject item = results.getJSONObject(i);
-                    PaperSearchResponse.Paper paper = new PaperSearchResponse.Paper();
-
-                    String openAlexId = item.getString("id");
-                    paper.setPaperId(openAlexId != null
-                        ? openAlexId.replace("https://openalex.org/", "")
-                        : "");
-                    paper.setTitle(item.getString("title"));
-
-                    String abstractText = item.getString("abstract");
-                    if (abstractText == null) {
-                        JSONObject invIdx = item.getJSONObject("abstract_inverted_index");
-                        if (invIdx != null) {
-                            abstractText = buildAbstractFromIndex(invIdx);
-                        }
-                    }
-                    paper.setAbstractText(abstractText);
-
-                    String pubDate = item.getString("publication_date");
-                    if (pubDate != null && pubDate.length() >= 4) {
-                        paper.setYear(Integer.parseInt(pubDate.substring(0, 4)));
-                    }
-
-                    JSONArray authorships = item.getJSONArray("authorships");
-                    List<PaperSearchResponse.Author> authors = new ArrayList<>();
-                    if (authorships != null) {
-                        for (int j = 0; j < authorships.size(); j++) {
-                            JSONObject as = authorships.getJSONObject(j);
-                            JSONObject authorObj = as.getJSONObject("author");
-                            if (authorObj != null) {
-                                PaperSearchResponse.Author author = new PaperSearchResponse.Author();
-                                author.setName(authorObj.getString("display_name"));
-                                authors.add(author);
-                            }
-                        }
-                    }
-                    paper.setAuthors(authors);
-
-                    String doi = item.getString("doi");
-                    if (doi != null) {
-                        paper.setUrl("https://doi.org/" + doi);
-                    } else {
-                        JSONObject primaryLoc = item.getJSONObject("primary_location");
-                        if (primaryLoc != null) {
-                            paper.setUrl(primaryLoc.getString("landing_page_url"));
-                        }
-                    }
-
-                    JSONObject oa = item.getJSONObject("open_access");
-                    if (oa != null && oa.getBooleanValue("is_oa", false)) {
-                        PaperSearchResponse.OpenAccessPdf pdf = new PaperSearchResponse.OpenAccessPdf();
-                        pdf.setUrl(oa.getString("oa_url"));
-                        pdf.setStatus(oa.getString("oa_status"));
-                        paper.setOpenAccessPdf(pdf);
-                    }
-
-                    paper.setCitationCount(item.getIntValue("cited_by_count", 0));
-
-                    JSONObject primaryLoc = item.getJSONObject("primary_location");
-                    if (primaryLoc != null) {
-                        JSONObject source = primaryLoc.getJSONObject("source");
-                        if (source != null) {
-                            paper.setVenue(source.getString("display_name"));
-                        }
-                    }
-
-                    paper.setSource("openalex");
-                    papers.add(paper);
+                    papers.add(toPaper(results.getJSONObject(i)));
                 }
             }
 
@@ -134,6 +67,69 @@ public class OpenAlexSearchServiceImpl implements OpenAlexSearchService {
         } catch (Exception e) {
             return Result.error("Failed to search OpenAlex: " + e.getMessage());
         }
+    }
+
+    private PaperSearchResponse.Paper toPaper(JSONObject item) {
+        PaperSearchResponse.Paper paper = new PaperSearchResponse.Paper();
+        String openAlexId = item.getString("id");
+        paper.setPaperId(openAlexId != null ? openAlexId.replace("https://openalex.org/", "") : "");
+        paper.setTitle(item.getString("title"));
+        paper.setAbstractText(abstractText(item));
+        String pubDate = item.getString("publication_date");
+        if (pubDate != null && pubDate.length() >= 4) {
+            paper.setYear(Integer.parseInt(pubDate.substring(0, 4)));
+        }
+        paper.setAuthors(authors(item));
+        String doi = item.getString("doi");
+        JSONObject primaryLoc = item.getJSONObject("primary_location");
+        if (doi != null) {
+            paper.setUrl("https://doi.org/" + doi);
+        } else if (primaryLoc != null) {
+            paper.setUrl(primaryLoc.getString("landing_page_url"));
+        }
+        paper.setOpenAccessPdf(openAccessPdf(item));
+        paper.setCitationCount(item.getIntValue("cited_by_count", 0));
+        JSONObject source = primaryLoc == null ? null : primaryLoc.getJSONObject("source");
+        paper.setVenue(source == null ? null : source.getString("display_name"));
+        paper.setSource("openalex");
+        return paper;
+    }
+
+    private String abstractText(JSONObject item) {
+        String abstractText = item.getString("abstract");
+        if (abstractText != null) {
+            return abstractText;
+        }
+        JSONObject invIdx = item.getJSONObject("abstract_inverted_index");
+        return invIdx == null ? null : buildAbstractFromIndex(invIdx);
+    }
+
+    private List<PaperSearchResponse.Author> authors(JSONObject item) {
+        JSONArray authorships = item.getJSONArray("authorships");
+        List<PaperSearchResponse.Author> authors = new ArrayList<>();
+        if (authorships == null) {
+            return authors;
+        }
+        for (int i = 0; i < authorships.size(); i++) {
+            JSONObject authorObj = authorships.getJSONObject(i).getJSONObject("author");
+            if (authorObj != null) {
+                PaperSearchResponse.Author author = new PaperSearchResponse.Author();
+                author.setName(authorObj.getString("display_name"));
+                authors.add(author);
+            }
+        }
+        return authors;
+    }
+
+    private PaperSearchResponse.OpenAccessPdf openAccessPdf(JSONObject item) {
+        JSONObject oa = item.getJSONObject("open_access");
+        if (oa == null || !oa.getBooleanValue("is_oa", false)) {
+            return null;
+        }
+        PaperSearchResponse.OpenAccessPdf pdf = new PaperSearchResponse.OpenAccessPdf();
+        pdf.setUrl(oa.getString("oa_url"));
+        pdf.setStatus(oa.getString("oa_status"));
+        return pdf;
     }
 
     private String buildAbstractFromIndex(JSONObject invIdx) {

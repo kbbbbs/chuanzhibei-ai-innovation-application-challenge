@@ -9,6 +9,7 @@ import com.cupk.aiacademy.mapper.ExamAnswerMapper;
 import com.cupk.aiacademy.mapper.ExamPaperMapper;
 import com.cupk.aiacademy.mapper.ExamPaperQuestionMapper;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.pojo.ExamAnswer;
 import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.ExamPaperQuestion;
 import com.cupk.aiacademy.pojo.Question;
@@ -17,9 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -67,9 +68,7 @@ public class PaperService {
         fillPaper(paper, request);
         paper.setUpdateTime(LocalDateTime.now());
         paperMapper.updateById(paper);
-        QueryWrapper<ExamPaperQuestion> deleteQuery = new QueryWrapper<>();
-        deleteQuery.eq("paper_id", paper.getId());
-        paperQuestionMapper.delete(deleteQuery);
+        deletePaperQuestions(paper.getId());
         insertPaperQuestions(paper, request.getQuestions());
         return toResponse(paper);
     }
@@ -85,9 +84,9 @@ public class PaperService {
     public List<PaperResponseDTO> list(Long teacherId) {
         QueryWrapper<ExamPaper> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             query.eq("teacher_id", user.getUserId());
-        } else if ("student".equals(user.getRoleCode())) {
+        } else if (permissionService.isStudent(user)) {
             List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
             if (courseIds.isEmpty()) {
                 return List.of();
@@ -108,9 +107,7 @@ public class PaperService {
         if (status == PaperStatus.PUBLISHED) {
             throw new BusinessException("已发布的试卷不允许删除，请先改为草稿状态");
         }
-        QueryWrapper<ExamPaperQuestion> deleteQuery = new QueryWrapper<>();
-        deleteQuery.eq("paper_id", paper.getId());
-        paperQuestionMapper.delete(deleteQuery);
+        deletePaperQuestions(paper.getId());
         paperMapper.deleteById(paper.getId());
     }
 
@@ -129,7 +126,7 @@ public class PaperService {
         if (!paperQuestion.getPaperId().equals(paper.getId())) {
             throw new BusinessException("试卷题目不属于当前试卷");
         }
-        QueryWrapper<com.cupk.aiacademy.pojo.ExamAnswer> answerQuery = new QueryWrapper<>();
+        QueryWrapper<ExamAnswer> answerQuery = new QueryWrapper<>();
         answerQuery.eq("paper_question_id", paperQuestion.getId());
         if (examAnswerMapper.selectCount(answerQuery) > 0) {
             throw new BusinessException("该试卷题目已被答卷使用，不能删除");
@@ -185,10 +182,10 @@ public class PaperService {
                 throw new BusinessException("试卷中题目序号不能重复，序号：" + item.getSortOrder());
             }
             Question question = questionService.getEntityById(item.getQuestionId());
-            if (!java.util.Objects.equals(request.getCourseId().intValue(), question.getCourseId())) {
+            if (!Objects.equals(request.getCourseId().intValue(), question.getCourseId())) {
                 throw new BusinessException("题目不属于当前试卷课程，题目ID：" + item.getQuestionId());
             }
-            if (!java.util.Objects.equals(request.getTeacherId().intValue(), question.getTeacherId())) {
+            if (!Objects.equals(request.getTeacherId().intValue(), question.getTeacherId())) {
                 throw new BusinessException("题目不属于当前试卷教师，题目ID：" + item.getQuestionId());
             }
         }
@@ -201,7 +198,7 @@ public class PaperService {
         }
         Course course = permissionService.getCourse(toInt(request.getCourseId(), "课程ID"));
         var user = permissionService.currentUser();
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             permissionService.requireCourseTeacher(course);
             request.setTeacherId(user.getUserId().longValue());
         } else {
@@ -216,10 +213,10 @@ public class PaperService {
 
     private void requireReadablePaper(ExamPaper paper) {
         var user = permissionService.currentUser();
-        if ("admin".equals(user.getRoleCode())) {
+        if (permissionService.isAdmin(user)) {
             return;
         }
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             permissionService.requirePaperTeacher(paper);
             return;
         }
@@ -230,6 +227,12 @@ public class PaperService {
         if (paper.getCourseId() == null || !courseIds.contains(paper.getCourseId())) {
             throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该试卷");
         }
+    }
+
+    private void deletePaperQuestions(Integer paperId) {
+        QueryWrapper<ExamPaperQuestion> deleteQuery = new QueryWrapper<>();
+        deleteQuery.eq("paper_id", paperId);
+        paperQuestionMapper.delete(deleteQuery);
     }
 
     private void fillPaper(ExamPaper paper, PaperRequestDTO request) {
@@ -281,7 +284,6 @@ public class PaperService {
     private void recalculateTotalScore(ExamPaper paper) {
         BigDecimal totalScore = listPaperQuestions(paper.getId()).stream()
                 .map(ExamPaperQuestion::getScore)
-                .sorted(Comparator.naturalOrder())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         paper.setTotalScore(totalScore);
         paper.setUpdateTime(LocalDateTime.now());

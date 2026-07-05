@@ -10,7 +10,11 @@ import com.cupk.aiacademy.mapper.PaperMapper;
 import com.cupk.aiacademy.pojo.Course;
 import org.springframework.stereotype.Service;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,12 +28,6 @@ public class PaperRecommendService {
         this.paperAuthorMapper = paperAuthorMapper;
     }
 
-    /**
-     * 根据课程推荐论文
-     * @param courses 学生选修或教师教授的课程列表
-     * @param maxPerCourse 每门课程最多推荐几篇
-     * @param maxTotal 总共最多推荐几篇
-     */
     public Result recommend(List<Course> courses, int maxPerCourse, int maxTotal) {
         if (courses == null || courses.isEmpty()) {
             return Result.success(emptyResponse());
@@ -58,34 +56,26 @@ public class PaperRecommendService {
         return Result.success(response);
     }
 
-    /**
-     * 从课程标题和描述中提取搜索关键词
-     */
     private List<String> extractKeywords(Course course) {
         List<String> terms = new ArrayList<>();
         String title = (course.getTitle() != null ? course.getTitle() : "") + " " +
                 (course.getDescription() != null ? course.getDescription() : "");
         String lower = title.toLowerCase();
 
-        // 课程名称 → 学术关键词映射
-        if (lower.contains("java")) { terms.add("Java"); terms.add("Spring"); terms.add("JVM"); }
-        if (lower.contains("python")) { terms.add("Python"); terms.add("machine learning"); }
-        if (lower.contains("vue") || lower.contains("前端")) { terms.add("frontend"); terms.add("Vue"); terms.add("component"); }
-        if (lower.contains("mysql") || title.contains("数据库")) { terms.add("MySQL"); terms.add("database"); terms.add("SQL"); }
-        if (title.contains("算法") || title.contains("数据结构")) {
-            terms.add("algorithm"); terms.add("sorting"); terms.add("graph"); terms.add("data structure"); }
-        if (title.contains("英语") || title.contains("写作") || title.contains("学术")) {
-            terms.add("academic writing"); terms.add("English"); terms.add("citation"); }
-        if (title.contains("操作系统") || lower.contains("os")) {
-            terms.add("operating system"); terms.add("Linux"); terms.add("kernel"); }
-        if (title.contains("网络")) { terms.add("network"); terms.add("TCP"); terms.add("protocol"); }
-        if (title.contains("人工智能") || lower.contains("ai")) { terms.add("machine learning"); terms.add("deep learning"); terms.add("neural network"); }
-        if (title.contains("机器学习")) { terms.add("machine learning"); terms.add("supervised learning"); terms.add("classification"); }
-        if (title.contains("深度学习")) { terms.add("deep learning"); terms.add("CNN"); terms.add("transformer"); }
-        if (title.contains("嵌入") || title.contains("嵌入式")) { terms.add("embedded system"); terms.add("IoT"); terms.add("microcontroller"); }
-        if (title.contains("编译")) { terms.add("compiler"); terms.add("parser"); terms.add("LLVM"); }
+        addTerms(terms, lower.contains("java"), "Java", "Spring", "JVM");
+        addTerms(terms, lower.contains("python"), "Python", "machine learning");
+        addTerms(terms, lower.contains("vue") || lower.contains("前端"), "frontend", "Vue", "component");
+        addTerms(terms, lower.contains("mysql") || title.contains("数据库"), "MySQL", "database", "SQL");
+        addTerms(terms, title.contains("算法") || title.contains("数据结构"), "algorithm", "sorting", "graph", "data structure");
+        addTerms(terms, title.contains("英语") || title.contains("写作") || title.contains("学术"), "academic writing", "English", "citation");
+        addTerms(terms, title.contains("操作系统") || lower.contains("os"), "operating system", "Linux", "kernel");
+        addTerms(terms, title.contains("网络"), "network", "TCP", "protocol");
+        addTerms(terms, title.contains("人工智能") || lower.contains("ai"), "machine learning", "deep learning", "neural network");
+        addTerms(terms, title.contains("机器学习"), "machine learning", "supervised learning", "classification");
+        addTerms(terms, title.contains("深度学习"), "deep learning", "CNN", "transformer");
+        addTerms(terms, title.contains("嵌入") || title.contains("嵌入式"), "embedded system", "IoT", "microcontroller");
+        addTerms(terms, title.contains("编译"), "compiler", "parser", "LLVM");
 
-        // 如果没匹配到，用课程标题自身作为检索词
         if (terms.isEmpty() && course.getTitle() != null) {
             for (String word : course.getTitle().split("[\\s，,、]+")) {
                 if (word.length() >= 2) terms.add(word);
@@ -93,6 +83,12 @@ public class PaperRecommendService {
         }
 
         return terms;
+    }
+
+    private void addTerms(List<String> terms, boolean match, String... values) {
+        if (match) {
+            Collections.addAll(terms, values);
+        }
     }
 
     private List<Paper> searchPapers(List<String> terms, Set<Integer> excludeIds, int limit) {

@@ -61,23 +61,11 @@ public class AuthController {
             return Result.error("角色未初始化: " + roleCode);
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        User user = new User();
-        user.setUsername(form.getUsername());
-        user.setPassword(PasswordUtils.encode(form.getPassword()));
-        user.setNickname(isBlank(form.getNickname()) ? form.getUsername() : form.getNickname());
-        user.setEmail(form.getEmail());
-        user.setPhone(form.getPhone());
-        user.setAvatar(form.getAvatar());
-        user.setStatus(1);
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
+        User user = form.toEntity();
+        prepareRegisteredStudent(user);
         userMapper.insert(user);
 
-        UserRole userRole = new UserRole();
-        userRole.setUserId(user.getId());
-        userRole.setRoleId(registerRole.getId());
-        userRoleMapper.insert(userRole);
+        userRoleMapper.insert(userRole(user.getId(), registerRole.getId()));
 
         return Result.success();
     }
@@ -143,6 +131,22 @@ public class AuthController {
             return null;
         }
         return roleMapper.selectById(userRole.getRoleId());
+    }
+
+    private void prepareRegisteredStudent(User user) {
+        LocalDateTime now = LocalDateTime.now();
+        user.setPassword(PasswordUtils.encode(user.getPassword()));
+        user.setNickname(isBlank(user.getNickname()) ? user.getUsername() : user.getNickname());
+        user.setStatus(1);
+        user.setCreateTime(now);
+        user.setUpdateTime(now);
+    }
+
+    private UserRole userRole(Integer userId, Integer roleId) {
+        UserRole userRole = new UserRole();
+        userRole.setUserId(userId);
+        userRole.setRoleId(roleId);
+        return userRole;
     }
 
     private Map<String, Object> buildUserInfo(User user, String roleCode) {

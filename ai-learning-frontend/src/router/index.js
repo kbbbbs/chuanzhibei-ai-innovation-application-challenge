@@ -154,6 +154,18 @@ export const layoutChildren = [
     component: () => import('../views/student/KnowledgeBase.vue'),
     meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'] }
   },
+  {
+    path: 'work-study-jobs',
+    name: 'WorkStudyJobs',
+    component: () => import('../views/student/WorkStudyList.vue'),
+    meta: { title: '勤工俭学', icon: 'Suitcase', roles: ['admin', 'student'], requiresAuth: true }
+  },
+  {
+    path: 'my-work-study',
+    name: 'MyWorkStudy',
+    component: () => import('../views/student/MyWorkStudy.vue'),
+    meta: { title: '我的岗位', icon: 'Wallet', roles: ['admin', 'student'], requiresAuth: true }
+  },
 
   // Admin routes
   {
@@ -167,6 +179,18 @@ export const layoutChildren = [
     name: 'CategoryManage',
     component: () => import('../views/admin/CategoryManage.vue'),
     meta: { title: '分类管理', icon: 'Menu', roles: ['admin'], requiresAuth: true }
+  },
+  {
+    path: 'work-studies',
+    name: 'WorkStudyManage',
+    component: () => import('../views/admin/WorkStudyManage.vue'),
+    meta: { title: '勤工俭学岗位', icon: 'Suitcase', roles: ['admin', 'teacher'], requiresAuth: true }
+  },
+  {
+    path: 'work-study-students',
+    name: 'WorkStudyStudentManage',
+    component: () => import('../views/admin/WorkStudyStudentManage.vue'),
+    meta: { title: '劳务费名单', icon: 'Wallet', roles: ['admin', 'teacher'], requiresAuth: true }
   },
 ]
 

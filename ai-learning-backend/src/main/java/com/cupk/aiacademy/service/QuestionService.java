@@ -26,11 +26,16 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.*;
-import java.util.stream.Collectors;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Service
 public class QuestionService {
+    private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
+
     private static final TypeReference<List<QuestionRequestDTO.QuestionOptionRequest>> OPTION_LIST_TYPE = new TypeReference<>() {
     };
     private static final TypeReference<List<QuestionRequestDTO.QuestionAnswerRequest>> ANSWER_LIST_TYPE = new TypeReference<>() {
@@ -103,44 +108,26 @@ public class QuestionService {
         if (difficulty != null) {
             query.eq("difficulty", difficulty.getCode());
         }
+
         boolean includeAnswers = true;
         var user = permissionService.currentUser();
-        if (permissionService.isTeacher()) {
+        if (permissionService.isTeacher(user)) {
             query.eq("teacher_id", user.getUserId());
-        } else if (permissionService.isStudent()) {
+            if (status != null) {
+                query.eq("status", status.getCode());
+            }
+            if (courseId != null && courseId > 0) {
+                query.eq("course_id", courseId);
+            }
+        } else if (permissionService.isStudent(user)) {
             includeAnswers = false;
-            query.eq("status", RecordStatus.ACTIVE.getCode());
-            List<Integer> courseIds = permissionService.studentCourseIds(user.getUserId());
-            if (courseIds.isEmpty()) {
+            if (!applyStudentCourseFilter(query, user.getUserId(), courseId)) {
                 return new PageImpl<>(List.of(), PageRequest.of(pageIndex, pageSize), 0);
             }
-            if (courseId != null && courseId > 0) {
-                if (!courseIds.contains(courseId.intValue())) {
-                    return new PageImpl<>(List.of(), PageRequest.of(pageIndex, pageSize), 0);
-                }
-                query.eq("course_id", courseId);
-            } else {
-                query.in("course_id", courseIds);
-            }
         } else {
-            if (teacherId != null && teacherId > 0) {
-                query.eq("teacher_id", teacherId);
-            }
-            if (courseId != null && courseId > 0) {
-                query.eq("course_id", courseId);
-            }
-            if (status != null) {
-                query.eq("status", status.getCode());
-            }
+            applyOptionalFilters(query, teacherId, courseId, status);
         }
-        if ("teacher".equals(user.getRoleCode())) {
-            if (status != null) {
-                query.eq("status", status.getCode());
-            }
-            if (courseId != null && courseId > 0) {
-                query.eq("course_id", courseId);
-            }
-        }
+
         query.orderByDesc("id");
         questionMapper.selectPage(mpPage, query);
         boolean finalIncludeAnswers = includeAnswers;
@@ -156,8 +143,6 @@ public class QuestionService {
         requireQuestionTeacher(question);
         questionMapper.deleteById(question.getId());
     }
-
-    // ==================== PDF 提取 ====================
 
     private static final String EXTRACTION_PROMPT = """
             你是EduLoop智教云环平台的题库构建助手。请仔细阅读上传的教学文档，提取其中所有的题目。
@@ -191,20 +176,12 @@ public class QuestionService {
         }
 
         String kbId = findOrCreateQuestionKB();
-
-        // 1. 上传 PDF 到 WeKnora 知识库
-        byte[] fileBytes;
-        try {
-            fileBytes = file.getBytes();
-        } catch (Exception e) {
-            throw new BusinessException("读取文件失败: " + e.getMessage());
-        }
+        byte[] fileBytes = readBytes(file);
         var uploadResult = weKnoraService.uploadFile(kbId, fileBytes, originalName);
         if (uploadResult.getCode() != null && !"200".equals(uploadResult.getCode())) {
             throw new BusinessException("上传文档到知识库失败: " + uploadResult.getMsg());
         }
 
-        // 2. 创建会话
         var sessionReq = new com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest();
         sessionReq.setKnowledgeBaseId(kbId);
         sessionReq.setTitle("EduLoop题库提取-" + System.currentTimeMillis());
@@ -214,17 +191,7 @@ public class QuestionService {
         }
         String sessionId = extractSessionId(sessionResult);
 
-        // 3. 调用 AI 提取题目
-        String rawResponse;
-        try {
-            rawResponse = weKnoraService.chatSync(sessionId, EXTRACTION_PROMPT);
-        } catch (Exception e) {
-            throw new BusinessException("AI提取失败: " + e.getMessage());
-        }
-
-        // 4. 解析 JSON
-        List<QuestionRequestDTO> questions = parseExtractedJson(rawResponse, courseId, teacherId);
-        return questions;
+        return parseExtractedJson(extractByAi(sessionId), courseId, teacherId);
     }
 
     public List<Map<String, Object>> batchCreate(List<QuestionRequestDTO> requests) {
@@ -246,7 +213,50 @@ public class QuestionService {
         return results;
     }
 
-    // ==================== helper ====================
+    private boolean applyStudentCourseFilter(QueryWrapper<Question> query, Integer studentId, Long courseId) {
+        query.eq("status", RecordStatus.ACTIVE.getCode());
+        List<Integer> courseIds = permissionService.studentCourseIds(studentId);
+        if (courseIds.isEmpty()) {
+            return false;
+        }
+        if (courseId == null || courseId <= 0) {
+            query.in("course_id", courseIds);
+            return true;
+        }
+        if (!courseIds.contains(courseId.intValue())) {
+            return false;
+        }
+        query.eq("course_id", courseId);
+        return true;
+    }
+
+    private void applyOptionalFilters(QueryWrapper<Question> query, Long teacherId, Long courseId, RecordStatus status) {
+        if (teacherId != null && teacherId > 0) {
+            query.eq("teacher_id", teacherId);
+        }
+        if (courseId != null && courseId > 0) {
+            query.eq("course_id", courseId);
+        }
+        if (status != null) {
+            query.eq("status", status.getCode());
+        }
+    }
+
+    private byte[] readBytes(MultipartFile file) {
+        try {
+            return file.getBytes();
+        } catch (Exception e) {
+            throw new BusinessException("读取文件失败: " + e.getMessage());
+        }
+    }
+
+    private String extractByAi(String sessionId) {
+        try {
+            return weKnoraService.chatSync(sessionId, EXTRACTION_PROMPT);
+        } catch (Exception e) {
+            throw new BusinessException("AI提取失败: " + e.getMessage());
+        }
+    }
 
     private String findOrCreateQuestionKB() {
         var kbResult = weKnoraService.listKnowledgeBases();
@@ -262,7 +272,6 @@ public class QuestionService {
                 }
             }
         }
-        // 不存在则创建
         var createResult = weKnoraService.createKnowledgeBase(kbName, "EduLoop智教云环平台题库，支持PDF自动提取题目");
         if ("200".equals(createResult.getCode()) && createResult.getData() instanceof Map<?, ?> m) {
             Object id = m.get("id");
@@ -271,7 +280,6 @@ public class QuestionService {
         throw new BusinessException("无法获取或创建知识库，请确认WeKnora服务可用");
     }
 
-    @SuppressWarnings("unchecked")
     private String extractSessionId(com.cupk.aiacademy.common.Result result) {
         if (result.getData() instanceof Map<?, ?> m) {
             Object id = m.get("id");
@@ -287,7 +295,6 @@ public class QuestionService {
             return List.of();
         }
         String cleaned = rawResponse.trim();
-        // 去除可能的 markdown 代码块标记
         if (cleaned.startsWith("```")) {
             int start = cleaned.indexOf('\n');
             if (start > 0) {
@@ -315,8 +322,6 @@ public class QuestionService {
                     (rawResponse.length() > 200 ? rawResponse.substring(0, 200) : rawResponse));
         }
     }
-
-    private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
 
     public Question getEntityById(Long id) {
         Question question = questionMapper.selectById(toInt(id, "题目ID"));
@@ -356,7 +361,7 @@ public class QuestionService {
         }
         Course course = permissionService.getCourse(toInt(request.getCourseId(), "课程ID"));
         var user = permissionService.currentUser();
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             permissionService.requireCourseTeacher(course);
             request.setTeacherId(user.getUserId().longValue());
         } else {
@@ -367,7 +372,7 @@ public class QuestionService {
             permissionService.requireUserRole(teacherId, "teacher", "教师用户不存在或角色不正确");
             request.setTeacherId(teacherId.longValue());
         }
-        if (oldQuestion != null && !"admin".equals(user.getRoleCode())
+        if (oldQuestion != null && !permissionService.isAdmin(user)
                 && oldQuestion.getTeacherId() != null
                 && !oldQuestion.getTeacherId().equals(user.getUserId())) {
             throw new ForbiddenException("无权修改该题目");
@@ -376,10 +381,10 @@ public class QuestionService {
 
     private void requireQuestionTeacher(Question question) {
         var user = permissionService.currentUser();
-        if ("admin".equals(user.getRoleCode())) {
+        if (permissionService.isAdmin(user)) {
             return;
         }
-        if ("teacher".equals(user.getRoleCode()) && question.getTeacherId() != null
+        if (permissionService.isTeacher(user) && question.getTeacherId() != null
                 && question.getTeacherId().equals(user.getUserId())) {
             return;
         }
@@ -388,10 +393,10 @@ public class QuestionService {
 
     private boolean canReadWithAnswers(Question question) {
         var user = permissionService.currentUser();
-        if ("admin".equals(user.getRoleCode())) {
+        if (permissionService.isAdmin(user)) {
             return true;
         }
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             if (question.getTeacherId() != null && question.getTeacherId().equals(user.getUserId())) {
                 return true;
             }
@@ -419,21 +424,7 @@ public class QuestionService {
                     .map(item -> toOptionResponse(question, item))
                     .toList();
         } catch (Exception ignored) {
-            try {
-                List<String> values = objectMapper.readValue(options, STRING_LIST_TYPE);
-                List<QuestionResponseDTO.OptionResponse> responses = new ArrayList<>();
-                for (int i = 0; i < values.size(); i++) {
-                    QuestionResponseDTO.OptionResponse response = new QuestionResponseDTO.OptionResponse();
-                    response.setId(syntheticChildId(question.getId(), i + 1));
-                    response.setOptionKey(optionKey(i));
-                    response.setOptionContent(values.get(i));
-                    response.setSortOrder(i + 1);
-                    responses.add(response);
-                }
-                return responses;
-            } catch (Exception e) {
-                return List.of();
-            }
+            return parseLegacyOptions(question, options);
         }
     }
 
@@ -449,24 +440,38 @@ public class QuestionService {
                     .map(item -> toAnswerResponse(question, item))
                     .toList();
         } catch (Exception ignored) {
-            try {
-                List<String> values = objectMapper.readValue(answer, STRING_LIST_TYPE);
-                List<QuestionResponseDTO.AnswerResponse> responses = new ArrayList<>();
-                for (int i = 0; i < values.size(); i++) {
-                    QuestionResponseDTO.AnswerResponse response = new QuestionResponseDTO.AnswerResponse();
-                    response.setId(syntheticChildId(question.getId(), i + 1));
-                    response.setAnswerContent(values.get(i));
-                    response.setSortOrder(i + 1);
-                    responses.add(response);
-                }
-                return responses;
-            } catch (Exception e) {
-                QuestionResponseDTO.AnswerResponse response = new QuestionResponseDTO.AnswerResponse();
-                response.setId(syntheticChildId(question.getId(), 1));
-                response.setAnswerContent(answer);
-                response.setSortOrder(1);
-                return List.of(response);
+            return parseLegacyAnswers(question, answer);
+        }
+    }
+
+    private List<QuestionResponseDTO.OptionResponse> parseLegacyOptions(Question question, String options) {
+        try {
+            List<String> values = objectMapper.readValue(options, STRING_LIST_TYPE);
+            List<QuestionResponseDTO.OptionResponse> responses = new ArrayList<>();
+            for (int i = 0; i < values.size(); i++) {
+                QuestionResponseDTO.OptionResponse response = new QuestionResponseDTO.OptionResponse();
+                response.setId(syntheticChildId(question.getId(), i + 1));
+                response.setOptionKey(optionKey(i));
+                response.setOptionContent(values.get(i));
+                response.setSortOrder(i + 1);
+                responses.add(response);
             }
+            return responses;
+        } catch (Exception e) {
+            return List.of();
+        }
+    }
+
+    private List<QuestionResponseDTO.AnswerResponse> parseLegacyAnswers(Question question, String answer) {
+        try {
+            List<String> values = objectMapper.readValue(answer, STRING_LIST_TYPE);
+            List<QuestionResponseDTO.AnswerResponse> responses = new ArrayList<>();
+            for (int i = 0; i < values.size(); i++) {
+                responses.add(toLegacyAnswerResponse(question, values.get(i), i + 1));
+            }
+            return responses;
+        } catch (Exception e) {
+            return List.of(toLegacyAnswerResponse(question, answer, 1));
         }
     }
 
@@ -512,6 +517,14 @@ public class QuestionService {
         question.setStatus(request.getStatus() == null ? RecordStatus.ACTIVE.getCode() : request.getStatus().getCode());
         question.setOptions(writeJson(request.getOptions()));
         question.setAnswer(writeJson(request.getAnswers()));
+    }
+
+    private QuestionResponseDTO.AnswerResponse toLegacyAnswerResponse(Question question, String content, int sortOrder) {
+        QuestionResponseDTO.AnswerResponse response = new QuestionResponseDTO.AnswerResponse();
+        response.setId(syntheticChildId(question.getId(), sortOrder));
+        response.setAnswerContent(content);
+        response.setSortOrder(sortOrder);
+        return response;
     }
 
     private String writeJson(Object value) {

@@ -7,7 +7,6 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.PaperStatus;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.mapper.ChapterMapper;
-import com.cupk.aiacademy.mapper.ClassStudentMapper;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.ExamPaperMapper;
@@ -16,7 +15,6 @@ import com.cupk.aiacademy.mapper.LearningProgressMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.pojo.Chapter;
-import com.cupk.aiacademy.pojo.ClassStudent;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.GradeRecord;
@@ -37,32 +35,32 @@ public class CourseResourceService {
     private final ChapterMapper chapterMapper;
     private final LessonMapper lessonMapper;
     private final TeachingClassMapper teachingClassMapper;
-    private final ClassStudentMapper classStudentMapper;
     private final GradeRecordMapper gradeRecordMapper;
     private final ExamPaperMapper examPaperMapper;
     private final LearningProgressMapper learningProgressMapper;
     private final AuthUtils authUtils;
+    private final PermissionService permissionService;
 
     public CourseResourceService(CourseCategoryMapper categoryMapper,
                                  CourseMapper courseMapper,
                                  ChapterMapper chapterMapper,
                                  LessonMapper lessonMapper,
                                  TeachingClassMapper teachingClassMapper,
-                                 ClassStudentMapper classStudentMapper,
                                  GradeRecordMapper gradeRecordMapper,
                                  ExamPaperMapper examPaperMapper,
                                  LearningProgressMapper learningProgressMapper,
-                                 AuthUtils authUtils) {
+                                 AuthUtils authUtils,
+                                 PermissionService permissionService) {
         this.categoryMapper = categoryMapper;
         this.courseMapper = courseMapper;
         this.chapterMapper = chapterMapper;
         this.lessonMapper = lessonMapper;
         this.teachingClassMapper = teachingClassMapper;
-        this.classStudentMapper = classStudentMapper;
         this.gradeRecordMapper = gradeRecordMapper;
         this.examPaperMapper = examPaperMapper;
         this.learningProgressMapper = learningProgressMapper;
         this.authUtils = authUtils;
+        this.permissionService = permissionService;
     }
 
     @Transactional(readOnly = true)
@@ -92,7 +90,7 @@ public class CourseResourceService {
         Page<Course> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize, 10));
         QueryWrapper<Course> query = new QueryWrapper<>();
         if (authUtils.isStudent(loginUser)) {
-            List<Integer> courseIds = findStudentCourseIds(loginUser.getUserId(), null);
+            List<Integer> courseIds = permissionService.studentCourseIds(loginUser.getUserId());
             if (courseIds.isEmpty()) {
                 return page;
             }
@@ -112,7 +110,7 @@ public class CourseResourceService {
         Page<TeachingClass> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize, 10));
         QueryWrapper<TeachingClass> query = new QueryWrapper<>();
         if (authUtils.isStudent(loginUser)) {
-            List<Integer> classIds = findStudentClassIds(loginUser.getUserId(), true);
+            List<Integer> classIds = permissionService.studentClassIds(loginUser.getUserId());
             if (classIds.isEmpty()) {
                 return page;
             }
@@ -166,7 +164,7 @@ public class CourseResourceService {
         QueryWrapper<ExamPaper> query = new QueryWrapper<>();
         query.eq("course_id", courseId);
         if (authUtils.isStudent(loginUser)) {
-            if (!findStudentCourseIds(loginUser.getUserId(), courseId).contains(courseId)) {
+            if (!permissionService.studentCourseIds(loginUser.getUserId()).contains(courseId)) {
                 return page;
             }
             query.eq("status", PaperStatus.PUBLISHED.getCode());
@@ -227,7 +225,7 @@ public class CourseResourceService {
                 throw new BusinessException("教学班不属于该课程");
             }
             requireStudentInClass(classId, loginUser.getUserId());
-        } else if (!findStudentCourseIds(loginUser.getUserId(), course.getId()).contains(course.getId())) {
+        } else if (!permissionService.studentCourseIds(loginUser.getUserId()).contains(course.getId())) {
             throw new BusinessException("学生未加入该课程教学班");
         }
 
@@ -352,44 +350,9 @@ public class CourseResourceService {
     }
 
     private void requireStudentInClass(Integer classId, Integer studentId) {
-        QueryWrapper<ClassStudent> query = new QueryWrapper<>();
-        query.eq("class_id", classId)
-                .eq("student_id", studentId)
-                .eq("status", 1);
-        if (classStudentMapper.selectCount(query) <= 0) {
+        if (!permissionService.isStudentInClass(classId, studentId)) {
             throw new BusinessException("学生未加入该教学班");
         }
-    }
-
-    private List<Integer> findStudentClassIds(Integer studentId, boolean onlyActive) {
-        QueryWrapper<ClassStudent> query = new QueryWrapper<>();
-        query.eq("student_id", studentId);
-        if (onlyActive) {
-            query.eq("status", 1);
-        }
-        query.orderByDesc("id");
-        return classStudentMapper.selectList(query).stream()
-                .map(ClassStudent::getClassId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
-    }
-
-    private List<Integer> findStudentCourseIds(Integer studentId, Integer courseId) {
-        List<Integer> classIds = findStudentClassIds(studentId, true);
-        if (classIds.isEmpty()) {
-            return List.of();
-        }
-        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds);
-        if (courseId != null && courseId > 0) {
-            query.eq("course_id", courseId);
-        }
-        return teachingClassMapper.selectList(query).stream()
-                .map(TeachingClass::getCourseId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
     }
 
     private List<Integer> findCourseLessonIds(Integer courseId) {

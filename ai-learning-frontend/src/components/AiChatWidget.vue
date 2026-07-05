@@ -8,7 +8,7 @@
         <span>AI 智能伴学与教学助手</span>
       </div>
       <div class="header-controls">
-        <el-select v-model="selectedKbId" size="small" class="kb-select" placeholder="选择知识库" @change="handleKbChange" style="width: 130px">
+        <el-select v-model="selectedKbId" size="small" class="kb-select" placeholder="选择知识库" :disabled="!canUseAssistant" @change="handleKbChange" style="width: 130px">
           <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
         </el-select>
         <el-select v-model="currentMode" size="small" class="mode-select" @change="handleModeChange" style="width: 130px">
@@ -25,7 +25,7 @@
           <el-radio-button label="knowledge">知识库问答 (RAG)</el-radio-button>
           <el-radio-button label="agent">Agent 智能助手</el-radio-button>
         </el-radio-group>
-        <el-select v-model="selectedKbId" size="small" placeholder="选择知识库" @change="handleKbChange" style="width: 140px; margin-left: 12px">
+        <el-select v-model="selectedKbId" size="small" placeholder="选择知识库" :disabled="!canUseAssistant" @change="handleKbChange" style="width: 140px; margin-left: 12px">
           <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
         </el-select>
       </div>
@@ -38,11 +38,13 @@
     <div class="chat-messages" ref="messagesContainer">
       <div class="welcome-msg" v-if="messages.length === 0">
         <div class="welcome-icon"><el-icon><ChatDotRound /></el-icon></div>
-        <h4 v-if="selectedKbId">您好，我是您的专属 AI 助手！</h4>
+        <h4 v-if="!canUseAssistant">登录后使用 AI 知识助手</h4>
+        <h4 v-else-if="selectedKbId">您好，我是您的专属 AI 助手！</h4>
         <h4 v-else>请先选择一个知识库</h4>
-        <p v-if="selectedKbId">您可以问我任何关于课程内容、习题解答，或让我帮您搜索文献、编写大纲。</p>
+        <p v-if="!canUseAssistant">登录后即可选择课程知识库，进行答疑、总结和智能检索。</p>
+        <p v-else-if="selectedKbId">您可以问我任何关于课程内容、习题解答，或让我帮您搜索文献、编写大纲。</p>
         <p v-else>在顶部下拉菜单中选择要使用的知识库</p>
-        <div class="quick-prompts" v-if="selectedKbId">
+        <div class="quick-prompts" v-if="canUseAssistant && selectedKbId">
           <span class="prompt-chip" @click="sendQuick('请帮我总结一下本课程的核心知识点。')">总结核心知识点</span>
           <span class="prompt-chip" @click="sendQuick('本课程的重点和难点是什么？')">重点和难点是什么</span>
         </div>
@@ -79,18 +81,18 @@
         v-model="inputQuery"
         type="textarea"
         :rows="inline ? 2 : 3"
-        placeholder="输入您的问题，按 Ctrl + Enter 快速发送..."
+        :placeholder="canUseAssistant ? '输入您的问题，按 Ctrl + Enter 快速发送...' : '请先登录后使用 AI 知识助手'"
         resize="none"
-        :disabled="!selectedKbId"
+        :disabled="!canUseAssistant || !selectedKbId"
         @keydown.ctrl.enter="handleSend"
       />
       <div class="input-actions">
-        <span class="tip-text">{{ selectedKbId ? 'WeKnora 引擎支持' : '请先选择知识库' }}</span>
+        <span class="tip-text">{{ !canUseAssistant ? '登录后可用' : selectedKbId ? 'WeKnora 引擎支持' : '请先选择知识库' }}</span>
         <el-button
           type="primary"
           class="send-btn"
           :loading="loading"
-          :disabled="!inputQuery.trim() || !selectedKbId"
+          :disabled="!canUseAssistant || !inputQuery.trim() || !selectedKbId"
           @click="handleSend"
         >
           发送
@@ -107,6 +109,7 @@ import { useWeKnora } from '@/composables/useWeKnora'
 import { renderMarkdown } from '@/utils/markdown'
 import { Cpu, User, ChatDotRound, Position, RefreshRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/store/user'
 
 const props = defineProps({
   inline: {
@@ -129,6 +132,8 @@ const currentMode = ref('knowledge')
 const selectedKbId = ref('')
 const inputQuery = ref('')
 const messagesContainer = ref(null)
+const userStore = useUserStore()
+const canUseAssistant = computed(() => userStore.isLoggedIn)
 
 const scrollToBottom = async () => {
   await nextTick()
@@ -142,6 +147,7 @@ watch(messages, () => {
 }, { deep: true })
 
 onMounted(async () => {
+  if (!canUseAssistant.value) return
   await loadKnowledgeBases()
   if (knowledgeBases.value.length > 0) {
     selectedKbId.value = knowledgeBases.value[0].id
@@ -171,6 +177,10 @@ const sendQuick = (text) => {
 
 const handleSend = async () => {
   const query = inputQuery.value.trim()
+  if (!canUseAssistant.value) {
+    ElMessage.warning('请先登录后使用 AI 知识助手')
+    return
+  }
   if (!query || loading.value || !selectedKbId.value) return
 
   inputQuery.value = ''

@@ -35,9 +35,7 @@ public class ExamService {
         validateRequest(request);
         prepareForWrite(request);
         ExamPaper paper = paperService.getEntityById(request.getPaperId());
-        if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.PUBLISHED) {
-            throw new BusinessException("只能使用已发布的试卷创建考试，当前试卷状态：" + PaperStatus.fromCode(paper.getStatus()));
-        }
+        requirePublishedPaper(paper, "只能使用已发布的试卷创建考试，当前试卷状态：");
         ExamSession exam = new ExamSession();
         fillExam(exam, request);
         LocalDateTime now = LocalDateTime.now();
@@ -58,9 +56,7 @@ public class ExamService {
             throw new BusinessException("已发布或已关闭的考试不允许修改");
         }
         ExamPaper paper = paperService.getEntityById(request.getPaperId());
-        if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.PUBLISHED) {
-            throw new BusinessException("只能使用已发布的试卷，当前试卷状态：" + PaperStatus.fromCode(paper.getStatus()));
-        }
+        requirePublishedPaper(paper, "只能使用已发布的试卷，当前试卷状态：");
         fillExam(exam, request);
         exam.setUpdateTime(LocalDateTime.now());
         examSessionMapper.updateById(exam);
@@ -78,9 +74,9 @@ public class ExamService {
     public List<ExamResponseDTO> list(Long teacherId) {
         QueryWrapper<ExamSession> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             query.eq("teacher_id", user.getUserId());
-        } else if ("student".equals(user.getRoleCode())) {
+        } else if (permissionService.isStudent(user)) {
             List<Integer> classIds = permissionService.studentClassIds(user.getUserId());
             if (classIds.isEmpty()) {
                 return List.of();
@@ -199,7 +195,7 @@ public class ExamService {
             throw new BusinessException("试卷教师与教学班教师不一致");
         }
         var user = permissionService.currentUser();
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             if (!paper.getTeacherId().equals(user.getUserId())) {
                 throw new com.cupk.aiacademy.common.ForbiddenException("无权使用该试卷创建考试");
             }
@@ -212,10 +208,10 @@ public class ExamService {
 
     private void requireReadableExam(ExamSession exam) {
         var user = permissionService.currentUser();
-        if ("admin".equals(user.getRoleCode())) {
+        if (permissionService.isAdmin(user)) {
             return;
         }
-        if ("teacher".equals(user.getRoleCode())) {
+        if (permissionService.isTeacher(user)) {
             permissionService.requireExamTeacher(exam);
             return;
         }
@@ -224,6 +220,13 @@ public class ExamService {
         }
         if (!permissionService.isStudentInClass(exam.getClassId(), user.getUserId())) {
             throw new com.cupk.aiacademy.common.ForbiddenException("无权查看该考试");
+        }
+    }
+
+    private void requirePublishedPaper(ExamPaper paper, String messagePrefix) {
+        PaperStatus status = PaperStatus.fromCode(paper.getStatus());
+        if (status != PaperStatus.PUBLISHED) {
+            throw new BusinessException(messagePrefix + status);
         }
     }
 

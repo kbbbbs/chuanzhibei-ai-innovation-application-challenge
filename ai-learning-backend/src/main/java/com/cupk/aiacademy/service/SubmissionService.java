@@ -59,9 +59,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDTO start(Long examId, String candidateId) {
-        permissionService.requireStudent();
-        Long studentId = permissionService.currentUser().getUserId().longValue();
-        return start(examId, String.valueOf(studentId), studentId);
+        return start(examId, null, null);
     }
 
     @Transactional
@@ -84,9 +82,6 @@ public class SubmissionService {
         }
         if (exam.getEndTime() != null && now.isAfter(exam.getEndTime())) {
             throw new BusinessException("考试已结束，当前时间：" + now + "，结束时间：" + exam.getEndTime());
-        }
-        if (isBlank(candidateId) && studentId == null) {
-            throw new BusinessException("考生不能为空");
         }
         ExamRecord existing = findExistingRecord(exam.getId(), candidateId, studentId);
         if (existing != null) {
@@ -170,7 +165,7 @@ public class SubmissionService {
             boolean correct = judgeObjective(question, answer.getStudentAnswer());
             answer.setIsCorrect(correct ? 1 : 0);
             if (correct) {
-                BigDecimal score = paperQuestion == null || paperQuestion.getScore() == null ? BigDecimal.ZERO : paperQuestion.getScore();
+                BigDecimal score = scoreOf(paperQuestion);
                 answer.setScore(score);
                 objectiveScore = objectiveScore.add(score);
             } else {
@@ -206,7 +201,7 @@ public class SubmissionService {
                 throw new BusinessException("答题记录不属于当前答卷");
             }
             ExamPaperQuestion paperQuestion = paperQuestionMapper.selectById(answer.getPaperQuestionId());
-            BigDecimal maxScore = paperQuestion == null || paperQuestion.getScore() == null ? BigDecimal.ZERO : paperQuestion.getScore();
+            BigDecimal maxScore = scoreOf(paperQuestion);
             if (item.getScore().compareTo(maxScore) > 0) {
                 throw new BusinessException("主观题得分不能超过题目分值。题目分值：" + maxScore + "，给定分数：" + item.getScore());
             }
@@ -253,9 +248,9 @@ public class SubmissionService {
     public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
-        if ("student".equals(user.getRoleCode())) {
+        if (permissionService.isStudent(user)) {
             query.eq("student_id", user.getUserId());
-        } else if ("teacher".equals(user.getRoleCode())) {
+        } else if (permissionService.isTeacher(user)) {
             if (examId != null) {
                 ExamSession exam = examService.getEntityById(examId);
                 permissionService.requireExamTeacher(exam);
@@ -275,10 +270,10 @@ public class SubmissionService {
         } else if (examId != null) {
             query.eq("exam_session_id", toInt(examId, "考试ID"));
         }
-        if (!"student".equals(user.getRoleCode()) && !isBlank(candidateId)) {
+        if (!permissionService.isStudent(user) && !isBlank(candidateId)) {
             query.eq("candidate_id", candidateId);
         }
-        if (!"student".equals(user.getRoleCode()) && studentId != null) {
+        if (!permissionService.isStudent(user) && studentId != null) {
             query.eq("student_id", toInt(studentId, "学生ID"));
         }
         query.orderByDesc("id");
@@ -468,17 +463,6 @@ public class SubmissionService {
         return "超时自动交卷，用时：" + elapsed + "分钟，限时：" + exam.getDuration() + "分钟";
     }
 
-    private Long parseCandidateStudentId(String candidateId) {
-        if (isBlank(candidateId)) {
-            return null;
-        }
-        try {
-            return Long.parseLong(candidateId);
-        } catch (NumberFormatException ignored) {
-            return null;
-        }
-    }
-
     private void requireStudentRecord(ExamRecord record) {
         permissionService.requireStudent();
         Integer currentUserId = permissionService.currentUser().getUserId();
@@ -497,7 +481,7 @@ public class SubmissionService {
 
     private void requireReadableRecord(ExamRecord record) {
         var user = permissionService.currentUser();
-        if ("student".equals(user.getRoleCode())) {
+        if (permissionService.isStudent(user)) {
             requireStudentRecord(record);
             return;
         }
@@ -519,6 +503,10 @@ public class SubmissionService {
                 .filter(item -> !item.isBlank())
                 .sorted()
                 .collect(Collectors.joining(","));
+    }
+
+    private BigDecimal scoreOf(ExamPaperQuestion paperQuestion) {
+        return paperQuestion == null || paperQuestion.getScore() == null ? BigDecimal.ZERO : paperQuestion.getScore();
     }
 
     private boolean isBlank(String value) {

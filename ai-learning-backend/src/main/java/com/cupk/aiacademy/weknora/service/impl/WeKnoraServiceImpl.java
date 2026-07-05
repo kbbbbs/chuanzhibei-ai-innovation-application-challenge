@@ -7,7 +7,12 @@ import com.cupk.aiacademy.weknora.dto.WeKnoraSearchRequest;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest;
 import com.cupk.aiacademy.weknora.service.OcrService;
 import com.cupk.aiacademy.weknora.service.WeKnoraService;
-import okhttp3.*;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +22,11 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -142,7 +151,6 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 String body = response.body().string();
                 if (!response.isSuccessful()) return Result.error("上传失败: " + body);
 
-                // OCR processing for image-based PDFs
                 String ocrMessage = "";
                 String lowerName = fileName.toLowerCase();
                 if (lowerName.endsWith(".pdf") && ocrService.needsOcr(fileBytes)) {
@@ -170,7 +178,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     @Override
     public Result uploadKnowledgeText(String knowledgeBaseId, String fileName, String textContent) {
         try {
-            byte[] textBytes = textContent.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+            byte[] textBytes = textContent.getBytes(StandardCharsets.UTF_8);
             RequestBody fileBody = RequestBody.create(textBytes,
                     MediaType.parse("text/markdown; charset=utf-8"));
 
@@ -267,7 +275,6 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     @Override
     public Result getKnowledgeContent(String kbId, String knowledgeId) {
         try {
-            // 1. get file metadata (title)
             String fileJson = get("/api/v1/knowledge/" + knowledgeId);
             Map<String, Object> fileMap = JSON.parseObject(fileJson, Map.class);
             Object fileData = fileMap.get("data");
@@ -277,18 +284,16 @@ public class WeKnoraServiceImpl implements WeKnoraService {
             }
             if (title == null || title.isBlank()) return Result.error("文件不存在");
 
-            // 2. search KB with title
             Map<String, Object> searchBody = new LinkedHashMap<>();
             searchBody.put("query", title.replaceAll("\\.[^.]+$", "").replaceAll("^.*/", ""));
-            searchBody.put("knowledge_base_ids", java.util.List.of(kbId));
+            searchBody.put("knowledge_base_ids", List.of(kbId));
             String searchResp = post("/api/v1/knowledge-search", searchBody);
             Map<String, Object> searchMap = JSON.parseObject(searchResp, Map.class);
             Object searchData = searchMap.get("data");
 
-            // 3. filter by knowledge_id, sort by chunk_index
-            java.util.List<Map<String, Object>> chunks = new java.util.ArrayList<>();
-            if (searchData instanceof java.util.List) {
-                for (Object item : (java.util.List<?>) searchData) {
+            List<Map<String, Object>> chunks = new ArrayList<>();
+            if (searchData instanceof List) {
+                for (Object item : (List<?>) searchData) {
                     if (item instanceof Map) {
                         Map<String, Object> chunk = (Map<String, Object>) item;
                         Object kid = chunk.get("knowledge_id");
@@ -334,7 +339,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 }
 
                 BufferedReader reader = new BufferedReader(
-                        new InputStreamReader(response.body().byteStream(), "UTF-8"));
+                        new InputStreamReader(response.body().byteStream(), StandardCharsets.UTF_8));
                 String line;
                 while ((line = reader.readLine()) != null) {
                     if (line.startsWith("data:")) {
@@ -371,7 +376,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 Map<String, Object> bodyMap = new LinkedHashMap<>();
                 bodyMap.put("query", query);
                 if (knowledgeBaseIds != null && !knowledgeBaseIds.isBlank()) {
-                    bodyMap.put("knowledge_base_ids", java.util.Arrays.asList(knowledgeBaseIds.split(",")));
+                    bodyMap.put("knowledge_base_ids", Arrays.asList(knowledgeBaseIds.split(",")));
                 }
                 String jsonBody = JSON.toJSONString(bodyMap);
 
@@ -391,7 +396,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                     }
 
                     BufferedReader reader = new BufferedReader(
-                            new InputStreamReader(response.body().byteStream(), "UTF-8"));
+                            new InputStreamReader(response.body().byteStream(), StandardCharsets.UTF_8));
                     String line;
                     while ((line = reader.readLine()) != null) {
                         if (line.startsWith("data:")) {
