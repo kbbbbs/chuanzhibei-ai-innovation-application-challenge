@@ -4,16 +4,21 @@ import com.cupk.aiacademy.agent.service.AgentChatService;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.AgentChatRequest;
 import com.cupk.aiacademy.dto.AgentSessionCreateRequest;
+import com.cupk.aiacademy.dto.AgentSessionUpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 public class ChatController {
@@ -24,12 +29,20 @@ public class ChatController {
         this.agentChatService = agentChatService;
     }
 
+    // 兼容早期本地调试入口；正式单轮对话请使用 /api/agent/chat-once。
+    @Deprecated
     @GetMapping("/chat")
     public String chat(@RequestParam("message") String message) {
         if (!StringUtils.hasText(message)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "信息不能为空");
         }
         return agentChatService.chatOnce(message);
+    }
+
+    // 正式单轮 Agent 对话接口，统一返回 Result 结构。
+    @PostMapping("/api/agent/chat-once")
+    public Result chatOnce(@Valid @RequestBody AgentChatRequest request) {
+        return Result.success(agentChatService.chatOnce(request.getContent()));
     }
 
     @PostMapping("/api/agent/sessions")
@@ -42,6 +55,20 @@ public class ChatController {
         return Result.success(agentChatService.listSessions(userId));
     }
 
+    // 修改当前用户自己的 Agent 会话标题。
+    @PutMapping("/api/agent/sessions/{sessionId}")
+    public Result updateSession(@PathVariable Integer sessionId,
+                                @Valid @RequestBody AgentSessionUpdateRequest request) {
+        return Result.success(agentChatService.updateSession(sessionId, request));
+    }
+
+    // 软删除当前用户自己的 Agent 会话，历史消息保留在数据库中。
+    @DeleteMapping("/api/agent/sessions/{sessionId}")
+    public Result deleteSession(@PathVariable Integer sessionId) {
+        agentChatService.deleteSession(sessionId);
+        return Result.success();
+    }
+
     @GetMapping("/api/agent/sessions/{sessionId}/messages")
     public Result listMessages(@PathVariable Integer sessionId) {
         return Result.success(agentChatService.listMessages(sessionId));
@@ -51,5 +78,12 @@ public class ChatController {
     public Result chat(@PathVariable Integer sessionId,
                        @Valid @RequestBody AgentChatRequest request) {
         return Result.success(agentChatService.chat(sessionId, request));
+    }
+
+    // 流式 Agent 对话接口，前端可监听 message、complete、error 三类 SSE 事件。
+    @PostMapping(value = "/api/agent/sessions/{sessionId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamChat(@PathVariable Integer sessionId,
+                                 @Valid @RequestBody AgentChatRequest request) {
+        return agentChatService.streamChat(sessionId, request);
     }
 }
