@@ -666,6 +666,90 @@ public class AgentChatService {
                 && looksLikeNoticeCreateRequest(currentUserContent)) {
             return Optional.of("notice_create_plan");
         }
+        if (isEnabledTool(enabledTools, "course_resource_remove_plan", "lesson_resource_remove_plan",
+                "course_resource_delete_plan", "lesson_resource_delete_plan")
+                && looksLikeCourseResourceRemoveRequest(currentUserContent)) {
+            return Optional.of("course_resource_remove_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_resource_attach_plan", "lesson_resource_attach_plan",
+                "course_resource_bind_plan", "lesson_resource_bind_plan")
+                && looksLikeCourseResourceAttachRequest(currentUserContent)) {
+            return Optional.of("course_resource_attach_plan");
+        }
+        if (isEnabledTool(enabledTools, "lesson_status_plan", "course_lesson_status_plan",
+                "lesson_archive_plan", "lesson_delete_plan", "lesson_remove_plan")
+                && looksLikeLessonStatusRequest(currentUserContent)) {
+            return Optional.of("lesson_status_plan");
+        }
+        if (isEnabledTool(enabledTools, "lesson_sort_plan", "course_lesson_sort_plan", "lesson_reorder_plan")
+                && looksLikeLessonSortRequest(currentUserContent)) {
+            return Optional.of("lesson_sort_plan");
+        }
+        if (isEnabledTool(enabledTools, "lesson_create_plan", "course_lesson_create_plan", "lesson_add_plan")
+                && looksLikeLessonCreateRequest(currentUserContent)) {
+            return Optional.of("lesson_create_plan");
+        }
+        if (isEnabledTool(enabledTools, "lesson_update_plan", "course_lesson_update_plan",
+                "lesson_modify_plan", "lesson_edit_plan")
+                && looksLikeLessonUpdateRequest(currentUserContent)) {
+            return Optional.of("lesson_update_plan");
+        }
+        if (isEnabledTool(enabledTools, "chapter_sort_plan", "course_chapter_sort_plan", "chapter_reorder_plan")
+                && looksLikeChapterSortRequest(currentUserContent)) {
+            return Optional.of("chapter_sort_plan");
+        }
+        if (isEnabledTool(enabledTools, "chapter_create_plan", "course_chapter_create_plan", "chapter_add_plan")
+                && looksLikeChapterCreateRequest(currentUserContent)) {
+            return Optional.of("chapter_create_plan");
+        }
+        if (isEnabledTool(enabledTools, "chapter_update_plan", "course_chapter_update_plan",
+                "chapter_modify_plan", "chapter_edit_plan")
+                && looksLikeChapterUpdateRequest(currentUserContent)) {
+            return Optional.of("chapter_update_plan");
+        }
+        if (isEnabledTool(enabledTools, "class_student_remove_plan", "class_student_delete_plan",
+                "teaching_class_student_remove_plan", "class_member_remove_plan", "student_unenroll_plan")
+                && looksLikeClassStudentRemoveRequest(currentUserContent)) {
+            return Optional.of("class_student_remove_plan");
+        }
+        if (isEnabledTool(enabledTools, "class_student_status_plan", "class_member_status_plan",
+                "class_student_update_status_plan", "student_enrollment_status_plan")
+                && looksLikeClassStudentStatusRequest(currentUserContent)) {
+            return Optional.of("class_student_status_plan");
+        }
+        if (isEnabledTool(enabledTools, "class_student_add_plan", "teaching_class_student_add_plan",
+                "class_member_add_plan", "student_enroll_plan")
+                && looksLikeClassStudentAddRequest(currentUserContent)) {
+            return Optional.of("class_student_add_plan");
+        }
+        if (isEnabledTool(enabledTools, "teaching_class_status_plan", "class_status_plan",
+                "teaching_class_archive_plan", "teaching_class_delete_plan", "class_delete_plan")
+                && looksLikeTeachingClassStatusRequest(currentUserContent)) {
+            return Optional.of("teaching_class_status_plan");
+        }
+        if (isEnabledTool(enabledTools, "teaching_class_create_plan", "class_create_plan",
+                "teaching_class_add_plan", "class_add_plan")
+                && looksLikeTeachingClassCreateRequest(currentUserContent)) {
+            return Optional.of("teaching_class_create_plan");
+        }
+        if (isEnabledTool(enabledTools, "teaching_class_update_plan", "class_update_plan",
+                "teaching_class_modify_plan", "class_modify_plan", "teaching_class_edit_plan")
+                && looksLikeTeachingClassUpdateRequest(currentUserContent)) {
+            return Optional.of("teaching_class_update_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_status_plan", "course_publish_status_plan",
+                "course_archive_plan", "course_delete_plan", "course_remove_plan")
+                && looksLikeCourseStatusRequest(currentUserContent)) {
+            return Optional.of("course_status_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_create_plan", "course_publish_plan", "course_add_plan")
+                && looksLikeCourseCreateRequest(currentUserContent)) {
+            return Optional.of("course_create_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_update_plan", "course_modify_plan", "course_edit_plan")
+                && looksLikeCourseUpdateRequest(currentUserContent)) {
+            return Optional.of("course_update_plan");
+        }
         if (isEnabledTool(enabledTools, "homework_submission_grade_plan", "homework_grade_plan",
                 "homework_submit_grade_plan", "assignment_grade_plan")
                 && looksLikeHomeworkSubmissionGradeRequest(currentUserContent)) {
@@ -737,6 +821,159 @@ public class AgentChatService {
         String value = content == null ? "" : content.trim();
         return containsAny(value, "作业", "练习", "任务")
                 && containsAny(value, "发布", "布置", "创建", "新建", "发送", "留一份", "留个");
+    }
+
+    private boolean looksLikeCourseCreateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "课程", "门课")
+                && containsAny(value, "创建", "新建", "新增", "添加", "开设", "发布", "建一门", "加一门");
+    }
+
+    private boolean looksLikeLessonCreateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeLessonTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "创建", "新建", "新增", "添加", "加一个", "建一个", "上传");
+    }
+
+    private boolean looksLikeCourseResourceAttachRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "课时", "小节", "课程资源", "资源")
+                && containsAny(value, "资源", "视频", "文档", "资料", "链接", "课件", "附件")
+                && containsAny(value, "挂载", "绑定", "关联", "附加", "上传", "添加", "设置", "替换", "换成");
+    }
+
+    private boolean looksLikeCourseResourceRemoveRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "课时", "小节", "课程资源", "资源")
+                && containsAny(value, "资源", "视频", "文档", "资料", "链接", "课件", "附件", "正文", "内容")
+                && containsAny(value, "移除", "删除", "清空", "解绑", "取消绑定", "解除绑定", "去掉", "删掉", "删去", "撤掉");
+    }
+
+    private boolean looksLikeLessonUpdateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeLessonTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "修改", "调整", "更改", "更新", "编辑", "改成", "改为", "改名", "替换");
+    }
+
+    private boolean looksLikeLessonSortRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeLessonTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "排序", "顺序", "调整顺序", "调序", "重新排序", "排到", "移到", "移动");
+    }
+
+    private boolean looksLikeLessonStatusRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeLessonTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "上架", "下架", "停用", "启用", "恢复", "归档", "关闭",
+                "删除", "移除", "撤销", "作废", "删掉", "删去");
+    }
+
+    private boolean looksLikeLessonTarget(String value) {
+        if (value == null) {
+            return false;
+        }
+        return containsAny(value, "课时", "小节", "课程内容", "视频课");
+    }
+
+    private boolean looksLikeChapterCreateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeChapterTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "创建", "新建", "新增", "添加", "加一章", "建一章");
+    }
+
+    private boolean looksLikeChapterUpdateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeChapterTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "修改", "调整", "更改", "更新", "编辑", "改成", "改为", "改名");
+    }
+
+    private boolean looksLikeChapterSortRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeChapterTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "排序", "顺序", "调整顺序", "调序", "重新排序", "排到", "移到", "移动");
+    }
+
+    private boolean looksLikeChapterTarget(String value) {
+        if (value == null) {
+            return false;
+        }
+        return value.contains("章节") || (value.contains("课程") && value.contains("章"));
+    }
+
+    private boolean looksLikeTeachingClassCreateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeTeachingClassTarget(value)
+                && containsAny(value, "创建", "新建", "新增", "添加", "开设", "建班", "建一个");
+    }
+
+    private boolean looksLikeTeachingClassUpdateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeTeachingClassTarget(value)
+                && containsAny(value, "修改", "调整", "更改", "更新", "编辑", "改成", "改为", "改名");
+    }
+
+    private boolean looksLikeTeachingClassStatusRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeTeachingClassTarget(value)
+                && containsAny(value, "结束", "关闭", "停用", "启用", "恢复", "归档", "删除",
+                "移除", "撤销", "作废", "删掉", "删去");
+    }
+
+    private boolean looksLikeTeachingClassTarget(String value) {
+        if (value == null) {
+            return false;
+        }
+        return containsAny(value, "教学班", "班级", "授课班", "课程班");
+    }
+
+    private boolean looksLikeClassStudentAddRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeClassStudentTarget(value)
+                && containsAny(value, "加入", "添加", "新增", "录入", "纳入", "加到", "加进");
+    }
+
+    private boolean looksLikeClassStudentRemoveRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeClassStudentTarget(value)
+                && containsAny(value, "移除", "删除", "移出", "踢出", "退班", "删掉", "删去");
+    }
+
+    private boolean looksLikeClassStudentStatusRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeClassStudentTarget(value)
+                && containsAny(value, "休学", "恢复", "正常", "停用", "启用", "调整状态", "变更状态",
+                "状态改为", "状态改成");
+    }
+
+    private boolean looksLikeClassStudentTarget(String value) {
+        if (value == null) {
+            return false;
+        }
+        return containsAny(value, "班级学生", "教学班学生", "班级成员", "学生名单")
+                || (containsAny(value, "教学班", "班级", "授课班", "课程班")
+                && containsAny(value, "学生", "成员"));
+    }
+
+    private boolean looksLikeCourseUpdateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "课程", "门课")
+                && containsAny(value, "修改", "调整", "更改", "更新", "编辑", "改成", "改为", "改名");
+    }
+
+    private boolean looksLikeCourseStatusRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "课程", "门课")
+                && containsAny(value, "上架", "下架", "停用", "启用", "恢复", "归档", "关闭",
+                "删除", "移除", "撤销", "作废", "删掉", "删去");
     }
 
     private boolean looksLikeHomeworkDeleteRequest(String content) {
