@@ -71,7 +71,7 @@ export async function loginByUi(page, username = 'admin', password = '[REDACTED]
   await page.getByRole('button', { name: '登录' }).click()
   await expect(page).toHaveURL(/\/home/)
   if (options.expectHomeHeading !== false) {
-    await expect(page.getByRole('heading', { name: 'AI智学平台' })).toBeVisible()
+    await expect(page.locator('.welcome-header')).toBeVisible()
   }
 }
 
@@ -88,13 +88,21 @@ export async function logout(page, options = {}) {
   await expect(page).toHaveURL(/\/(?:login)?$/)
 }
 
+async function findLoggedInUser(username) {
+  const login = await loginByApi(username, '123456')
+  return {
+    id: login.userId,
+    username: login.username,
+    nickname: login.nickname,
+    roleCode: login.roleCode,
+  }
+}
+
 export async function loadSeedData(apiCall) {
-  const teacher = records((await apiCall('/users', { params: { roleCode: 'teacher', pageSize: 50 } })).data)
-    .find(item => item.username === 'teacher')
-  const student = records((await apiCall('/users', { params: { roleCode: 'student', pageSize: 50 } })).data)
-    .find(item => item.username === 'student')
+  const teacher = await findLoggedInUser('teacher')
+  const student = await findLoggedInUser('student')
   const category = (await apiCall('/categories')).data[0]
-  if (!teacher || !student || !category) {
+  if (!teacher?.id || !student?.id || !category) {
     throw new Error('Seeded teacher/student/category data is required')
   }
   return { teacher, student, category }

@@ -76,11 +76,12 @@ const loadClasses = async () => {
       const memberships = getRecords(res.data)
       const rows = []
       for (const item of memberships) {
-        const classRes = await request.get(`/teaching-classes/${item.classId}`)
-        const teachingClass = classRes.code === '200' ? classRes.data : {}
+        const classRes = await request.get(`/teaching-classes/${item.classId}`, { silentError: true })
+        if (classRes.code !== '200' || !classRes.data) continue
+        const teachingClass = classRes.data
         let course = {}
         if (teachingClass.courseId) {
-          const courseRes = await request.get(`/courses/${teachingClass.courseId}`)
+          const courseRes = await request.get(`/courses/${teachingClass.courseId}`, { silentError: true })
           course = courseRes.code === '200' ? courseRes.data : {}
         }
         rows.push({
@@ -116,7 +117,8 @@ const loadPaperDirections = async (row) => {
   }
   try {
     const res = await request.get('/api/paper/course-directions', {
-      params: { keyword: row.courseName }
+      params: { keyword: row.courseName },
+      silentError: true
     })
     if (res.code === '200' && res.data) {
       row.paperCount = res.data.paperCount || 0

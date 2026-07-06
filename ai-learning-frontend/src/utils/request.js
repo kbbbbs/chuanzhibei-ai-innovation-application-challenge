@@ -50,6 +50,8 @@ request.interceptors.response.use(response => {
 
   res = normalizeResponse(res)
 
+  if (res && res.code && res.code !== '200' && !response.config?.silentError) {
+    ElMessage.error(res.msg || '请求失败')
   if (res && res.code && res.code !== '200') {
     // 静默降级：Agent 定义接口不可用时只记录不弹框
     const silent = response.config?.silent
@@ -60,6 +62,10 @@ request.interceptors.response.use(response => {
   return res
 }, error => {
   const status = error.response?.status
+  if (error.config?.silentError) {
+    return Promise.reject(error)
+  }
+
   const silent = error.config?.silent
   if (status === 401) {
     if (!silent) ElMessage.error('登录已过期，请重新登录')

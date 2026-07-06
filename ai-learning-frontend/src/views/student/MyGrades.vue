@@ -84,28 +84,6 @@ const loadGrades = async () => {
         }, 0),
       }))
 
-      // Enrich with exam and course info
-      for (const sub of submissions) {
-        try {
-          const examRes = await request.get(`/api/exams/${sub.examId}`)
-          if (examRes.code === '200') {
-            sub.examTitle = examRes.data.name || examRes.data.title || `考试${sub.examId}`
-
-            if (examRes.data.paperId) {
-              const paperRes = await request.get(`/api/papers/${examRes.data.paperId}`)
-              if (paperRes.code === '200' && paperRes.data?.courseId) {
-                const courseRes = await request.get(`/courses/${paperRes.data.courseId}`)
-                if (courseRes.code === '200') {
-                  sub.courseTitle = courseRes.data.title
-                }
-              }
-            }
-          }
-        } catch (e) {
-          // 全局异常已由 request.js 提示
-        }
-      }
-
       grades.value = submissions.filter(sub => sub.status >= 1)
     }
   } catch (e) {

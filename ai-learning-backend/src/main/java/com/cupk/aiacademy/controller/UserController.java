@@ -239,7 +239,7 @@ public class UserController {
     }
 
     private void fillRole(User user) {
-        UserRole userRole = userRoleMapper.selectOne(new QueryWrapper<UserRole>().eq("user_id", user.getId()));
+        UserRole userRole = userRoleMapper.selectList(new QueryWrapper<UserRole>().eq("user_id", user.getId())).stream().findFirst().orElse(null);
         if (userRole != null) {
             user.setRoleId(userRole.getRoleId());
             Role role = roleMapper.selectById(userRole.getRoleId());

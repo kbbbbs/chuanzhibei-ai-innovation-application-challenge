@@ -144,18 +144,7 @@ const loadSubmission = async () => {
     if (res.code === '200') {
       submission.value = mapSubmission(res.data)
 
-      // Load exam
-      try {
-        const examRes = await request.get(`/api/exams/${submission.value.examId}`)
-        if (examRes.code === '200') {
-          exam.value = {
-            ...examRes.data,
-            title: examRes.data.name || examRes.data.title || '',
-          }
-        }
-      } catch (e) {
-        // 全局异常已由 request.js 提示
-      }
+      exam.value = { title: submission.value.examName || `考试${submission.value.examId}` }
     }
   } catch (e) {
     // 全局异常已由 request.js 提示

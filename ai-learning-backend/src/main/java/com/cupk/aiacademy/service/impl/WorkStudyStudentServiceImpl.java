@@ -3,8 +3,11 @@ package com.cupk.aiacademy.service.impl;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.read.listener.ReadListener;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.cupk.aiacademy.dto.WorkStudyApplicationRequest;
+import com.cupk.aiacademy.dto.WorkStudyAuditRequest;
 import com.cupk.aiacademy.dto.WorkStudyStudentImportDTO;
 import com.cupk.aiacademy.dto.WorkStudyStudentRequest;
 import com.cupk.aiacademy.mapper.WorkStudyStudentMapper;
@@ -16,9 +19,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +38,9 @@ public class WorkStudyStudentServiceImpl extends ServiceImpl<WorkStudyStudentMap
     public boolean saveWorkStudyStudent(WorkStudyStudentRequest request) {
         WorkStudyStudent wss = new WorkStudyStudent();
         BeanUtils.copyProperties(request, wss);
+        LocalDateTime now = LocalDateTime.now();
+        wss.setCreateTime(now);
+        wss.setUpdateTime(now);
         calculateTotalAmount(wss);
         return this.save(wss);
     }
@@ -46,8 +52,45 @@ public class WorkStudyStudentServiceImpl extends ServiceImpl<WorkStudyStudentMap
             return false;
         }
         BeanUtils.copyProperties(request, wss);
+        wss.setUpdateTime(LocalDateTime.now());
         calculateTotalAmount(wss);
         return this.updateById(wss);
+    }
+
+    @Override
+    public boolean applyForPosition(WorkStudyApplicationRequest request) {
+        QueryWrapper<WorkStudyStudent> duplicateQuery = new QueryWrapper<>();
+        duplicateQuery.eq("work_study_id", request.getWorkStudyId())
+                .eq("student_id", request.getStudentId());
+        if (this.count(duplicateQuery) > 0) {
+            return false;
+        }
+
+        WorkStudyStudent application = new WorkStudyStudent();
+        application.setWorkStudyId(request.getWorkStudyId());
+        application.setStudentId(request.getStudentId());
+        application.setStatus(1);
+        application.setAuditStatus(0);
+        LocalDateTime now = LocalDateTime.now();
+        application.setApplyTime(now);
+        application.setCreateTime(now);
+        application.setUpdateTime(now);
+        return this.save(application);
+    }
+
+    @Override
+    public boolean auditApplication(WorkStudyAuditRequest request) {
+        WorkStudyStudent application = this.getById(request.getApplicationId());
+        if (application == null) {
+            return false;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        application.setAuditStatus(request.getAuditStatus());
+        application.setAuditorId(request.getAuditorId());
+        application.setAuditTime(now);
+        application.setRejectReason(request.getAuditStatus() != null && request.getAuditStatus() == 2 ? request.getRejectReason() : null);
+        application.setUpdateTime(now);
+        return this.updateById(application);
     }
 
     private void calculateTotalAmount(WorkStudyStudent wss) {
@@ -79,7 +122,10 @@ public class WorkStudyStudentServiceImpl extends ServiceImpl<WorkStudyStudentMap
                 wss.setWorkHours(dto.getWorkHours());
                 wss.setHourlyRate(dto.getHourlyRate());
                 calculateTotalAmount(wss);
+                LocalDateTime now = LocalDateTime.now();
                 wss.setStatus(0);
+                wss.setCreateTime(now);
+                wss.setUpdateTime(now);
                 list.add(wss);
             }
             @Override

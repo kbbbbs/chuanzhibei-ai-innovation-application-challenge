@@ -102,7 +102,8 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
@@ -112,6 +113,8 @@ import request from '@/utils/request'
 
 const userStore = useUserStore()
 const { confirmSubmit } = useConfirm()
+const route = useRoute()
+const router = useRouter()
 
 const activeTab = ref('pending')
 const pendingHomework = ref([])
@@ -132,34 +135,52 @@ const isHomeworkGraded = (row) => {
   return row.gradeStatus === 1 || row.gradeStatus === 2 || row.score != null
 }
 
+const uniqueById = (items) => {
+  const byId = new Map()
+  for (const item of items) {
+    if (item?.id != null) byId.set(item.id, item)
+  }
+  return Array.from(byId.values())
+}
+
 const loadHomework = async () => {
   loading.value = true
   try {
-    // Get my classes first
     const classRes = await request.get(`/class-students/student/${userStore.userId}`)
-    if (classRes.code === '200') {
-      const classIds = getRecords(classRes.data).map(c => c.classId)
+    if (classRes.code !== '200') return
 
-      // Get all homework for these classes
-      const hwRes = await request.get('/homeworks', { params: { pageSize: 100 } })
-      if (hwRes.code === '200') {
-        const allHomework = getRecords(hwRes.data).filter(hw => classIds.includes(hw.classId))
+    const classIds = getRecords(classRes.data)
+      .map(c => Number(c.classId))
+      .filter(id => Number.isFinite(id) && id > 0)
 
-        // Get my submissions
-        const subRes = await request.get('/homework-submits', {
-          params: { studentId: userStore.userId, pageSize: 100 }
-        })
-        const mySubmissions = subRes.code === '200' ? getRecords(subRes.data) : []
-
-        const submittedIds = new Set(mySubmissions.map(s => s.homeworkId))
-
-        pendingHomework.value = allHomework.filter(hw => !submittedIds.has(hw.id) && hw.status === 1)
-        submittedHomework.value = mySubmissions.map(sub => {
-          const hw = allHomework.find(h => h.id === sub.homeworkId)
-          return { ...sub, title: hw?.title, fullScore: hw?.fullScore }
-        })
-      }
+    if (classIds.length === 0) {
+      pendingHomework.value = []
+      submittedHomework.value = []
+      return
     }
+
+    const homeworkResults = await Promise.all(
+      classIds.map(classId => request.get('/homeworks', {
+        params: { classId, pageSize: 200 },
+        silentError: true
+      }).catch(() => null))
+    )
+    const allHomework = uniqueById(homeworkResults.flatMap(res => res?.code === '200' ? getRecords(res.data) : []))
+
+    const subRes = await request.get('/homework-submits', {
+      params: { studentId: userStore.userId, pageSize: 500 },
+      silentError: true
+    })
+    const mySubmissions = subRes.code === '200' ? getRecords(subRes.data) : []
+    const homeworkById = new Map(allHomework.map(hw => [hw.id, hw]))
+    const submittedIds = new Set(mySubmissions.map(s => s.homeworkId))
+
+    pendingHomework.value = allHomework.filter(hw => !submittedIds.has(hw.id) && hw.status === 1)
+    submittedHomework.value = mySubmissions.map(sub => {
+      const hw = homeworkById.get(sub.homeworkId)
+      return { ...sub, title: hw?.title || sub.title || `作业${sub.homeworkId}`, fullScore: hw?.fullScore }
+    })
+    openHomeworkFromQuery()
   } catch (e) {
     // 全局异常已由 request.js 提示
   } finally {
@@ -172,6 +193,15 @@ const handleSubmit = (row) => {
   submitForm.content = ''
   submitForm.attachmentUrl = ''
   submitDialogVisible.value = true
+}
+
+const openHomeworkFromQuery = () => {
+  const homeworkId = Number(route.query.homeworkId)
+  if (!Number.isFinite(homeworkId) || homeworkId <= 0 || submitDialogVisible.value) return
+  const homework = pendingHomework.value.find(item => item.id === homeworkId)
+  if (!homework) return
+  activeTab.value = 'pending'
+  handleSubmit(homework)
 }
 
 const handleSubmitHomework = async () => {
@@ -198,6 +228,9 @@ const handleSubmitHomework = async () => {
     if (res.code === '200') {
       ElMessage.success('提交成功')
       submitDialogVisible.value = false
+      if (route.query.homeworkId) {
+        router.replace({ path: route.path, query: {} })
+      }
       loadHomework()
     }
   } catch (e) {
@@ -214,6 +247,10 @@ const handleView = (row) => {
 
 onMounted(() => {
   loadHomework()
+})
+
+watch(() => route.query.homeworkId, () => {
+  openHomeworkFromQuery()
 })
 </script>
 

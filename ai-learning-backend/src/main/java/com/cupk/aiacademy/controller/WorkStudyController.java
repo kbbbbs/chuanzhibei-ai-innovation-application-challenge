@@ -1,10 +1,14 @@
 package com.cupk.aiacademy.controller;
 
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.dto.WorkStudyApplicationRequest;
+import com.cupk.aiacademy.dto.WorkStudyAuditRequest;
 import com.cupk.aiacademy.dto.WorkStudyRequest;
 import com.cupk.aiacademy.dto.WorkStudyStudentRequest;
 import com.cupk.aiacademy.pojo.WorkStudy;
 import com.cupk.aiacademy.pojo.WorkStudyStudent;
+import com.cupk.aiacademy.service.PermissionService;
 import com.cupk.aiacademy.service.WorkStudyService;
 import com.cupk.aiacademy.service.WorkStudyStudentService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -25,6 +29,9 @@ public class WorkStudyController {
     @Autowired
     private WorkStudyStudentService workStudyStudentService;
 
+    @Autowired
+    private PermissionService permissionService;
+
     @GetMapping
     public Result pageList(@RequestParam(defaultValue = "1") Integer pageNum,
                            @RequestParam(defaultValue = "10") Integer pageSize,
@@ -43,17 +50,65 @@ public class WorkStudyController {
 
     @PostMapping
     public Result save(@Valid @RequestBody WorkStudyRequest request) {
+        permissionService.requireTeacherOrAdmin();
         return workStudyService.saveWorkStudy(request) ? Result.success() : Result.error();
     }
 
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody WorkStudyRequest request) {
+        permissionService.requireTeacherOrAdmin();
         return workStudyService.updateWorkStudy(id, request) ? Result.success() : Result.error("404", "岗位不存在");
     }
 
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
+        permissionService.requireTeacherOrAdmin();
         return workStudyService.removeById(id) ? Result.success() : Result.error("404", "岗位不存在");
+    }
+
+    @PostMapping("/apply")
+    public Result applyForPosition(@Valid @RequestBody WorkStudyApplicationRequest request) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (permissionService.isStudent(user) && !user.getUserId().equals(request.getStudentId())) {
+            return Result.error("403", "只能申请自己的岗位");
+        }
+        return workStudyStudentService.applyForPosition(request)
+                ? Result.success()
+                : Result.error("409", "已申请该岗位，请勿重复申请");
+    }
+
+    @PutMapping("/audit")
+    public Result auditApplication(@Valid @RequestBody WorkStudyAuditRequest request) {
+        permissionService.requireTeacherOrAdmin();
+        return workStudyStudentService.auditApplication(request)
+                ? Result.success()
+                : Result.error("404", "申请记录不存在");
+    }
+
+    @GetMapping("/my-applications")
+    public Result myApplications(@RequestParam(defaultValue = "1") Integer pageNum,
+                                 @RequestParam(defaultValue = "10") Integer pageSize,
+                                 @RequestParam(required = false) Integer studentId,
+                                 @RequestParam(required = false) Integer auditStatus) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (permissionService.isStudent(user)) {
+            studentId = user.getUserId();
+        }
+        permissionService.requireSelfStudent(studentId);
+        pageNum = pageNum == null || pageNum <= 0 ? 1 : pageNum;
+        pageSize = pageSize == null || pageSize <= 0 ? 10 : pageSize;
+        return Result.success(workStudyStudentService.pageList(pageNum, pageSize, null, studentId, null, auditStatus));
+    }
+
+    @GetMapping("/pending-applications")
+    public Result pendingApplications(@RequestParam(defaultValue = "1") Integer pageNum,
+                                      @RequestParam(defaultValue = "10") Integer pageSize,
+                                      @RequestParam(required = false) Integer workStudyId,
+                                      @RequestParam(required = false) Integer studentId) {
+        permissionService.requireTeacherOrAdmin();
+        pageNum = pageNum == null || pageNum <= 0 ? 1 : pageNum;
+        pageSize = pageSize == null || pageSize <= 0 ? 10 : pageSize;
+        return Result.success(workStudyStudentService.pageList(pageNum, pageSize, workStudyId, studentId, null, 0));
     }
 
     @GetMapping("/students")
@@ -76,21 +131,25 @@ public class WorkStudyController {
 
     @PostMapping("/students")
     public Result saveStudent(@Valid @RequestBody WorkStudyStudentRequest request) {
+        permissionService.requireTeacherOrAdmin();
         return workStudyStudentService.saveWorkStudyStudent(request) ? Result.success() : Result.error();
     }
 
     @PutMapping("/students/{id}")
     public Result updateStudent(@PathVariable Integer id, @Valid @RequestBody WorkStudyStudentRequest request) {
+        permissionService.requireTeacherOrAdmin();
         return workStudyStudentService.updateWorkStudyStudent(id, request) ? Result.success() : Result.error("404", "记录不存在");
     }
 
     @DeleteMapping("/students/{id}")
     public Result deleteStudent(@PathVariable Integer id) {
+        permissionService.requireTeacherOrAdmin();
         return workStudyStudentService.removeById(id) ? Result.success() : Result.error("404", "记录不存在");
     }
 
     @PostMapping("/students/import")
     public Result importExcel(@RequestParam Integer workStudyId, @RequestParam MultipartFile file) {
+        permissionService.requireTeacherOrAdmin();
         try {
             workStudyStudentService.importExcel(workStudyId, file);
             return Result.success();
@@ -104,6 +163,7 @@ public class WorkStudyController {
                             @RequestParam(required = false) Integer studentId,
                             @RequestParam(required = false) String workMonth,
                             HttpServletResponse response) {
+        permissionService.requireTeacherOrAdmin();
         try {
             workStudyStudentService.exportExcel(workStudyId, studentId, workMonth, response);
         } catch (IOException e) {
