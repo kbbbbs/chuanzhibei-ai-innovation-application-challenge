@@ -50,14 +50,9 @@ request.interceptors.response.use(response => {
 
   res = normalizeResponse(res)
 
-  if (res && res.code && res.code !== '200' && !response.config?.silentError) {
-    ElMessage.error(res.msg || '请求失败')
   if (res && res.code && res.code !== '200') {
-    // 静默降级：Agent 定义接口不可用时只记录不弹框
-    const silent = response.config?.silent
-    if (!silent) {
-      ElMessage.error(res.msg || '请求失败')
-    }
+    const silent = response.config?.silent || response.config?.silentError
+    if (!silent) ElMessage.error(res.msg || '请求失败')
   }
   return res
 }, error => {

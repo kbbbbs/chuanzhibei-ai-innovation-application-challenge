@@ -42,85 +42,111 @@
     </el-card>
 
     <!-- Form Dialog -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑试卷' : '创建试卷'" width="900px">
+    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑试卷' : '创建试卷'" width="980px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="试卷名称" prop="title">
-          <el-input v-model="form.title" />
-        </el-form-item>
-        <el-form-item label="课程" prop="courseId">
-          <el-select v-model="form.courseId" placeholder="请选择课程" @change="handleCourseChange">
-            <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="试卷说明">
-          <el-input v-model="form.description" type="textarea" :rows="2" />
-        </el-form-item>
-        <el-form-item label="考试时长(分)">
-          <el-input-number v-model="form.duration" :min="10" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio :label="0">草稿</el-radio>
-            <el-radio :label="1">启用</el-radio>
-          </el-radio-group>
-        </el-form-item>
-
-        <el-divider>组卷</el-divider>
-
-        <div class="question-pool">
-          <!-- Question Bank -->
-          <div class="pool-side">
-            <div class="pool-title">题库</div>
-            <el-select v-model="questionTypeFilter" placeholder="筛选题型" class="question-filter">
-              <el-option label="全部" value="" />
-              <el-option label="单选题" value="single_choice" />
-              <el-option label="多选题" value="multiple_choice" />
-              <el-option label="判断题" value="true_false" />
-              <el-option label="填空题" value="fill_blank" />
-              <el-option label="简答题" value="short_answer" />
-            </el-select>
-            <el-table :data="filteredQuestions" border size="small" height="300" @row-click="addQuestionToPaper">
-              <el-table-column prop="questionText" label="题目" show-overflow-tooltip />
-              <el-table-column label="类型" width="80">
-                <template #default="{ row }">
-                  {{ getTypeShort(row.questionType) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="score" label="分值" width="60" />
-              <template #empty>
-                <AppEmpty description="请先选择课程或题库为空" />
-              </template>
-            </el-table>
+        <div class="wizard-dialog">
+          <div class="wizard-steps">
+            <el-steps direction="vertical" :active="paperStep" finish-status="success">
+              <el-step title="基本信息" description="课程与试卷设置" />
+              <el-step title="选择题目" description="从题库组卷" />
+              <el-step title="确认保存" description="检查后提交" />
+            </el-steps>
           </div>
 
-          <!-- Selected Questions -->
-          <div class="pool-side">
-            <div class="pool-title">
-              已选题目 ({{ form.selectedQuestions.length }}) 总分: {{ totalScore }}
-            </div>
-            <el-table :data="form.selectedQuestions" border size="small" height="350">
-              <el-table-column prop="questionText" label="题目" show-overflow-tooltip />
-              <el-table-column label="类型" width="80">
-                <template #default="{ row }">
-                  {{ getTypeShort(row.questionType) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="score" label="分值" width="60" />
-              <el-table-column label="操作" width="80">
-                <template #default="{ row }">
-                  <el-button size="small" type="danger" @click="removeQuestion(row)">移除</el-button>
-                </template>
-              </el-table-column>
-              <template #empty>
-                <AppEmpty description="点击左侧题目添加到试卷" />
-              </template>
-            </el-table>
+          <div class="wizard-content">
+            <template v-if="paperStep === 0">
+              <el-form-item label="试卷名称" prop="title">
+                <el-input v-model="form.title" />
+              </el-form-item>
+              <el-form-item label="课程" prop="courseId">
+                <el-select v-model="form.courseId" placeholder="请选择课程" @change="handleCourseChange">
+                  <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="试卷说明">
+                <el-input v-model="form.description" type="textarea" :rows="2" />
+              </el-form-item>
+              <el-form-item label="考试时长(分)">
+                <el-input-number v-model="form.duration" :min="10" />
+              </el-form-item>
+              <el-form-item label="状态">
+                <el-radio-group v-model="form.status">
+                  <el-radio :label="0">草稿</el-radio>
+                  <el-radio :label="1">启用</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </template>
+
+            <template v-else-if="paperStep === 1">
+              <div class="question-pool">
+                <div class="pool-side">
+                  <div class="pool-title">题库</div>
+                  <el-select v-model="questionTypeFilter" placeholder="筛选题型" class="question-filter">
+                    <el-option label="全部" value="" />
+                    <el-option label="单选题" value="single_choice" />
+                    <el-option label="多选题" value="multiple_choice" />
+                    <el-option label="判断题" value="true_false" />
+                    <el-option label="填空题" value="fill_blank" />
+                    <el-option label="简答题" value="short_answer" />
+                  </el-select>
+                  <el-table :data="filteredQuestions" border size="small" height="300" @row-click="addQuestionToPaper">
+                    <el-table-column prop="questionText" label="题目" show-overflow-tooltip />
+                    <el-table-column label="类型" width="80">
+                      <template #default="{ row }">
+                        {{ getTypeShort(row.questionType) }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="score" label="分值" width="60" />
+                    <template #empty>
+                      <AppEmpty description="请先选择课程或题库为空" />
+                    </template>
+                  </el-table>
+                </div>
+
+                <div class="pool-side">
+                  <div class="pool-title">
+                    已选题目 ({{ form.selectedQuestions.length }}) 总分: {{ totalScore }}
+                  </div>
+                  <el-table :data="form.selectedQuestions" border size="small" height="350">
+                    <el-table-column prop="questionText" label="题目" show-overflow-tooltip />
+                    <el-table-column label="类型" width="80">
+                      <template #default="{ row }">
+                        {{ getTypeShort(row.questionType) }}
+                      </template>
+                    </el-table-column>
+                    <el-table-column prop="score" label="分值" width="60" />
+                    <el-table-column label="操作" width="80">
+                      <template #default="{ row }">
+                        <el-button size="small" type="danger" @click="removeQuestion(row)">移除</el-button>
+                      </template>
+                    </el-table-column>
+                    <template #empty>
+                      <AppEmpty description="点击左侧题目添加到试卷" />
+                    </template>
+                  </el-table>
+                </div>
+              </div>
+            </template>
+
+            <template v-else>
+              <el-descriptions :column="2" border>
+                <el-descriptions-item label="试卷名称">{{ form.title || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="课程">{{ selectedCourseTitle }}</el-descriptions-item>
+                <el-descriptions-item label="时长">{{ form.duration }} 分钟</el-descriptions-item>
+                <el-descriptions-item label="状态">{{ form.status === 1 ? '启用' : '草稿' }}</el-descriptions-item>
+                <el-descriptions-item label="题目数量">{{ form.selectedQuestions.length }}</el-descriptions-item>
+                <el-descriptions-item label="总分">{{ totalScore }}</el-descriptions-item>
+                <el-descriptions-item label="试卷说明" :span="2">{{ form.description || '-' }}</el-descriptions-item>
+              </el-descriptions>
+            </template>
           </div>
         </div>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
+        <el-button v-if="paperStep > 0" @click="paperStep -= 1">上一步</el-button>
+        <el-button v-if="paperStep < 2" type="primary" @click="nextPaperStep">下一步</el-button>
+        <el-button v-else type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -155,6 +181,7 @@ const pagination = reactive({
 })
 
 const dialogVisible = ref(false)
+const paperStep = ref(0)
 
 const form = reactive({
   id: null,
@@ -196,6 +223,10 @@ const filteredQuestions = computed(() => {
 
 const totalScore = computed(() => {
   return form.selectedQuestions.reduce((sum, q) => sum + (Number(q.score) || 0), 0)
+})
+
+const selectedCourseTitle = computed(() => {
+  return courses.value.find(course => course.id === form.courseId)?.title || '-'
 })
 
 const getTypeShort = (type) => {
@@ -320,6 +351,7 @@ const handleCreate = async () => {
     selectedQuestions: []
   })
   questionBank.value = []
+  paperStep.value = 0
   dialogVisible.value = true
 }
 
@@ -350,11 +382,42 @@ const handleEdit = async (row) => {
         }))
       })
       await handleCourseChange(data.courseId, false)
+      paperStep.value = 0
       dialogVisible.value = true
     }
   } catch (e) {
     // 全局已提示
   }
+}
+
+const validatePaperBasics = () => {
+  if (!form.title) {
+    ElMessage.warning('请输入试卷名称')
+    return false
+  }
+  if (!form.courseId) {
+    ElMessage.warning('请选择课程')
+    return false
+  }
+  return true
+}
+
+const nextPaperStep = async () => {
+  if (paperStep.value === 0) {
+    try {
+      await formRef.value.validateField(['title', 'courseId'])
+    } catch (e) {
+      return
+    }
+    paperStep.value = 1
+    return
+  }
+
+  if (form.selectedQuestions.length === 0) {
+    ElMessage.warning('请至少选择一道题目')
+    return
+  }
+  paperStep.value = 2
 }
 
 // ---- 请求适配：将前端表单数据转换为 PaperRequestDTO ----
@@ -377,9 +440,7 @@ const buildRequestDTO = () => {
 }
 
 const handleSubmit = async () => {
-  try {
-    await formRef.value.validate()
-  } catch (e) {
+  if (!validatePaperBasics()) {
     return
   }
 
@@ -501,5 +562,22 @@ onMounted(() => {
 .question-filter {
   width: 100%;
   margin-bottom: 10px;
+}
+
+.wizard-dialog {
+  display: flex;
+  gap: 24px;
+  min-height: 420px;
+}
+
+.wizard-steps {
+  width: 170px;
+  padding: 8px 8px 8px 0;
+  border-right: 1px solid #ebeef5;
+}
+
+.wizard-content {
+  flex: 1;
+  min-width: 0;
 }
 </style>

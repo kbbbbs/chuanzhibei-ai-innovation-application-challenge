@@ -52,51 +52,82 @@
     </el-card>
 
     <!-- Form Dialog -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑考试' : '发布考试'" width="600px">
+    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑考试' : '发布考试'" width="760px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
-        <el-form-item label="考试名称" prop="title">
-          <el-input v-model="form.title" />
-        </el-form-item>
-        <el-form-item label="试卷" prop="paperId">
-          <el-select v-model="form.paperId" placeholder="请选择试卷">
-            <el-option v-for="paper in papers" :key="paper.id" :label="paper.title" :value="paper.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="教学班" prop="classId">
-          <el-select v-model="form.classId" placeholder="请选择教学班">
-            <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
-          </el-select>
-        </el-form-item>
-        <el-form-item label="考试时长(分)" prop="durationMinutes">
-          <el-input-number v-model="form.durationMinutes" :min="1" />
-        </el-form-item>
-        <el-form-item label="开始时间" prop="startTime">
-          <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" />
-        </el-form-item>
-        <el-form-item label="结束时间" prop="endTime">
-          <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" />
-        </el-form-item>
-        <el-form-item label="考试说明">
-          <el-input v-model="form.description" type="textarea" :rows="3" />
-        </el-form-item>
-        <el-form-item label="状态">
-          <el-radio-group v-model="form.status">
-            <el-radio :label="0">未开始</el-radio>
-            <el-radio :label="1">进行中</el-radio>
-<!--            <el-radio :label="2">已结束</el-radio>-->
-          </el-radio-group>
-        </el-form-item>
+        <div class="wizard-dialog">
+          <div class="wizard-steps">
+            <el-steps direction="vertical" :active="examStep" finish-status="success">
+              <el-step title="发布对象" description="试卷与教学班" />
+              <el-step title="考试设置" description="时间与说明" />
+              <el-step title="确认发布" description="检查后提交" />
+            </el-steps>
+          </div>
+
+          <div class="wizard-content">
+            <template v-if="examStep === 0">
+              <el-form-item label="考试名称" prop="title">
+                <el-input v-model="form.title" />
+              </el-form-item>
+              <el-form-item label="试卷" prop="paperId">
+                <el-select v-model="form.paperId" placeholder="请选择试卷">
+                  <el-option v-for="paper in papers" :key="paper.id" :label="paper.title" :value="paper.id" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="教学班" prop="classId">
+                <el-select v-model="form.classId" placeholder="请选择教学班">
+                  <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
+                </el-select>
+              </el-form-item>
+            </template>
+
+            <template v-else-if="examStep === 1">
+              <el-form-item label="考试时长(分)" prop="durationMinutes">
+                <el-input-number v-model="form.durationMinutes" :min="1" />
+              </el-form-item>
+              <el-form-item label="开始时间" prop="startTime">
+                <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" />
+              </el-form-item>
+              <el-form-item label="结束时间" prop="endTime">
+                <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" />
+              </el-form-item>
+              <el-form-item label="考试说明">
+                <el-input v-model="form.description" type="textarea" :rows="3" />
+              </el-form-item>
+              <el-form-item label="状态">
+                <el-radio-group v-model="form.status">
+                  <el-radio :label="0">未开始</el-radio>
+                  <el-radio :label="1">进行中</el-radio>
+                </el-radio-group>
+              </el-form-item>
+            </template>
+
+            <template v-else>
+              <el-descriptions :column="2" border>
+                <el-descriptions-item label="考试名称">{{ form.title || '-' }}</el-descriptions-item>
+                <el-descriptions-item label="试卷">{{ selectedPaperTitle }}</el-descriptions-item>
+                <el-descriptions-item label="教学班">{{ selectedClassName }}</el-descriptions-item>
+                <el-descriptions-item label="时长">{{ form.durationMinutes }} 分钟</el-descriptions-item>
+                <el-descriptions-item label="开始时间">{{ form.startTime ? new Date(form.startTime).toLocaleString() : '-' }}</el-descriptions-item>
+                <el-descriptions-item label="结束时间">{{ form.endTime ? new Date(form.endTime).toLocaleString() : '-' }}</el-descriptions-item>
+                <el-descriptions-item label="状态">{{ form.status === 1 ? '进行中' : '未开始' }}</el-descriptions-item>
+                <el-descriptions-item label="考试说明">{{ form.description || '-' }}</el-descriptions-item>
+              </el-descriptions>
+            </template>
+          </div>
+        </div>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
+        <el-button v-if="examStep > 0" @click="examStep -= 1">上一步</el-button>
+        <el-button v-if="examStep < 2" type="primary" @click="nextExamStep">下一步</el-button>
+        <el-button v-else type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
@@ -125,6 +156,7 @@ const pagination = reactive({
 })
 
 const dialogVisible = ref(false)
+const examStep = ref(0)
 
 const form = reactive({
   id: null,
@@ -173,6 +205,14 @@ const mapPaperForOption = (p) => ({
   title: p.name || p.title || '',
   teacherId: p.teacherId,
   status: normalizeStatus(p.status, { DRAFT: 0, PUBLISHED: 1, ARCHIVED: 2 }, 0)
+})
+
+const selectedPaperTitle = computed(() => {
+  return papers.value.find(paper => paper.id === form.paperId)?.title || '-'
+})
+
+const selectedClassName = computed(() => {
+  return classList.value.find(cls => cls.id === form.classId)?.className || '-'
 })
 
 const loadExams = async () => {
@@ -245,6 +285,7 @@ const handleCreate = () => {
     durationMinutes: 60,
     status: 0
   })
+  examStep.value = 0
   dialogVisible.value = true
 }
 
@@ -269,10 +310,72 @@ const handleEdit = async (row) => {
         durationMinutes: data.durationMinutes ?? 60,
         status: normalizeStatus(data.status, ENUM_TO_STATUS, 0)
       })
+      examStep.value = 0
       dialogVisible.value = true
     }
   } catch (e) {
     // 全局已提示
+  }
+}
+
+const validateExamTarget = () => {
+  if (!form.title) {
+    ElMessage.warning('请输入考试名称')
+    return false
+  }
+  if (!form.paperId) {
+    ElMessage.warning('请选择试卷')
+    return false
+  }
+  if (!form.classId) {
+    ElMessage.warning('请选择教学班')
+    return false
+  }
+  return true
+}
+
+const validateExamSchedule = () => {
+  if (!form.durationMinutes) {
+    ElMessage.warning('请输入考试时长')
+    return false
+  }
+  if (!form.startTime) {
+    ElMessage.warning('请选择开始时间')
+    return false
+  }
+  if (!form.endTime) {
+    ElMessage.warning('请选择结束时间')
+    return false
+  }
+  if (form.endTime <= form.startTime) {
+    ElMessage.warning('结束时间必须晚于开始时间')
+    return false
+  }
+  if (!form.id && form.startTime < new Date()) {
+    ElMessage.warning('考试开始时间不能早于当前时间')
+    return false
+  }
+  return true
+}
+
+const nextExamStep = async () => {
+  if (examStep.value === 0) {
+    try {
+      await formRef.value.validateField(['title', 'paperId', 'classId'])
+    } catch (e) {
+      return
+    }
+    examStep.value = 1
+    return
+  }
+
+  try {
+    await formRef.value.validateField(['durationMinutes', 'startTime', 'endTime'])
+  } catch (e) {
+    return
+  }
+  if (validateExamSchedule()) {
+    examStep.value = 2
   }
 }
 
@@ -293,28 +396,11 @@ const buildRequestDTO = () => {
 }
 
 const handleSubmit = async () => {
-  try {
-    await formRef.value.validate()
-  } catch (e) {
-    console.error('表单验证失败:', e)
-    return
-  }
-
-  // 校验时间
-  if (form.startTime && form.endTime && form.endTime <= form.startTime) {
-    ElMessage.warning('结束时间必须晚于开始时间')
-    return
-  }
-
-  // 校验开始时间不能是过去时间
-  const now = new Date()
-  if (form.startTime && form.startTime < now) {
-    ElMessage.warning('考试开始时间不能早于当前时间')
+  if (!validateExamTarget() || !validateExamSchedule()) {
     return
   }
 
   const data = buildRequestDTO()
-  console.log('提交数据:', JSON.stringify(data, null, 2))
 
   submitLoading.value = true
   try {
@@ -325,8 +411,6 @@ const handleSubmit = async () => {
       res = await request.post('/api/exams', data)
     }
 
-    console.log('响应数据:', res)
-
     if (res.code === '200') {
       ElMessage.success('保存成功')
       dialogVisible.value = false
@@ -335,10 +419,6 @@ const handleSubmit = async () => {
       ElMessage.error(res.message || '保存失败')
     }
   } catch (e) {
-    console.error('请求失败详情:', e)
-    console.error('响应状态:', e.response?.status)
-    console.error('响应数据:', e.response?.data)
-
     const errorMsg = e.response?.data?.message ||
                      e.response?.data?.msg ||
                      e.message ||
@@ -407,5 +487,22 @@ onMounted(() => {
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.wizard-dialog {
+  display: flex;
+  gap: 24px;
+  min-height: 300px;
+}
+
+.wizard-steps {
+  width: 170px;
+  padding: 8px 8px 8px 0;
+  border-right: 1px solid #ebeef5;
+}
+
+.wizard-content {
+  flex: 1;
+  min-width: 0;
 }
 </style>
