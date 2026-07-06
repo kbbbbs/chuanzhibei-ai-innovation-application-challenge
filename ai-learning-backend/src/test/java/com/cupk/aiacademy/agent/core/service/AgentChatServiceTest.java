@@ -584,6 +584,41 @@ class AgentChatServiceTest {
     }
 
     @Test
+    void chatRoutesChapterDeleteRequestToHighRiskWritePlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"chapter_delete_plan\",\"chapter_update_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("chapter_delete_plan")),
+                org.mockito.ArgumentMatchers.eq("删除 21 号章节"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "chapter_delete_plan",
+                "操作计划=删除章节；风险等级=HIGH；二次确认文本=确认删除章节；确认ID=action-chapter-4",
+                Map.of("actionCode", "chapter.delete", "actionId", "action-chapter-4",
+                        "confirmationText", "确认删除章节")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("删除 21 号章节"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertTrue(response.getContent().contains("已生成待确认操作计划"));
+        assertTrue(response.getContent().contains("操作计划=删除章节"));
+        assertTrue(response.getContent().contains("二次确认文本=确认删除章节"));
+        assertTrue(response.getContent().contains("actionId=action-chapter-4"));
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
     void chatRoutesClassStudentAddRequestToWritePlanWithoutCallingModel() {
         AgentChatService service = newService();
         loginAs(10);
@@ -1089,6 +1124,107 @@ class AgentChatServiceTest {
         assertTrue(response.getContent().contains("操作计划=批改考试答题"));
         assertTrue(response.getContent().contains("二次确认文本=确认批改考试"));
         assertTrue(response.getContent().contains("actionId=action-5"));
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesQuestionCreateRequestToWritePlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"question_create_plan\",\"exam_session_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("question_create_plan")),
+                org.mockito.ArgumentMatchers.eq("给 Java 课程新增一道单选题"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "question_create_plan",
+                "操作计划=创建试题；需要确认=是；确认ID=action-question-1",
+                Map.of("actionCode", "question.create", "actionId", "action-question-1")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("给 Java 课程新增一道单选题"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertTrue(response.getContent().contains("已生成待确认操作计划"));
+        assertTrue(response.getContent().contains("操作计划=创建试题"));
+        assertTrue(response.getContent().contains("actionId=action-question-1"));
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesQuestionUpdateRequestToWritePlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"question_update_plan\",\"question_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("question_update_plan")),
+                org.mockito.ArgumentMatchers.eq("把 3001 号试题题干改为 Java int 默认值是多少"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "question_update_plan",
+                "操作计划=修改试题；需要确认=是；确认ID=action-question-2",
+                Map.of("actionCode", "question.update", "actionId", "action-question-2")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("把 3001 号试题题干改为 Java int 默认值是多少"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertTrue(response.getContent().contains("已生成待确认操作计划"));
+        assertTrue(response.getContent().contains("操作计划=修改试题"));
+        assertTrue(response.getContent().contains("actionId=action-question-2"));
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesQuestionDeleteRequestToHighRiskWritePlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"question_delete_plan\",\"question_update_plan\",\"question_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("question_delete_plan")),
+                org.mockito.ArgumentMatchers.eq("删除 3001 号试题"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "question_delete_plan",
+                "操作计划=删除试题；风险等级=HIGH；二次确认文本=确认删除试题；确认ID=action-question-3",
+                Map.of("actionCode", "question.delete", "actionId", "action-question-3",
+                        "confirmationText", "确认删除试题")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("删除 3001 号试题"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertTrue(response.getContent().contains("已生成待确认操作计划"));
+        assertTrue(response.getContent().contains("操作计划=删除试题"));
+        assertTrue(response.getContent().contains("二次确认文本=确认删除试题"));
+        assertTrue(response.getContent().contains("actionId=action-question-3"));
         verifyNoInteractions(chatModelClient);
     }
 

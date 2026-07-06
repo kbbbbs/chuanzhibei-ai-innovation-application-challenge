@@ -1,9 +1,14 @@
 package com.cupk.aiacademy.agent.action;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.cupk.aiacademy.agent.action.course.ChapterDeleteActionExecutor;
 import com.cupk.aiacademy.agent.action.exam.ExamAnswerGradeActionExecutor;
+import com.cupk.aiacademy.agent.action.exam.QuestionCreateActionExecutor;
+import com.cupk.aiacademy.agent.action.exam.QuestionDeleteActionExecutor;
+import com.cupk.aiacademy.agent.action.exam.QuestionUpdateActionExecutor;
 import com.cupk.aiacademy.agent.action.exam.ExamSessionCloseActionExecutor;
 import com.cupk.aiacademy.agent.action.exam.ExamSessionCreateActionExecutor;
+import com.cupk.aiacademy.agent.tool.course.ChapterDeletePlanTool;
 import com.cupk.aiacademy.agent.action.grade.GradeRecordCreateActionExecutor;
 import com.cupk.aiacademy.agent.action.grade.GradeRecordDeleteActionExecutor;
 import com.cupk.aiacademy.agent.action.grade.GradeRecordUpdateActionExecutor;
@@ -20,24 +25,35 @@ import com.cupk.aiacademy.agent.tool.grade.GradeRecordDeletePlanTool;
 import com.cupk.aiacademy.agent.tool.grade.GradeRecordUpdatePlanTool;
 import com.cupk.aiacademy.agent.tool.homework.HomeworkDeletePlanTool;
 import com.cupk.aiacademy.agent.tool.homework.HomeworkSubmissionGradePlanTool;
+import com.cupk.aiacademy.agent.tool.exam.QuestionDeletePlanTool;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.ExamStatus;
+import com.cupk.aiacademy.common.Difficulty;
+import com.cupk.aiacademy.common.QuestionType;
+import com.cupk.aiacademy.common.RecordStatus;
 import com.cupk.aiacademy.common.SubmissionStatus;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
 import com.cupk.aiacademy.dto.ExamResponseDTO;
+import com.cupk.aiacademy.dto.QuestionRequestDTO;
+import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.dto.SubmissionRequestsDTO;
 import com.cupk.aiacademy.dto.SubmissionResponseDTO;
 import com.cupk.aiacademy.mapper.CourseMapper;
+import com.cupk.aiacademy.mapper.ExamAnswerMapper;
+import com.cupk.aiacademy.mapper.ExamPaperQuestionMapper;
 import com.cupk.aiacademy.mapper.ExamSessionMapper;
 import com.cupk.aiacademy.mapper.GradeRecordMapper;
+import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
+import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.mapper.NoticeMapper;
 import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
+import com.cupk.aiacademy.pojo.Chapter;
 import com.cupk.aiacademy.pojo.GradeRecord;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
@@ -49,6 +65,7 @@ import com.cupk.aiacademy.pojo.ExamSession;
 import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.service.ExamService;
+import com.cupk.aiacademy.service.QuestionService;
 import com.cupk.aiacademy.service.SubmissionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -106,6 +123,21 @@ class AgentActionExecutionServiceTest {
 
     @Mock
     private ExamSessionMapper examSessionMapper;
+
+    @Mock
+    private ChapterMapper chapterMapper;
+
+    @Mock
+    private LessonMapper lessonMapper;
+
+    @Mock
+    private QuestionService questionService;
+
+    @Mock
+    private ExamPaperQuestionMapper examPaperQuestionMapper;
+
+    @Mock
+    private ExamAnswerMapper examAnswerMapper;
 
     private final InMemoryAgentPendingActionStore pendingActionStore = new InMemoryAgentPendingActionStore();
 
@@ -1054,6 +1086,330 @@ class AgentActionExecutionServiceTest {
         verify(operationLogMapper, never()).insert(any(OperationLog.class));
     }
 
+    @Test
+    void chapterDeleteRequiresHighRiskConfirmationText() {
+        loginAs("teacher", 7);
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest("chapter.delete", true, Map.of("chapterId", 11)),
+                ""
+        ));
+
+        assertEquals("高风险操作需要输入确认文本：" + ChapterDeletePlanTool.CONFIRMATION_TEXT, exception.getMessage());
+        verify(chapterMapper, never()).updateById(any(Chapter.class));
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void confirmChapterDeleteSoftDeletesChapterAndAuditLog() {
+        loginAs("teacher", 7);
+        when(chapterMapper.selectById(11)).thenReturn(chapter(11, 5));
+        when(courseMapper.selectById(5)).thenReturn(course(5, 7));
+        when(lessonMapper.selectCount(any())).thenReturn(2L);
+        when(chapterMapper.updateById(any(Chapter.class))).thenReturn(1);
+        when(operationLogMapper.insert(any(OperationLog.class))).thenReturn(1);
+        AgentActionExecutionService service = newService();
+
+        AgentActionExecutionResult result = service.confirm(new AgentActionConfirmRequest(
+                "chapter.delete",
+                true,
+                Map.of("chapterId", "11"),
+                null,
+                ChapterDeletePlanTool.CONFIRMATION_TEXT
+        ), "127.0.0.1");
+
+        assertTrue(result.success());
+        assertEquals("chapter.delete", result.actionCode());
+        assertEquals(11, result.data().get("chapterId"));
+        assertEquals(true, result.data().get("softDeleted"));
+        assertEquals(2, result.data().get("affectedLessonCount"));
+
+        ArgumentCaptor<Chapter> chapterCaptor = ArgumentCaptor.forClass(Chapter.class);
+        verify(chapterMapper).updateById(chapterCaptor.capture());
+        Chapter update = chapterCaptor.getValue();
+        assertEquals(11, update.getId());
+        assertEquals(Chapter.STATUS_DELETED, update.getStatus());
+        assertTrue(update.getUpdatedAt() != null);
+
+        ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);
+        verify(operationLogMapper).insert(logCaptor.capture());
+        OperationLog log = logCaptor.getValue();
+        assertEquals(7, log.getUserId());
+        assertEquals("agent.chapter.delete", log.getOperation());
+        assertTrue(log.getParams().contains("\"chapterId\":\"11\""));
+    }
+
+    @Test
+    void chapterDeleteRejectsTeacherForOtherTeacherCourse() {
+        loginAs("teacher", 7);
+        when(chapterMapper.selectById(11)).thenReturn(chapter(11, 5));
+        when(courseMapper.selectById(5)).thenReturn(course(5, 8));
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest(
+                        "chapter.delete",
+                        true,
+                        Map.of("chapterId", 11),
+                        null,
+                        ChapterDeletePlanTool.CONFIRMATION_TEXT
+                ),
+                ""
+        ));
+
+        assertEquals("只能删除当前登录教师负责课程下的章节", exception.getMessage());
+        verify(chapterMapper, never()).updateById(any(Chapter.class));
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void confirmQuestionCreateCallsQuestionServiceAndAuditLog() {
+        loginAs("teacher", 7);
+        when(courseMapper.selectById(5)).thenReturn(course(5, 7));
+        when(userMapper.selectById(7)).thenReturn(new User());
+        when(questionService.create(any(QuestionRequestDTO.class))).thenReturn(questionResponse());
+        when(operationLogMapper.insert(any(OperationLog.class))).thenReturn(1);
+        AgentActionExecutionService service = newService();
+
+        AgentActionExecutionResult result = service.confirm(new AgentActionConfirmRequest(
+                "question.create",
+                true,
+                Map.of(
+                        "courseId", 5,
+                        "type", "single",
+                        "content", "Java 中 int 类型默认值是多少？",
+                        "options", List.of(
+                                Map.of("optionKey", "A", "optionContent", "0", "sortOrder", 1),
+                                Map.of("optionKey", "B", "optionContent", "null", "sortOrder", 2)
+                        ),
+                        "answers", List.of("A"),
+                        "difficulty", "easy",
+                        "score", "5",
+                        "knowledgePoint", "Java基础"
+                )
+        ), "127.0.0.1");
+
+        assertTrue(result.success());
+        assertEquals("question.create", result.actionCode());
+        assertEquals(3001L, result.data().get("questionId"));
+        assertEquals(2, result.data().get("optionCount"));
+        assertEquals(1, result.data().get("answerCount"));
+
+        ArgumentCaptor<QuestionRequestDTO> requestCaptor = ArgumentCaptor.forClass(QuestionRequestDTO.class);
+        verify(questionService).create(requestCaptor.capture());
+        QuestionRequestDTO request = requestCaptor.getValue();
+        assertEquals(5L, request.getCourseId());
+        assertEquals(7L, request.getTeacherId());
+        assertEquals(QuestionType.SINGLE_CHOICE, request.getType());
+        assertEquals(Difficulty.EASY, request.getDifficulty());
+        assertEquals(RecordStatus.ACTIVE, request.getStatus());
+        assertEquals(new BigDecimal("5"), request.getScore());
+        assertEquals(2, request.getOptions().size());
+        assertEquals(1, request.getAnswers().size());
+
+        ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);
+        verify(operationLogMapper).insert(logCaptor.capture());
+        assertEquals("agent.question.create", logCaptor.getValue().getOperation());
+    }
+
+    @Test
+    void questionCreateRejectsStudentRole() {
+        loginAs("student", 30);
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest("question.create", true, Map.of(
+                        "courseId", 5,
+                        "type", "short_answer",
+                        "content", "解释 JVM 内存模型",
+                        "answers", List.of("方法区、堆、栈等")
+                )),
+                ""
+        ));
+
+        assertEquals("只有教师或管理员可以创建试题", exception.getMessage());
+        verifyNoInteractions(questionService);
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void questionCreateRejectsTeacherForOtherTeacherCourse() {
+        loginAs("teacher", 7);
+        when(courseMapper.selectById(5)).thenReturn(course(5, 8));
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest("question.create", true, Map.of(
+                        "courseId", 5,
+                        "type", "short_answer",
+                        "content", "解释 JVM 内存模型",
+                        "answers", List.of("方法区、堆、栈等")
+                )),
+                ""
+        ));
+
+        assertEquals("题目教师必须是课程负责教师", exception.getMessage());
+        verifyNoInteractions(questionService);
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void confirmQuestionUpdateMergesExistingQuestionAndAuditLog() {
+        loginAs("teacher", 7);
+        when(questionService.getById(3001L)).thenReturn(questionResponse(), updatedQuestionResponse());
+        when(courseMapper.selectById(5)).thenReturn(course(5, 7));
+        when(userMapper.selectById(7)).thenReturn(new User());
+        when(questionService.update(org.mockito.ArgumentMatchers.eq(3001L), any(QuestionRequestDTO.class)))
+                .thenReturn(updatedQuestionResponse());
+        when(operationLogMapper.insert(any(OperationLog.class))).thenReturn(1);
+        AgentActionExecutionService service = newService();
+
+        AgentActionExecutionResult result = service.confirm(new AgentActionConfirmRequest(
+                "question.update",
+                true,
+                Map.of(
+                        "questionId", "3001",
+                        "content", "Java 中 int 类型默认值是什么？",
+                        "analysis", "int 是基本数据类型，默认值为 0。"
+                )
+        ), "127.0.0.1");
+
+        assertTrue(result.success());
+        assertEquals("question.update", result.actionCode());
+        assertEquals(3001L, result.data().get("questionId"));
+        assertEquals("Java 中 int 类型默认值是什么？", result.data().get("newContent"));
+
+        ArgumentCaptor<QuestionRequestDTO> requestCaptor = ArgumentCaptor.forClass(QuestionRequestDTO.class);
+        verify(questionService).update(org.mockito.ArgumentMatchers.eq(3001L), requestCaptor.capture());
+        QuestionRequestDTO request = requestCaptor.getValue();
+        assertEquals(5L, request.getCourseId());
+        assertEquals(7L, request.getTeacherId());
+        assertEquals(QuestionType.SINGLE_CHOICE, request.getType());
+        assertEquals(Difficulty.EASY, request.getDifficulty());
+        assertEquals(new BigDecimal("5"), request.getScore());
+        assertEquals("Java 中 int 类型默认值是什么？", request.getContent());
+        assertEquals("int 是基本数据类型，默认值为 0。", request.getAnalysis());
+        assertEquals(2, request.getOptions().size());
+        assertEquals(1, request.getAnswers().size());
+
+        ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);
+        verify(operationLogMapper).insert(logCaptor.capture());
+        assertEquals("agent.question.update", logCaptor.getValue().getOperation());
+    }
+
+    @Test
+    void questionUpdateRequiresAtLeastOneField() {
+        loginAs("teacher", 7);
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest("question.update", true, Map.of("questionId", 3001)),
+                ""
+        ));
+
+        assertEquals("至少需要提供一个可修改的试题字段", exception.getMessage());
+        verifyNoInteractions(questionService);
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void questionUpdateRejectsTeacherForOtherTeacherQuestion() {
+        loginAs("teacher", 7);
+        QuestionResponseDTO oldQuestion = questionResponse();
+        oldQuestion.setTeacherId(8L);
+        when(questionService.getById(3001L)).thenReturn(oldQuestion);
+        when(courseMapper.selectById(5)).thenReturn(course(5, 8));
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest("question.update", true, Map.of(
+                        "questionId", 3001,
+                        "content", "修改后的题干"
+                )),
+                ""
+        ));
+
+        assertEquals("只能修改当前登录教师负责的试题", exception.getMessage());
+        verify(questionService, never()).update(any(), any());
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void questionDeleteRequiresHighRiskConfirmationText() {
+        loginAs("teacher", 7);
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest("question.delete", true, Map.of("questionId", 3001)),
+                ""
+        ));
+
+        assertEquals("高风险操作需要输入确认文本：" + QuestionDeletePlanTool.CONFIRMATION_TEXT, exception.getMessage());
+        verify(questionService, never()).delete(3001L);
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
+    @Test
+    void confirmQuestionDeleteDeletesQuestionAndAuditLog() {
+        loginAs("teacher", 7);
+        when(questionService.getById(3001L)).thenReturn(questionResponse());
+        when(courseMapper.selectById(5)).thenReturn(course(5, 7));
+        when(examPaperQuestionMapper.selectCount(any())).thenReturn(2L);
+        when(examAnswerMapper.selectCount(any())).thenReturn(4L);
+        when(operationLogMapper.insert(any(OperationLog.class))).thenReturn(1);
+        AgentActionExecutionService service = newService();
+
+        AgentActionExecutionResult result = service.confirm(new AgentActionConfirmRequest(
+                "question.delete",
+                true,
+                Map.of("questionId", "3001"),
+                null,
+                QuestionDeletePlanTool.CONFIRMATION_TEXT
+        ), "127.0.0.1");
+
+        assertTrue(result.success());
+        assertEquals("question.delete", result.actionCode());
+        assertEquals(3001L, result.data().get("questionId"));
+        assertEquals(2L, result.data().get("affectedPaperQuestionCount"));
+        assertEquals(4L, result.data().get("affectedAnswerCount"));
+        assertEquals("physical_delete", result.data().get("deleteMode"));
+
+        verify(questionService).delete(3001L);
+        ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);
+        verify(operationLogMapper).insert(logCaptor.capture());
+        OperationLog log = logCaptor.getValue();
+        assertEquals(7, log.getUserId());
+        assertEquals("agent.question.delete", log.getOperation());
+        assertTrue(log.getParams().contains("\"actionCode\":\"question.delete\""));
+        assertTrue(log.getParams().contains("\"questionId\":\"3001\""));
+    }
+
+    @Test
+    void questionDeleteRejectsTeacherForOtherTeacherQuestion() {
+        loginAs("teacher", 7);
+        QuestionResponseDTO oldQuestion = questionResponse();
+        oldQuestion.setTeacherId(8L);
+        when(questionService.getById(3001L)).thenReturn(oldQuestion);
+        when(courseMapper.selectById(5)).thenReturn(course(5, 8));
+        AgentActionExecutionService service = newService();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.confirm(
+                new AgentActionConfirmRequest(
+                        "question.delete",
+                        true,
+                        Map.of("questionId", 3001),
+                        null,
+                        QuestionDeletePlanTool.CONFIRMATION_TEXT
+                ),
+                ""
+        ));
+
+        assertEquals("只能删除当前登录教师负责的试题", exception.getMessage());
+        verify(questionService, never()).delete(3001L);
+        verify(operationLogMapper, never()).insert(any(OperationLog.class));
+    }
+
     private AgentActionExecutionService newService() {
         NoticeCreateActionExecutor noticeExecutor = new NoticeCreateActionExecutor(
                 noticeMapper,
@@ -1087,9 +1443,31 @@ class AgentActionExecutionServiceTest {
                 submissionService,
                 examSessionMapper
         );
+        ChapterDeleteActionExecutor chapterDeleteExecutor = new ChapterDeleteActionExecutor(
+                chapterMapper,
+                courseMapper,
+                lessonMapper
+        );
+        QuestionCreateActionExecutor questionCreateExecutor = new QuestionCreateActionExecutor(
+                questionService,
+                courseMapper,
+                userMapper
+        );
+        QuestionUpdateActionExecutor questionUpdateExecutor = new QuestionUpdateActionExecutor(
+                questionService,
+                courseMapper,
+                userMapper
+        );
+        QuestionDeleteActionExecutor questionDeleteExecutor = new QuestionDeleteActionExecutor(
+                questionService,
+                courseMapper,
+                examPaperQuestionMapper,
+                examAnswerMapper
+        );
         return new AgentActionExecutionService(List.of(noticeExecutor, homeworkExecutor, homeworkUpdateExecutor,
                 homeworkDeleteExecutor, homeworkSubmissionGradeExecutor, examExecutor, examCloseExecutor,
-                gradeRecordCreateExecutor, gradeRecordDeleteExecutor, gradeRecordUpdateExecutor, examAnswerGradeExecutor), operationLogMapper,
+                gradeRecordCreateExecutor, gradeRecordDeleteExecutor, gradeRecordUpdateExecutor, examAnswerGradeExecutor,
+                chapterDeleteExecutor, questionCreateExecutor, questionUpdateExecutor, questionDeleteExecutor), operationLogMapper,
                 new ObjectMapper(), pendingActionStore);
     }
 
@@ -1170,6 +1548,58 @@ class AgentActionExecutionServiceTest {
         session.setId(id);
         session.setTeacherId(teacherId);
         return session;
+    }
+
+    private Chapter chapter(Integer id, Integer courseId) {
+        Chapter chapter = new Chapter();
+        chapter.setId(id);
+        chapter.setCourseId(courseId);
+        chapter.setTitle("Java基础语法");
+        chapter.setSortOrder(2);
+        chapter.setStatus(Chapter.STATUS_NORMAL);
+        return chapter;
+    }
+
+    private Course course(Integer id, Integer teacherId) {
+        Course course = new Course();
+        course.setId(id);
+        course.setTeacherId(teacherId);
+        course.setTitle("Java程序设计基础");
+        return course;
+    }
+
+    private QuestionResponseDTO questionResponse() {
+        QuestionResponseDTO response = new QuestionResponseDTO();
+        response.setId(3001L);
+        response.setCourseId(5L);
+        response.setTeacherId(7L);
+        response.setContent("Java 中 int 类型默认值是多少？");
+        response.setType(QuestionType.SINGLE_CHOICE);
+        response.setDifficulty(Difficulty.EASY);
+        response.setScore(new BigDecimal("5"));
+        response.setKnowledgePoint("Java基础");
+        response.setStatus(RecordStatus.ACTIVE);
+        QuestionResponseDTO.OptionResponse optionA = new QuestionResponseDTO.OptionResponse();
+        optionA.setOptionKey("A");
+        optionA.setOptionContent("0");
+        optionA.setSortOrder(1);
+        QuestionResponseDTO.OptionResponse optionB = new QuestionResponseDTO.OptionResponse();
+        optionB.setOptionKey("B");
+        optionB.setOptionContent("null");
+        optionB.setSortOrder(2);
+        QuestionResponseDTO.AnswerResponse answer = new QuestionResponseDTO.AnswerResponse();
+        answer.setAnswerContent("A");
+        answer.setSortOrder(1);
+        response.setOptions(List.of(optionA, optionB));
+        response.setAnswers(List.of(answer));
+        return response;
+    }
+
+    private QuestionResponseDTO updatedQuestionResponse() {
+        QuestionResponseDTO response = questionResponse();
+        response.setContent("Java 中 int 类型默认值是什么？");
+        response.setAnalysis("int 是基本数据类型，默认值为 0。");
+        return response;
     }
 
     private SubmissionResponseDTO submissionResponse() {

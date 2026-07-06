@@ -698,6 +698,11 @@ public class AgentChatService {
                 && looksLikeChapterSortRequest(currentUserContent)) {
             return Optional.of("chapter_sort_plan");
         }
+        if (isEnabledTool(enabledTools, "chapter_delete_plan", "course_chapter_delete_plan",
+                "chapter_remove_plan", "course_chapter_remove_plan")
+                && looksLikeChapterDeleteRequest(currentUserContent)) {
+            return Optional.of("chapter_delete_plan");
+        }
         if (isEnabledTool(enabledTools, "chapter_create_plan", "course_chapter_create_plan", "chapter_add_plan")
                 && looksLikeChapterCreateRequest(currentUserContent)) {
             return Optional.of("chapter_create_plan");
@@ -773,6 +778,21 @@ public class AgentChatService {
                 "exam_answer_score_plan")
                 && looksLikeExamAnswerGradeRequest(currentUserContent)) {
             return Optional.of("exam_answer_grade_plan");
+        }
+        if (isEnabledTool(enabledTools, "question_create_plan", "exam_question_create_plan",
+                "question_add_plan", "question_bank_create_plan")
+                && looksLikeQuestionCreateRequest(currentUserContent)) {
+            return Optional.of("question_create_plan");
+        }
+        if (isEnabledTool(enabledTools, "question_update_plan", "exam_question_update_plan",
+                "question_modify_plan", "question_edit_plan")
+                && looksLikeQuestionUpdateRequest(currentUserContent)) {
+            return Optional.of("question_update_plan");
+        }
+        if (isEnabledTool(enabledTools, "question_delete_plan", "exam_question_delete_plan",
+                "question_remove_plan", "question_bank_delete_plan")
+                && looksLikeQuestionDeleteRequest(currentUserContent)) {
+            return Optional.of("question_delete_plan");
         }
         if (isEnabledTool(enabledTools, "grade_record_delete_plan", "grade_delete_plan", "score_delete_plan",
                 "grade_remove_plan", "score_remove_plan")
@@ -902,6 +922,13 @@ public class AgentChatService {
                 && containsAny(value, "排序", "顺序", "调整顺序", "调序", "重新排序", "排到", "移到", "移动");
     }
 
+    private boolean looksLikeChapterDeleteRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeChapterTarget(value)
+                && !containsAny(value, "作业", "练习", "任务")
+                && containsAny(value, "删除", "移除", "撤销", "作废", "删掉", "删去");
+    }
+
     private boolean looksLikeChapterTarget(String value) {
         if (value == null) {
             return false;
@@ -998,6 +1025,24 @@ public class AgentChatService {
         String value = content == null ? "" : content.trim();
         return containsAny(value, "考试", "测验", "考核")
                 && containsAny(value, "创建", "新建", "安排", "发布", "开启", "开一场");
+    }
+
+    private boolean looksLikeQuestionCreateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "题目", "试题", "题库", "考题", "单选题", "多选题", "判断题", "填空题", "简答题")
+                && containsAny(value, "创建", "新建", "新增", "添加", "录入", "出一道", "加一道");
+    }
+
+    private boolean looksLikeQuestionUpdateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "题目", "试题", "题库", "考题", "单选题", "多选题", "判断题", "填空题", "简答题")
+                && containsAny(value, "修改", "调整", "更改", "更新", "编辑", "修正", "改成", "改为", "设置");
+    }
+
+    private boolean looksLikeQuestionDeleteRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "题目", "试题", "题库", "考题", "单选题", "多选题", "判断题", "填空题", "简答题")
+                && containsAny(value, "删除", "移除", "撤销", "作废", "删掉", "删去");
     }
 
     private boolean looksLikeGradeRecordUpdateRequest(String content) {
