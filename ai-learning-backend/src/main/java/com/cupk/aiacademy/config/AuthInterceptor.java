@@ -59,6 +59,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path.startsWith("/api/weknora/local-file/")) {
             return false;
         }
+        if (path.startsWith("/media")) {
+            return false;
+        }
 
         return true;
     }

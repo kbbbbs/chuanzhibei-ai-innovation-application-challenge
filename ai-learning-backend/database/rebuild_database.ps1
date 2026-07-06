@@ -1,14 +1,19 @@
 # AI 智学平台 - 一键重建数据库脚本
-# 路径: d:\computer\ai_lenaring\ai-learning\ai-learning-backend\database\rebuild_database.ps1
+# 路径: ai-learning-backend\database\rebuild_database.ps1
 # 用法: 右键 → 使用 PowerShell 运行，或在 PowerShell 中执行: .\rebuild_database.ps1
 
 # 配置参数
 $mysqlHost = "127.0.0.1"
 $mysqlPort = "3306"
 $mysqlUser = "root"
-$mysqlPassword = "[REDACTED]"  # 请根据实际情况修改密码
+$mysqlPassword = $env:MYSQL_PASSWORD
+if ([string]::IsNullOrWhiteSpace($mysqlPassword)) {
+    $mysqlPassword = "[REDACTED]"  # 未设置 MYSQL_PASSWORD 时使用默认密码
+}
 $databaseName = "ai_academy"
-$sqlFilePath = "d:\computer\ai_lenaring\ai-learning\ai-learning-backend\database\ai_academy.sql"
+$scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
+$backendDir = Split-Path -Parent $scriptDir
+$sqlFilePath = Join-Path $scriptDir "ai_academy.sql"
 
 # 颜色输出函数
 function Write-ColorOutput($ForegroundColor) {
@@ -64,7 +69,7 @@ Read-Host
 
 Write-Output ""
 Write-ColorOutput Cyan "[步骤 1/3] 删除旧数据库 (如果存在)..."
-$dropResult = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser -p$mysqlPassword -e "DROP DATABASE IF EXISTS $databaseName;" 2>&1
+$dropResult = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser "-p$mysqlPassword" -e "DROP DATABASE IF EXISTS $databaseName;" 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-ColorOutput Red "[错误] 删除数据库失败: $dropResult"
     exit 1
@@ -73,7 +78,7 @@ Write-ColorOutput Green "[OK] 旧数据库已删除"
 
 Write-Output ""
 Write-ColorOutput Cyan "[步骤 2/3] 创建新数据库..."
-$createResult = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser -p$mysqlPassword -e "CREATE DATABASE $databaseName CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>&1
+$createResult = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser "-p$mysqlPassword" -e "CREATE DATABASE $databaseName CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;" 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-ColorOutput Red "[错误] 创建数据库失败: $createResult"
     exit 1
@@ -82,7 +87,7 @@ Write-ColorOutput Green "[OK] 新数据库已创建"
 
 Write-Output ""
 Write-ColorOutput Cyan "[步骤 3/3] 导入 SQL 文件 (这可能需要几秒钟)..."
-$importResult = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser -p$mysqlPassword $databaseName < $sqlFilePath 2>&1
+$importResult = Get-Content -Raw -Path $sqlFilePath | mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser "-p$mysqlPassword" $databaseName 2>&1
 if ($LASTEXITCODE -ne 0) {
     Write-ColorOutput Red "[错误] 导入 SQL 失败: $importResult"
     exit 1
@@ -91,13 +96,14 @@ Write-ColorOutput Green "[OK] SQL 文件导入成功"
 
 Write-Output ""
 Write-ColorOutput Cyan "[验证] 检查数据库表..."
-$tables = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser -p$mysqlPassword -e "USE $databaseName; SHOW TABLES;" 2>&1
+$tables = mysql -h $mysqlHost -P $mysqlPort -u $mysqlUser "-p$mysqlPassword" -e "USE $databaseName; SHOW TABLES;" 2>&1
 if ($LASTEXITCODE -eq 0) {
-    $tableCount = ($tables | Where-Object { $_ -match "^t_" }).Count
+    $tableRows = $tables | Where-Object { $_ -and $_ -notmatch "^Tables_in_" -and $_ -notmatch "^mysql: \[Warning\]" }
+    $tableCount = $tableRows.Count
     Write-ColorOutput Green "[OK] 数据库重建完成！共 $tableCount 张表已创建"
     Write-Output ""
     Write-ColorOutput Green "数据库表列表:"
-    $tables | Where-Object { $_ -match "^t_" } | ForEach-Object { Write-Output "  - $_" }
+    $tableRows | ForEach-Object { Write-Output "  - $_" }
 } else {
     Write-ColorOutput Yellow "[警告] 验证失败: $tables"
 }
@@ -108,7 +114,7 @@ Write-ColorOutput Green "  数据库重建完成！"
 Write-ColorOutput Green "=========================================="
 Write-Output ""
 Write-Output "现在可以启动后端服务了:"
-Write-Output "  cd d:\computer\ai_lenaring\ai-learning\ai-learning-backend"
+Write-Output "  cd `"$backendDir`""
 Write-Output "  mvn spring-boot:run"
 Write-Output ""
 Read-Host "按 Enter 键退出"

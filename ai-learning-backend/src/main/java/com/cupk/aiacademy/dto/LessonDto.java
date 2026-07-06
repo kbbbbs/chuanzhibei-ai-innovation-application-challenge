@@ -29,6 +29,9 @@ public class LessonDto {
     @Size(max = 255)
     private String videoUrl;
 
+    @Positive
+    private Long videoResourceId;
+
     @Min(0)
     private Integer duration;
 
@@ -49,6 +52,7 @@ public class LessonDto {
         lesson.setResourceUrl(resourceUrl);
         lesson.setContent(content);
         lesson.setVideoUrl(videoUrl);
+        lesson.setVideoResourceId(videoResourceId);
         lesson.setDuration(duration);
         lesson.setSortOrder(sortOrder);
         lesson.setViewCount(viewCount);

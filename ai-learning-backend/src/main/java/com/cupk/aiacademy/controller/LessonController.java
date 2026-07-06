@@ -9,6 +9,7 @@ import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.pojo.Lesson;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.videoresource.VideoResourceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -33,6 +34,9 @@ public class LessonController {
 
     @Autowired
     private CourseResourceService courseResourceService;
+
+    @Autowired
+    private VideoResourceService videoResourceService;
 
     @Autowired
     private AuthUtils authUtils;
@@ -71,6 +75,11 @@ public class LessonController {
         return lesson == null ? Result.error("404", "课时不存在") : Result.success(lesson);
     }
 
+    @GetMapping("/lessons/{lessonId}/playback")
+    public Result playback(@PathVariable Integer lessonId) {
+        return Result.success(videoResourceService.getLessonPlayback(lessonId));
+    }
+
     @GetMapping("/lessons/{lessonId}/my-progress")
     public Result myProgress(@PathVariable Integer lessonId,
                              @RequestHeader(value = "Authorization", required = false) String authorization,
@@ -93,11 +102,12 @@ public class LessonController {
         }
         LocalDateTime now = LocalDateTime.now();
         lesson.setTitle(lesson.getTitle().trim());
+        normalizeMediaFields(lesson);
         fixSortOrder(lesson);
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now);
         int row = lessonMapper.insert(lesson);
-        return row > 0 ? Result.success() : Result.error();
+        return row > 0 ? Result.success(lesson) : Result.error();
     }
 
     @PutMapping("/lessons/{id}")
@@ -112,10 +122,11 @@ public class LessonController {
         }
         lesson.setId(id);
         lesson.setTitle(lesson.getTitle().trim());
+        normalizeMediaFields(lesson);
         fixSortOrder(lesson);
         lesson.setUpdatedAt(LocalDateTime.now());
         int row = lessonMapper.updateById(lesson);
-        return row > 0 ? Result.success() : Result.error();
+        return row > 0 ? Result.success(lessonMapper.selectById(id)) : Result.error();
     }
 
     @DeleteMapping("/lessons/{id}")
@@ -146,6 +157,22 @@ public class LessonController {
             return Result.error("400", "课时名称不能为空");
         }
         return null;
+    }
+
+    private void normalizeMediaFields(Lesson lesson) {
+        String resourceType = lesson.getResourceType();
+        if ("video_file".equals(resourceType)) {
+            lesson.setVideoUrl(lesson.getResourceUrl());
+            lesson.setVideoResourceId(null);
+            return;
+        }
+        if ("video_url".equals(resourceType)) {
+            lesson.setVideoUrl("");
+            lesson.setVideoResourceId(null);
+            return;
+        }
+        lesson.setVideoUrl("");
+        lesson.setVideoResourceId(null);
     }
 
     private void fixSortOrder(Lesson lesson) {

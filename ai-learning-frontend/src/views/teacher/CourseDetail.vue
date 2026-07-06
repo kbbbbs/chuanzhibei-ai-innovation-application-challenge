@@ -38,11 +38,42 @@
 
           <el-table :data="chapter.lessons" border size="small" v-loading="loading">
             <el-table-column prop="title" label="课时名称" />
-            <el-table-column prop="resourceType" label="资源类型" width="120" />
+            <el-table-column label="资源类型" width="120">
+              <template #default="{ row }">
+                {{ resourceTypeLabel(row.resourceType) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="下载状态" width="140">
+              <template #default="{ row }">
+                <el-tag v-if="row.videoResourceId" :type="videoStatusTagType(row)" size="small">
+                  {{ videoStatusLabel(row) }}
+                </el-tag>
+                <span v-else class="text-muted">-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="知识库" width="150">
+              <template #default="{ row }">
+                <el-tooltip v-if="row.videoResourceId" :content="knowledgeStatusTip(row)" placement="top">
+                  <el-tag :type="knowledgeStatusTagType(row)" size="small">
+                    {{ knowledgeStatusLabel(row) }}
+                  </el-tag>
+                </el-tooltip>
+                <span v-else class="text-muted">-</span>
+              </template>
+            </el-table-column>
             <el-table-column prop="duration" label="时长(秒)" width="100" />
-            <el-table-column v-if="canManageCourse" label="操作" width="180">
+            <el-table-column v-if="canManageCourse" label="操作" width="240">
               <template #default="{ row }">
                 <el-button size="small" type="primary" @click="handleEditLesson(row)">编辑</el-button>
+                <el-button
+                  v-if="canRetryVideo(row)"
+                  size="small"
+                  type="warning"
+                  :loading="retryingResourceId === row.videoResourceId"
+                  @click="handleRetryVideo(row)"
+                >
+                  重试
+                </el-button>
                 <el-button size="small" type="danger" @click="handleDeleteLesson(row)">删除</el-button>
               </template>
             </el-table-column>
@@ -74,20 +105,74 @@
     </el-dialog>
 
     <!-- Lesson Dialog -->
-    <el-dialog v-model="lessonDialogVisible" :title="lessonForm.id ? '编辑课时' : '新增课时'" width="500px">
+    <el-dialog v-model="lessonDialogVisible" :title="lessonForm.id ? '编辑课时' : '新增课时'" width="620px">
       <el-form :model="lessonForm" :rules="lessonRules" ref="lessonFormRef" label-width="100px">
         <el-form-item label="课时标题">
           <el-input v-model="lessonForm.title" />
         </el-form-item>
         <el-form-item label="资源类型">
-          <el-select v-model="lessonForm.resourceType">
-            <el-option label="视频链接" value="video_link" />
-            <el-option label="图文内容" value="article" />
-            <el-option label="资料链接" value="file_link" />
+          <el-select v-model="lessonForm.resourceType" @change="handleResourceTypeChange">
+            <el-option
+              v-for="item in resourceTypeOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
           </el-select>
         </el-form-item>
-        <el-form-item label="资源地址">
-          <el-input v-model="lessonForm.resourceUrl" />
+        <el-form-item v-if="lessonForm.resourceType === 'video_url'" label="视频 URL">
+          <el-input v-model="lessonForm.resourceUrl" placeholder="https://example.com/video" />
+        </el-form-item>
+        <el-form-item v-if="lessonForm.resourceType === 'video_url'" label="处理状态">
+          <div v-if="currentVideoResource" class="video-process-status">
+            <div class="status-line">
+              <span class="status-label">下载</span>
+              <el-tag :type="videoStatusTagTypeByResource(currentVideoResource)" size="small">
+                {{ videoStatusLabelByResource(currentVideoResource) }}
+              </el-tag>
+              <span v-if="currentVideoResource.updatedAt" class="status-time">
+                更新于 {{ formatDateTime(currentVideoResource.updatedAt) }}
+              </span>
+            </div>
+            <div class="status-line">
+              <span class="status-label">知识库</span>
+              <el-tooltip :content="knowledgeStatusTipByResource(currentVideoResource)" placement="top">
+                <el-tag :type="knowledgeStatusTagTypeByResource(currentVideoResource)" size="small">
+                  {{ knowledgeStatusLabelByResource(currentVideoResource) }}
+                </el-tag>
+              </el-tooltip>
+              <span v-if="hasKnowledgeSummary(currentVideoResource)" class="status-note">已生成视频知识点摘要</span>
+            </div>
+            <div v-if="currentVideoResource.title" class="status-extra">
+              {{ currentVideoResource.title }}
+            </div>
+            <div v-if="currentVideoResource.errorMessage" class="status-error">
+              {{ currentVideoResource.errorMessage }}
+            </div>
+          </div>
+          <span v-else-if="lessonForm.videoResourceId" class="text-muted">状态加载中...</span>
+          <span v-else class="text-muted">保存后进入下载队列，并在课时列表中显示处理状态</span>
+        </el-form-item>
+        <el-form-item v-else-if="lessonForm.resourceType === 'article'" label="图文内容">
+          <el-input v-model="lessonForm.resourceUrl" type="textarea" :rows="5" />
+        </el-form-item>
+        <el-form-item v-else label="资源文件">
+          <div class="resource-upload">
+            <el-upload
+              ref="uploadRef"
+              action="#"
+              :auto-upload="false"
+              :limit="1"
+              :accept="uploadAccept"
+              :disabled="uploadLoading"
+              :on-change="handleFileChange"
+              :on-remove="handleFileRemove"
+              :on-exceed="handleFileExceed"
+            >
+              <el-button type="primary" :loading="uploadLoading">选择文件</el-button>
+            </el-upload>
+            <el-input v-model="lessonForm.resourceUrl" placeholder="资源地址" />
+          </div>
         </el-form-item>
         <el-form-item label="时长(秒)">
           <el-input-number v-model="lessonForm.duration" :min="0" />
@@ -105,13 +190,19 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, watch } from 'vue'
+import { computed, onUnmounted, ref, reactive, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import { getCourseById } from '@/utils/course'
+import {
+  getVideoResource,
+  retryVideoDownload,
+  submitVideoUrl,
+  uploadLessonResource
+} from '@/api/videoResource'
 import request from '@/utils/request'
 
 const route = useRoute()
@@ -122,9 +213,14 @@ const canManageCourse = computed(() => userStore.isAdmin || userStore.isTeacher)
 
 const loading = ref(false)
 const submitLoading = ref(false)
+const uploadLoading = ref(false)
+const retryingResourceId = ref(null)
+const videoResourcesLoading = ref(false)
 const course = ref({})
 const chapters = ref([])
 const activeChapters = ref([])
+const videoResources = ref(new Map())
+let videoResourcePollTimer = null
 
 const chapterDialogVisible = ref(false)
 const chapterFormRef = ref(null)
@@ -141,18 +237,55 @@ const chapterRules = {
 
 const lessonDialogVisible = ref(false)
 const lessonFormRef = ref(null)
+const uploadRef = ref(null)
 const lessonForm = reactive({
   id: null,
   chapterId: null,
   title: '',
-  resourceType: 'video_link',
+  resourceType: 'video_url',
   resourceUrl: '',
+  videoUrl: '',
+  videoResourceId: null,
   duration: 0,
   sortOrder: 1
 })
 const lessonRules = {
   title: [{ required: true, message: '请输入课时标题', trigger: 'blur' }]
 }
+
+const resourceTypeOptions = [
+  { label: '视频 URL', value: 'video_url' },
+  { label: '本地视频', value: 'video_file' },
+  { label: 'PPT 课件', value: 'ppt' },
+  { label: '资料文件', value: 'file_link' },
+  { label: '图文内容', value: 'article' }
+]
+
+const uploadAcceptMap = {
+  video_file: '.mp4,.webm,.mov,.avi,.mkv',
+  ppt: '.ppt,.pptx',
+  file_link: '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.zip,.rar,.7z'
+}
+
+const videoStatusLabels = {
+  PENDING: '待下载',
+  DOWNLOADING: '下载中',
+  READY: '可播放',
+  FAILED: '失败'
+}
+
+const videoStatusTagTypes = {
+  PENDING: 'info',
+  DOWNLOADING: 'warning',
+  READY: 'success',
+  FAILED: 'danger'
+}
+
+const uploadAccept = computed(() => uploadAcceptMap[lessonForm.resourceType] || '')
+const currentVideoResource = computed(() => {
+  if (!lessonForm.videoResourceId) return null
+  return videoResources.value.get(Number(lessonForm.videoResourceId)) || null
+})
 
 const loadCourse = async () => {
   try {
@@ -178,11 +311,45 @@ const loadChapters = async () => {
           chapter.lessons = lessonsRes.data
         }
       }
+      await loadVideoResources()
     }
   } catch (e) {
     // 全局已提示
   } finally {
     loading.value = false
+  }
+}
+
+const loadVideoResources = async () => {
+  if (videoResourcesLoading.value) return
+  const ids = chapters.value
+    .flatMap(chapter => chapter.lessons || [])
+    .map(lesson => lesson.videoResourceId)
+    .filter(Boolean)
+  const uniqueIds = [...new Set(ids)]
+  if (uniqueIds.length === 0) {
+    videoResources.value = new Map()
+    stopVideoResourcePolling()
+    return
+  }
+
+  videoResourcesLoading.value = true
+  const nextMap = new Map()
+  try {
+    await Promise.all(uniqueIds.map(async id => {
+      try {
+        const res = await getVideoResource(id)
+        if (res.code === '200' && res.data) {
+          nextMap.set(Number(id), res.data)
+        }
+      } catch (e) {
+        // 全局已提示
+      }
+    }))
+    videoResources.value = nextMap
+    syncVideoResourcePolling()
+  } finally {
+    videoResourcesLoading.value = false
   }
 }
 
@@ -240,28 +407,49 @@ const handleAddLesson = (chapter) => {
     id: null,
     chapterId: chapter.id,
     title: '',
-    resourceType: 'video_link',
+    resourceType: 'video_url',
     resourceUrl: '',
+    videoUrl: '',
+    videoResourceId: null,
     duration: 0,
     sortOrder: 1
   })
+  clearUploadFiles()
   lessonDialogVisible.value = true
 }
 
 const handleEditLesson = (lesson) => {
-  Object.assign(lessonForm, lesson)
+  Object.assign(lessonForm, {
+    ...lesson,
+    resourceType: lesson.resourceType === 'video_link' ? 'video_url' : (lesson.resourceType || 'video_url')
+  })
+  clearUploadFiles()
   lessonDialogVisible.value = true
 }
 
 const handleSaveLesson = async () => {
   await lessonFormRef.value.validate()
+  const validationMessage = validateLessonResource()
+  if (validationMessage) {
+    ElMessage.error(validationMessage)
+    return
+  }
   submitLoading.value = true
   try {
     const url = lessonForm.id ? `/lessons/${lessonForm.id}` : '/lessons'
     const method = lessonForm.id ? 'put' : 'post'
-    const res = await request[method](url, lessonForm)
+    const res = await request[method](url, buildLessonPayload())
     if (res.code === '200') {
-      ElMessage.success('保存成功')
+      const savedLesson = res.data || lessonForm
+      if (lessonForm.resourceType === 'video_url') {
+        const videoRes = await submitVideoUrl(savedLesson.id, lessonForm.resourceUrl)
+        if (videoRes.code === '200' && videoRes.data) {
+          lessonForm.videoResourceId = videoRes.data.id
+          videoResources.value = new Map(videoResources.value).set(Number(videoRes.data.id), videoRes.data)
+          syncVideoResourcePolling()
+        }
+      }
+      ElMessage.success(lessonForm.resourceType === 'video_url' ? '保存成功，视频已进入下载队列，可在列表查看处理状态' : '保存成功')
       lessonDialogVisible.value = false
       loadChapters()
     }
@@ -269,6 +457,59 @@ const handleSaveLesson = async () => {
     // 全局已提示
   } finally {
     submitLoading.value = false
+  }
+}
+
+const handleResourceTypeChange = () => {
+  lessonForm.resourceUrl = ''
+  lessonForm.videoUrl = ''
+  lessonForm.videoResourceId = null
+  clearUploadFiles()
+}
+
+const handleFileChange = async (uploadFile) => {
+  if (!uploadFile?.raw) return
+  uploadLoading.value = true
+  try {
+    const res = await uploadLessonResource(uploadFile.raw)
+    if (res.code === '200' && res.data?.url) {
+      lessonForm.resourceUrl = res.data.url
+      if (lessonForm.resourceType === 'video_file') {
+        lessonForm.videoUrl = res.data.url
+      }
+      ElMessage.success('上传成功')
+    }
+  } catch (e) {
+    clearUploadFiles()
+  } finally {
+    uploadLoading.value = false
+  }
+}
+
+const handleFileRemove = () => {
+  lessonForm.resourceUrl = ''
+  if (lessonForm.resourceType === 'video_file') {
+    lessonForm.videoUrl = ''
+  }
+}
+
+const handleFileExceed = () => {
+  ElMessage.warning('每次只能选择一个文件')
+}
+
+const handleRetryVideo = async (lesson) => {
+  retryingResourceId.value = lesson.videoResourceId
+  try {
+    const res = await retryVideoDownload(lesson.videoResourceId)
+    if (res.code === '200' && res.data) {
+      videoResources.value = new Map(videoResources.value).set(Number(res.data.id), res.data)
+      syncVideoResourcePolling()
+      ElMessage.success('已重新提交下载')
+    }
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    retryingResourceId.value = null
   }
 }
 
@@ -287,11 +528,140 @@ const handleDeleteLesson = async (lesson) => {
 }
 
 const loadPage = () => {
+  stopVideoResourcePolling()
   course.value = {}
   chapters.value = []
   activeChapters.value = []
+  videoResources.value = new Map()
   loadCourse()
   loadChapters()
+}
+
+const buildLessonPayload = () => {
+  const payload = { ...lessonForm }
+  if (payload.resourceType === 'video_url') {
+    payload.videoUrl = ''
+    payload.videoResourceId = null
+  } else if (payload.resourceType === 'video_file') {
+    payload.videoUrl = payload.resourceUrl
+    payload.videoResourceId = null
+  } else if (payload.resourceType !== 'video_url') {
+    payload.videoUrl = ''
+    payload.videoResourceId = null
+  }
+  return payload
+}
+
+const validateLessonResource = () => {
+  if (lessonForm.resourceType === 'video_url' && !lessonForm.resourceUrl?.trim()) {
+    return '请输入视频 URL'
+  }
+  if (['video_file', 'ppt', 'file_link'].includes(lessonForm.resourceType) && !lessonForm.resourceUrl?.trim()) {
+    return '请上传或填写资源地址'
+  }
+  return ''
+}
+
+const clearUploadFiles = () => {
+  uploadRef.value?.clearFiles()
+}
+
+const resourceTypeLabel = (value) => {
+  const matched = resourceTypeOptions.find(item => item.value === value)
+  if (matched) return matched.label
+  if (value === 'video_link') return '视频链接'
+  return value || '-'
+}
+
+const videoResourceOf = (lesson) => {
+  if (!lesson.videoResourceId) return null
+  return videoResources.value.get(Number(lesson.videoResourceId))
+}
+
+const videoStatusLabelByResource = (resource) => {
+  const status = resource?.status || 'PENDING'
+  return videoStatusLabels[status] || status
+}
+
+const videoStatusTagTypeByResource = (resource) => {
+  const status = resource?.status || 'PENDING'
+  return videoStatusTagTypes[status] || 'info'
+}
+
+const videoStatusLabel = (lesson) => videoStatusLabelByResource(videoResourceOf(lesson))
+
+const videoStatusTagType = (lesson) => videoStatusTagTypeByResource(videoResourceOf(lesson))
+
+const canRetryVideo = (lesson) => {
+  return videoResourceOf(lesson)?.status === 'FAILED'
+}
+
+const isVideoProcessing = (resource) => {
+  const status = resource?.status || 'PENDING'
+  return ['PENDING', 'DOWNLOADING'].includes(status)
+}
+
+const hasKnowledgeSummary = (resource) => {
+  return Boolean(resource?.summaryMd?.trim())
+}
+
+const knowledgeStatusLabelByResource = (resource) => {
+  if (!resource) return '等待视频'
+  if (['PENDING', 'DOWNLOADING'].includes(resource.status)) return '等待视频'
+  if (resource.status === 'FAILED') return '待重试'
+  if (hasKnowledgeSummary(resource)) return '已有知识点'
+  return '未录入'
+}
+
+const knowledgeStatusTagTypeByResource = (resource) => {
+  if (!resource || ['PENDING', 'DOWNLOADING'].includes(resource.status)) return 'info'
+  if (resource.status === 'FAILED') return 'danger'
+  if (hasKnowledgeSummary(resource)) return 'success'
+  return 'warning'
+}
+
+const knowledgeStatusTipByResource = (resource) => {
+  if (!resource) return '视频保存后才会进入下载与知识点处理流程'
+  if (['PENDING', 'DOWNLOADING'].includes(resource.status)) return '视频仍在下载，知识点处理需等待视频完成'
+  if (resource.status === 'FAILED') return '视频下载失败，暂未进入知识点处理'
+  if (hasKnowledgeSummary(resource)) return '已生成知识点摘要；当前后端尚未返回 WeKnora 入库结果字段'
+  return '尚未发现知识点摘要或知识库录入记录'
+}
+
+const knowledgeStatusLabel = (lesson) => knowledgeStatusLabelByResource(videoResourceOf(lesson))
+
+const knowledgeStatusTagType = (lesson) => knowledgeStatusTagTypeByResource(videoResourceOf(lesson))
+
+const knowledgeStatusTip = (lesson) => knowledgeStatusTipByResource(videoResourceOf(lesson))
+
+const hasProcessingVideoResources = () => {
+  return chapters.value.some(chapter =>
+    (chapter.lessons || []).some(lesson => lesson.videoResourceId && isVideoProcessing(videoResourceOf(lesson)))
+  )
+}
+
+const syncVideoResourcePolling = () => {
+  if (!hasProcessingVideoResources()) {
+    stopVideoResourcePolling()
+    return
+  }
+  if (videoResourcePollTimer) return
+  videoResourcePollTimer = window.setInterval(() => {
+    loadVideoResources()
+  }, 5000)
+}
+
+const stopVideoResourcePolling = () => {
+  if (!videoResourcePollTimer) return
+  window.clearInterval(videoResourcePollTimer)
+  videoResourcePollTimer = null
+}
+
+const formatDateTime = (value) => {
+  if (!value) return ''
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return value
+  return date.toLocaleString('zh-CN', { hour12: false })
 }
 
 watch(
@@ -299,6 +669,10 @@ watch(
   loadPage,
   { immediate: true }
 )
+
+onUnmounted(() => {
+  stopVideoResourcePolling()
+})
 </script>
 
 <style scoped>
@@ -323,5 +697,47 @@ watch(
 .chapter-actions {
   display: flex;
   gap: 8px;
+}
+
+.resource-upload {
+  display: grid;
+  gap: 10px;
+  width: 100%;
+}
+
+.text-muted {
+  color: #909399;
+}
+
+.video-process-status {
+  display: grid;
+  gap: 8px;
+  width: 100%;
+}
+
+.status-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.status-label {
+  width: 48px;
+  color: #606266;
+  font-weight: 600;
+}
+
+.status-time,
+.status-note,
+.status-extra {
+  color: #909399;
+  font-size: 12px;
+}
+
+.status-error {
+  color: #f56c6c;
+  font-size: 12px;
+  line-height: 1.5;
 }
 </style>
