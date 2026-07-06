@@ -271,7 +271,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                     .build();
 
             Request httpRequest = new Request.Builder()
-                    .url(config.getBaseUrl() + "/api/v1/knowledge/" + knowledgeBaseId + "/upload")
+                    .url(config.getBaseUrl() + "/api/v1/knowledge-bases/" + knowledgeBaseId + "/knowledge/file")
                     .header("X-API-Key", config.getApiKey())
                     .post(multipartBody)
                     .build();
@@ -315,7 +315,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                     .build();
 
             Request httpRequest = new Request.Builder()
-                    .url(config.getBaseUrl() + "/api/v1/knowledge/" + knowledgeBaseId + "/upload")
+                    .url(config.getBaseUrl() + "/api/v1/knowledge-bases/" + knowledgeBaseId + "/knowledge/file")
                     .header("X-API-Key", config.getApiKey())
                     .post(multipartBody)
                     .build();
@@ -603,6 +603,15 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     }
 
     private String extractId(Object weKnoraData) {
+        if (weKnoraData instanceof JSONObject obj) {
+            Object data = obj.get("data");
+            String nestedId = extractId(data);
+            if (nestedId != null) {
+                return nestedId;
+            }
+            Object id = obj.get("id");
+            return id != null ? String.valueOf(id) : null;
+        }
         if (weKnoraData instanceof Map) {
             Object id = ((Map<?, ?>) weKnoraData).get("id");
             return id != null ? String.valueOf(id) : null;
@@ -876,7 +885,11 @@ public class WeKnoraServiceImpl implements WeKnoraService {
      */
     private JSONObject parseWeKnoraResponse(String body) {
         if (body == null || body.isBlank()) return null;
-        Object parsed = JSON.parse(body);
+        String trimmed = body.trim();
+        if (!trimmed.startsWith("{") && !trimmed.startsWith("[")) {
+            return null;
+        }
+        Object parsed = JSON.parse(trimmed);
         if (parsed instanceof JSONObject) {
             return (JSONObject) parsed;
         }

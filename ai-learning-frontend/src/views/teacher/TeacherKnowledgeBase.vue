@@ -383,9 +383,17 @@ async function handleDeleteFile(row) {
   try {
     const res = await kbApi.deleteKnowledge(row.id)
     if (res.code === '200') {
+      files.value = files.value.filter(f => f.id !== row.id)
+      if (selectedKb.value && typeof selectedKb.value.knowledge_count === 'number') {
+        selectedKb.value.knowledge_count = Math.max(0, selectedKb.value.knowledge_count - 1)
+      }
+      const kb = kbs.value.find(item => item.id === selectedKb.value?.id)
+      if (kb && typeof kb.knowledge_count === 'number') {
+        kb.knowledge_count = Math.max(0, kb.knowledge_count - 1)
+      }
       ElMessage.success('已删除')
-      await loadFiles()
-      await loadKBs()
+      void loadFiles()
+      void loadKBs()
     } else ElMessage.error(res.msg || '删除失败')
   } catch { ElMessage.error('删除失败') }
 }
@@ -571,8 +579,8 @@ onMounted(loadKBs)
 
 <style scoped>
 .teacher-kb-page { display: flex; gap: 16px; height: calc(100vh - 120px); }
-.kb-left { width: 380px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex-shrink: 0; }
-.kb-right { flex: 1; min-width: 0; }
+.kb-left { width: 520px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex-shrink: 0; }
+.kb-right { flex: 1; min-width: 0; max-width: calc(100% - 536px); }
 .panel { background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; display: flex; flex-direction: column; max-height: 50%; }
 .panel:last-child { flex: 1; min-height: 0; }
 .panel-title { padding: 10px 14px; font-weight: 600; font-size: 14px; color: #303133; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-shrink: 0; }

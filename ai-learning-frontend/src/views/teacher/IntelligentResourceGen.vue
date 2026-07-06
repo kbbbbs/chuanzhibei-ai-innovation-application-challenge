@@ -70,7 +70,7 @@
             <div class="card-header result-header">
               <span>生成结果预览</span>
               <div class="result-actions" v-if="generatedContent">
-                <el-button size="small"><el-icon><CopyDocument /></el-icon> 复制内容</el-button>
+                <el-button size="small"><el-icon><DocumentCopy /></el-icon> 复制内容</el-button>
                 <el-button size="small" type="primary"><el-icon><Download /></el-icon> 导出文档</el-button>
               </div>
             </div>
@@ -126,7 +126,7 @@
 
 <script setup>
 import { ref } from 'vue'
-import { Lightning, Document, CopyDocument, Download } from '@element-plus/icons-vue'
+import { Lightning, Document, DocumentCopy, Download } from '@element-plus/icons-vue'
 
 const config = ref({
   type: 'lecture',
