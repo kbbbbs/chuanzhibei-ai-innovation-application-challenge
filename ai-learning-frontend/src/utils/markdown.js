@@ -1,33 +1,42 @@
 export function renderMarkdown(text) {
   if (!text) return ''
 
-  let html = text
+  // proxy local:// image URLs (preserve port)
+  let html = text.replace(/local:\/\/(\d+)\//g, '/api/weknora/local-file/$1/')
+
+  const blocks = []
+
+  // 1. images ![alt](url) — MUST process before HTML escaping
+  html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
+    blocks.push(`<img src="${url}" alt="${alt || ''}" style="max-width:100%">`)
+    return `\x00${blocks.length - 1}\x00`
+  })
+
+  html = html
     .replace(/&/g, '&amp;')
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
 
-  const blocks = []
-
-  // 1. code blocks (protect first)
+  // 2. code blocks (protect first)
   html = html.replace(/```(\w*)\s*\n([\s\S]*?)```/g, (_, lang, code) => {
     blocks.push(`<pre><code>${code.trim()}</code></pre>`)
     return `\x00${blocks.length - 1}\x00`
   })
 
-  // 2. inline: bold + code — do BEFORE line-level processing
+  // 3. inline: bold + code — do BEFORE line-level processing
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
   html = html.replace(/`([^`]+)`/g, '<code>$1</code>')
 
-  // 3. headings
+  // 4. headings
   html = html.replace(/^#### (.+)$/gm, '<h5>$1</h5>')
   html = html.replace(/^### (.+)$/gm, '<h4>$1</h4>')
   html = html.replace(/^## (.+)$/gm, '<h3>$1</h3>')
   html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>')
 
-  // 4. HR
+  // 5. HR
   html = html.replace(/^---$/gm, '<hr>')
 
-  // 5. tables — pipe-delimited or tab-delimited (3+ columns)
+  // 6. tables — pipe-delimited or tab-delimited (3+ columns)
   // first: convert tab-separated tables to pipes
   const lines = html.split('\n')
   for (let i = 0; i < lines.length; i++) {
@@ -64,13 +73,13 @@ export function renderMarkdown(text) {
     return `\x00${blocks.length - 1}\x00`
   })
 
-  // 6. ordered lists — group contiguous numbered lines
+  // 7. ordered lists — group contiguous numbered lines
   html = html.replace(/(?:^\d+\. .+\n?)+/gm, (raw) => {
     const items = raw.trim().split('\n').map(l => `<li>${l.replace(/^\d+\. /, '')}</li>`).join('')
     return `<ol>${items}</ol>`
   })
 
-  // 7. unordered lists — group contiguous */- lines
+  // 8. unordered lists — group contiguous */- lines
   html = html.replace(/(?:^[*-] .+\n?)+/gm, (raw) => {
     const items = raw.trim().split('\n').map(l => `<li>${l.replace(/^[*-] /, '')}</li>`).join('')
     return `<ul>${items}</ul>`

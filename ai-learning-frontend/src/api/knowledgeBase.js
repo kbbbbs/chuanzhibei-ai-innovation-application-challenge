@@ -6,6 +6,9 @@ export const updateKnowledgeBase = (kbId, data) => request.put(`/api/weknora/kno
 export const deleteKnowledgeBase = (kbId) => request.delete(`/api/weknora/knowledge-bases/${kbId}`)
 export const listKnowledge = (kbId, limit = 50, offset = 0) => request.get(`/api/weknora/knowledge-bases/${kbId}/knowledge`, { params: { limit, offset } })
 export const getKnowledgeContent = (kbId, knowledgeId) => request.get(`/api/weknora/knowledge-bases/${kbId}/knowledge/${knowledgeId}/content`)
+export const getKnowledgeFileUrl = (knowledgeId) => `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}/api/weknora/knowledge/${knowledgeId}/file`
+
+export const downloadKnowledgeFile = (knowledgeId) => request.get(`/api/weknora/knowledge/${knowledgeId}/file`, { responseType: 'blob' })
 export const deleteKnowledge = (knowledgeId) => request.delete(`/api/weknora/knowledge/${knowledgeId}`)
 export const uploadToKB = (kbId, file) => {
   const formData = new FormData()

@@ -10,4 +10,5 @@ import org.springframework.context.annotation.Configuration;
 public class WeKnoraConfig {
     private String baseUrl = "http://localhost:8081";
     private String apiKey;
+    private String storagePath = "uploads/knowledge";
 }

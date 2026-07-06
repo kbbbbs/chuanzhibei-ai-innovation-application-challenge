@@ -64,7 +64,9 @@
         </div>
 
         <div class="msg-bubble" :class="{ 'streaming': msg.streaming, 'error': msg.error }">
-          <div class="bubble-content" v-if="msg.content" v-html="renderMarkdown(msg.content)"></div>
+          <div class="bubble-content" v-if="msg.content">
+            <MdPreview :modelValue="proxyLocalUrls(msg.content)" previewTheme="default" />
+          </div>
           <div class="typing-indicator" v-else-if="msg.streaming">
             <span></span><span></span><span></span>
           </div>
@@ -104,9 +106,15 @@
 <script setup>
 import { ref, onMounted, nextTick, watch, computed } from 'vue'
 import { useWeKnora } from '@/composables/useWeKnora'
-import { renderMarkdown } from '@/utils/markdown'
+import { MdPreview } from 'md-editor-v3'
+import 'md-editor-v3/lib/preview.css'
 import { Cpu, User, ChatDotRound, Position, RefreshRight } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
+
+function proxyLocalUrls(text) {
+  if (!text) return ''
+  return text.replace(/local:\/\/(\d+)\//g, '/api/weknora/local-file/$1/')
+}
 
 const props = defineProps({
   inline: {
@@ -429,18 +437,8 @@ const handleSend = async () => {
 }
 
 /* Markdown rendered content */
-:deep(.bubble-content p) { margin: 0 0 6px; }
-:deep(.bubble-content p:last-child) { margin-bottom: 0; }
-:deep(.bubble-content ul), :deep(.bubble-content ol) { margin: 4px 0; padding-left: 20px; }
-:deep(.bubble-content li) { margin-bottom: 2px; }
-:deep(.bubble-content h2) { font-size: 1.1rem; margin: 8px 0 4px; }
-:deep(.bubble-content h3) { font-size: 1rem; margin: 6px 0 3px; }
-:deep(.bubble-content h4) { font-size: 0.95rem; margin: 4px 0 2px; }
-:deep(.bubble-content strong) { font-weight: 600; }
-:deep(.bubble-content code) { background: rgba(0,0,0,0.06); padding: 1px 5px; border-radius: 3px; font-size: 0.9em; }
-:deep(.bubble-content pre) { background: #1e1e1e; color: #d4d4d4; padding: 10px 14px; border-radius: 6px; overflow-x: auto; margin: 8px 0; font-size: 0.85rem; line-height: 1.5; }
-:deep(.bubble-content pre code) { background: none; padding: 0; font-size: inherit; }
-:deep(.bubble-content hr) { border: none; border-top: 1px solid #e5e7eb; margin: 8px 0; }
+:deep(.bubble-content .md-editor-preview) { background: transparent; padding: 0; }
+:deep(.bubble-content .md-editor-preview a) { color: #4F46E5; }
 
 /* Input Area */
 .chat-input-area {

@@ -152,7 +152,7 @@ export const layoutChildren = [
     path: 'knowledge-base',
     name: 'KnowledgeBase',
     component: () => import('../views/student/KnowledgeBase.vue'),
-    meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'] }
+    meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
 
   // Admin routes

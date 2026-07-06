@@ -51,13 +51,18 @@ request.interceptors.response.use(response => {
   res = normalizeResponse(res)
 
   if (res && res.code && res.code !== '200') {
-    ElMessage.error(res.msg || '请求失败')
+    // 静默降级：Agent 定义接口不可用时只记录不弹框
+    const silent = response.config?.silent
+    if (!silent) {
+      ElMessage.error(res.msg || '请求失败')
+    }
   }
   return res
 }, error => {
   const status = error.response?.status
+  const silent = error.config?.silent
   if (status === 401) {
-    ElMessage.error('登录已过期，请重新登录')
+    if (!silent) ElMessage.error('登录已过期，请重新登录')
     localStorage.removeItem('token')
     localStorage.removeItem('userId')
     localStorage.removeItem('username')
@@ -65,11 +70,11 @@ request.interceptors.response.use(response => {
     localStorage.removeItem('roleCode')
     window.location.href = '/login'
   } else if (status === 403) {
-    ElMessage.error('无权限访问该资源')
+    if (!silent) ElMessage.error('无权限访问该资源')
   } else if (status >= 500) {
-    ElMessage.error('服务器异常，请稍后重试')
+    if (!silent) ElMessage.error('服务器异常，请稍后重试')
   } else {
-    ElMessage.error(error.message || '网络请求失败')
+    if (!silent) ElMessage.error(error.message || '网络请求失败')
   }
   return Promise.reject(error)
 })

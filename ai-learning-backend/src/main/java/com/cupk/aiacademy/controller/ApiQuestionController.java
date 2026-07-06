@@ -1,14 +1,18 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
+import com.cupk.aiacademy.dto.GenerateQuestionsFromKbRequest;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.service.QuestionService;
 import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +31,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/questions")
 public class ApiQuestionController {
+    private static final Logger log = LoggerFactory.getLogger(ApiQuestionController.class);
     private final QuestionService questionService;
     private final PermissionService permissionService;
 
@@ -83,6 +88,31 @@ public class ApiQuestionController {
             teacherId = course.getTeacherId();
         }
         return ApiResponse.success(questionService.extractQuestions(file, courseId, teacherId.longValue()));
+    }
+
+    @PostMapping("/generate-from-kb")
+    public ApiResponse<List<QuestionRequestDTO>> generateFromKnowledgeBase(@RequestBody GenerateQuestionsFromKbRequest request) {
+        permissionService.requireTeacherOrAdmin();
+        if (request.getCourseId() == null) {
+            return ApiResponse.failure("请选择课程");
+        }
+        var course = permissionService.getCourse(request.getCourseId().intValue());
+        var user = permissionService.currentUser();
+        Long teacherId;
+        if ("teacher".equals(user.getRoleCode())) {
+            permissionService.requireCourseTeacher(course);
+            teacherId = user.getUserId().longValue();
+        } else {
+            teacherId = course.getTeacherId().longValue();
+        }
+        try {
+            return ApiResponse.success(questionService.generateFromKnowledgeBase(request, teacherId));
+        } catch (BusinessException e) {
+            return ApiResponse.failure(e.getMessage());
+        } catch (Exception e) {
+            log.error("generateFromKnowledgeBase failed", e);
+            return ApiResponse.failure("生成题目失败: " + (e.getMessage() != null ? e.getMessage() : "未知错误"));
+        }
     }
 
     @PostMapping("/batch")

@@ -2,16 +2,21 @@ package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.agent.service.AgentChatService;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.ForbiddenException;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
+import com.cupk.aiacademy.dto.GenerateQuestionsFromKbRequest;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
+import com.cupk.aiacademy.mapper.AgentDefinitionMapper;
 import com.cupk.aiacademy.mapper.QuestionMapper;
+import com.cupk.aiacademy.pojo.AgentDefinition;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.Question;
+import com.cupk.aiacademy.weknora.dto.WeKnoraSearchRequest;
 import com.cupk.aiacademy.weknora.service.WeKnoraService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -23,6 +28,12 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.ai.chat.messages.Message;
+import org.springframework.ai.chat.messages.SystemMessage;
+import org.springframework.ai.chat.messages.UserMessage;
+import org.springframework.ai.chat.prompt.Prompt;
+import org.springframework.ai.openai.OpenAiChatModel;
+import org.springframework.ai.openai.OpenAiChatOptions;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -42,14 +53,23 @@ public class QuestionService {
     private final ObjectMapper objectMapper;
     private final WeKnoraService weKnoraService;
     private final PermissionService permissionService;
+    private final AgentChatService agentChatService;
+    private final AgentDefinitionMapper agentDefinitionMapper;
+    private final OpenAiChatModel chatModel;
 
     public QuestionService(QuestionMapper questionMapper, ObjectMapper objectMapper,
                            WeKnoraService weKnoraService,
-                           PermissionService permissionService) {
+                           PermissionService permissionService,
+                           AgentChatService agentChatService,
+                           AgentDefinitionMapper agentDefinitionMapper,
+                           OpenAiChatModel chatModel) {
         this.questionMapper = questionMapper;
         this.objectMapper = objectMapper;
         this.weKnoraService = weKnoraService;
         this.permissionService = permissionService;
+        this.agentChatService = agentChatService;
+        this.agentDefinitionMapper = agentDefinitionMapper;
+        this.chatModel = chatModel;
     }
 
     @Transactional
@@ -227,6 +247,130 @@ public class QuestionService {
         return questions;
     }
 
+    public List<QuestionRequestDTO> generateFromKnowledgeBase(GenerateQuestionsFromKbRequest request, Long teacherId) {
+        if (request.getKnowledgeBaseId() == null || request.getKnowledgeBaseId().isBlank()) {
+            throw new BusinessException("知识库不能为空");
+        }
+        if (request.getCourseId() == null) {
+            throw new BusinessException("请选择课程");
+        }
+        int count = request.getCount() != null && request.getCount() > 0 ? request.getCount() : 5;
+        if (count > 20) count = 20;
+        List<String> types = request.getTypes() != null && !request.getTypes().isEmpty()
+                ? request.getTypes() : List.of("SINGLE_CHOICE", "TRUE_FALSE", "SHORT_ANSWER");
+        String difficulty = request.getDifficulty() != null ? request.getDifficulty() : "MEDIUM";
+
+        String systemPrompt = "你是EduLoop智教云环平台的题库构建助手。请基于知识库内容生成题目。";
+        String model = null;
+        Double temperature = null;
+        List<String> kbIds = new ArrayList<>();
+        kbIds.add(request.getKnowledgeBaseId());
+
+        if (request.getAgentId() != null) {
+            AgentDefinition agent = agentDefinitionMapper.selectById(request.getAgentId());
+            if (agent != null && agent.getSystemPrompt() != null && !agent.getSystemPrompt().isBlank()) {
+                systemPrompt = agent.getSystemPrompt();
+            }
+            if (agent != null && agent.getModel() != null && !agent.getModel().isBlank()) {
+                model = agent.getModel().trim();
+            }
+            if (agent != null && agent.getTemperature() != null) {
+                temperature = agent.getTemperature().doubleValue();
+            }
+            if (agent != null && agent.getKnowledgeBaseIds() != null) {
+                try {
+                    var arr = objectMapper.readTree(agent.getKnowledgeBaseIds().trim());
+                    if (arr.isArray()) {
+                        for (var node : arr) {
+                            String id = node.asText().trim();
+                            if (!id.isEmpty() && !kbIds.contains(id)) {
+                                kbIds.add(id);
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }
+        }
+
+        // 检索知识上下文
+        StringBuilder knowledgeContext = new StringBuilder();
+        if (weKnoraService != null) {
+            try {
+                var searchResult = weKnoraService.search(new WeKnoraSearchRequest(kbIds, "知识库内容概要"));
+                if (searchResult != null && "200".equals(searchResult.getCode()) && searchResult.getData() != null) {
+                    var root = objectMapper.valueToTree(searchResult.getData());
+                    List<String> snippets = new ArrayList<>();
+                    collectSnippets(root, snippets, 10);
+                    for (int i = 0; i < snippets.size(); i++) {
+                        if (knowledgeContext.length() > 0) knowledgeContext.append("\n");
+                        knowledgeContext.append("[").append(i + 1).append("] ").append(snippets.get(i));
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Knowledge search failed for question generation", e);
+            }
+        }
+
+        String typeList = String.join("、", types);
+        StringBuilder userPrompt = new StringBuilder();
+        userPrompt.append("请基于知识库内容严格生成").append(count).append("道题目。\n");
+        userPrompt.append("题型限制：").append(typeList).append("\n");
+        userPrompt.append("难度：").append(difficulty).append("\n");
+        if (request.getInstruction() != null && !request.getInstruction().isBlank()) {
+            userPrompt.append("补充要求：").append(request.getInstruction()).append("\n");
+        }
+        userPrompt.append("\n严格按照以下JSON数组格式返回，不要输出任何JSON之外的内容，不要用markdown代码块包裹：\n");
+        userPrompt.append("[\n");
+        userPrompt.append("  {\n");
+        userPrompt.append("    \"type\": \"SINGLE_CHOICE\",\n");
+        userPrompt.append("    \"content\": \"题目题干内容\",\n");
+        userPrompt.append("    \"options\": [{\"optionKey\":\"A\",\"optionContent\":\"选项内容\",\"sortOrder\":1}],\n");
+        userPrompt.append("    \"answers\": [{\"answerContent\":\"A\",\"sortOrder\":1}],\n");
+        userPrompt.append("    \"analysis\": \"题目解析\",\n");
+        userPrompt.append("    \"knowledgePoint\": \"知识点\",\n");
+        userPrompt.append("    \"difficulty\": \"").append(difficulty).append("\",\n");
+        userPrompt.append("    \"score\": 5\n");
+        userPrompt.append("  }\n");
+        userPrompt.append("]\n");
+        userPrompt.append("type取值：SINGLE_CHOICE/MULTIPLE_CHOICE/TRUE_FALSE/FILL_BLANK/SHORT_ANSWER\n");
+        userPrompt.append("difficulty取值：EASY/MEDIUM/HARD\n");
+        userPrompt.append("选择题必须包含options数组，非选择题不需要options。\n");
+        userPrompt.append("TRUE_FALSE的options固定为[{\"optionKey\":\"A\",\"optionContent\":\"正确\",\"sortOrder\":1},{\"optionKey\":\"B\",\"optionContent\":\"错误\",\"sortOrder\":2}]，答案填A或B。\n");
+        userPrompt.append("如果知识库中没有足够内容生成题目，请返回空数组[]。");
+
+        if (knowledgeContext.length() > 0) {
+            systemPrompt += "\n\n知识库参考资料（优先基于资料生成题目；资料不足时返回空数组）：\n" + knowledgeContext;
+        }
+
+        String rawResponse;
+        try {
+            List<Message> messages = new ArrayList<>();
+            messages.add(new SystemMessage(systemPrompt));
+            messages.add(new UserMessage(userPrompt.toString()));
+
+            OpenAiChatOptions.Builder optsBuilder = OpenAiChatOptions.builder();
+            if (model != null && !model.isBlank()) optsBuilder.model(model.trim());
+            if (temperature != null) optsBuilder.temperature(temperature);
+            OpenAiChatOptions opts = optsBuilder.build();
+
+            Prompt prompt;
+            if (opts.getModel() != null || opts.getTemperature() != null) {
+                prompt = new Prompt(messages, opts);
+            } else {
+                prompt = new Prompt(messages);
+            }
+            log.info("Generating questions from KB, prompt length: {}", systemPrompt.length() + userPrompt.length());
+            var chatResponse = chatModel.call(prompt);
+            rawResponse = chatResponse.getResult().getOutput().getText();
+            log.info("Generated questions response length: {}", rawResponse != null ? rawResponse.length() : 0);
+        } catch (Exception e) {
+            log.error("AI generation failed", e);
+            throw new BusinessException("AI生成失败: " + e.getMessage());
+        }
+
+        return parseExtractedJson(rawResponse, request.getCourseId(), teacherId);
+    }
+
     public List<Map<String, Object>> batchCreate(List<QuestionRequestDTO> requests) {
         List<Map<String, Object>> results = new ArrayList<>();
         for (int i = 0; i < requests.size(); i++) {
@@ -317,6 +461,24 @@ public class QuestionService {
     }
 
     private static final Logger log = LoggerFactory.getLogger(QuestionService.class);
+
+    private void collectSnippets(com.fasterxml.jackson.databind.JsonNode node, List<String> snippets, int max) {
+        if (node == null || node.isNull() || snippets.size() >= max) return;
+        if (node.isArray()) {
+            for (var child : node) collectSnippets(child, snippets, max);
+            return;
+        }
+        if (node.isObject()) {
+            for (var field : node.properties()) collectSnippets(field.getValue(), snippets, max);
+            return;
+        }
+        if (node.isTextual()) {
+            String text = node.asText().replaceAll("\\s+", " ").trim();
+            if (!text.isBlank() && !snippets.contains(text) && text.length() < 2000) {
+                snippets.add(text);
+            }
+        }
+    }
 
     public Question getEntityById(Long id) {
         Question question = questionMapper.selectById(toInt(id, "题目ID"));

@@ -5,6 +5,8 @@ import com.cupk.aiacademy.weknora.dto.WeKnoraChatRequest;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSearchRequest;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest;
 import com.cupk.aiacademy.weknora.service.WeKnoraService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -130,5 +132,18 @@ public class WeKnoraController {
     public Result getKnowledgeContent(@PathVariable String kbId,
                                        @PathVariable String knowledgeId) {
         return weKnoraService.getKnowledgeContent(kbId, knowledgeId);
+    }
+
+    @GetMapping("/knowledge/{knowledgeId}/file")
+    public void downloadFile(@PathVariable String knowledgeId,
+                              HttpServletResponse response) {
+        weKnoraService.downloadFile(knowledgeId, response);
+    }
+
+    @GetMapping("/local-file/**")
+    public void proxyLocalFile(HttpServletRequest request,
+                                HttpServletResponse response) {
+        String path = request.getRequestURI().replace("/api/weknora/local-file/", "");
+        weKnoraService.proxyLocalFile(path, response);
     }
 }

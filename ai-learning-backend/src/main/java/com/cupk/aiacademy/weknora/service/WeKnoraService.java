@@ -3,6 +3,7 @@ package com.cupk.aiacademy.weknora.service;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSearchRequest;
 import com.cupk.aiacademy.weknora.dto.WeKnoraSessionRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 public interface WeKnoraService {
@@ -48,4 +49,10 @@ public interface WeKnoraService {
 
     /** 获取知识文件的内容片段 */
     Result getKnowledgeContent(String kbId, String knowledgeId);
+
+    /** 下载/查看知识文件原始内容 */
+    void downloadFile(String knowledgeId, HttpServletResponse response);
+
+    /** 代理 WeKnora 本地文件（用于渲染 local:// 图片引用） */
+    void proxyLocalFile(String path, HttpServletResponse response);
 }

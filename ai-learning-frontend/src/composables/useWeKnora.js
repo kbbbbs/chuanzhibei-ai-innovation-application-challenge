@@ -124,7 +124,7 @@ export function useWeKnora() {
           messages.value[aiIndex].error = true
           loading.value = false
           error.value = err
-          ElMessage.error(err?.error || '流式回答出错')
+          ElMessage.error(err?.error || '获取知识库对话失败')
           reject(err)
         }
       })

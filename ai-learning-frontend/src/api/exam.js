@@ -105,6 +105,10 @@ export const extractQuestions = (formData) => {
   })
 }
 
+export const generateQuestionsFromKnowledgeBase = (data) => {
+  return request.post('/api/questions/generate-from-kb', data)
+}
+
 export const batchCreateQuestions = (data) => {
   return request.post('/api/questions/batch', data)
 }

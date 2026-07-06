@@ -15,10 +15,10 @@
       </div>
 
       <div class="panel" v-if="selectedKb">
-        <div class="panel-title">📄 {{ selectedKb.name }} · 课件</div>
+        <div class="panel-title"> {{ selectedKb.name }} · 课件</div>
         <div class="panel-body scroll-y" v-loading="filesLoading" style="max-height:200px">
           <div v-if="files.length === 0 && !filesLoading" class="empty-hint">暂无课件</div>
-          <div v-for="f in files" :key="f.id" class="file-item" @click="openFilePreview(f)">
+          <div v-for="f in files" :key="f.id" class="file-item">
             <span class="file-icon">{{ fileIcon(f) }}</span>
             <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
           </div>
@@ -27,7 +27,7 @@
 
       <div class="panel flex-1" v-if="selectedKb">
         <div class="panel-title">
-          💬 对话记录
+           对话记录
           <el-button size="small" type="primary" link @click="newSession">+ 新建</el-button>
         </div>
         <div class="panel-body scroll-y">
@@ -50,7 +50,7 @@
         </div>
         <div class="chat-msgs" ref="chatRef">
           <div v-if="messages.length === 0 && !chatLoading" class="chat-welcome">
-            <div class="welcome-icon">📖</div>
+            <div class="welcome-icon"></div>
             <div class="welcome-text">上传课件后问我任何问题吧！</div>
             <div class="hint-list">
               <span v-for="h in exampleQuestions" :key="h" class="hint-tag"
@@ -59,9 +59,11 @@
           </div>
           <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
             <span class="msg-who">{{ msg.role === 'user' ? '我' : '📖' }}</span>
-            <div class="msg-text" v-html="renderMarkdown(msg.content)"></div>
+            <div class="msg-text">
+              <MdPreview :modelValue="proxyLocalUrls(msg.content)" previewTheme="default" />
+            </div>
           </div>
-          <div v-if="chatLoading" class="msg assistant"><span class="msg-who">📖</span><span class="msg-text dim">思考中…</span></div>
+          <div v-if="chatLoading" class="msg assistant"><span class="msg-who"></span><span class="msg-text dim">思考中…</span></div>
         </div>
         <div class="chat-bar" v-if="selectedKb">
           <el-input v-model="inputText" placeholder="输入问题…" @keyup.enter="sendMessage" :disabled="chatLoading" />
@@ -84,7 +86,9 @@
                 <el-tag size="small" type="info" effect="plain" v-if="r.score" class="hit-score">{{ (r.score*100).toFixed(0) }}%</el-tag>
               </div>
               <div class="hit-preview" v-if="expandedHit !== i">{{ cleanContent(r).slice(0, 120) }}…</div>
-              <div class="hit-full" v-else v-html="renderMarkdown(cleanContent(r))"></div>
+              <div class="hit-full" v-else>
+                <MdPreview :modelValue="proxyLocalUrls(cleanContent(r))" previewTheme="default" />
+              </div>
               <div class="hit-actions" v-if="expandedHit === i">
                 <el-button size="small" type="primary" :loading="chatLoading" @click.stop="askAbout(r)">让学伴讲解</el-button>
               </div>
@@ -95,14 +99,6 @@
       </div>
     </div>
 
-    <!-- File Content Dialog -->
-    <el-dialog v-model="previewVisible" :title="previewTitle" width="750px">
-      <div v-loading="previewLoading" class="preview-doc">
-        <div v-if="!previewLoading && previewText" class="preview-text" v-html="renderMarkdown(previewText)"></div>
-        <div v-else-if="previewLoading" style="text-align:center;padding:40px;color:#909399">加载中…</div>
-        <div v-else style="text-align:center;padding:40px;color:#909399">该文件暂无文字内容，请通过「智能学伴」搜索相关内容进行学习。</div>
-      </div>
-    </el-dialog>
   </div>
 </template>
 
@@ -110,7 +106,8 @@
 import { ref, reactive, computed, nextTick, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Search } from '@element-plus/icons-vue'
-import { renderMarkdown } from '@/utils/markdown'
+import { MdPreview } from 'md-editor-v3'
+import 'md-editor-v3/lib/preview.css'
 import { useUserStore } from '@/store/user'
 import * as kbApi from '@/api/knowledgeBase'
 
@@ -133,6 +130,15 @@ const searchOpen = ref(false); const searchQuery = ref(''); const searchResults 
 const expandedHit = ref(-1)
 const previewVisible = ref(false); const previewLoading = ref(false)
 const previewTitle = ref(''); const previewText = ref('')
+const previewFileTypeObj = ref({})
+const pdfImages = ref([])
+const currentImageIndex = ref(0)
+const pdfLoadError = ref(false)
+const pdfErrorMessage = ref('')
+
+const isPdfFile = computed(() => {
+  return previewFileTypeObj.value?.file_type?.toLowerCase().includes('pdf') || false
+})
 
 function mySessionKey() { return 'kb_my_sessions_' + userId.value }
 function loadMySessions() { try { return JSON.parse(localStorage.getItem(mySessionKey()) || '[]') } catch { return [] } }
@@ -142,9 +148,25 @@ function cleanTitle(r) {
   const t = r.knowledge_title || r.title || r.file_name || ''
   return t.replace(/\.\w+$/, '').replace(/^新建文件夹\//g, '').slice(0, 50) || '知识片段'
 }
+
 function cleanContent(r) {
-  const c = r.content || r.text || ''
-  return c.replace(/<!--[\s\S]*?-->/g, '').replace(/!\[\]\(local:\/\/[^)]+\)/g, '').replace(/\n{3,}/g, '\n\n').trim()
+  const c = r?.content || r?.text || r?.chunk_content || r?.chunk_text || ''
+  if (!c || typeof c !== 'string') return ''
+
+  try {
+    let result = c
+    result = result.replace(/<!--[\s\S]*?-->/g, '')
+    result = result.replace(/\n{3,}/g, '\n\n')
+    return result.trim()
+  } catch (e) {
+    console.warn('cleanContent error:', e)
+    return String(c).trim()
+  }
+}
+
+function proxyLocalUrls(text) {
+  if (!text) return ''
+  return text.replace(/local:\/\/(\d+)\//g, '/api/weknora/local-file/$1/')
 }
 
 const exampleQuestions = ['请总结核心知识点', '重点和难点是什么', '给我出几道练习题']
@@ -166,18 +188,67 @@ function saveHistory(id) {
 
 function fileIcon(f) {
   const t = (f.file_type || f.type || '').toLowerCase()
-  if (t.includes('pdf')) return '📑'
+  if (t.includes('pdf')) return ''
   if (t.includes('doc') || t.includes('word')) return '📝'
-  if (t.includes('ppt') || t.includes('pptx')) return '🖥'
+  if (t.includes('ppt') || t.includes('pptx')) return ''
   if (t.includes('txt') || t.includes('md')) return '📃'
   return '📎'
+}
+
+async function getImageWithAuth(imagePath) {
+  const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+  const token = localStorage.getItem('token') || ''
+
+  let url = imagePath
+  if (!imagePath.startsWith('http')) {
+    url = (baseUrl.startsWith('http') ? baseUrl : '') + imagePath
+  }
+
+  try {
+    const response = await fetch(url, {
+      headers: {
+        'Authorization': token ? `Bearer ${token}` : ''
+      }
+    })
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+
+    const blob = await response.blob()
+    return URL.createObjectURL(blob)
+  } catch (error) {
+    console.error('Failed to load image:', error)
+    throw error
+  }
+}
+
+function handleImageError(e) {
+  console.error('Image load error:', e)
+  pdfLoadError.value = true
+  pdfErrorMessage.value = '图片加载失败，可能是权限问题或文件不存在'
+}
+
+function prevImage() {
+  if (currentImageIndex.value > 0) {
+    currentImageIndex.value--
+  }
+}
+
+function nextImage() {
+  if (currentImageIndex.value < pdfImages.value.length - 1) {
+    currentImageIndex.value++
+  }
 }
 
 const loadKBs = async () => {
   kbLoading.value = true
   try {
     const res = await kbApi.listKnowledgeBases()
-    if (res.code === '200' && res.data) kbs.value = Array.isArray(unwrapData(res.data)) ? unwrapData(res.data) : []
+    if (res.code === '200' && res.data) {
+      const data = unwrapData(res.data)
+      kbs.value = Array.isArray(data) ? data : (data?.items || data?.list || [])
+    }
   } catch { kbs.value = [] } finally { kbLoading.value = false }
 }
 
@@ -186,7 +257,10 @@ async function loadFiles() {
   filesLoading.value = true
   try {
     const res = await kbApi.listKnowledge(selectedKb.value.id)
-    if (res.code === '200') files.value = unwrapData(res.data) || []
+    if (res.code === '200') {
+      const data = unwrapData(res.data)
+      files.value = Array.isArray(data) ? data : (data?.items || data?.list || data?.documents || [])
+    }
   } finally { filesLoading.value = false }
 }
 
@@ -211,18 +285,112 @@ const selectKb = async (kb) => {
 
 async function openFilePreview(f) {
   previewTitle.value = f.title || f.file_name || f.id
+  previewFileTypeObj.value = f
   previewText.value = ''
+  pdfImages.value = []
+  currentImageIndex.value = 0
+  pdfLoadError.value = false
+  pdfErrorMessage.value = ''
   previewVisible.value = true
   previewLoading.value = true
+
   try {
-    const res = await kbApi.getKnowledgeContent(selectedKb.value.id, f.id)
-    if (res.code === '200') {
+    const res = await kbApi.getKnowledgeContent(selectedKb.value?.id, f.id)
+    if (res && (res.code === '200' || res.code === 200)) {
       const data = unwrapData(res.data) || []
-      const chunks = Array.isArray(data) ? data : []
-      previewText.value = chunks.map(c => cleanContent(c)).filter(Boolean).join('\n\n')
+      const chunks = Array.isArray(data) ? data : (data?.chunks || data?.items || [])
+
+      const imagePaths = []
+      let hasTextContent = false
+
+      chunks.forEach(chunk => {
+        if (chunk.file_path && (
+          chunk.file_path.toLowerCase().includes('.jpg') ||
+          chunk.file_path.toLowerCase().includes('.jpeg') ||
+          chunk.file_path.toLowerCase().includes('.png') ||
+          chunk.file_path.toLowerCase().includes('page_')
+        )) {
+          imagePaths.push(chunk.file_path)
+        } else if (chunk.content || chunk.text) {
+          hasTextContent = true
+        }
+      })
+
+      if (imagePaths.length > 0) {
+        try {
+          const loadedImages = []
+          for (const imgPath of imagePaths) {
+            try {
+              const blobUrl = await getImageWithAuth(imgPath)
+              loadedImages.push(blobUrl)
+            } catch (err) {
+              console.error(`Failed to load image: ${imgPath}`, err)
+            }
+          }
+
+          if (loadedImages.length > 0) {
+            pdfImages.value = loadedImages
+            currentImageIndex.value = 0
+            previewLoading.value = false
+            return
+          }
+        } catch (err) {
+          console.error('Failed to load images:', err)
+          pdfLoadError.value = true
+          pdfErrorMessage.value = '图片加载失败'
+        } finally {
+          previewLoading.value = false
+        }
+        return
+      }
+
+      if (hasTextContent) {
+        previewText.value = chunks.map(c => cleanContent(c)).filter(Boolean).join('\n\n')
+        previewLoading.value = false
+        return
+      }
     }
-  } catch { /* skip */ }
-  finally { previewLoading.value = false }
+
+    pdfLoadError.value = true
+    pdfErrorMessage.value = res?.msg || '获取知识库文档内容失败'
+  } catch (err) {
+    console.error('Get content error:', err)
+    pdfLoadError.value = true
+    pdfErrorMessage.value = err?.message || '获取知识库文档内容失败'
+  } finally {
+    previewLoading.value = false
+  }
+}
+
+function downloadFile() {
+  const knowledgeId = previewFileTypeObj.value?.id
+  if (!knowledgeId) {
+    ElMessage.warning('无法获取文件下载地址')
+    return
+  }
+
+  kbApi.downloadKnowledgeFile(knowledgeId)
+    .then(blob => {
+      const blobUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = blobUrl
+      link.download = previewTitle.value
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(blobUrl)
+    })
+    .catch(err => {
+      console.error('Download failed:', err)
+      const fallbackUrl = previewFileTypeObj.value?.file_url
+      if (err?.response?.status === 404 && fallbackUrl) {
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+        window.open(baseUrl.startsWith('http') ? baseUrl + fallbackUrl : fallbackUrl, '_blank')
+        return
+      }
+      const message = err?.response?.data?.msg || err?.response?.data?.message || err?.message || '下载失败'
+      ElMessage.error(message)
+    })
 }
 
 const newSession = async () => {
@@ -283,7 +451,37 @@ const sendMessage = async () => {
   if (selectedKb.value?.id) url += `&knowledgeBaseIds=${encodeURIComponent(selectedKb.value.id)}`
   try {
     const resp = await fetch(url, { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } })
-    const reader = resp.body.getReader(); const dec = new TextDecoder(); let buf = ''
+    if (!resp.ok) {
+      if (resp.status === 401) {
+        ElMessage.error('登录已过期，请重新登录')
+        localStorage.removeItem('token')
+        localStorage.removeItem('userId')
+        localStorage.removeItem('username')
+        localStorage.removeItem('nickname')
+        localStorage.removeItem('roleCode')
+        window.location.href = '/login'
+        return
+      }
+
+      let errorMessage = `获取知识库对话失败（HTTP ${resp.status}）`
+      try {
+        const raw = await resp.text()
+        if (raw) {
+          try {
+            const parsed = JSON.parse(raw)
+            errorMessage = parsed?.msg || parsed?.message || parsed?.error || errorMessage
+          } catch {
+            errorMessage = raw || errorMessage
+          }
+        }
+      } catch { /* ignore */ }
+
+      throw new Error(errorMessage)
+    }
+
+    const reader = resp.body?.getReader()
+    if (!reader) throw new Error('获取知识库对话失败')
+    const dec = new TextDecoder(); let buf = ''
     while (true) {
       const { done, value } = await reader.read(); if (done) break
       buf += dec.decode(value, { stream: true })
@@ -291,12 +489,23 @@ const sendMessage = async () => {
       for (const line of lines) {
         if (!line.startsWith('data:')) continue
         const raw = line.substring(5).trim(); if (raw === '[DONE]') continue
-        try { const j = JSON.parse(raw); if (j.response_type !== 'answer') continue; if (j.content) messages.value[aiIdx].content += j.content } catch { /* skip */ }
+        try {
+          const j = JSON.parse(raw)
+          if (j?.error) throw new Error(j.error)
+          if (j.response_type !== 'answer') continue
+          if (j.content) messages.value[aiIdx].content += j.content
+        } catch (err) {
+          if (err instanceof SyntaxError) continue
+          throw err
+        }
       }
       scrollBottom()
     }
     if (currentSessionId.value) { historyMap[currentSessionId.value] = [...messages.value]; saveHistory(currentSessionId.value) }
-  } catch { if (!messages.value[aiIdx].content) messages.value[aiIdx].content = '回复中断' }
+  } catch (err) {
+    messages.value[aiIdx].content = err?.message || '获取知识库对话失败'
+    ElMessage.error(messages.value[aiIdx].content)
+  }
   finally { chatLoading.value = false }
 }
 
@@ -321,6 +530,16 @@ const askAbout = (result) => {
   const ctx = cleanContent(result).slice(0, 500)
   inputText.value = `请根据以下资料帮我讲解：${ctx}`
   sendMessage()
+}
+
+function onIframeLoad() {
+  console.log('PDF iframe loaded')
+}
+
+function onIframeError() {
+  console.error('PDF iframe failed to load')
+  pdfLoadError.value = true
+  pdfErrorMessage.value = 'PDF加载失败，可能是权限问题或文件不存在'
 }
 
 onMounted(loadKBs)
@@ -368,16 +587,9 @@ onMounted(loadKBs)
 .msg.user { flex-direction: row-reverse; }
 .msg-who { width: 28px; height: 28px; border-radius: 50%; background: #409eff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
 .msg.user .msg-who { background: #67c23a; }
-.msg-text { max-width: 72%; padding: 8px 12px; border-radius: 10px; background: #fff; font-size: 14px; line-height: 1.7; color: #303133; white-space: pre-wrap; word-break: break-word; }
-.msg-text :deep(p) { margin: 0 0 6px; }
-.msg-text :deep(p:last-child) { margin-bottom: 0; }
-.msg-text :deep(ul), .msg-text :deep(ol) { margin: 4px 0; padding-left: 20px; }
-.msg-text :deep(li) { margin-bottom: 2px; }
-.msg-text :deep(h2), .msg-text :deep(h3), .msg-text :deep(h4) { margin: 8px 0 4px; }
-.msg-text :deep(strong) { font-weight: 600; }
-.msg-text :deep(code) { background: rgba(0,0,0,.06); padding: 1px 5px; border-radius: 3px; font-size: .9em; }
-.msg-text :deep(pre) { background: #1e1e1e; color: #d4d4d4; padding: 10px 14px; border-radius: 6px; overflow-x: auto; margin: 8px 0; font-size: .85rem; line-height: 1.5; }
-.msg-text :deep(pre code) { background: none; padding: 0; font-size: inherit; }
+.msg-text { max-width: 72%; padding: 8px 12px; border-radius: 10px; background: #fff; font-size: 14px; line-height: 1.7; color: #303133; word-break: break-word; }
+.msg-text :deep(.md-editor-preview) { background: transparent; padding: 0; }
+.msg-text :deep(.md-editor-preview a) { color: #409eff; }
 .msg.user .msg-text { background: #ecf5ff; }
 .msg-text.dim { color: #909399; font-size: 13px; }
 .chat-bar { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid #ebeef5; }
@@ -396,16 +608,88 @@ onMounted(loadKBs)
 .hit-full { font-size: 12px; color: #606266; line-height: 1.6; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
 .hit-actions { margin-top: 8px; }
 
-/* Preview dialog */
-.preview-doc { min-height: 120px; }
-.preview-text { max-height: 520px; overflow-y: auto; font-size: 14px; color: #303133; line-height: 1.85; }
-.preview-text :deep(p) { margin: 0 0 10px; }
-.preview-text :deep(ul), .preview-text :deep(ol) { margin: 6px 0; padding-left: 22px; }
-.preview-text :deep(table) { width: 100%; border-collapse: collapse; margin: 10px 0; font-size: 13px; }
-.preview-text :deep(th) { background: #f5f7fa; padding: 6px 10px; border: 1px solid #e5e7eb; text-align: left; font-weight: 600; }
-.preview-text :deep(td) { padding: 6px 10px; border: 1px solid #e5e7eb; }
-.preview-text :deep(strong) { font-weight: 600; }
-.preview-text :deep(h2), .preview-text :deep(h3), .preview-text :deep(h4) { margin: 12px 0 6px; }
-.preview-text :deep(pre) { background: #1e1e1e; color: #d4d4d4; padding: 12px 16px; border-radius: 8px; overflow-x: auto; margin: 10px 0; font-size: .85rem; line-height: 1.6; }
-.preview-text :deep(pre code) { background: none; padding: 0; }
+.preview-container {
+  min-height: 400px;
+  max-height: 75vh;
+  overflow: hidden;
+}
+
+.image-viewer {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.image-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  background: #f5f7fa;
+  border-bottom: 1px solid #e4e7ed;
+}
+
+.page-info {
+  font-size: 14px;
+  color: #606266;
+}
+
+.image-display {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  background: #f0f2f5;
+  overflow: auto;
+}
+
+.pdf-page-image {
+  max-width: 100%;
+  max-height: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  background: #fff;
+}
+
+.error-state,
+.unsupported-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  min-height: 400px;
+}
+
+.error-icon,
+.unsupported-icon {
+  font-size: 60px;
+  margin-bottom: 16px;
+}
+
+.error-message,
+.unsupported-message {
+  font-size: 16px;
+  margin-bottom: 8px;
+  color: #303133;
+}
+
+.error-hint,
+.unsupported-hint {
+  font-size: 14px;
+  color: #909399;
+  margin-bottom: 16px;
+}
+
+.text-preview {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  padding: 20px;
+  background: #fff;
+  border-radius: 4px;
+}
+.text-preview :deep(.md-editor-preview) { background: transparent; padding: 0; }
 </style>
