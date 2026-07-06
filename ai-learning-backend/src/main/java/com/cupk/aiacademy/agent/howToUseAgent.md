@@ -12,7 +12,7 @@ Agent 聊天不是只把用户问题直接发给大模型。当前实现会先�
       -> retrieveKnowledgeContext()
       -> retrieveToolContext()
       -> systemPrompt(agent, knowledgeContext, toolContext)
-  -> OpenAiChatModel.call() 或 OpenAiChatModel.stream()
+  -> ChatModelClient.call() 或 ChatModelClient.stream()
 ```
 
 作用：说明普通聊天和流式聊天都会走同一套上下文构造流程。
@@ -343,7 +343,7 @@ Accept: text/event-stream
 内部总入口：
 
 ```java
-return agentToolService.buildToolContext(
+return agentToolExecutor.buildToolContext(
         enabledTools,
         currentUserContent.trim(),
         chatProperties.getToolContextMaxItems(),
@@ -372,7 +372,7 @@ return agentToolService.buildToolContext(
 
 作用：启用课程查询工具。
 
-代码含义：聊天时会执行 `AgentToolService.buildCourseSearchSection()`。
+代码含义：聊天时会执行 `CourseSearchTool.execute()`。
 
 兼容别名：
 
@@ -453,7 +453,7 @@ Authorization: Bearer <student token>
 
 作用：启用作业查询工具。
 
-代码含义：聊天时会执行 `AgentToolService.buildHomeworkSearchSection()`。
+代码含义：聊天时会执行 `HomeworkSearchTool.execute()`。
 
 兼容别名：
 
@@ -557,7 +557,7 @@ Authorization: Bearer <token>
 
 作用：启用学生学习进度查询工具。
 
-代码含义：聊天时会执行 `AgentToolService.buildLearningProgressSection()`。
+代码含义：聊天时会执行 `LearningProgressTool.execute()`。
 
 兼容别名：
 
@@ -633,7 +633,7 @@ Authorization: Bearer <token>
 
 作用：启用学习计划生成工具。
 
-代码含义：聊天时会执行 `AgentToolService.buildLearningPlanSection()`。
+代码含义：聊天时会执行 `LearningPlanTool.execute()`。
 
 兼容别名：
 

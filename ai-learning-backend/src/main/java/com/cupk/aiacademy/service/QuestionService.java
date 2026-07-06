@@ -2,7 +2,7 @@ package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
-import com.cupk.aiacademy.agent.service.AgentChatService;
+import com.cupk.aiacademy.agent.core.service.AgentChatService;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.ForbiddenException;

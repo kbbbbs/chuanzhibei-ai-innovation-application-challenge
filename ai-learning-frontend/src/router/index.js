@@ -92,6 +92,12 @@ export const layoutChildren = [
     component: () => import('../views/teacher/TeacherKnowledgeBase.vue'),
     meta: { title: '知识库管理', icon: 'Collection', roles: ['admin', 'teacher'], requiresAuth: true }
   },
+  {
+    path: 'agent-chat',
+    name: 'AgentChat',
+    component: () => import('../views/AiChat.vue'),
+    meta: { title: 'Agent 助手', icon: 'Cpu', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true, fullWidth: true }
+  },
 
   // Student routes
   {

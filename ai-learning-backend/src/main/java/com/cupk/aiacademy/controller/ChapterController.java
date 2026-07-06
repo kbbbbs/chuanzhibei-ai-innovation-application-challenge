@@ -36,6 +36,7 @@ public class ChapterController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Chapter> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<Chapter> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("status", Chapter.STATUS_NORMAL);
         if (courseId != null && courseId > 0) {
             queryWrapper.eq("course_id", courseId);
         }
@@ -53,14 +54,16 @@ public class ChapterController {
             return Result.error("404", "课程不存在");
         }
         QueryWrapper<Chapter> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("course_id", courseId).orderByAsc("sort_order").orderByAsc("id");
+        queryWrapper.eq("course_id", courseId)
+                .eq("status", Chapter.STATUS_NORMAL)
+                .orderByAsc("sort_order").orderByAsc("id");
         return Result.success(chapterMapper.selectList(queryWrapper));
     }
 
     @GetMapping("/chapters/{id}")
     public Result selectById(@PathVariable Integer id) {
         Chapter chapter = chapterMapper.selectById(id);
-        return chapter == null ? Result.error("404", "章节不存在") : Result.success(chapter);
+        return isActiveChapter(chapter) ? Result.success(chapter) : Result.error("404", "章节不存在");
     }
 
     @PostMapping("/chapters")
@@ -73,6 +76,7 @@ public class ChapterController {
         LocalDateTime now = LocalDateTime.now();
         chapter.setTitle(chapter.getTitle().trim());
         fixSortOrder(chapter);
+        chapter.setStatus(Chapter.STATUS_NORMAL);
         chapter.setCreatedAt(now);
         chapter.setUpdatedAt(now);
         int row = chapterMapper.insert(chapter);
@@ -82,7 +86,7 @@ public class ChapterController {
     @PutMapping("/chapters/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody ChapterDto request) {
         Chapter chapter = request.toEntity();
-        if (chapterMapper.selectById(id) == null) {
+        if (!isActiveChapter(chapterMapper.selectById(id))) {
             return Result.error("404", "章节不存在");
         }
         Result checkResult = checkChapter(chapter);
@@ -99,10 +103,14 @@ public class ChapterController {
 
     @DeleteMapping("/chapters/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (chapterMapper.selectById(id) == null) {
+        if (!isActiveChapter(chapterMapper.selectById(id))) {
             return Result.error("404", "章节不存在");
         }
-        int row = chapterMapper.deleteById(id);
+        Chapter chapter = new Chapter();
+        chapter.setId(id);
+        chapter.setStatus(Chapter.STATUS_DELETED);
+        chapter.setUpdatedAt(LocalDateTime.now());
+        int row = chapterMapper.updateById(chapter);
         return row > 0 ? Result.success() : Result.error();
     }
 
@@ -123,6 +131,14 @@ public class ChapterController {
         if (chapter.getSortOrder() == null || chapter.getSortOrder() <= 0) {
             chapter.setSortOrder(null);
         }
+    }
+
+    private boolean isActiveChapter(Chapter chapter) {
+        return chapter != null && Chapter.STATUS_NORMAL == defaultStatus(chapter.getStatus());
+    }
+
+    private int defaultStatus(Integer status) {
+        return status == null ? Chapter.STATUS_NORMAL : status;
     }
 
     private int fixPageNum(Integer pageNum) {

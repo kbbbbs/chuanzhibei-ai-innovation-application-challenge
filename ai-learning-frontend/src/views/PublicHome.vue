@@ -11,17 +11,24 @@
         </p>
         <div class="hero-actions">
           <el-button type="primary" size="large" class="btn-primary" @click="handleGetStarted">
-            立即开启学习之旅
+            开启控制台
           </el-button>
-          <el-button size="large" class="btn-secondary" @click="handleExplore">
-            探索推荐
-          </el-button>
+          <div class="agent-prompt-row">
+            <el-input
+              v-model="agentPrompt"
+              size="large"
+              class="agent-prompt-input"
+              placeholder="与 Agent 对话"
+              @keyup.enter="handleAgentPrompt"
+            >
+              <template #append>
+                <el-button @click="handleAgentPrompt">
+                  <el-icon><Position /></el-icon>
+                </el-button>
+              </template>
+            </el-input>
+          </div>
         </div>
-      </div>
-
-      <!-- AI Assistant Card on Homepage -->
-      <div class="hero-ai-widget">
-        <AiChatWidget :inline="true" />
       </div>
     </section>
 
@@ -31,18 +38,20 @@
       <p class="section-desc">基于您的学习路径与兴趣智能推荐的精选资源</p>
 
       <div class="featured-grid">
-        <div class="feature-card" v-for="i in 4" :key="i">
-          <div class="card-image-placeholder"></div>
+        <div class="feature-card" v-for="course in featuredCourses" :key="course.title">
+          <div class="card-visual" :class="course.visualClass">
+            <el-icon><component :is="course.icon" /></el-icon>
+          </div>
           <div class="card-content">
             <div class="card-tags">
-              <span class="tag tag-blue">计算机科学</span>
-              <span class="tag tag-purple">AI 推荐</span>
+              <span class="tag tag-blue">{{ course.category }}</span>
+              <span class="tag tag-green">{{ course.badge }}</span>
             </div>
-            <h3 class="card-title">高级人工智能与大模型应用 - 第{{ i }}期</h3>
-            <p class="card-author">主讲教师：张教授</p>
+            <h3 class="card-title">{{ course.title }}</h3>
+            <p class="card-author">{{ course.teacher }}</p>
             <div class="card-footer">
               <div class="stats">
-                <el-icon><User /></el-icon> 1,200+ 在学
+                <el-icon><User /></el-icon> {{ course.learners }} 在学
               </div>
               <el-button type="primary" link>查看详情</el-button>
             </div>
@@ -82,18 +91,57 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
-import { Cpu, DataLine, Connection, User } from '@element-plus/icons-vue'
-import AiChatWidget from '@/components/AiChatWidget.vue'
+import { Collection, Connection, Cpu, DataLine, Document, Position, User } from '@element-plus/icons-vue'
 
 const router = useRouter()
 const userStore = useUserStore()
+const agentPrompt = ref('')
+const featuredCourses = [
+  {
+    title: '大模型应用基础与提示工程',
+    teacher: '主讲教师：张教授',
+    category: 'AI 应用',
+    badge: '智能推荐',
+    learners: '1,240+',
+    icon: Cpu,
+    visualClass: 'visual-ai'
+  },
+  {
+    title: '数据结构核心考点精讲',
+    teacher: '主讲教师：李老师',
+    category: '计算机基础',
+    badge: '薄弱补强',
+    learners: '980+',
+    icon: DataLine,
+    visualClass: 'visual-data'
+  },
+  {
+    title: '数据库系统与知识图谱实践',
+    teacher: '主讲教师：王教授',
+    category: '数据库',
+    badge: '项目实践',
+    learners: '860+',
+    icon: Collection,
+    visualClass: 'visual-kb'
+  },
+  {
+    title: '教学资源生成与试卷设计',
+    teacher: '主讲教师：陈老师',
+    category: '智能教学',
+    badge: '教师精选',
+    learners: '720+',
+    icon: Document,
+    visualClass: 'visual-doc'
+  }
+]
 
 const handleGetStarted = () => {
   if (userStore.isLoggedIn) {
     if (userStore.roleCode === 'student') {
-      router.push('/my-classes')
+      router.push('/home')
     } else if (userStore.roleCode === 'teacher') {
       router.push('/courses')
     } else {
@@ -104,104 +152,136 @@ const handleGetStarted = () => {
   }
 }
 
-const handleExplore = () => {
-  if (userStore.isLoggedIn) {
-    router.push('/recommendation')
-  } else {
-    router.push('/login')
-  }
+const handleAgentPrompt = () => {
+  const prompt = agentPrompt.value.trim()
+  router.push(prompt ? { path: '/agent-chat', query: { prompt } } : '/agent-chat')
 }
 </script>
 
 <style scoped>
 .public-home {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 0 24px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .hero-section {
+  min-height: calc(100vh - 64px);
+  padding: 56px 24px 96px;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 60px;
-  min-height: 85vh;
-  padding: 60px 0;
+  align-items: flex-start;
+  justify-content: center;
+  text-align: center;
+  background:
+    linear-gradient(180deg, #FFFFFF 0%, #F8FAFC 100%);
 }
 
 .hero-content {
-  flex: 1;
-  max-width: 600px;
+  max-width: 920px;
+  width: 100%;
 }
 
 .hero-title {
-  font-size: 4rem;
+  font-size: clamp(3.6rem, 8vw, 6.2rem);
   font-weight: 800;
   line-height: 1.1;
-  margin-bottom: 24px;
+  margin: 0 0 24px;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-hover));
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .hero-subtitle {
-  font-size: 1.25rem;
+  max-width: 820px;
+  font-size: 1.45rem;
   line-height: 1.6;
   color: var(--text-secondary);
-  margin-bottom: 40px;
+  margin: 0 auto 52px;
 }
 
 .hero-actions {
   display: flex;
-  gap: 16px;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
 }
 
 .btn-primary {
   padding: 12px 32px;
   font-size: 1.1rem;
-  border-radius: 12px;
+  border-radius: var(--radius-md);
   background-color: var(--primary-color);
   border: none;
-  box-shadow: 0 4px 14px 0 rgba(79, 70, 229, 0.39);
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.20);
   transition: all 0.3s ease;
   color: white;
 }
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79, 70, 229, 0.23);
+  box-shadow: 0 16px 30px rgba(37, 99, 235, 0.24);
   background-color: var(--primary-color-hover);
   color: white;
 }
 
-.btn-secondary {
-  padding: 12px 32px;
-  font-size: 1.1rem;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background-color: white;
-  color: var(--text-primary);
-  transition: all 0.3s ease;
+.agent-prompt-row {
+  width: min(720px, 100%);
+  opacity: 0.84;
+  transition: opacity 0.22s ease, transform 0.22s ease;
 }
 
-.btn-secondary:hover {
-  background-color: var(--bg-hover);
-  border-color: var(--text-secondary);
+.agent-prompt-row:hover,
+.agent-prompt-row:focus-within {
+  opacity: 1;
+  transform: translateY(-2px);
 }
 
-.hero-ai-widget {
-  flex: 1;
-  max-width: 500px;
-  height: 600px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.agent-prompt-input {
+  width: 100%;
+}
+
+.agent-prompt-input :deep(.el-input__wrapper) {
+  min-height: 54px;
+  background: rgba(255, 255, 255, 0.78);
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--border-color) inset;
+  padding-left: 20px;
+  transition: background 0.22s ease, box-shadow 0.22s ease;
+}
+
+.agent-prompt-row:hover .agent-prompt-input :deep(.el-input__wrapper),
+.agent-prompt-row:focus-within .agent-prompt-input :deep(.el-input__wrapper) {
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 20px 46px rgba(15, 23, 42, 0.12), 0 0 0 1px var(--primary-color) inset;
+}
+
+.agent-prompt-input :deep(.el-input__inner) {
+  font-size: 1rem;
+}
+
+.agent-prompt-input :deep(.el-input-group__append) {
+  border: none;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  background: rgba(37, 99, 235, 0.86);
+  color: white;
+  box-shadow: 0 16px 40px rgba(37, 99, 235, 0.18);
+  padding: 0 20px;
+  transition: background 0.22s ease;
+}
+
+.agent-prompt-row:hover .agent-prompt-input :deep(.el-input-group__append),
+.agent-prompt-row:focus-within .agent-prompt-input :deep(.el-input-group__append) {
+  background: var(--primary-color);
+}
+
+.agent-prompt-input :deep(.el-input-group__append .el-button) {
+  color: white;
+  font-size: 18px;
 }
 
 .section-title {
@@ -220,22 +300,24 @@ const handleExplore = () => {
 }
 
 .featured-section {
-  padding: 80px 0;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 88px 24px;
 }
 
 .featured-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 32px;
+  gap: 20px;
 }
 
 .feature-card {
   background: white;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   overflow: hidden;
   box-shadow: var(--card-shadow);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-color);
 }
 
 .feature-card:hover {
@@ -243,10 +325,33 @@ const handleExplore = () => {
   box-shadow: var(--hover-shadow);
 }
 
-.card-image-placeholder {
-  height: 160px;
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-  position: relative;
+.card-visual {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 52px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.visual-ai {
+  background: linear-gradient(135deg, #EFF6FF 0%, #DFF7F2 100%);
+  color: var(--primary-color);
+}
+
+.visual-data {
+  background: linear-gradient(135deg, #F0FDFA 0%, #ECFEFF 100%);
+  color: var(--secondary-color);
+}
+
+.visual-kb {
+  background: linear-gradient(135deg, #F8FAFC 0%, #E0F2FE 100%);
+  color: #0284C7;
+}
+
+.visual-doc {
+  background: linear-gradient(135deg, #FFFBEB 0%, #F8FAFC 100%);
+  color: var(--accent-color);
 }
 
 .card-content {
@@ -261,13 +366,13 @@ const handleExplore = () => {
 
 .tag {
   padding: 4px 10px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
 }
 
-.tag-blue { background: #E0E7FF; color: #4F46E5; }
-.tag-purple { background: #F3E8FF; color: #9333EA; }
+.tag-blue { background: var(--primary-color-soft); color: var(--primary-color); }
+.tag-green { background: var(--secondary-color-soft); color: var(--secondary-color); }
 
 .card-title {
   font-size: 1.1rem;
@@ -300,13 +405,15 @@ const handleExplore = () => {
 }
 
 .features-section {
-  padding: 80px 0 120px;
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 80px 24px 120px;
 }
 
 .features-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 40px;
+  gap: 20px;
   margin-top: 60px;
 }
 
@@ -314,9 +421,9 @@ const handleExplore = () => {
   text-align: center;
   padding: 32px;
   background: white;
-  border-radius: 20px;
+  border-radius: var(--radius-md);
   box-shadow: var(--card-shadow);
-  border: 1px solid rgba(0,0,0,0.03);
+  border: 1px solid var(--border-color);
   transition: transform 0.3s ease;
 }
 
@@ -327,7 +434,7 @@ const handleExplore = () => {
 .feature-icon {
   width: 64px;
   height: 64px;
-  border-radius: 16px;
+  border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -335,7 +442,7 @@ const handleExplore = () => {
   margin: 0 auto 24px;
 }
 
-.icon-ai { background: #EEF2FF; color: #4F46E5; }
+.icon-ai { background: var(--primary-color-soft); color: var(--primary-color); }
 .icon-learn { background: #ECFEFF; color: #0891B2; }
 .icon-teach { background: #F0FDF4; color: #16A34A; }
 
@@ -354,19 +461,24 @@ const handleExplore = () => {
 
 @media (max-width: 1024px) {
   .hero-section {
-    flex-direction: column;
-    text-align: center;
-    gap: 40px;
+    min-height: auto;
+    padding: 80px 0;
   }
+
+  .hero-title {
+    font-size: 3.8rem;
+  }
+
   .hero-actions {
-    justify-content: center;
+    align-items: stretch;
   }
+
+  .agent-prompt-row {
+    width: 100%;
+  }
+
   .features-grid {
     grid-template-columns: 1fr;
-  }
-  .hero-ai-widget {
-    width: 100%;
-    height: 500px;
   }
 }
 </style>
