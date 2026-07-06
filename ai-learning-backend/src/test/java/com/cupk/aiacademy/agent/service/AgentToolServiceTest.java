@@ -9,12 +9,10 @@ import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.LearningProgressMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
-import com.cupk.aiacademy.mapper.TeachingClassMapper;
-import com.cupk.aiacademy.pojo.ClassStudent;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.LearningProgress;
 import com.cupk.aiacademy.pojo.Lesson;
-import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.PermissionService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,10 +45,7 @@ class AgentToolServiceTest {
     private LessonMapper lessonMapper;
 
     @Mock
-    private TeachingClassMapper teachingClassMapper;
-
-    @Mock
-    private ClassStudentMapper classStudentMapper;
+    private PermissionService permissionService;
 
     @AfterEach
     void clearUserContext() {
@@ -61,8 +56,8 @@ class AgentToolServiceTest {
     void courseSearchReturnsVisibleStudentCourses() {
         AgentToolService service = newService();
         loginAsStudent(10);
-        when(classStudentMapper.selectList(any())).thenReturn(List.of(classStudent(1)));
-        when(teachingClassMapper.selectList(any())).thenReturn(List.of(teachingClass(1, 101)));
+        when(permissionService.isStudent(any())).thenReturn(true);
+        when(permissionService.studentCourseIds(10)).thenReturn(List.of(101));
         doAnswer(invocation -> {
             Page<Course> page = invocation.getArgument(0);
             page.setRecords(List.of(course(101, "Java 基础")));
@@ -80,6 +75,7 @@ class AgentToolServiceTest {
     void learningPlanSummarizesStudentProgress() {
         AgentToolService service = newService();
         loginAsStudent(10);
+        when(permissionService.isStudent(any())).thenReturn(true);
         doAnswer(invocation -> {
             Page<LearningProgress> page = invocation.getArgument(0);
             page.setRecords(List.of(
@@ -100,7 +96,7 @@ class AgentToolServiceTest {
 
     private AgentToolService newService() {
         return new AgentToolService(courseMapper, homeworkMapper, homeworkSubmitMapper,
-                learningProgressMapper, lessonMapper, teachingClassMapper, classStudentMapper);
+                learningProgressMapper, lessonMapper, permissionService);
     }
 
     private void loginAsStudent(Integer userId) {
@@ -109,22 +105,6 @@ class AgentToolServiceTest {
         user.setUsername("student" + userId);
         user.setRoleCode("student");
         UserContext.set(user);
-    }
-
-    private ClassStudent classStudent(Integer classId) {
-        ClassStudent classStudent = new ClassStudent();
-        classStudent.setClassId(classId);
-        classStudent.setStudentId(10);
-        classStudent.setStatus(1);
-        return classStudent;
-    }
-
-    private TeachingClass teachingClass(Integer classId, Integer courseId) {
-        TeachingClass teachingClass = new TeachingClass();
-        teachingClass.setId(classId);
-        teachingClass.setCourseId(courseId);
-        teachingClass.setStatus(1);
-        return teachingClass;
     }
 
     private Course course(Integer id, String title) {

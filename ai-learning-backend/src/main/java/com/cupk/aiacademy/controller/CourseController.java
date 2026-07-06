@@ -96,18 +96,12 @@ public class CourseController {
     public Result add(@Valid @RequestBody CourseDto request) {
         permissionService.requireTeacherOrAdmin();
         Course course = request.toEntity();
-        AuthUtils.LoginUser user = permissionService.currentUser();
-        if (authUtils.isTeacher(user)) {
-            course.setTeacherId(user.getUserId());
-        }
+        applyCourseTeacher(course, null);
         Result checkResult = checkCourse(course);
         if (checkResult != null) {
             return checkResult;
         }
-        course.setTitle(course.getTitle().trim());
-        LocalDateTime now = LocalDateTime.now();
-        course.setCreatedAt(now);
-        course.setUpdatedAt(now);
+        stampCourseForCreate(course);
         int row = courseMapper.insert(course);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -122,21 +116,13 @@ public class CourseController {
         permissionService.requireCourseTeacher(course);
 
         Course newCourse = request.toEntity();
-        AuthUtils.LoginUser user = permissionService.currentUser();
-        if (authUtils.isTeacher(user)) {
-            newCourse.setTeacherId(user.getUserId());
-        } else if (newCourse.getTeacherId() == null) {
-            newCourse.setTeacherId(course.getTeacherId());
-        }
+        applyCourseTeacher(newCourse, course);
         Result checkResult = checkCourse(newCourse);
         if (checkResult != null) {
             return checkResult;
         }
-        course = newCourse;
-        course.setId(id);
-        course.setTitle(course.getTitle().trim());
-        course.setUpdatedAt(LocalDateTime.now());
-        int row = courseMapper.updateById(course);
+        stampCourseForUpdate(newCourse, id);
+        int row = courseMapper.updateById(newCourse);
         return row > 0 ? Result.success() : Result.error();
     }
 
@@ -203,6 +189,28 @@ public class CourseController {
             return authUtils.requireLogin(authorization);
         } catch (Exception e) {
             return null;
+        }
+    }
+
+    private void stampCourseForCreate(Course course) {
+        course.setTitle(course.getTitle().trim());
+        LocalDateTime now = LocalDateTime.now();
+        course.setCreatedAt(now);
+        course.setUpdatedAt(now);
+    }
+
+    private void stampCourseForUpdate(Course course, Integer id) {
+        course.setId(id);
+        course.setTitle(course.getTitle().trim());
+        course.setUpdatedAt(LocalDateTime.now());
+    }
+
+    private void applyCourseTeacher(Course course, Course oldCourse) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            course.setTeacherId(user.getUserId());
+        } else if (course.getTeacherId() == null && oldCourse != null) {
+            course.setTeacherId(oldCourse.getTeacherId());
         }
     }
 

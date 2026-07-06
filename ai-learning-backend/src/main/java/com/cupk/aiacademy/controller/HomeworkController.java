@@ -9,7 +9,6 @@ import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
-import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
 import com.cupk.aiacademy.pojo.TeachingClass;
@@ -37,9 +36,6 @@ public class HomeworkController {
 
     @Autowired
     private TeachingClassMapper classMapper;
-
-    @Autowired
-    private UserMapper userMapper;
 
     @Autowired(required = false)
     private AuthUtils authUtils;
@@ -105,10 +101,10 @@ public class HomeworkController {
 
     @GetMapping("/homeworks/{homeworkId}/submits")
     public Result listSubmits(@PathVariable Integer homeworkId) {
-        if (homeworkMapper.selectById(homeworkId) == null) {
+        Homework homework = homeworkMapper.selectById(homeworkId);
+        if (homework == null) {
             return Result.error("404", "作业不存在");
         }
-        Homework homework = homeworkMapper.selectById(homeworkId);
         permissionService.requireHomeworkTeacher(homework);
         QueryWrapper<HomeworkSubmit> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("homework_id", homeworkId).orderByDesc("id");
@@ -124,10 +120,7 @@ public class HomeworkController {
         if (checkResult != null) {
             return checkResult;
         }
-        LocalDateTime now = LocalDateTime.now();
-        homework.setTitle(homework.getTitle().trim());
-        homework.setCreateTime(now);
-        homework.setUpdateTime(now);
+        stampHomeworkForCreate(homework);
         int row = homeworkMapper.insert(homework);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -147,9 +140,7 @@ public class HomeworkController {
         if (checkResult != null) {
             return checkResult;
         }
-        homework.setId(id);
-        homework.setTitle(homework.getTitle().trim());
-        homework.setUpdateTime(LocalDateTime.now());
+        stampHomeworkForUpdate(homework, id);
         int row = homeworkMapper.updateById(homework);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -206,6 +197,19 @@ public class HomeworkController {
 
     private boolean isTeacher(AuthUtils.LoginUser user) {
         return authUtils != null && authUtils.isTeacher(user);
+    }
+
+    private void stampHomeworkForCreate(Homework homework) {
+        LocalDateTime now = LocalDateTime.now();
+        homework.setTitle(homework.getTitle().trim());
+        homework.setCreateTime(now);
+        homework.setUpdateTime(now);
+    }
+
+    private void stampHomeworkForUpdate(Homework homework, Integer id) {
+        homework.setId(id);
+        homework.setTitle(homework.getTitle().trim());
+        homework.setUpdateTime(LocalDateTime.now());
     }
 
     private void applyHomeworkTeacher(Homework homework) {

@@ -24,10 +24,12 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -143,7 +145,6 @@ public class PaperLocalServiceImpl implements PaperLocalService {
             Map<String, Object> result = new LinkedHashMap<>();
             result.put("paperCount", papers.size());
 
-            // 提取出现最多的研究方向（venue）
             Map<String, Long> venueCounts = papers.stream()
                 .filter(p -> p.getVenue() != null && !p.getVenue().isEmpty())
                 .collect(Collectors.groupingBy(Paper::getVenue, Collectors.counting()));
@@ -154,14 +155,12 @@ public class PaperLocalServiceImpl implements PaperLocalService {
                 .toList();
             result.put("directions", topVenues);
 
-            // 抽取代表性论文标题
             List<String> sampleTitles = papers.stream()
                 .limit(5)
                 .map(Paper::getTitle)
                 .toList();
             result.put("sampleTitles", sampleTitles);
 
-            // 论文发表的年份范围
             if (!papers.isEmpty()) {
                 int minYear = papers.stream().mapToInt(p -> p.getYear() != null ? p.getYear() : Integer.MAX_VALUE).min().orElse(0);
                 int maxYear = papers.stream().mapToInt(p -> p.getYear() != null ? p.getYear() : 0).max().orElse(0);
@@ -174,7 +173,6 @@ public class PaperLocalServiceImpl implements PaperLocalService {
         }
     }
 
-    // 各课程对应的英文学术搜索词
     private static final Map<String, String[]> COURSE_TERMS = new LinkedHashMap<>();
     static {
         COURSE_TERMS.put("java",    new String[]{"Java", "Spring", "concurrency", "JVM"});
@@ -192,18 +190,16 @@ public class PaperLocalServiceImpl implements PaperLocalService {
 
     private List<Paper> directKeywordSearch(String keyword) {
         List<Paper> merged = new ArrayList<>();
-        java.util.Set<Integer> seen = new java.util.HashSet<>();
+        Set<Integer> seen = new HashSet<>();
 
         if (keyword == null || keyword.isBlank()) return merged;
 
-        String lower = keyword.toLowerCase(java.util.Locale.ROOT);
+        String lower = keyword.toLowerCase(Locale.ROOT);
 
-        // 1. 提取英文词直接搜索 (handles "Java程序设计" → "Java")
         for (String part : keyword.split("[^A-Za-z0-9]+")) {
             if (part.length() >= 2) searchAndMerge(part, merged, seen);
         }
 
-        // 2. 根据关键词匹配课程领域
         for (Map.Entry<String, String[]> entry : COURSE_TERMS.entrySet()) {
             if (lower.contains(entry.getKey())) {
                 for (String term : entry.getValue()) {
@@ -212,7 +208,6 @@ public class PaperLocalServiceImpl implements PaperLocalService {
             }
         }
 
-        // 3. 兜底：搜索通用学术关键词确保中文课程有结果
         if (merged.size() < 5) {
             for (String term : new String[]{"algorithm", "database", "Vue", "Java", "academic", "frontend"}) {
                 searchAndMerge(term, merged, seen);
@@ -222,7 +217,7 @@ public class PaperLocalServiceImpl implements PaperLocalService {
         return merged;
     }
 
-    private void searchAndMerge(String term, List<Paper> merged, java.util.Set<Integer> seen) {
+    private void searchAndMerge(String term, List<Paper> merged, Set<Integer> seen) {
         if (term == null || term.length() < 2) return;
         QueryWrapper<Paper> w = new QueryWrapper<>();
         w.like("title", term).or().like("abstract_text", term);

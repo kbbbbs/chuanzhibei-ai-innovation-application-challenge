@@ -17,11 +17,10 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
 
-// Legacy CRUD controller disabled; use /api/exams instead.
+@Deprecated
 @RequestMapping("/exam-sessions")
 public class ExamSessionController {
     @Autowired

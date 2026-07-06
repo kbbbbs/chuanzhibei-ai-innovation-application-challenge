@@ -300,7 +300,10 @@ const removeQuestion = (row) => {
   }
 }
 
-const handleCreate = () => {
+const handleCreate = async () => {
+  if (!courses.value || courses.value.length === 0) {
+    await loadCourses()
+  }
   if (!courses.value || courses.value.length === 0) {
     ElMessage.warning('暂无课程数据，请先创建课程后再来创建试卷')
     return

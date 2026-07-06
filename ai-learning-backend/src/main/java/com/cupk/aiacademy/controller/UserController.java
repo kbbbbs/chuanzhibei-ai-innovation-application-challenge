@@ -116,13 +116,7 @@ public class UserController {
             return Result.error("400", "用户名已存在");
         }
 
-        LocalDateTime now = LocalDateTime.now();
-        user.setUsername(user.getUsername().trim());
-        user.setPassword(PasswordUtils.encode(user.getPassword()));
-        user.setNickname(user.getNickname() == null || user.getNickname().trim().isEmpty() ? user.getUsername() : user.getNickname().trim());
-        user.setStatus(user.getStatus() == null ? 1 : user.getStatus());
-        user.setCreateTime(now);
-        user.setUpdateTime(now);
+        prepareNewUser(user);
         userMapper.insert(user);
         saveUserRole(user.getId(), getRoleId(user));
         return Result.success();
@@ -148,14 +142,7 @@ public class UserController {
             return Result.error("400", "用户名已存在");
         }
 
-        user.setId(id);
-        user.setUsername(user.getUsername().trim());
-        if (user.getPassword() == null || user.getPassword().trim().isEmpty()) {
-            user.setPassword(oldUser.getPassword());
-        } else if (!user.getPassword().equals(oldUser.getPassword())) {
-            user.setPassword(PasswordUtils.encode(user.getPassword()));
-        }
-        user.setUpdateTime(LocalDateTime.now());
+        prepareUpdatedUser(user, oldUser, id);
         userMapper.updateById(user);
         if (user.getRoleId() != null) {
             saveUserRole(id, user.getRoleId());
@@ -191,6 +178,36 @@ public class UserController {
             return Result.error("404", "角色不存在");
         }
         return null;
+    }
+
+    private void prepareNewUser(User user) {
+        LocalDateTime now = LocalDateTime.now();
+        user.setUsername(user.getUsername().trim());
+        user.setPassword(PasswordUtils.encode(user.getPassword()));
+        user.setNickname(normalizeNickname(user));
+        user.setStatus(user.getStatus() == null ? 1 : user.getStatus());
+        user.setCreateTime(now);
+        user.setUpdateTime(now);
+    }
+
+    private void prepareUpdatedUser(User user, User oldUser, Integer id) {
+        user.setId(id);
+        user.setUsername(user.getUsername().trim());
+        user.setPassword(encodeOrKeepPassword(user.getPassword(), oldUser.getPassword()));
+        user.setUpdateTime(LocalDateTime.now());
+    }
+
+    private String normalizeNickname(User user) {
+        return user.getNickname() == null || user.getNickname().trim().isEmpty()
+                ? user.getUsername()
+                : user.getNickname().trim();
+    }
+
+    private String encodeOrKeepPassword(String password, String oldPassword) {
+        if (password == null || password.trim().isEmpty()) {
+            return oldPassword;
+        }
+        return password.equals(oldPassword) ? oldPassword : PasswordUtils.encode(password);
     }
 
     private Integer getRoleId(User user) {

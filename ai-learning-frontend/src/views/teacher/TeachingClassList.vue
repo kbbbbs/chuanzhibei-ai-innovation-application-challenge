@@ -178,7 +178,10 @@ const loadCourses = async () => {
   }
 }
 
-const handleCreate = () => {
+const handleCreate = async () => {
+  if (!courses.value || courses.value.length === 0) {
+    await loadCourses()
+  }
   if (!courses.value || courses.value.length === 0) {
     ElMessage.warning('暂无课程数据，请先创建课程后再创建教学班')
     return

@@ -29,7 +29,6 @@ public class ChatController {
         this.agentChatService = agentChatService;
     }
 
-    // 兼容早期本地调试入口；正式单轮对话请使用 /api/agent/chat-once。
     @Deprecated
     @GetMapping("/chat")
     public String chat(@RequestParam("message") String message) {
@@ -39,7 +38,6 @@ public class ChatController {
         return agentChatService.chatOnce(message);
     }
 
-    // 正式单轮 Agent 对话接口，统一返回 Result 结构。
     @PostMapping("/api/agent/chat-once")
     public Result chatOnce(@Valid @RequestBody AgentChatRequest request) {
         return Result.success(agentChatService.chatOnce(request.getContent()));
@@ -55,14 +53,12 @@ public class ChatController {
         return Result.success(agentChatService.listSessions(userId));
     }
 
-    // 修改当前用户自己的 Agent 会话标题。
     @PutMapping("/api/agent/sessions/{sessionId}")
     public Result updateSession(@PathVariable Integer sessionId,
                                 @Valid @RequestBody AgentSessionUpdateRequest request) {
         return Result.success(agentChatService.updateSession(sessionId, request));
     }
 
-    // 软删除当前用户自己的 Agent 会话，历史消息保留在数据库中。
     @DeleteMapping("/api/agent/sessions/{sessionId}")
     public Result deleteSession(@PathVariable Integer sessionId) {
         agentChatService.deleteSession(sessionId);
@@ -80,7 +76,6 @@ public class ChatController {
         return Result.success(agentChatService.chat(sessionId, request));
     }
 
-    // 流式 Agent 对话接口，前端可监听 message、complete、error 三类 SSE 事件。
     @PostMapping(value = "/api/agent/sessions/{sessionId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamChat(@PathVariable Integer sessionId,
                                  @Valid @RequestBody AgentChatRequest request) {

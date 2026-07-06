@@ -115,23 +115,13 @@ public class HomeworkSubmitController {
         permissionService.requireStudent();
         HomeworkSubmit submit = request == null ? null : request.toEntity();
         if (submit != null) {
-            submit.setStudentId(permissionService.currentUser().getUserId());
-            submit.setScore(null);
-            submit.setFeedback(null);
-            submit.setGradeStatus(0);
-            submit.setGraderId(null);
-            submit.setGradeTime(null);
+            prepareStudentSubmit(submit);
         }
         Result checkResult = checkSubmit(submit);
         if (checkResult != null) {
             return checkResult;
         }
-        LocalDateTime now = LocalDateTime.now();
-        if (submit.getSubmitTime() == null) {
-            submit.setSubmitTime(now);
-        }
-        submit.setCreateTime(now);
-        submit.setUpdateTime(now);
+        stampSubmitForCreate(submit);
         int row = submitMapper.insert(submit);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -146,36 +136,15 @@ public class HomeworkSubmitController {
         if (submit == null) {
             return Result.error("400", "作业提交信息不能为空");
         }
-        if (authUtils.isStudent(permissionService.currentUser())) {
-            if (!permissionService.currentUser().getUserId().equals(old.getStudentId())) {
-                return Result.error("403", "只能修改自己的作业提交");
-            }
-            submit.setHomeworkId(old.getHomeworkId());
-            submit.setStudentId(old.getStudentId());
-            submit.setScore(old.getScore());
-            submit.setFeedback(old.getFeedback());
-            submit.setGradeStatus(old.getGradeStatus());
-            submit.setGraderId(old.getGraderId());
-            submit.setGradeTime(old.getGradeTime());
-        } else {
-            Homework homework = homeworkMapper.selectById(old.getHomeworkId());
-            if (homework == null) {
-                return Result.error("404", "作业不存在");
-            }
-            permissionService.requireHomeworkTeacher(homework);
-            submit.setHomeworkId(old.getHomeworkId());
-            submit.setStudentId(old.getStudentId());
-            submit.setGraderId(permissionService.currentUser().getUserId());
-            if (submit.getGradeTime() == null) {
-                submit.setGradeTime(LocalDateTime.now());
-            }
+        Result prepareResult = prepareSubmitForUpdate(submit, old);
+        if (prepareResult != null) {
+            return prepareResult;
         }
         Result checkResult = checkSubmit(submit);
         if (checkResult != null) {
             return checkResult;
         }
-        submit.setId(id);
-        submit.setUpdateTime(LocalDateTime.now());
+        stampSubmitForUpdate(submit, id);
         int row = submitMapper.updateById(submit);
         return row > 0 ? Result.success() : Result.error();
     }
@@ -193,6 +162,67 @@ public class HomeworkSubmitController {
         permissionService.requireHomeworkTeacher(homework);
         int row = submitMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
+    }
+
+    private void prepareStudentSubmit(HomeworkSubmit submit) {
+        submit.setStudentId(permissionService.currentUser().getUserId());
+        submit.setScore(null);
+        submit.setFeedback(null);
+        submit.setGradeStatus(0);
+        submit.setGraderId(null);
+        submit.setGradeTime(null);
+    }
+
+    private Result prepareSubmitForUpdate(HomeworkSubmit submit, HomeworkSubmit old) {
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isStudent(user)) {
+            if (!user.getUserId().equals(old.getStudentId())) {
+                return Result.error("403", "只能修改自己的作业提交");
+            }
+            preserveStudentSubmitFields(submit, old);
+            return null;
+        }
+
+        Homework homework = homeworkMapper.selectById(old.getHomeworkId());
+        if (homework == null) {
+            return Result.error("404", "作业不存在");
+        }
+        permissionService.requireHomeworkTeacher(homework);
+        prepareTeacherGradeFields(submit, old, user);
+        return null;
+    }
+
+    private void preserveStudentSubmitFields(HomeworkSubmit submit, HomeworkSubmit old) {
+        submit.setHomeworkId(old.getHomeworkId());
+        submit.setStudentId(old.getStudentId());
+        submit.setScore(old.getScore());
+        submit.setFeedback(old.getFeedback());
+        submit.setGradeStatus(old.getGradeStatus());
+        submit.setGraderId(old.getGraderId());
+        submit.setGradeTime(old.getGradeTime());
+    }
+
+    private void prepareTeacherGradeFields(HomeworkSubmit submit, HomeworkSubmit old, AuthUtils.LoginUser user) {
+        submit.setHomeworkId(old.getHomeworkId());
+        submit.setStudentId(old.getStudentId());
+        submit.setGraderId(user.getUserId());
+        if (submit.getGradeTime() == null) {
+            submit.setGradeTime(LocalDateTime.now());
+        }
+    }
+
+    private void stampSubmitForCreate(HomeworkSubmit submit) {
+        LocalDateTime now = LocalDateTime.now();
+        if (submit.getSubmitTime() == null) {
+            submit.setSubmitTime(now);
+        }
+        submit.setCreateTime(now);
+        submit.setUpdateTime(now);
+    }
+
+    private void stampSubmitForUpdate(HomeworkSubmit submit, Integer id) {
+        submit.setId(id);
+        submit.setUpdateTime(LocalDateTime.now());
     }
 
     private Result checkSubmit(HomeworkSubmit submit) {
