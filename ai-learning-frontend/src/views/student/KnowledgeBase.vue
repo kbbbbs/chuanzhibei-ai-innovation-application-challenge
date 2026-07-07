@@ -105,7 +105,15 @@
       </aside>
 
       <main class="kb-right">
-        <section class="chat-panel panel">
+        <section class="view-switcher panel" v-if="selectedKb">
+          <div class="view-switcher-inner">
+            <el-button :type="mainMode === 'chat' ? 'primary' : 'default'" round @click="setMainMode('chat')">智能问答</el-button>
+            <el-button :type="mainMode === 'graph' ? 'primary' : 'default'" round @click="setMainMode('graph')">知识图谱</el-button>
+            <el-button :type="mainMode === 'search' ? 'primary' : 'default'" round @click="setMainMode('search')">知识检索</el-button>
+          </div>
+        </section>
+
+        <section class="chat-panel panel" v-if="mainMode === 'chat'">
           <div class="chat-header">
             <div>
               <span class="chat-title">智能学伴</span>
@@ -158,7 +166,26 @@
           </div>
         </section>
 
-        <section class="search-panel panel" v-if="selectedKb">
+        <section class="graph-main panel" v-else-if="mainMode === 'graph'">
+          <div class="chat-header">
+            <div>
+              <span class="chat-title">知识图谱</span>
+              <span class="panel-sub">{{ selectedKb ? '在智能学伴中查看当前知识库的图谱结构。' : '请先在左侧选择一个知识库。' }}</span>
+            </div>
+            <div class="chat-header-tags">
+              <el-tag v-if="selectedKb" size="small" type="primary" effect="light">{{ selectedKb.name }}</el-tag>
+              <el-button v-if="selectedKb" size="small" type="primary" link @click="openGraphFullscreen">全屏查看</el-button>
+            </div>
+          </div>
+          <div class="graph-main-body" v-if="selectedKb">
+            <KnowledgeGraphPreview :kb-id="selectedKb.id" class="graph-main-preview" />
+          </div>
+          <div v-else class="graph-main-empty">
+            <el-empty description="请选择知识库查看图谱" />
+          </div>
+        </section>
+
+        <section class="search-panel panel" v-else-if="selectedKb">
           <div class="panel-title clickable" @click="searchOpen = !searchOpen">
             <div>
               <span>知识检索</span>
@@ -223,6 +250,7 @@ const historyMap = reactive(loadHistories())
 const messages = ref([])
 const chatLoading = ref(false); const inputText = ref(''); const chatRef = ref(null)
 const searchOpen = ref(false); const searchQuery = ref(''); const searchResults = ref([]); const searchLoading = ref(false); const searchTotal = ref(0)
+const mainMode = ref('chat')
 const sectionOpen = reactive({
   knowledgeBases: true,
   files: true,
@@ -348,8 +376,18 @@ function nextImage() {
 }
 
 function openGraph() {
+  if (!selectedKb.value) return
+  mainMode.value = 'graph'
+}
+
+function openGraphFullscreen() {
   if (!selectedKb.value?.id) return
   router.push({ name: 'KnowledgeGraph', query: { kbId: selectedKb.value.id } })
+}
+
+function setMainMode(mode) {
+  mainMode.value = mode
+  if (mode === 'search') searchOpen.value = true
 }
 
 const loadKBs = async () => {
@@ -930,6 +968,56 @@ onMounted(loadKBs)
   flex-direction: column;
   min-height: 0;
   overflow: hidden;
+}
+
+.view-switcher {
+  flex-shrink: 0;
+}
+
+.view-switcher-inner {
+  display: flex;
+  gap: 10px;
+  padding: 14px 16px;
+  flex-wrap: wrap;
+}
+
+.graph-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.graph-main-body {
+  flex: 1;
+  min-height: 0;
+  padding: 12px;
+  overflow: hidden;
+}
+
+.graph-main-preview {
+  height: 100%;
+}
+
+.graph-main-preview :deep(.graph-preview-card) {
+  height: 100%;
+}
+
+.graph-main-preview :deep(.graph-preview-stage) {
+  height: calc(100% - 52px);
+  min-height: 420px;
+}
+
+.graph-main-preview :deep(.graph-preview-flow) {
+  height: 100%;
+}
+
+.graph-main-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .chat-title {

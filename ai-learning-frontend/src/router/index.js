@@ -164,7 +164,7 @@ export const layoutChildren = [
     path: 'knowledge-graph',
     name: 'KnowledgeGraph',
     component: () => import('../views/student/KnowledgeGraph.vue'),
-    meta: { title: '知识图谱', icon: 'Share', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+    meta: { title: '知识图谱', icon: 'Share', hidden: true, roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'work-study-jobs',
