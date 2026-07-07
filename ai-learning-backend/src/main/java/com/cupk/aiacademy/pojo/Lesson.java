@@ -30,6 +30,9 @@ public class Lesson {
     @TableField("video_url")
     private String videoUrl;
 
+    @TableField("video_resource_id")
+    private Long videoResourceId;
+
     private Integer duration;
 
     @TableField("sort_order")

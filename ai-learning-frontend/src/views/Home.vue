@@ -1,417 +1,693 @@
 <template>
-  <main class="page-shell" v-loading="loading">
-    <!-- 访客及未登录首页 -->
-    <section v-if="!userStore.isLoggedIn" class="intro">
-      <p class="eyebrow">AI Academy</p>
-      <h1>AI智学平台</h1>
-      <p class="summary">用于课程学习、练习测评和学习辅助的智能教学项目。</p>
-      <div class="home-actions">
-        <el-button type="primary" size="large" @click="router.push('/login')" class="action-btn">登录体验</el-button>
-        <el-button size="large" @click="router.push('/register')" class="action-btn">免费注册</el-button>
+  <main class="student-dashboard" v-loading="loading">
+    <section class="dashboard-hero">
+      <div>
+        <p class="eyebrow">{{ todayText }}</p>
+        <h1>{{ greeting }}，{{ displayName }}</h1>
+        <p class="summary">这里汇总你的班级、课程、作业考试、AI 学习与勤工俭学进展。</p>
+      </div>
+      <div class="hero-actions">
+        <el-button type="primary" @click="go('/my-classes')">
+          <el-icon><Reading /></el-icon>
+          继续学习
+        </el-button>
+        <el-button @click="go('/agent-chat')">
+          <el-icon><Cpu /></el-icon>
+          Agent 助手
+        </el-button>
       </div>
     </section>
 
-      <!-- 登录用户工作台 -->
-    <div v-else class="dashboard-container">
-      <div class="welcome-header">
-        <div class="user-greeting">
-          <h2>你好，{{ userStore.nickname }}</h2>
-          <p class="sub-greeting">{{ getRoleTitle(userStore.roleCode) }}专属智能教学工作台</p>
-        </div>
-        <div class="quick-action" v-if="userStore.roleCode === 'teacher' || userStore.roleCode === 'admin'">
-          <el-button type="primary" @click="router.push('/resource-gen')">
-            <el-icon class="btn-icon"><Lightning /></el-icon> AI 智能备课
-          </el-button>
-        </div>
+    <section class="stat-grid">
+      <button v-for="item in stats" :key="item.label" class="stat-card" type="button" @click="go(item.path)">
+        <span class="stat-icon" :class="item.tone">
+          <el-icon><component :is="item.icon" /></el-icon>
+        </span>
+        <span class="stat-content">
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.label }}</small>
+        </span>
+      </button>
+    </section>
+
+    <section class="dashboard-grid">
+      <div class="dashboard-main">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>继续学习</h2>
+              <p>从已加入的教学班进入课程学习。</p>
+            </div>
+            <el-button link type="primary" @click="go('/my-classes')">查看全部</el-button>
+          </div>
+
+          <div v-if="classes.length" class="learning-list">
+            <article v-for="item in classes.slice(0, 4)" :key="item.classStudentId || item.classId" class="learning-item">
+              <div class="course-mark">
+                <el-icon><Reading /></el-icon>
+              </div>
+              <div class="learning-copy">
+                <h3>{{ item.courseName || '未命名课程' }}</h3>
+                <p>{{ item.className }} · {{ item.semester || '当前学期' }}</p>
+              </div>
+              <el-button size="small" type="primary" @click="learnCourse(item)">进入学习</el-button>
+            </article>
+          </div>
+          <div v-else class="empty-panel">
+            <el-empty description="暂无已加入班级" :image-size="80" />
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>待办学习</h2>
+              <p>近期作业和考试提醒。</p>
+            </div>
+          </div>
+
+          <div class="todo-columns">
+            <div class="todo-block">
+              <div class="todo-title">
+                <el-icon><Tickets /></el-icon>
+                <span>待完成作业</span>
+              </div>
+              <article v-for="item in pendingHomework.slice(0, 3)" :key="item.id" class="todo-item">
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>截止：{{ formatDateTime(item.deadline) }}</p>
+                </div>
+                <el-button size="small" @click="go('/my-homeworks')">提交</el-button>
+              </article>
+              <div v-if="!pendingHomework.length" class="mini-empty">暂无待完成作业</div>
+            </div>
+
+            <div class="todo-block">
+              <div class="todo-title">
+                <el-icon><Checked /></el-icon>
+                <span>待参加考试</span>
+              </div>
+              <article v-for="item in upcomingExams.slice(0, 3)" :key="item.id" class="todo-item">
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ formatDateTime(item.startTime) }} 开始</p>
+                </div>
+                <el-button size="small" @click="go('/my-exams')">查看</el-button>
+              </article>
+              <div v-if="!upcomingExams.length" class="mini-empty">暂无待参加考试</div>
+            </div>
+          </div>
+        </section>
       </div>
 
-      <!-- 学生端：AI 学习待办中心 -->
-      <template v-if="userStore.roleCode === 'student'">
-        <div class="stat-grid">
-          <el-card shadow="never" class="stat-card stat-primary">
-            <div class="stat-label">待交作业</div>
-            <div class="stat-value">{{ dashboardData.pendingHomework?.length || 0 }} <span class="stat-unit">项</span></div>
-          </el-card>
-          <el-card shadow="never" class="stat-card stat-warning">
-            <div class="stat-label">待参加考试</div>
-            <div class="stat-value">{{ dashboardData.upcomingExams?.length || 0 }} <span class="stat-unit">场</span></div>
-          </el-card>
-          <el-card shadow="never" class="stat-card stat-success">
-            <div class="stat-label">学习状态</div>
-            <div class="stat-value">{{ studentStatusText }} <span class="stat-unit">状态</span></div>
-          </el-card>
-        </div>
+      <aside class="dashboard-side">
+        <section class="panel ai-panel">
+          <div class="ai-icon">
+            <el-icon><Cpu /></el-icon>
+          </div>
+          <h2>AI 学习</h2>
+          <p>使用智能学伴进行知识库问答，或让 Agent 辅助梳理学习任务。</p>
+          <div class="side-actions">
+            <el-button type="primary" @click="go('/knowledge-base')">智能学伴</el-button>
+            <el-button @click="go('/recommendation')">智能推荐</el-button>
+          </div>
+        </section>
 
-        <div class="content-grid">
-          <!-- 待办作业列表 -->
-          <el-card shadow="never" class="section-card">
-            <template #header>
-              <div class="card-header-flex">
-                <span class="card-title"><el-icon><Tickets /></el-icon> 待办作业任务</span>
-                <el-button link type="primary" @click="router.push('/my-homeworks')">查看全部</el-button>
-              </div>
-            </template>
-            <el-table :data="dashboardData.pendingHomework || []" stripe style="width: 100%" v-if="(dashboardData.pendingHomework?.length || 0) > 0">
-              <el-table-column prop="title" label="作业名称" min-width="180" />
-              <el-table-column prop="deadline" label="截止倒计时" width="170">
-                <template #default="{ row }">
-                  <el-tag size="small" :type="countdownTagType(row.deadline)">{{ formatCountdown(row.deadline) }}</el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="100" align="right">
-                <template #default="{ row }">
-                  <el-button size="small" type="primary" @click="goHomework(row)">去完成</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-empty v-else description="太棒了，暂无待办作业！" :image-size="80" />
-          </el-card>
+        <section class="panel compact-panel">
+          <div class="panel-header compact">
+            <h2>成绩概览</h2>
+            <el-button link type="primary" @click="go('/my-grades')">详情</el-button>
+          </div>
+          <div class="grade-score">
+            <strong>{{ averageScoreText }}</strong>
+            <span>平均成绩</span>
+          </div>
+          <p class="muted">已完成考试 {{ completedExams.length }} 场，批改中 {{ gradingCount }} 场。</p>
+        </section>
 
-          <!-- 近期测评考试 -->
-          <el-card shadow="never" class="section-card">
-            <template #header>
-              <div class="card-header-flex">
-                <span class="card-title"><el-icon><Checked /></el-icon> 近期考试安排</span>
-                <el-button link type="primary" @click="router.push('/my-exams')">查看全部</el-button>
-              </div>
-            </template>
-            <el-table :data="dashboardData.upcomingExams || []" stripe style="width: 100%" v-if="(dashboardData.upcomingExams?.length || 0) > 0">
-              <el-table-column prop="title" label="考试名称" min-width="180" />
-              <el-table-column prop="endTime" label="考试倒计时" width="170">
-                <template #default="{ row }">
-                  <el-tag size="small" :type="examTagType(row)">{{ formatExamCountdown(row) }}</el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" width="100" align="right">
-                <template #default="{ row }">
-                  <el-button size="small" type="success" @click="goExam(row)">进入测评</el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-empty v-else description="暂无待参加的考试" :image-size="80" />
-          </el-card>
-        </div>
-      </template>
+        <section class="panel compact-panel">
+          <div class="panel-header compact">
+            <h2>勤工俭学</h2>
+            <el-button link type="primary" @click="go('/work-study-jobs')">岗位</el-button>
+          </div>
+          <div class="work-status">
+            <span><b>{{ availableJobs.length }}</b> 个岗位可申请</span>
+            <span><b>{{ pendingApplications }}</b> 个申请待审核</span>
+          </div>
+          <el-button class="wide-btn" @click="go('/my-work-study')">我的申请</el-button>
+        </section>
 
-      <!-- 教师端与管理员：班级智能看板 -->
-      <template v-else>
-        <div class="stat-grid">
-          <el-card shadow="never" class="stat-card stat-primary">
-            <div class="stat-label">管理的教学班级</div>
-            <div class="stat-value">{{ dashboardData.classCount || 0 }} <span class="stat-unit">个</span></div>
-          </el-card>
-          <el-card shadow="never" class="stat-card stat-warning">
-            <div class="stat-label">待批改作业/答卷</div>
-            <div class="stat-value">{{ dashboardData.pendingGradingCount || 0 }} <span class="stat-unit">份</span></div>
-          </el-card>
-          <el-card shadow="never" class="stat-card stat-success">
-            <div class="stat-label">班级实时状态</div>
-            <div class="stat-value">{{ dashboardData.activeClassCount || 0 }} <span class="stat-unit">进行中</span></div>
-          </el-card>
-        </div>
-
-        <div class="content-grid single-col">
-          <el-card shadow="never" class="section-card">
-            <template #header>
-              <div class="card-header-flex">
-                <span class="card-title"><el-icon><DataLine /></el-icon> 最新作业提交动态 (智能预警)</span>
-                <el-button link type="primary" @click="router.push('/teaching-classes')">进入教学管理</el-button>
-              </div>
-            </template>
-            <el-table :data="dashboardData.recentSubmissions || []" stripe style="width: 100%" v-if="(dashboardData.recentSubmissions?.length || 0) > 0">
-              <el-table-column prop="studentName" label="学生姓名" width="140">
-                <template #default="{ row }">
-                  <span :class="{ 'score-low': row.gradeStatus === 1 && row.score < 60 }">{{ row.studentName }}</span>
-                </template>
-              </el-table-column>
-              <el-table-column prop="homeworkTitle" label="作业题目" min-width="200" />
-              <el-table-column prop="submitTime" label="提交时间" width="180">
-                <template #default="{ row }">
-                  {{ formatTime(row.submitTime) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="gradeStatus" label="批改状态" width="120">
-                <template #default="{ row }">
-                  <el-tag :type="row.gradeStatus === 1 ? 'success' : 'warning'" size="small">
-                    {{ row.gradeStatus === 1 ? '已批改' : '待批改' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="score" label="成绩" width="120" align="right">
-                <template #default="{ row }">
-                  <span v-if="row.gradeStatus === 1" :class="{ 'score-low': row.score < 60, 'score-high': row.score >= 85 }">
-                    {{ row.score }} 分
-                  </span>
-                  <span v-else class="text-muted">-</span>
-                </template>
-              </el-table-column>
-            </el-table>
-            <el-empty v-else description="暂无最新学生提交记录" :image-size="80" />
-          </el-card>
-        </div>
-      </template>
-    </div>
+        <section class="panel compact-panel">
+          <div class="panel-header compact">
+            <h2>资料研究</h2>
+            <el-button link type="primary" @click="go('/paper-search')">进入</el-button>
+          </div>
+          <p class="muted">进行论文关键词检索、推荐、导入和原文链接打开。</p>
+        </section>
+      </aside>
+    </section>
   </main>
 </template>
 
 <script setup>
-import { computed, ref, onMounted, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
-import { getDashboardSummary } from '@/api/dashboard'
-import { Lightning, Tickets, Checked, DataLine } from '@element-plus/icons-vue'
+import {
+  Aim,
+  Checked,
+  Cpu,
+  DataLine,
+  Reading,
+  School,
+  Tickets,
+  Wallet
+} from '@element-plus/icons-vue'
+import request from '@/utils/request'
+import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
 
 const router = useRouter()
 const userStore = useUserStore()
 const loading = ref(false)
-const dashboardData = ref({})
+const classes = ref([])
+const pendingHomework = ref([])
+const upcomingExams = ref([])
+const completedExams = ref([])
+const availableJobs = ref([])
+const workApplications = ref([])
 
-const studentStatusText = computed(() => {
-  const pendingHomeworkCount = dashboardData.value.pendingHomework?.length || 0
-  const upcomingExamCount = dashboardData.value.upcomingExams?.length || 0
-  if (pendingHomeworkCount === 0 && upcomingExamCount === 0) return '良好'
-  if (pendingHomeworkCount + upcomingExamCount >= 5) return '紧张'
-  return '待办'
+const dashboard = reactive({
+  averageScore: null
 })
 
-const loadDashboard = async () => {
-  if (!userStore.isLoggedIn) return
+const displayName = computed(() => userStore.nickname || userStore.username || '同学')
+const todayText = computed(() => new Intl.DateTimeFormat('zh-CN', {
+  month: 'long',
+  day: 'numeric',
+  weekday: 'long'
+}).format(new Date()))
+const greeting = computed(() => {
+  const hour = new Date().getHours()
+  if (hour < 6) return '夜深了'
+  if (hour < 12) return '早上好'
+  if (hour < 18) return '下午好'
+  return '晚上好'
+})
+
+const gradingCount = computed(() => completedExams.value.filter(item => item.status === 1).length)
+const pendingApplications = computed(() => workApplications.value.filter(item => Number(item.auditStatus) === 0).length)
+const averageScoreText = computed(() => dashboard.averageScore == null ? '-' : dashboard.averageScore)
+
+const stats = computed(() => [
+  { label: '已加入班级', value: classes.value.length, icon: School, path: '/my-classes', tone: 'tone-blue' },
+  { label: '待完成作业', value: pendingHomework.value.length, icon: Tickets, path: '/my-homeworks', tone: 'tone-amber' },
+  { label: '待参加考试', value: upcomingExams.value.length, icon: Checked, path: '/my-exams', tone: 'tone-red' },
+  { label: '已完成考试', value: completedExams.value.length, icon: DataLine, path: '/my-grades', tone: 'tone-green' },
+  { label: 'AI 推荐', value: '去看看', icon: Aim, path: '/recommendation', tone: 'tone-cyan' },
+  { label: '岗位申请', value: workApplications.value.length, icon: Wallet, path: '/my-work-study', tone: 'tone-slate' }
+])
+
+function go(path) {
+  router.push(path)
+}
+
+function formatDateTime(value) {
+  if (!value) return '-'
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return '-'
+  return new Intl.DateTimeFormat('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit'
+  }).format(date)
+}
+
+async function loadClasses() {
+  const res = await request.get(`/class-students/student/${userStore.userId}`)
+  if (res.code !== '200') return []
+
+  const memberships = getRecords(res.data)
+  const rows = await Promise.all(memberships.slice(0, 8).map(async item => {
+    try {
+      const classRes = await request.get(`/teaching-classes/${item.classId}`)
+      const teachingClass = classRes.code === '200' ? classRes.data : {}
+      let course = {}
+      if (teachingClass.courseId) {
+        const courseRes = await request.get(`/courses/${teachingClass.courseId}`)
+        course = courseRes.code === '200' ? courseRes.data : {}
+      }
+      return {
+        ...item,
+        ...teachingClass,
+        classStudentId: item.id,
+        classId: item.classId,
+        courseId: teachingClass.courseId,
+        className: teachingClass.className || `教学班${item.classId}`,
+        courseName: course.title || '-'
+      }
+    } catch {
+      return {
+        ...item,
+        classStudentId: item.id,
+        classId: item.classId,
+        className: `教学班${item.classId}`,
+        courseName: '-'
+      }
+    }
+  }))
+
+  classes.value = rows
+  return memberships.map(item => item.classId)
+}
+
+async function loadHomework(classIds) {
+  if (!classIds.length) return
+  const hwRes = await request.get('/homeworks', { params: { pageSize: 100 } })
+  const allHomework = hwRes.code === '200'
+    ? getRecords(hwRes.data).filter(item => classIds.includes(item.classId))
+    : []
+
+  const subRes = await request.get('/homework-submits', {
+    params: { studentId: userStore.userId, pageSize: 100 }
+  })
+  const submissions = subRes.code === '200' ? getRecords(subRes.data) : []
+  const submittedIds = new Set(submissions.map(item => item.homeworkId))
+
+  pendingHomework.value = allHomework
+    .filter(item => !submittedIds.has(item.id) && normalizeStatus(item.status, { PUBLISHED: 1 }, item.status) === 1)
+    .sort((a, b) => new Date(a.deadline || 0) - new Date(b.deadline || 0))
+}
+
+function mapExam(exam) {
+  const normalized = normalizeStatus(exam.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, 0)
+  return {
+    ...exam,
+    title: exam.name || exam.title || `考试${exam.id}`,
+    duration: exam.durationMinutes || exam.duration || 0,
+    status: normalized === 3 ? 2 : normalized
+  }
+}
+
+function mapSubmission(submission, exam) {
+  const normalized = normalizeStatus(submission.status, {
+    IN_PROGRESS: 0,
+    SUBMITTED: 1,
+    PENDING_MANUAL_REVIEW: 1,
+    GRADED: 2
+  }, 0)
+  return {
+    ...submission,
+    title: exam?.title || submission.examName || `考试${submission.examId}`,
+    submitTime: submission.submittedAt,
+    status: normalized
+  }
+}
+
+async function loadExams(classIds) {
+  if (!classIds.length) return
+  const examRes = await request.get('/api/exams', { params: { pageSize: 100 } })
+  const allExams = examRes.code === '200'
+    ? getRecords(examRes.data).map(mapExam).filter(item => classIds.includes(item.classId))
+    : []
+
+  const subRes = await request.get('/api/submissions', {
+    params: { studentId: userStore.userId, pageSize: 100 }
+  })
+  const submissions = subRes.code === '200' ? getRecords(subRes.data) : []
+  const mappedSubmissions = submissions.map(sub => {
+    const exam = allExams.find(item => item.id === sub.examId)
+    return mapSubmission(sub, exam)
+  })
+  const finishedExamIds = new Set(mappedSubmissions.filter(item => item.status >= 1).map(item => item.examId))
+
+  upcomingExams.value = allExams
+    .filter(item => !finishedExamIds.has(item.id) && item.status === 1)
+    .sort((a, b) => new Date(a.startTime || 0) - new Date(b.startTime || 0))
+  completedExams.value = mappedSubmissions.filter(item => item.status >= 1)
+
+  const scored = completedExams.value
+    .map(item => Number(item.totalScore))
+    .filter(score => Number.isFinite(score))
+  dashboard.averageScore = scored.length
+    ? Math.round(scored.reduce((sum, score) => sum + score, 0) / scored.length)
+    : null
+}
+
+function learnCourse(row) {
+  if (!row.courseId) return
+  router.push({ name: 'CourseLearn', params: { courseId: row.courseId }, query: { classId: row.classId } })
+}
+
+async function loadDashboard() {
+  if (!userStore.userId) return
   loading.value = true
   try {
-    const res = await getDashboardSummary()
-    if (res.code === '200') {
-      dashboardData.value = res.data || {}
-    }
-  } catch (e) {
-    console.error('加载看板数据失败', e)
+    const classIds = await loadClasses()
+    await Promise.allSettled([
+      loadHomework(classIds),
+      loadExams(classIds)
+    ])
   } finally {
     loading.value = false
   }
 }
 
-onMounted(() => {
-  loadDashboard()
-})
-
-watch(() => userStore.isLoggedIn, (newVal) => {
-  if (newVal) loadDashboard()
-})
-
-const getRoleTitle = (roleCode) => {
-  if (roleCode === 'student') return '学习者'
-  if (roleCode === 'teacher') return '教师导师'
-  return '系统管理'
-}
-
-const formatTime = (timeStr) => {
-  if (!timeStr) return ''
-  return timeStr.replace('T', ' ').substring(0, 16)
-}
-
-const parseDate = (value) => {
-  const date = value ? new Date(value) : null
-  return date && !Number.isNaN(date.getTime()) ? date : null
-}
-
-const formatDuration = (diffMs) => {
-  if (diffMs <= 0) return '0分钟'
-  const minutes = Math.ceil(diffMs / 60000)
-  const days = Math.floor(minutes / 1440)
-  const hours = Math.floor((minutes % 1440) / 60)
-  const restMinutes = minutes % 60
-  if (days > 0) return `${days}天${hours}小时`
-  if (hours > 0) return `${hours}小时${restMinutes}分钟`
-  return `${restMinutes}分钟`
-}
-
-const formatCountdown = (timeStr) => {
-  const date = parseDate(timeStr)
-  if (!date) return '-'
-  const diff = date.getTime() - Date.now()
-  return diff > 0 ? `剩余 ${formatDuration(diff)}` : '已截止'
-}
-
-const countdownTagType = (timeStr) => {
-  const date = parseDate(timeStr)
-  if (!date) return 'info'
-  const diff = date.getTime() - Date.now()
-  if (diff <= 0) return 'danger'
-  if (diff <= 24 * 60 * 60 * 1000) return 'danger'
-  if (diff <= 3 * 24 * 60 * 60 * 1000) return 'warning'
-  return 'success'
-}
-
-const isExamOpen = (exam) => {
-  const start = parseDate(exam.startTime)
-  const end = parseDate(exam.endTime)
-  const now = Date.now()
-  return (!start || now >= start.getTime()) && (!end || now <= end.getTime())
-}
-
-const formatExamCountdown = (exam) => {
-  const start = parseDate(exam.startTime)
-  const end = parseDate(exam.endTime)
-  const now = Date.now()
-  if (start && now < start.getTime()) return `距开始 ${formatDuration(start.getTime() - now)}`
-  if (end && now <= end.getTime()) return `剩余 ${formatDuration(end.getTime() - now)}`
-  return '已结束'
-}
-
-const examTagType = (exam) => {
-  const start = parseDate(exam.startTime)
-  const now = Date.now()
-  if (start && now < start.getTime()) return 'warning'
-  return isExamOpen(exam) ? 'success' : 'info'
-}
-
-const goHomework = (homework) => {
-  router.push({ path: '/my-homeworks', query: { homeworkId: homework.id } })
-}
-
-const goExam = (exam) => {
-  if (isExamOpen(exam)) {
-    router.push({ name: 'ExamTaking', params: { examId: exam.id } })
-    return
-  }
-  router.push({ path: '/my-exams', query: { examId: exam.id } })
-}
+onMounted(loadDashboard)
 </script>
 
 <style scoped>
-.page-shell {
-  min-height: calc(100vh - 64px);
-}
-
-/* 未登录介绍 */
-.intro {
-  text-align: center;
-  padding: 80px 20px;
-  max-width: 680px;
+.student-dashboard {
+  max-width: 1240px;
   margin: 0 auto;
 }
-.eyebrow {
-  color: var(--primary-color);
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  font-size: 0.9rem;
-  margin-bottom: 12px;
-}
-.intro h1 {
-  font-size: 3rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 20px;
-}
-.summary {
-  font-size: 1.25rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 32px;
-}
-.home-actions {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-}
-.action-btn {
-  border-radius: 24px;
-  padding: 12px 28px;
-  font-weight: 600;
-}
 
-.dashboard-container {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 8px 0;
-}
-
-.welcome-header {
+.dashboard-hero {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
-}
-.user-greeting h2 {
-  font-size: 1.75rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin: 0 0 6px 0;
-}
-.sub-greeting {
-  color: var(--text-secondary);
-  font-size: 0.95rem;
-  margin: 0;
-}
-.btn-icon {
-  margin-right: 6px;
+  align-items: flex-end;
+  gap: 24px;
+  padding: 28px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #FFFFFF 0%, #EFF6FF 58%, #F0FDFA 100%);
+  box-shadow: var(--card-shadow);
 }
 
-/* 指标栅格 */
+.eyebrow {
+  margin: 0 0 8px;
+  color: var(--primary-color);
+  font-weight: 700;
+  font-size: 13px;
+}
+
+.dashboard-hero h1 {
+  margin: 0;
+  font-size: 30px;
+  line-height: 1.25;
+  color: var(--text-primary);
+}
+
+.summary {
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+}
+
+.hero-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
 .stat-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 20px;
-  margin-bottom: 24px;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
 }
+
 .stat-card {
-  border-radius: 8px;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
   border: 1px solid var(--border-color);
-  transition: all 0.2s ease;
+  border-radius: var(--radius-md);
+  background: white;
+  box-shadow: var(--shadow-xs);
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
+
 .stat-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0,0,0,0.05) !important;
+  box-shadow: var(--card-shadow);
 }
-.stat-label {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  font-weight: 600;
-  margin-bottom: 8px;
+
+.stat-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
 }
-.stat-value {
-  font-size: 2.25rem;
-  font-weight: 800;
+
+.tone-blue { background: var(--primary-color-soft); color: var(--primary-color); }
+.tone-amber { background: #FFFBEB; color: #D97706; }
+.tone-red { background: #FEF2F2; color: #DC2626; }
+.tone-green { background: var(--secondary-color-soft); color: var(--secondary-color); }
+.tone-cyan { background: #ECFEFF; color: #0891B2; }
+.tone-slate { background: var(--bg-subtle); color: var(--text-secondary); }
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.stat-content strong {
+  font-size: 22px;
   color: var(--text-primary);
   line-height: 1;
 }
-.stat-unit {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  margin-left: 2px;
-}
-.stat-primary { border-left: 4px solid var(--primary-color); }
-.stat-warning { border-left: 4px solid #F59E0B; }
-.stat-success { border-left: 4px solid #10B981; }
 
-/* 内容布局栅格 */
-.content-grid {
+.stat-content small {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 20px;
 }
-.content-grid.single-col {
-  grid-template-columns: 1fr;
+
+.dashboard-main,
+.dashboard-side {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
-.section-card {
-  border-radius: 8px;
+
+.panel {
+  background: white;
   border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--card-shadow);
+  padding: 20px;
 }
-.card-header-flex {
+
+.panel-header {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.panel-header.compact {
   align-items: center;
 }
-.card-title {
-  font-weight: 700;
-  font-size: 1.05rem;
+
+.panel h2 {
+  margin: 0;
+  font-size: 18px;
   color: var(--text-primary);
+}
+
+.panel-header p,
+.muted {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.learning-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.learning-item,
+.todo-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-color);
+}
+
+.course-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--primary-color-soft);
+  color: var(--primary-color);
+  flex-shrink: 0;
+}
+
+.learning-copy {
+  flex: 1;
+  min-width: 0;
+}
+
+.learning-copy h3,
+.todo-item h3 {
+  margin: 0 0 4px;
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.learning-copy p,
+.todo-item p {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.todo-columns {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.todo-block {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.todo-title {
   display: flex;
   align-items: center;
   gap: 8px;
+  color: var(--text-primary);
+  font-weight: 700;
+  margin-bottom: 2px;
 }
-.score-low { color: #EF4444; font-weight: 700; }
-.score-high { color: #10B981; font-weight: 700; }
-.text-muted { color: #94A3B8; }
+
+.todo-item {
+  justify-content: space-between;
+}
+
+.mini-empty {
+  padding: 22px;
+  text-align: center;
+  color: var(--text-muted);
+  border: 1px dashed var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-color);
+}
+
+.empty-panel {
+  padding: 10px 0;
+}
+
+.ai-panel {
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+  color: white;
+}
+
+.ai-panel h2,
+.ai-panel p {
+  color: white;
+}
+
+.ai-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.16);
+  font-size: 24px;
+  margin-bottom: 14px;
+}
+
+.side-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.side-actions .el-button:not(.el-button--primary) {
+  background: rgba(255, 255, 255, 0.94);
+  border: none;
+}
+
+.compact-panel {
+  padding: 18px;
+}
+
+.grade-score {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.grade-score strong {
+  font-size: 34px;
+  color: var(--primary-color);
+}
+
+.grade-score span {
+  color: var(--text-secondary);
+}
+
+.work-status {
+  display: grid;
+  gap: 8px;
+  margin: 12px 0 14px;
+  color: var(--text-secondary);
+}
+
+.work-status b {
+  color: var(--text-primary);
+}
+
+.wide-btn {
+  width: 100%;
+}
+
+@media (max-width: 1100px) {
+  .stat-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .dashboard-hero {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .hero-actions,
+  .side-actions {
+    flex-direction: column;
+  }
+
+  .stat-grid,
+  .todo-columns {
+    grid-template-columns: 1fr;
+  }
+}
 </style>

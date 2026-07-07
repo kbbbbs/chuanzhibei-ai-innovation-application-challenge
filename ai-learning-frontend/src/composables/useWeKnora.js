@@ -91,7 +91,7 @@ export function useWeKnora() {
     }
   }
 
-  function sendMessage(mode, query) {
+  function sendMessage(mode, query, displayContent = query) {
     if (!currentSessionId.value) {
       error.value = new Error('请先创建会话')
       ElMessage.warning('请先创建会话')
@@ -99,7 +99,7 @@ export function useWeKnora() {
     }
 
     return new Promise((resolve, reject) => {
-      messages.value.push({ role: 'user', content: query })
+      messages.value.push({ role: 'user', content: displayContent || query })
 
       const aiIndex = messages.value.length
       messages.value.push({ role: 'assistant', content: '', streaming: true })

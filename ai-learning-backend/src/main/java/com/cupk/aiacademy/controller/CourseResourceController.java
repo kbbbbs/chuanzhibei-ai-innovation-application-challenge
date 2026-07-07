@@ -68,7 +68,9 @@ public class CourseResourceController {
         }
 
         QueryWrapper<Chapter> chapterQuery = new QueryWrapper<>();
-        chapterQuery.eq("course_id", id).orderByAsc("sort_order").orderByAsc("id");
+        chapterQuery.eq("course_id", id)
+                .eq("status", Chapter.STATUS_NORMAL)
+                .orderByAsc("sort_order").orderByAsc("id");
         List<Chapter> chapters = chapterMapper.selectList(chapterQuery);
         if (chapters.isEmpty()) {
             course.setChapters(chapters);
@@ -116,7 +118,7 @@ public class CourseResourceController {
         }
 
         QueryWrapper<Chapter> query = new QueryWrapper<>();
-        query.eq("course_id", courseId);
+        query.eq("course_id", courseId).eq("status", Chapter.STATUS_NORMAL);
         List<Chapter> chapters = chapterMapper.selectList(query);
         Set<Integer> chapterIds = chapters.stream().map(Chapter::getId).collect(Collectors.toSet());
         for (SortItem item : items) {
@@ -147,7 +149,7 @@ public class CourseResourceController {
         }
 
         Chapter chapter = chapterMapper.selectById(chapterId);
-        if (chapter == null) {
+        if (!isActiveChapter(chapter)) {
             return Result.error("404", "章节不存在");
         }
         Course course = courseMapper.selectById(chapter.getCourseId());
@@ -222,6 +224,14 @@ public class CourseResourceController {
             return null;
         }
         return Result.error("403", "无权维护该课程资源");
+    }
+
+    private boolean isActiveChapter(Chapter chapter) {
+        return chapter != null && Chapter.STATUS_NORMAL == defaultStatus(chapter.getStatus());
+    }
+
+    private int defaultStatus(Integer status) {
+        return status == null ? Chapter.STATUS_NORMAL : status;
     }
 
     private Result checkSortItems(List<SortItem> items) {

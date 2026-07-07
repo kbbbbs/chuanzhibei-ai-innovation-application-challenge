@@ -71,7 +71,7 @@ export async function loginByUi(page, username = 'admin', password = '[REDACTED]
   await page.getByRole('button', { name: '登录' }).click()
   await expect(page).toHaveURL(/\/home/)
   if (options.expectHomeHeading !== false) {
-    await expect(page.locator('.welcome-header')).toBeVisible()
+    await expect(page.locator('.welcome-header, .dashboard-hero')).toBeVisible()
   }
 }
 

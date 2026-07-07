@@ -7,8 +7,10 @@ import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.LessonDto;
 import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
+import com.cupk.aiacademy.pojo.Chapter;
 import com.cupk.aiacademy.pojo.Lesson;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.videoresource.VideoResourceService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -35,6 +37,9 @@ public class LessonController {
     private CourseResourceService courseResourceService;
 
     @Autowired
+    private VideoResourceService videoResourceService;
+
+    @Autowired
     private AuthUtils authUtils;
 
     @GetMapping("/lessons")
@@ -44,6 +49,7 @@ public class LessonController {
                         @RequestParam(defaultValue = "10") Integer pageSize) {
         Page<Lesson> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<Lesson> queryWrapper = new QueryWrapper<>();
+        queryWrapper.inSql("chapter_id", "SELECT id FROM t_chapter WHERE status = 1");
         if (chapterId != null && chapterId > 0) {
             queryWrapper.eq("chapter_id", chapterId);
         }
@@ -57,7 +63,7 @@ public class LessonController {
 
     @GetMapping("/chapters/{chapterId}/lessons")
     public Result listByChapter(@PathVariable Integer chapterId) {
-        if (chapterMapper.selectById(chapterId) == null) {
+        if (!isActiveChapter(chapterMapper.selectById(chapterId))) {
             return Result.error("404", "章节不存在");
         }
         QueryWrapper<Lesson> queryWrapper = new QueryWrapper<>();
@@ -68,7 +74,14 @@ public class LessonController {
     @GetMapping("/lessons/{id}")
     public Result selectById(@PathVariable Integer id) {
         Lesson lesson = lessonMapper.selectById(id);
-        return lesson == null ? Result.error("404", "课时不存在") : Result.success(lesson);
+        return lesson == null || !isActiveChapter(chapterMapper.selectById(lesson.getChapterId()))
+                ? Result.error("404", "课时不存在")
+                : Result.success(lesson);
+    }
+
+    @GetMapping("/lessons/{lessonId}/playback")
+    public Result playback(@PathVariable Integer lessonId) {
+        return Result.success(videoResourceService.getLessonPlayback(lessonId));
     }
 
     @GetMapping("/lessons/{lessonId}/my-progress")
@@ -93,11 +106,12 @@ public class LessonController {
         }
         LocalDateTime now = LocalDateTime.now();
         lesson.setTitle(lesson.getTitle().trim());
+        normalizeMediaFields(lesson);
         fixSortOrder(lesson);
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now);
         int row = lessonMapper.insert(lesson);
-        return row > 0 ? Result.success() : Result.error();
+        return row > 0 ? Result.success(lesson) : Result.error();
     }
 
     @PutMapping("/lessons/{id}")
@@ -112,10 +126,11 @@ public class LessonController {
         }
         lesson.setId(id);
         lesson.setTitle(lesson.getTitle().trim());
+        normalizeMediaFields(lesson);
         fixSortOrder(lesson);
         lesson.setUpdatedAt(LocalDateTime.now());
         int row = lessonMapper.updateById(lesson);
-        return row > 0 ? Result.success() : Result.error();
+        return row > 0 ? Result.success(lessonMapper.selectById(id)) : Result.error();
     }
 
     @DeleteMapping("/lessons/{id}")
@@ -139,7 +154,7 @@ public class LessonController {
         if (lesson == null) {
             return Result.error("400", "课时信息不能为空");
         }
-        if (lesson.getChapterId() == null || chapterMapper.selectById(lesson.getChapterId()) == null) {
+        if (lesson.getChapterId() == null || !isActiveChapter(chapterMapper.selectById(lesson.getChapterId()))) {
             return Result.error("404", "章节不存在");
         }
         if (lesson.getTitle() == null || lesson.getTitle().trim().isEmpty()) {
@@ -148,10 +163,34 @@ public class LessonController {
         return null;
     }
 
+    private void normalizeMediaFields(Lesson lesson) {
+        String resourceType = lesson.getResourceType();
+        if ("video_file".equals(resourceType)) {
+            lesson.setVideoUrl(lesson.getResourceUrl());
+            lesson.setVideoResourceId(null);
+            return;
+        }
+        if ("video_url".equals(resourceType)) {
+            lesson.setVideoUrl("");
+            lesson.setVideoResourceId(null);
+            return;
+        }
+        lesson.setVideoUrl("");
+        lesson.setVideoResourceId(null);
+    }
+
     private void fixSortOrder(Lesson lesson) {
         if (lesson.getSortOrder() == null || lesson.getSortOrder() <= 0) {
             lesson.setSortOrder(null);
         }
+    }
+
+    private boolean isActiveChapter(Chapter chapter) {
+        return chapter != null && Chapter.STATUS_NORMAL == defaultStatus(chapter.getStatus());
+    }
+
+    private int defaultStatus(Integer status) {
+        return status == null ? Chapter.STATUS_NORMAL : status;
     }
 
     private int fixPageNum(Integer pageNum) {

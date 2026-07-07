@@ -318,10 +318,14 @@ public class CourseResourceService {
 
     private Chapter getChapter(Integer chapterId) {
         Chapter chapter = chapterMapper.selectById(chapterId);
-        if (chapter == null) {
+        if (chapter == null || Chapter.STATUS_NORMAL != defaultChapterStatus(chapter.getStatus())) {
             throw new BusinessException("章节不存在");
         }
         return chapter;
+    }
+
+    private int defaultChapterStatus(Integer status) {
+        return status == null ? Chapter.STATUS_NORMAL : status;
     }
 
     private Lesson getLesson(Integer lessonId) {

@@ -2,44 +2,18 @@
   <el-container class="layout-container">
     <!-- Persistent Top Navigation Header (Glassmorphism & High-end) -->
     <el-header class="layout-header">
-      <div class="header-left" @click="router.push('/')">
-        <div class="logo-icon">E</div>
-        <span class="logo-text">EduLoop <span class="sub-title">智教云环</span></span>
-      </div>
-
-      <!-- Top Nav Links / Recommendations Carousel -->
-      <div class="header-center">
-        <el-menu
-          mode="horizontal"
-          :default-active="activeTopMenu"
-          :router="true"
-          class="top-menu"
-          :ellipsis="false"
-        >
-          <el-menu-item index="/">
-            <el-icon><House /></el-icon>首页推荐
-          </el-menu-item>
-<!--          <el-menu-item v-if="userStore.isLoggedIn" index="/home">-->
-<!--            <el-icon><DataBoard /></el-icon>控制台-->
-<!--          </el-menu-item>-->
-<!--          <el-menu-item v-if="userStore.isLoggedIn && (userStore.roleCode === 'student' || userStore.roleCode === 'admin')" index="/recommendation">-->
-<!--            <el-icon><Aim /></el-icon>智能推荐-->
-<!--          </el-menu-item>-->
-<!--          <el-menu-item v-if="userStore.isLoggedIn && (userStore.roleCode === 'teacher' || userStore.roleCode === 'admin')" index="/resource-gen">-->
-<!--            <el-icon><Lightning /></el-icon>智能备课-->
-<!--          </el-menu-item>-->
-        </el-menu>
+      <div class="header-left">
+        <button class="brand-link" type="button" @click="router.push('/')">
+          <div class="logo-icon">E</div>
+          <span class="logo-text">EduLoop <span class="sub-title">智教云环</span></span>
+        </button>
+        <el-button class="agent-nav-btn" type="primary" link @click="router.push('/agent-chat')">
+          <el-icon><Cpu /></el-icon>
+          <span>Agent 助手</span>
+        </el-button>
       </div>
 
       <div class="header-right">
-        <!-- Floating Chat Trigger for Internal Pages -->
-        <div v-if="!isPublicHome" class="header-ai-btn" @click="toggleAiModal">
-          <el-button type="primary" link class="ai-trigger-btn">
-            <el-icon class="ai-icon"><Cpu /></el-icon>
-            <span>AI知识助手</span>
-          </el-button>
-        </div>
-
         <!-- User Profile Dropdown or Login Button -->
         <template v-if="userStore.isLoggedIn">
           <el-dropdown @command="handleCommand" trigger="click">
@@ -136,51 +110,31 @@
         </el-menu>
       </el-aside>
 
-      <el-main class="layout-main" :class="{ 'public-main': isPublicHome }">
+      <el-main class="layout-main" :class="{ 'public-main': isPublicHome, 'full-width-main': route.meta?.fullWidth }">
         <router-view />
       </el-main>
     </el-container>
 
-    <!-- Global Floating AI Assistant Modal/Widget (For non-homepage views) -->
-    <el-dialog
-      v-model="aiModalVisible"
-      title="AI 知识库与智能教学助理"
-      width="680px"
-      class="ai-dialog"
-      :append-to-body="true"
-      destroy-on-close
-    >
-      <AiChatWidget :inline="false" />
-    </el-dialog>
   </el-container>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { computed } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
 import {
-  House, DataBoard, Aim, Lightning, Cpu, School, Tickets, Checked,
+  DataBoard, Cpu, School, Tickets, Checked,
   DataLine, Reading, Edit, Document, SwitchButton, User, Menu, Collection
 } from '@element-plus/icons-vue'
-import AiChatWidget from '@/components/AiChatWidget.vue'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
-const aiModalVisible = ref(false)
 
 const isPublicHome = computed(() => route.path === '/' || route.path === '')
-const shouldShowSidebar = computed(() => userStore.isLoggedIn && !isPublicHome.value && route.name !== 'CourseLearn')
-
-const activeTopMenu = computed(() => {
-  if (route.path === '/') return '/'
-  if (route.path.startsWith('/recommendation')) return '/recommendation'
-  if (route.path.startsWith('/resource-gen')) return '/resource-gen'
-  return '/home'
-})
+const shouldShowSidebar = computed(() => userStore.isLoggedIn && !isPublicHome.value && route.name !== 'CourseLearn' && !route.meta?.fullWidth)
 
 const activeMenu = computed(() => {
   const firstSegment = route.path.split('/').filter(Boolean)[0]
@@ -216,10 +170,6 @@ const getRoleTagType = (role) => {
   return map[role] || 'info'
 }
 
-const toggleAiModal = () => {
-  aiModalVisible.value = !aiModalVisible.value
-}
-
 const handleCommand = (command) => {
   if (command === 'logout') {
     userStore.logout()
@@ -244,28 +194,43 @@ const handleCommand = (command) => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 32px;
-  background: rgba(255, 255, 255, 0.85);
+  padding: 0 28px;
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 1000;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  box-shadow: var(--shadow-xs);
 }
 
 .header-left {
   display: flex;
   align-items: center;
+  gap: 16px;
+}
+
+.brand-link {
+  display: flex;
+  align-items: center;
   gap: 12px;
+  padding: 6px 8px 6px 0;
+  border: none;
+  border-radius: var(--radius-md);
+  background: transparent;
   cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.brand-link:hover {
+  background: var(--bg-hover);
 }
 
 .logo-icon {
   width: 36px;
   height: 36px;
-  border-radius: 10px;
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-color-hover));
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
   color: white;
   font-weight: 800;
   font-size: 20px;
@@ -279,7 +244,7 @@ const handleCommand = (command) => {
   font-size: 1.25rem;
   font-weight: 700;
   color: var(--text-primary);
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .sub-title {
@@ -289,60 +254,25 @@ const handleCommand = (command) => {
   margin-left: 4px;
 }
 
-.header-center {
-  flex: 1;
-  display: flex;
-  justify-content: center;
+.agent-nav-btn {
+  height: 36px;
+  padding: 0 14px;
+  border-radius: 18px;
+  background: var(--primary-color-soft);
+  color: var(--primary-color);
+  font-weight: 700;
+  border: 1px solid var(--primary-color-light);
 }
 
-.top-menu {
-  background: transparent !important;
-  border-bottom: none !important;
-}
-
-.top-menu .el-menu-item {
-  height: 64px;
-  line-height: 64px;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: all 0.2s ease;
-}
-
-.top-menu .el-menu-item.is-active {
-  color: var(--primary-color) !important;
-  font-weight: 600;
-  border-bottom: 2px solid var(--primary-color) !important;
+.agent-nav-btn:hover {
+  background: var(--primary-color-light);
+  color: var(--primary-color-hover);
 }
 
 .header-right {
   display: flex;
   align-items: center;
   gap: 20px;
-}
-
-.header-ai-btn {
-  display: flex;
-  align-items: center;
-}
-
-.ai-trigger-btn {
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: #EEF2FF;
-  color: var(--primary-color);
-  transition: all 0.3s ease;
-}
-
-.ai-trigger-btn:hover {
-  background: #E0E7FF;
-  transform: scale(1.02);
-}
-
-.ai-icon {
-  margin-right: 4px;
-  font-size: 16px;
 }
 
 .user-profile-trigger {
@@ -404,7 +334,7 @@ const handleCommand = (command) => {
 }
 
 .layout-aside {
-  background: white;
+  background: var(--bg-elevated);
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
@@ -425,7 +355,7 @@ const handleCommand = (command) => {
 }
 
 .el-menu-vertical .el-menu-item {
-  border-radius: 10px;
+  border-radius: var(--radius-md);
   margin-bottom: 4px;
   height: 44px;
   line-height: 44px;
@@ -434,7 +364,7 @@ const handleCommand = (command) => {
 }
 
 .el-menu-vertical .el-menu-item.is-active {
-  background-color: #EEF2FF;
+  background-color: var(--primary-color-soft);
   color: var(--primary-color);
   font-weight: 600;
 }
@@ -447,12 +377,16 @@ const handleCommand = (command) => {
   flex: 1;
   overflow-y: auto;
   padding: 32px;
-  background-color: #F8FAFC;
+  background-color: var(--bg-color);
 }
 
 .public-main {
   padding: 0;
   background-color: white;
+}
+
+.full-width-main {
+  padding: 24px;
 }
 
 /* Dropdown styling */
@@ -476,5 +410,26 @@ const handleCommand = (command) => {
 
 .logout-item {
   color: #EF4444 !important;
+}
+
+@media (max-width: 760px) {
+  .layout-header {
+    padding: 0 14px;
+  }
+
+  .logo-text .sub-title,
+  .username,
+  .role-badge {
+    display: none;
+  }
+
+  .agent-nav-btn span {
+    display: none;
+  }
+
+  .layout-main,
+  .full-width-main {
+    padding: 16px;
+  }
 }
 </style>

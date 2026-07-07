@@ -12,6 +12,9 @@ import java.util.List;
 @Data
 @TableName("t_chapter")
 public class Chapter {
+    public static final int STATUS_DELETED = 0;
+    public static final int STATUS_NORMAL = 1;
+
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
@@ -23,6 +26,9 @@ public class Chapter {
 
     @TableField("sort_order")
     private Integer sortOrder;
+
+    @TableField("status")
+    private Integer status;
 
     @TableField("created_at")
     private LocalDateTime createdAt;
