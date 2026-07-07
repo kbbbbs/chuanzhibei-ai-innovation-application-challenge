@@ -51,14 +51,36 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     public Result search(WeKnoraSearchRequest request) {
         try {
             Map<String, Object> body = new LinkedHashMap<>();
-            body.put("knowledgeBaseIds", request.getKnowledgeBaseIds());
+            body.put("knowledge_base_ids", request.getKnowledgeBaseIds());
             body.put("query", request.getQuery());
 
-            JSONObject resp = post("/api/v1/knowledge/search", body);
-            if (resp != null && isWeKnoraSuccess(resp)) {
-                return Result.success(resp.get("data"));
+            JSONObject resp = post("/api/v1/knowledge-search", body);
+            if (resp == null || (!isWeKnoraSuccess(resp) && extractListItems(resp) == null)) {
+                JSONObject fallbackResp = post("/api/v1/knowledge/search", body);
+                if (fallbackResp != null) {
+                    resp = fallbackResp;
+                }
             }
-            return Result.error(resp != null ? resp.getString("message") : "搜索失败");
+
+            if (resp != null) {
+                Object data = resp.get("data");
+                if (data != null) {
+                    return Result.success(data);
+                }
+                Object items = extractListItems(resp);
+                if (items != null) {
+                    return Result.success(resp);
+                }
+                if (isWeKnoraSuccess(resp)) {
+                    return Result.success(resp);
+                }
+                String message = resp.getString("message");
+                if (message == null || message.isBlank()) {
+                    message = resp.getString("msg");
+                }
+                return Result.error(message != null && !message.isBlank() ? message : "搜索失败");
+            }
+            return Result.error("搜索失败");
         } catch (Exception e) {
             log.error("search failed", e);
             return Result.error("搜索请求失败: " + e.getMessage());
@@ -136,7 +158,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("query", query);
                 if (knowledgeBaseIds != null && !knowledgeBaseIds.isEmpty()) {
-                    body.put("knowledgeBaseIds", Arrays.asList(knowledgeBaseIds.split(",")));
+                    body.put("knowledge_base_ids", Arrays.asList(knowledgeBaseIds.split(",")));
                 }
 
                 String jsonBody = JSON.toJSONString(body);
@@ -191,7 +213,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 body.put("query", query);
                 if (agentId != null) body.put("agentId", agentId);
                 if (knowledgeBaseIds != null && !knowledgeBaseIds.isEmpty()) {
-                    body.put("knowledgeBaseIds", Arrays.asList(knowledgeBaseIds.split(",")));
+                    body.put("knowledge_base_ids", Arrays.asList(knowledgeBaseIds.split(",")));
                 }
 
                 String jsonBody = JSON.toJSONString(body);
@@ -887,7 +909,7 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 Map<String, Object> body = new LinkedHashMap<>();
                 body.put("query", query);
                 if (knowledgeBaseIds != null && !knowledgeBaseIds.isEmpty()) {
-                    body.put("knowledgeBaseIds", Arrays.asList(knowledgeBaseIds.split(",")));
+                    body.put("knowledge_base_ids", Arrays.asList(knowledgeBaseIds.split(",")));
                 }
 
                 String jsonBody = JSON.toJSONString(body);

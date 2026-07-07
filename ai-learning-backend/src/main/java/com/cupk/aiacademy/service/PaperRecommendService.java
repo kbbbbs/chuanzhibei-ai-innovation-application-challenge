@@ -22,10 +22,17 @@ public class PaperRecommendService {
 
     private final PaperMapper paperMapper;
     private final PaperAuthorMapper paperAuthorMapper;
+    private final OpenAlexSearchService openAlexSearchService;
+    private final ArxivSearchService arxivSearchService;
 
-    public PaperRecommendService(PaperMapper paperMapper, PaperAuthorMapper paperAuthorMapper) {
+    public PaperRecommendService(PaperMapper paperMapper,
+                                 PaperAuthorMapper paperAuthorMapper,
+                                 OpenAlexSearchService openAlexSearchService,
+                                 ArxivSearchService arxivSearchService) {
         this.paperMapper = paperMapper;
         this.paperAuthorMapper = paperAuthorMapper;
+        this.openAlexSearchService = openAlexSearchService;
+        this.arxivSearchService = arxivSearchService;
     }
 
     public Result recommend(List<Course> courses, int maxPerCourse, int maxTotal) {
@@ -48,6 +55,10 @@ public class PaperRecommendService {
                     if (results.size() >= maxTotal) break;
                 }
             }
+        }
+
+        if (results.isEmpty()) {
+            results.addAll(searchExternalRecommendations(courses, maxPerCourse, maxTotal));
         }
 
         PaperSearchResponse response = new PaperSearchResponse();
@@ -89,6 +100,38 @@ public class PaperRecommendService {
         if (match) {
             Collections.addAll(terms, values);
         }
+    }
+
+    private List<PaperSearchResponse.Paper> searchExternalRecommendations(List<Course> courses, int maxPerCourse, int maxTotal) {
+        List<PaperSearchResponse.Paper> results = new ArrayList<>();
+        Set<String> seenKeys = new HashSet<>();
+
+        for (Course course : courses) {
+            if (results.size() >= maxTotal) {
+                break;
+            }
+
+            List<String> terms = extractKeywords(course);
+            String keyword = buildExternalKeyword(course, terms);
+            if (keyword == null || keyword.isBlank()) {
+                continue;
+            }
+
+            appendExternalResults(results, seenKeys, openAlexSearchService.search(keyword, 1, maxPerCourse), maxTotal);
+            if (results.size() >= maxTotal) {
+                break;
+            }
+            appendExternalResults(results, seenKeys, arxivSearchService.search(keyword, 1, maxPerCourse), maxTotal);
+        }
+
+        return results;
+    }
+
+    private String buildExternalKeyword(Course course, List<String> terms) {
+        if (terms != null && !terms.isEmpty()) {
+            return terms.stream().limit(2).collect(Collectors.joining(" "));
+        }
+        return course.getTitle();
     }
 
     private List<Paper> searchPapers(List<String> terms, Set<Integer> excludeIds, int limit) {
@@ -138,6 +181,26 @@ public class PaperRecommendService {
         }).collect(Collectors.toList()));
 
         return dto;
+    }
+
+    private void appendExternalResults(List<PaperSearchResponse.Paper> results,
+                                        Set<String> seenKeys,
+                                        Result externalResult,
+                                        int maxTotal) {
+        if (externalResult == null || results.size() >= maxTotal) return;
+        if (!"200".equals(externalResult.getCode())) return;
+        Object data = externalResult.getData();
+        if (!(data instanceof PaperSearchResponse resp)) return;
+        List<PaperSearchResponse.Paper> items = resp.getData();
+        if (items == null) return;
+
+        for (PaperSearchResponse.Paper p : items) {
+            if (results.size() >= maxTotal) break;
+            String key = p.getSource() + ":" + p.getPaperId();
+            if (seenKeys.add(key)) {
+                results.add(p);
+            }
+        }
     }
 
     private PaperSearchResponse emptyResponse() {

@@ -1,62 +1,113 @@
 <template>
   <div class="teacher-kb-page">
-    <!-- Left: KB Management Panel -->
-    <div class="kb-left">
-      <div class="panel">
-        <div class="panel-title">
-          📚 知识库管理
-          <el-button type="primary" size="small" @click="openCreateDialog">新建</el-button>
-        </div>
-        <div class="panel-body scroll-y" v-loading="kbLoading">
-          <div v-if="kbs.length === 0 && !kbLoading" class="empty-hint">暂无知识库，点击"新建"创建</div>
-          <div v-for="kb in kbs" :key="kb.id"
-            :class="['kb-item', { active: selectedKb?.id === kb.id }]"
-            @click="selectKb(kb)">
-            <div class="kb-item-left">
-              <span class="kb-name">{{ kb.name }}</span>
-              <span class="kb-desc" v-if="kb.description">{{ kb.description }}</span>
+    <div class="page-header teacher-page-header">
+      <div>
+        <h2>知识库管理</h2>
+        <p>集中管理课程知识库、课件文件与图谱，并在右侧直接使用 AI 助手进行问答和出题。</p>
+      </div>
+      <div class="header-actions">
+        <el-button type="primary" @click="openCreateDialog">新建知识库</el-button>
+      </div>
+    </div>
+
+    <div class="teacher-kb-layout">
+      <div class="kb-left">
+        <section class="panel kb-list-panel">
+          <div class="panel-title">
+            <div>
+              <span>知识库列表</span>
+              <span class="panel-sub">按课程整理你的教学资料</span>
             </div>
-            <span class="kb-count">{{ kb.knowledge_count || 0 }} 文档</span>
+            <el-tag size="small" effect="plain">{{ kbs.length }} 个</el-tag>
           </div>
-        </div>
+          <div class="panel-body scroll-y" v-loading="kbLoading">
+            <el-empty v-if="kbs.length === 0 && !kbLoading" description="暂无知识库">
+              <el-button type="primary" @click="openCreateDialog">新建知识库</el-button>
+            </el-empty>
+            <div v-for="kb in kbs" :key="kb.id"
+              :class="['kb-item', { active: selectedKb?.id === kb.id }]"
+              @click="selectKb(kb)">
+              <div class="kb-item-left">
+                <span class="kb-name">{{ kb.name }}</span>
+                <span class="kb-desc">{{ kb.description || '暂无知识库描述' }}</span>
+              </div>
+              <el-tag size="small" effect="plain">{{ kb.knowledge_count || 0 }} 文档</el-tag>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" v-if="selectedKb">
+          <div class="panel-title panel-title-stack">
+            <div>
+              <span>{{ selectedKb.name }}</span>
+              <span class="panel-sub">{{ selectedKb.description || '可在此上传文件、查看图谱并继续出题。' }}</span>
+            </div>
+            <el-tag type="primary" effect="light">{{ selectedKb.knowledge_count || files.length || 0 }} 份资料</el-tag>
+          </div>
+
+          <div class="kb-summary-actions">
+            <div class="action-group primary-actions">
+              <el-upload :auto-upload="false" :limit="1" accept=".pdf,.txt,.md,.doc,.docx"
+                :on-change="e => (uploadFile = e.raw)" :show-file-list="false">
+                <el-button type="primary">上传文件</el-button>
+              </el-upload>
+              <el-button type="success" @click="openGenerateDialog">根据知识库出题</el-button>
+            </div>
+            <div class="action-group secondary-actions">
+              <el-button @click="openEditDialog(selectedKb)">编辑</el-button>
+              <el-button @click="openGraph">知识图谱</el-button>
+              <el-button type="danger" plain @click="handleDeleteKb(selectedKb)">删除KB</el-button>
+            </div>
+          </div>
+
+          <div class="upload-bar" v-if="uploadFile">
+            <div class="upload-meta">
+              <el-tag closable @close="uploadFile=null">{{ uploadFile.name }}</el-tag>
+              <span>文件已选择，确认后将上传到当前知识库。</span>
+            </div>
+            <el-button type="success" size="small" :loading="uploading" @click="doUpload">确认上传</el-button>
+          </div>
+
+          <div class="panel-body scroll-y" v-loading="filesLoading">
+            <div class="section-caption">
+              <span>文件列表</span>
+              <span>{{ files.length }} 份</span>
+            </div>
+            <el-empty v-if="files.length === 0 && !filesLoading" description="暂无文件" />
+            <div v-for="f in files" :key="f.id" class="file-item">
+              <div class="file-main">
+                <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
+                <span class="file-meta">{{ f.file_type || f.type || '未知类型' }} · {{ formatSize(f.file_size) }}</span>
+              </div>
+              <el-button size="small" type="danger" :icon="Delete" circle @click.stop="handleDeleteFile(f)" />
+            </div>
+          </div>
+        </section>
+
+        <section class="panel graph-panel" v-if="selectedKb">
+          <div class="panel-title">
+            <div>
+              <span>知识图谱预览</span>
+              <span class="panel-sub">快速预览当前知识库的图谱结构</span>
+            </div>
+            <el-button size="small" type="primary" link @click="openGraph">查看完整图谱</el-button>
+          </div>
+          <div class="panel-body">
+            <KnowledgeGraphPreview :kb-id="selectedKb.id" :refresh-key="graphRefreshKey" />
+          </div>
+        </section>
       </div>
 
-      <!-- Files Panel -->
-      <div class="panel" v-if="selectedKb">
-        <div class="panel-title">
-          📄 {{ selectedKb.name }} - 文件列表
-          <div class="panel-title-actions">
-            <el-button type="primary" size="small" @click="openEditDialog(selectedKb)">编辑</el-button>
-            <el-upload :auto-upload="false" :limit="5" accept=".pdf,.txt,.md,.doc,.docx"
-              :on-change="e => (uploadFile = e.raw)" :show-file-list="false">
-              <el-button size="small">上传</el-button>
-            </el-upload>
-            <el-button size="small" @click="openGraph">知识图谱</el-button>
-            <el-button size="small" type="success" @click="openGenerateDialog">根据知识库出题</el-button>
-            <el-button size="small" type="danger" @click="handleDeleteKb(selectedKb)">删除KB</el-button>
-          </div>
-        </div>
-        <div class="upload-bar" v-if="uploadFile">
-          <el-tag closable @close="uploadFile=null">{{ uploadFile.name }}</el-tag>
-          <el-button type="success" size="small" :loading="uploading" @click="doUpload">确认上传</el-button>
-        </div>
-        <div class="panel-body scroll-y" v-loading="filesLoading">
-          <div v-if="files.length === 0 && !filesLoading" class="empty-hint">暂无文件</div>
-          <div v-for="f in files" :key="f.id" class="file-item">
-            <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
-            <span class="file-meta">{{ f.file_type || f.type || '-' }} · {{ formatSize(f.file_size) }}</span>
-            <el-button size="small" type="danger" :icon="Delete" circle @click.stop="handleDeleteFile(f)" />
-          </div>
-        </div>
+      <div class="kb-right">
+        <AiChatWidget
+          :inline="true"
+          :key="kbs.length + (selectedKb?.id || '')"
+          :knowledge-base-id="selectedKb?.id || ''"
+          :hide-kb-selector="Boolean(selectedKb?.id)"
+        />
       </div>
     </div>
 
-    <!-- Right: AI Chat -->
-    <div class="kb-right">
-      <AiChatWidget :inline="true" :key="kbs.length + (selectedKb?.id || '')" />
-    </div>
-
-    <!-- Edit KB Dialog -->
     <el-dialog v-model="editVisible" title="编辑知识库" width="500px">
       <el-form :model="editForm" ref="editRef" label-width="80px" :rules="editRules">
         <el-form-item label="名称" prop="name">
@@ -90,6 +141,13 @@
 
     <!-- Generate Questions from Knowledge Base Dialog -->
     <el-dialog v-model="genVisible" title="根据知识库出题" width="900px" :close-on-click-modal="false" destroy-on-close>
+      <el-steps :active="genStep - 1" finish-status="success" align-center class="gen-steps">
+        <el-step title="配置参数" />
+        <el-step title="生成中" />
+        <el-step title="预览编辑" />
+        <el-step title="保存结果" />
+      </el-steps>
+
       <!-- Step 1: Configure -->
       <div v-if="genStep === 1">
         <el-form label-width="100px">
@@ -245,6 +303,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
+import KnowledgeGraphPreview from '@/components/knowledge/KnowledgeGraphPreview.vue'
 import * as kbApi from '@/api/knowledgeBase'
 import { generateQuestionsFromKnowledgeBase, batchCreateQuestions } from '@/api/exam'
 import { getCourses } from '@/utils/course'
@@ -268,6 +327,7 @@ const selectedKb = ref(null)
 const router = useRouter()
 const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
+const graphRefreshKey = ref(0)
 
 const createVisible = ref(false); const creating = ref(false)
 const createForm = reactive({ name: '', description: '' })
@@ -328,6 +388,7 @@ async function doUpload() {
       uploadFile.value = null
       await loadFiles()
       await loadKBs()
+      graphRefreshKey.value++
     } else ElMessage.error(res.msg || '上传失败')
   } finally { uploading.value = false }
 }
@@ -400,6 +461,7 @@ async function handleDeleteFile(row) {
         kb.knowledge_count = Math.max(0, kb.knowledge_count - 1)
       }
       ElMessage.success('已删除')
+      graphRefreshKey.value++
       void loadFiles()
       void loadKBs()
     } else ElMessage.error(res.msg || '删除失败')
@@ -586,25 +648,249 @@ onMounted(loadKBs)
 </script>
 
 <style scoped>
-.teacher-kb-page { display: flex; gap: 16px; height: calc(100vh - 120px); }
-.kb-left { width: 520px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex-shrink: 0; }
-.kb-right { flex: 1; min-width: 0; max-width: calc(100% - 536px); }
-.panel { background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; display: flex; flex-direction: column; max-height: 50%; }
-.panel:last-child { flex: 1; min-height: 0; }
-.panel-title { padding: 10px 14px; font-weight: 600; font-size: 14px; color: #303133; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-shrink: 0; }
-.panel-title-actions { display: flex; gap: 6px; align-items: center; }
-.panel-body.scroll-y { flex: 1; overflow-y: auto; padding: 8px; min-height: 0; }
-.empty-hint { color: #c0c4cc; text-align: center; padding: 24px 0; font-size: 13px; }
-.upload-bar { padding: 8px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #ebeef5; }
-.kb-item { padding: 10px 12px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: background .15s; }
-.kb-item:hover { background: #f5f7fa; }
-.kb-item.active { background: #ecf5ff; }
-.kb-item-left { flex: 1; min-width: 0; }
-.kb-name { font-size: 13px; font-weight: 500; color: #303133; display: block; }
-.kb-desc { font-size: 11px; color: #909399; display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 2px; }
-.kb-count { font-size: 11px; color: #909399; background: #f0f0f0; padding: 2px 8px; border-radius: 10px; flex-shrink: 0; margin-left: 8px; }
-.file-item { padding: 8px 0; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #f5f5f5; }
-.file-item:last-child { border-bottom: none; }
-.file-name { flex: 1; font-size: 13px; color: #303133; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.file-meta { font-size: 11px; color: #b0b0b0; flex-shrink: 0; }
+.teacher-kb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-height: calc(100vh - 120px);
+}
+
+.teacher-page-header {
+  padding: 4px 4px 0;
+}
+
+.teacher-page-header p {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.teacher-kb-layout {
+  display: grid;
+  grid-template-columns: minmax(360px, 460px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 0;
+  flex: 1;
+}
+
+.kb-left {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.kb-right {
+  min-width: 0;
+  min-height: 640px;
+}
+
+.panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: var(--card-shadow);
+}
+
+.kb-list-panel {
+  min-height: 260px;
+  max-height: 360px;
+}
+
+.panel-title {
+  padding: 16px 18px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.panel-title-stack {
+  align-items: flex-start;
+}
+
+.panel-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.panel-body.scroll-y {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  min-height: 0;
+}
+
+.upload-bar {
+  padding: 12px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-subtle);
+}
+
+.upload-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  color: var(--text-secondary);
+  font-size: 12px;
+}
+
+.kb-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  transition: all .18s ease;
+  border: 1px solid transparent;
+}
+
+.kb-item + .kb-item {
+  margin-top: 8px;
+}
+
+.kb-item:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+}
+
+.kb-item.active {
+  background: var(--primary-color-soft);
+  border-color: var(--primary-color-light);
+  box-shadow: var(--shadow-xs);
+}
+
+.kb-item-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.kb-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+}
+
+.kb-desc {
+  font-size: 12px;
+  color: var(--text-secondary);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  margin-top: 4px;
+}
+
+.kb-summary-actions {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.action-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.section-caption {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  color: var(--text-secondary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.file-item {
+  padding: 12px 2px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.graph-panel :deep(.preview-shell) {
+  min-height: 260px;
+}
+
+.gen-steps {
+  margin-bottom: 20px;
+}
+
+@media (max-width: 1100px) {
+  .teacher-kb-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .kb-right {
+    min-height: 520px;
+  }
+}
+
+@media (max-width: 768px) {
+  .teacher-page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .panel-title,
+  .upload-bar {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .upload-bar {
+    width: 100%;
+  }
+}
 </style>

@@ -38,7 +38,8 @@ public class PaperLocalServiceImpl implements PaperLocalService {
 
     private static final String ATOM_NS = "http://www.w3.org/2005/Atom";
     private static final String ARXIV_NS = "http://arxiv.org/schemas/atom";
-    private static final String ARXIV_API = "http://export.arxiv.org/api/query";
+    private static final String ARXIV_API = "https://export.arxiv.org/api/query";
+    private static final String USER_AGENT = "AI-Academy/1.0 (mailto:2024015839@cupk.edu.cn)";
 
     @Autowired
     private PaperMapper paperMapper;
@@ -100,38 +101,50 @@ public class PaperLocalServiceImpl implements PaperLocalService {
     @Transactional
     public Result importFromArxiv(String keyword, Integer maxResults) {
         try {
-            int capped = Math.min(maxResults, 100);
+            String q = keyword == null ? "" : keyword.trim();
+            if (q.isBlank()) {
+                return Result.success(0);
+            }
+
+            int capped = Math.min(Math.max(maxResults == null ? 20 : maxResults, 1), 100);
             String url = ARXIV_API
-                + "?search_query=all:" + java.net.URLEncoder.encode(keyword, "UTF-8")
+                + "?search_query=all:" + java.net.URLEncoder.encode(q, "UTF-8")
                 + "&start=0&max_results=" + capped
                 + "&sortBy=relevance";
 
-            Request request = new Request.Builder().url(url).get().build();
-            Response response = client.newCall(request).execute();
-
-            if (!response.isSuccessful()) {
-                return Result.error("arXiv API returned " + response.code());
-            }
-
-            String body = response.body().string();
-            List<ArxivEntry> entries = parseArxivResponse(body);
-            int imported = 0;
-
-            for (ArxivEntry entry : entries) {
-                Paper paper = entry.paper;
-                Paper existing = paperMapper.selectOne(
-                    new QueryWrapper<Paper>().eq("arxiv_id", paper.getArxivId()));
-                if (existing != null) continue;
-
-                paperMapper.insert(paper);
-                for (PaperAuthor author : entry.authors) {
-                    author.setPaperId(paper.getId());
-                    paperAuthorMapper.insert(author);
+            Request request = new Request.Builder()
+                .url(url)
+                .header("User-Agent", USER_AGENT)
+                .get()
+                .build();
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    return Result.error("arXiv API returned " + response.code());
                 }
-                imported++;
-            }
+                if (response.body() == null) {
+                    return Result.error("arXiv API returned empty body");
+                }
 
-            return Result.success(imported);
+                String body = response.body().string();
+                List<ArxivEntry> entries = parseArxivResponse(body);
+                int imported = 0;
+
+                for (ArxivEntry entry : entries) {
+                    Paper paper = entry.paper;
+                    Paper existing = paperMapper.selectOne(
+                        new QueryWrapper<Paper>().eq("arxiv_id", paper.getArxivId()));
+                    if (existing != null) continue;
+
+                    paperMapper.insert(paper);
+                    for (PaperAuthor author : entry.authors) {
+                        author.setPaperId(paper.getId());
+                        paperAuthorMapper.insert(author);
+                    }
+                    imported++;
+                }
+
+                return Result.success(imported);
+            }
         } catch (Exception e) {
             return Result.error("导入论文失败: " + e.getMessage());
         }
@@ -274,6 +287,14 @@ public class PaperLocalServiceImpl implements PaperLocalService {
         }
     }
 
+    private String normalizeArxivId(String idUrl) {
+        if (idUrl == null) return "";
+        return idUrl
+            .replace("https://arxiv.org/abs/", "")
+            .replace("http://arxiv.org/abs/", "")
+            .strip();
+    }
+
     private List<ArxivEntry> parseArxivResponse(String xml) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
@@ -287,7 +308,7 @@ public class PaperLocalServiceImpl implements PaperLocalService {
             Element entry = (Element) entries.item(i);
 
             String idUrl = getTextNS(entry, ATOM_NS, "id");
-            String arxivId = idUrl.replace("http://arxiv.org/abs/", "").strip();
+            String arxivId = normalizeArxivId(idUrl);
 
             String published = getTextNS(entry, ATOM_NS, "published");
             Integer year = null;

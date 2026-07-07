@@ -3,7 +3,7 @@
     <div class="page-header">
       <div>
         <h2>知识图谱</h2>
-        <p>查看知识库中已构建的节点与关系。</p>
+        <p>查看知识库中已构建的节点与关系，并支持拖拽、缩放与节点联动。</p>
       </div>
       <div class="header-actions">
         <el-select
@@ -56,7 +56,12 @@
         <template #header>
           <div class="card-header">
             <span>关系图</span>
-            <el-tag size="small" effect="plain">SVG</el-tag>
+            <div class="graph-header-tags">
+              <el-tag size="small" effect="plain">可拖拽 / 缩放</el-tag>
+              <el-tag v-if="selectedNode" size="small" type="primary" effect="light">
+                已选节点：{{ selectedNode.label }}
+              </el-tag>
+            </div>
           </div>
         </template>
 
@@ -67,38 +72,27 @@
           <el-empty description="当前知识库暂无可展示的图谱节点" />
         </div>
         <div v-else class="graph-stage">
-          <svg :viewBox="`0 0 ${viewWidth} ${viewHeight}`" class="graph-svg" role="img">
-            <defs>
-              <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-                <path d="M 0 0 L 10 5 L 0 10 z" fill="#94a3b8" />
-              </marker>
-            </defs>
+          <div class="graph-toolbar">
+            <span>拖动画布可平移，滚轮可缩放，拖动节点可调整布局。</span>
+            <el-button v-if="selectedNodeId" link type="primary" @click="clearSelection">
+              清除节点筛选
+            </el-button>
+          </div>
 
-            <g v-for="edge in positionedEdges" :key="edge.id">
-              <line
-                :x1="edge.source.x"
-                :y1="edge.source.y"
-                :x2="edge.target.x"
-                :y2="edge.target.y"
-                class="graph-edge"
-                marker-end="url(#arrow)"
-              />
-              <text
-                :x="(edge.source.x + edge.target.x) / 2"
-                :y="(edge.source.y + edge.target.y) / 2 - 6"
-                class="edge-label"
-              >
-                {{ edge.label }}
-              </text>
-            </g>
-
-            <g v-for="node in positionedNodes" :key="node.id" class="graph-node-group">
-              <circle :cx="node.x" :cy="node.y" r="24" class="graph-node" />
-              <text :x="node.x" :y="node.y + 5" class="node-label">
-                {{ truncate(node.label, 10) }}
-              </text>
-            </g>
-          </svg>
+          <VueFlow
+            :nodes="flowNodes"
+            :edges="flowEdges"
+            class="interactive-graph"
+            fit-view-on-init
+            :min-zoom="0.2"
+            :max-zoom="2"
+            :zoom-on-scroll="true"
+            :pan-on-drag="true"
+            :nodes-draggable="true"
+            :elements-selectable="true"
+            @node-click="handleNodeClick"
+            @pane-click="clearSelection"
+          />
         </div>
       </el-card>
 
@@ -106,7 +100,12 @@
         <template #header>
           <div class="card-header">
             <span>关系明细</span>
-            <el-tag size="small" effect="plain">{{ normalizedRelations.length }} 条</el-tag>
+            <div class="graph-header-tags">
+              <el-tag v-if="selectedNode" size="small" type="primary" effect="light">
+                {{ selectedNode.label }} 相关
+              </el-tag>
+              <el-tag size="small" effect="plain">{{ displayedRelations.length }} 条</el-tag>
+            </div>
           </div>
         </template>
 
@@ -116,12 +115,15 @@
         <div v-else-if="!normalizedRelations.length" class="empty-wrap">
           <el-empty description="当前知识库暂无可展示的关系" />
         </div>
+        <div v-else-if="!displayedRelations.length" class="empty-wrap">
+          <el-empty description="当前节点暂无关联关系" />
+        </div>
         <div v-else class="relation-list">
-          <div v-for="relation in normalizedRelations" :key="relation.id" class="relation-item">
+          <div v-for="relation in displayedRelations" :key="relation.id" class="relation-item">
             <div class="relation-top">
-              <span class="relation-node">{{ relation.source }}</span>
+              <span class="relation-node" :class="{ active: relation.source === selectedNodeId }">{{ relation.source }}</span>
               <el-tag size="small" type="primary" effect="plain">{{ relation.label }}</el-tag>
-              <span class="relation-node">{{ relation.target }}</span>
+              <span class="relation-node" :class="{ active: relation.target === selectedNodeId }">{{ relation.target }}</span>
             </div>
             <div v-if="relation.rawText" class="relation-raw">{{ relation.rawText }}</div>
           </div>
@@ -134,6 +136,9 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { VueFlow } from '@vue-flow/core'
+import '@vue-flow/core/dist/style.css'
+import '@vue-flow/core/dist/theme-default.css'
 import * as kbApi from '@/api/knowledgeBase'
 
 function unwrapData(data) {
@@ -153,9 +158,8 @@ const router = useRouter()
 const loading = ref(false)
 const knowledgeBases = ref([])
 const selectedKbId = ref('')
+const selectedNodeId = ref('')
 const graphData = ref({ enabled: false, nodes: [], relations: [] })
-const viewWidth = 920
-const viewHeight = 560
 
 const selectedKb = computed(() => knowledgeBases.value.find(kb => kb.id === selectedKbId.value) || null)
 const graphEnabled = computed(() => Boolean(graphData.value?.enabled))
@@ -227,38 +231,68 @@ const normalizedGraph = computed(() => {
 
 const normalizedNodes = computed(() => normalizedGraph.value.nodes)
 const normalizedRelations = computed(() => normalizedGraph.value.relations)
+const selectedNode = computed(() => normalizedNodes.value.find(node => node.id === selectedNodeId.value) || null)
 
-const positionedNodes = computed(() => {
+const displayedRelations = computed(() => {
+  if (!selectedNodeId.value) return normalizedRelations.value
+  return normalizedRelations.value.filter(relation => relation.source === selectedNodeId.value || relation.target === selectedNodeId.value)
+})
+
+const flowNodes = computed(() => {
   const nodes = normalizedNodes.value
   if (!nodes.length) return []
 
-  const centerX = viewWidth / 2
-  const centerY = viewHeight / 2
-  const radius = Math.max(120, Math.min(220, 60 + nodes.length * 18))
+  const centerX = 360
+  const centerY = 220
+  const radius = Math.max(140, Math.min(280, 70 + nodes.length * 18))
 
   if (nodes.length === 1) {
-    return [{ ...nodes[0], x: centerX, y: centerY }]
+    const node = nodes[0]
+    return [{
+      id: node.id,
+      label: truncate(node.label, 18),
+      position: { x: centerX, y: centerY },
+      data: { fullLabel: node.label },
+      class: selectedNodeId.value === node.id ? 'is-selected' : ''
+    }]
   }
 
   return nodes.map((node, index) => {
     const angle = (Math.PI * 2 * index) / nodes.length - Math.PI / 2
     return {
-      ...node,
-      x: centerX + radius * Math.cos(angle),
-      y: centerY + radius * Math.sin(angle)
+      id: node.id,
+      label: truncate(node.label, 18),
+      position: {
+        x: centerX + radius * Math.cos(angle),
+        y: centerY + radius * Math.sin(angle)
+      },
+      data: { fullLabel: node.label },
+      class: selectedNodeId.value === node.id ? 'is-selected' : ''
     }
   })
 })
 
-const positionedEdges = computed(() => {
-  const nodeMap = new Map(positionedNodes.value.map(node => [node.id, node]))
+const flowEdges = computed(() => {
+  const nodeIds = new Set(flowNodes.value.map(node => node.id))
+
   return normalizedRelations.value
+    .filter(edge => nodeIds.has(edge.source) && nodeIds.has(edge.target))
     .map(edge => ({
-      ...edge,
-      source: nodeMap.get(edge.source),
-      target: nodeMap.get(edge.target)
+      id: edge.id,
+      source: edge.source,
+      target: edge.target,
+      label: edge.label,
+      class: !selectedNodeId.value || edge.source === selectedNodeId.value || edge.target === selectedNodeId.value ? 'is-active' : 'is-dimmed',
+      labelStyle: {
+        fill: '#475569',
+        fontSize: '11px',
+        fontWeight: 600
+      },
+      style: {
+        stroke: !selectedNodeId.value || edge.source === selectedNodeId.value || edge.target === selectedNodeId.value ? '#3b82f6' : '#cbd5e1',
+        strokeWidth: !selectedNodeId.value || edge.source === selectedNodeId.value || edge.target === selectedNodeId.value ? 2 : 1.4
+      }
     }))
-    .filter(edge => edge.source && edge.target)
 })
 
 function truncate(text, max) {
@@ -275,7 +309,17 @@ function handleKbChange(kbId) {
   syncRoute(kbId)
 }
 
+function handleNodeClick(event) {
+  selectedNodeId.value = event?.node?.id || ''
+}
+
+function clearSelection() {
+  selectedNodeId.value = ''
+}
+
 async function loadGraph(kbId) {
+  selectedNodeId.value = ''
+
   if (!kbId) {
     graphData.value = { enabled: false, nodes: [], relations: [] }
     return
@@ -323,6 +367,20 @@ async function loadKnowledgeBases() {
 watch(selectedKbId, kbId => {
   loadGraph(kbId)
 })
+
+watch(
+  () => route.query.kbId,
+  queryKbId => {
+    const nextKbId = typeof queryKbId === 'string' ? queryKbId : ''
+    if (!nextKbId) {
+      if (selectedKbId.value) selectedKbId.value = ''
+      return
+    }
+    if (knowledgeBases.value.some(kb => kb.id === nextKbId) && selectedKbId.value !== nextKbId) {
+      selectedKbId.value = nextKbId
+    }
+  }
+)
 
 onMounted(loadKnowledgeBases)
 </script>
@@ -421,6 +479,14 @@ onMounted(loadKnowledgeBases)
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
+}
+
+.graph-header-tags {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .graph-stage {
@@ -429,37 +495,24 @@ onMounted(loadKnowledgeBases)
   border-radius: 16px;
   background: linear-gradient(180deg, #f8fbff 0%, #f3f6fb 100%);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-.graph-svg {
+.graph-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px 0;
+  color: #64748b;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.interactive-graph {
   width: 100%;
-  height: 560px;
-  display: block;
-}
-
-.graph-edge {
-  stroke: #94a3b8;
-  stroke-width: 1.6;
-}
-
-.edge-label {
-  fill: #475569;
-  font-size: 11px;
-  text-anchor: middle;
-}
-
-.graph-node {
-  fill: #2563eb;
-  stroke: #dbeafe;
-  stroke-width: 4;
-}
-
-.node-label {
-  fill: #ffffff;
-  font-size: 11px;
-  font-weight: 600;
-  text-anchor: middle;
-  pointer-events: none;
+  height: 520px;
 }
 
 .relation-list {
@@ -489,6 +542,10 @@ onMounted(loadKnowledgeBases)
   color: #1f2937;
 }
 
+.relation-node.active {
+  color: #2563eb;
+}
+
 .relation-raw {
   margin-top: 8px;
   color: #6b7280;
@@ -501,6 +558,46 @@ onMounted(loadKnowledgeBases)
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+:deep(.vue-flow__pane) {
+  cursor: grab;
+}
+
+:deep(.vue-flow__pane.dragging) {
+  cursor: grabbing;
+}
+
+:deep(.vue-flow__node) {
+  min-width: 88px;
+  max-width: 180px;
+  border: 1px solid #bfdbfe;
+  border-radius: 999px;
+  padding: 10px 16px;
+  background: #2563eb;
+  color: #ffffff;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.18);
+}
+
+:deep(.vue-flow__node.is-selected) {
+  background: #1d4ed8;
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.18);
+}
+
+:deep(.vue-flow__edge-textbg) {
+  fill: rgba(255, 255, 255, 0.92);
+}
+
+:deep(.vue-flow__edge.is-dimmed path) {
+  opacity: 0.55;
+}
+
+:deep(.vue-flow__edge.is-active path) {
+  opacity: 1;
 }
 
 @media (max-width: 1100px) {
@@ -520,6 +617,10 @@ onMounted(loadKnowledgeBases)
 
   .stat-card {
     flex: 1;
+  }
+
+  .interactive-graph {
+    height: 460px;
   }
 }
 </style>

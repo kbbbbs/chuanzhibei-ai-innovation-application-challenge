@@ -1,107 +1,197 @@
 <template>
   <div class="kb-page">
-    <div class="kb-left">
-      <div class="panel">
-        <div class="panel-title">📚 知识库</div>
-        <div v-loading="kbLoading" class="panel-body">
-          <div v-if="kbs.length === 0 && !kbLoading" class="empty-hint">暂无知识库</div>
-          <div v-for="kb in kbs" :key="kb.id"
-            :class="['kb-item', { active: selectedKb?.id === kb.id }]"
-            @click="selectKb(kb)">
-            <span class="kb-name">{{ kb.name }}</span>
-            <span class="kb-count">{{ kb.knowledge_count || 0 }}</span>
-          </div>
-        </div>
+    <div class="page-header kb-page-header">
+      <div>
+        <h2>智能学伴</h2>
+        <p>选择知识库后，可以查看课件、继续对话并检索知识片段，让 AI 基于课程资料回答你的问题。</p>
       </div>
-
-      <div class="panel" v-if="selectedKb">
-        <div class="panel-title">
-          {{ selectedKb.name }} · 课件
-          <el-button size="small" type="primary" link @click="openGraph">知识图谱</el-button>
-        </div>
-        <div class="panel-body scroll-y" v-loading="filesLoading" style="max-height:200px">
-          <div v-if="files.length === 0 && !filesLoading" class="empty-hint">暂无课件</div>
-          <div v-for="f in files" :key="f.id" class="file-item">
-            <span class="file-icon">{{ fileIcon(f) }}</span>
-            <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel flex-1" v-if="selectedKb">
-        <div class="panel-title">
-           对话记录
-          <el-button size="small" type="primary" link @click="newSession">+ 新建</el-button>
-        </div>
-        <div class="panel-body scroll-y">
-          <div v-for="s in sessions" :key="s.id"
-            :class="['session-item', { active: currentSessionId === s.id }]"
-            @click="switchSession(s)">
-            <span class="session-title">{{ s.title || s.id }}</span>
-            <el-button size="small" type="danger" :icon="Delete" circle @click.stop="removeSession(s.id)" />
-          </div>
-          <div v-if="sessions.length===0" class="empty-hint">暂无对话</div>
-        </div>
+      <div class="header-actions" v-if="selectedKb">
+        <el-tag type="primary" effect="light">{{ selectedKb.name }}</el-tag>
       </div>
     </div>
 
-    <div class="kb-right">
-      <div class="chat-panel">
-        <div class="panel-title">
-          📖 智能学伴
-          <span v-if="!selectedKb" class="sub">— 请选择知识库</span>
-        </div>
-        <div class="chat-msgs" ref="chatRef">
-          <div v-if="messages.length === 0 && !chatLoading" class="chat-welcome">
-            <div class="welcome-icon"></div>
-            <div class="welcome-text">上传课件后问我任何问题吧！</div>
-            <div class="hint-list">
-              <span v-for="h in exampleQuestions" :key="h" class="hint-tag"
-                @click="inputText = h; sendMessage()">{{ h }}</span>
+    <div class="kb-layout">
+      <aside class="kb-left">
+        <section class="panel">
+          <div class="panel-title clickable" @click="toggleSection('knowledgeBases')">
+            <div>
+              <span>知识库</span>
+              <span class="panel-sub">选择一个知识库开始学习</span>
+            </div>
+            <div class="panel-title-right">
+              <el-tag size="small" effect="plain">{{ kbs.length }} 个</el-tag>
+              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.knowledgeBases" /><ArrowRight v-else /></el-icon>
             </div>
           </div>
-          <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
-            <span class="msg-who">{{ msg.role === 'user' ? '我' : '📖' }}</span>
-            <div class="msg-text">
-              <MdPreview :modelValue="proxyLocalUrls(msg.content)" previewTheme="default" />
+          <div v-show="sectionOpen.knowledgeBases" v-loading="kbLoading" class="panel-body scroll-y">
+            <el-empty v-if="kbs.length === 0 && !kbLoading" description="暂无知识库" />
+            <div v-for="kb in kbs" :key="kb.id"
+              :class="['kb-item', { active: selectedKb?.id === kb.id }]"
+              @click="selectKb(kb)">
+              <div class="kb-item-main">
+                <span class="kb-name">{{ kb.name }}</span>
+                <span class="kb-desc">{{ kb.description || '当前知识库可用于问答、总结和知识检索。' }}</span>
+              </div>
+              <el-tag size="small" effect="plain">{{ kb.knowledge_count || 0 }} 份</el-tag>
             </div>
           </div>
-          <div v-if="chatLoading" class="msg assistant"><span class="msg-who"></span><span class="msg-text dim">思考中…</span></div>
-        </div>
-        <div class="chat-bar" v-if="selectedKb">
-          <el-input v-model="inputText" placeholder="输入问题…" @keyup.enter="sendMessage" :disabled="chatLoading" />
-          <el-button type="primary" :loading="chatLoading" @click="sendMessage">发送</el-button>
-        </div>
-      </div>
+        </section>
 
-      <div class="search-panel" v-if="selectedKb">
-        <div class="panel-title clickable" @click="searchOpen = !searchOpen">
-          🔍 知识检索 <span class="search-sub">{{ searchOpen ? '收起' : '展开' }}{{ searchTotal > 0 ? ' · '+searchTotal+'条' : '' }}</span>
-        </div>
-        <div v-show="searchOpen" class="panel-body">
-          <el-input v-model="searchQuery" placeholder="搜索知识库内容…" @keyup.enter="doSearch" size="small" class="search-input">
-            <template #append><el-button @click="doSearch" :loading="searchLoading" :icon="Search" /></template>
-          </el-input>
-          <div v-if="searchResults.length" class="search-list">
-            <div v-for="(r, i) in searchResults" :key="i" class="search-hit" @click="expandedHit = expandedHit===i ? -1 : i">
-              <div class="hit-header">
-                <span class="hit-title">{{ cleanTitle(r) }}</span>
-                <el-tag size="small" type="info" effect="plain" v-if="r.score" class="hit-score">{{ (r.score*100).toFixed(0) }}%</el-tag>
-              </div>
-              <div class="hit-preview" v-if="expandedHit !== i">{{ cleanContent(r).slice(0, 120) }}…</div>
-              <div class="hit-full" v-else>
-                <MdPreview :modelValue="proxyLocalUrls(cleanContent(r))" previewTheme="default" />
-              </div>
-              <div class="hit-actions" v-if="expandedHit === i">
-                <el-button size="small" type="primary" :loading="chatLoading" @click.stop="askAbout(r)">让学伴讲解</el-button>
+        <section class="panel" v-if="selectedKb">
+          <div class="panel-title clickable" @click="toggleSection('files')">
+            <div>
+              <span>课件资料</span>
+              <span class="panel-sub">{{ selectedKb.name }}</span>
+            </div>
+            <div class="panel-title-right">
+              <el-button size="small" type="primary" link @click.stop="openGraph">知识图谱</el-button>
+              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.files" /><ArrowRight v-else /></el-icon>
+            </div>
+          </div>
+          <div v-show="sectionOpen.files" class="panel-body scroll-y" v-loading="filesLoading">
+            <el-empty v-if="files.length === 0 && !filesLoading" description="暂无课件" />
+            <div v-for="f in files" :key="f.id" class="file-item file-item-static">
+              <span class="file-icon">{{ fileIcon(f) }}</span>
+              <div class="file-info">
+                <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
+                <span class="file-meta">{{ f.file_type || f.type || '未知类型' }}</span>
               </div>
             </div>
           </div>
-          <div v-else-if="searchLoading" style="text-align:center;padding:20px;color:#909399">搜索中…</div>
-        </div>
-      </div>
+        </section>
+
+        <section class="panel" v-if="selectedKb">
+          <div class="panel-title clickable" @click="toggleSection('graph')">
+            <div>
+              <span>知识图谱</span>
+              <span class="panel-sub">查看当前知识库的结构预览</span>
+            </div>
+            <div class="panel-title-right">
+              <el-button size="small" type="primary" link @click.stop="openGraph">查看完整图谱</el-button>
+              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.graph" /><ArrowRight v-else /></el-icon>
+            </div>
+          </div>
+          <div v-show="sectionOpen.graph" class="panel-body">
+            <KnowledgeGraphPreview :kb-id="selectedKb.id" />
+          </div>
+        </section>
+
+        <section class="panel flex-1" v-if="selectedKb">
+          <div class="panel-title clickable" @click="toggleSection('sessions')">
+            <div>
+              <span>对话记录</span>
+              <span class="panel-sub">继续之前的学习会话</span>
+            </div>
+            <div class="panel-title-right">
+              <el-button size="small" type="primary" link @click.stop="newSession">+ 新建</el-button>
+              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.sessions" /><ArrowRight v-else /></el-icon>
+            </div>
+          </div>
+          <div v-show="sectionOpen.sessions" class="panel-body scroll-y">
+            <el-empty v-if="sessions.length === 0" description="暂无对话">
+              <el-button size="small" type="primary" @click="newSession">开始新对话</el-button>
+            </el-empty>
+            <div v-for="s in sessions" :key="s.id"
+              :class="['session-item', { active: currentSessionId === s.id }]"
+              @click="switchSession(s)">
+              <div class="session-main">
+                <span class="session-title">{{ s.title || s.id }}</span>
+                <span class="session-meta">点击继续这段对话</span>
+              </div>
+              <el-button size="small" type="danger" :icon="Delete" circle @click.stop="removeSession(s.id)" />
+            </div>
+          </div>
+        </section>
+      </aside>
+
+      <main class="kb-right">
+        <section class="chat-panel panel">
+          <div class="chat-header">
+            <div>
+              <span class="chat-title">智能学伴</span>
+              <span class="panel-sub">{{ selectedKb ? '基于当前知识库进行问答、总结与讲解。' : '请先在左侧选择一个知识库。' }}</span>
+            </div>
+            <div class="chat-header-tags">
+              <el-tag size="small" effect="plain">知识库 RAG</el-tag>
+              <el-tag v-if="selectedKb" size="small" type="primary" effect="light">{{ selectedKb.name }}</el-tag>
+            </div>
+          </div>
+
+          <div class="chat-msgs" ref="chatRef">
+            <div v-if="messages.length === 0 && !chatLoading" class="chat-welcome">
+              <div class="welcome-icon">📖</div>
+              <h3>{{ selectedKb ? '开始向智能学伴提问' : '请选择知识库' }}</h3>
+              <p class="welcome-text">{{ selectedKb ? '我会基于当前知识库内容回答问题、总结重点，并结合检索结果做讲解。' : '选择左侧知识库后，你就可以围绕课件内容继续对话与检索。' }}</p>
+              <div class="hint-list" v-if="selectedKb">
+                <span v-for="h in exampleQuestions" :key="h" class="hint-tag"
+                  @click="inputText = h; sendMessage()">{{ h }}</span>
+              </div>
+            </div>
+
+            <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
+              <span class="msg-who">{{ msg.role === 'user' ? '我' : 'AI' }}</span>
+              <div class="msg-text">
+                <MdPreview :modelValue="proxyLocalUrls(msg.content)" previewTheme="default" />
+              </div>
+            </div>
+
+            <div v-if="chatLoading" class="msg assistant">
+              <span class="msg-who">AI</span>
+              <span class="msg-text dim typing-indicator"><span></span><span></span><span></span></span>
+            </div>
+          </div>
+
+          <div class="chat-bar" v-if="selectedKb">
+            <el-input
+              v-model="inputText"
+              type="textarea"
+              :rows="2"
+              resize="none"
+              placeholder="输入你的问题，按 Enter 发送"
+              :disabled="chatLoading"
+              @keydown.enter.exact.prevent="sendMessage"
+            />
+            <div class="chat-actions">
+              <span class="chat-tip">基于当前知识库回答</span>
+              <el-button type="primary" :loading="chatLoading" @click="sendMessage">发送</el-button>
+            </div>
+          </div>
+        </section>
+
+        <section class="search-panel panel" v-if="selectedKb">
+          <div class="panel-title clickable" @click="searchOpen = !searchOpen">
+            <div>
+              <span>知识检索</span>
+              <span class="panel-sub">{{ searchOpen ? '收起结果面板' : '展开结果面板' }}</span>
+            </div>
+            <span class="search-sub">{{ searchTotal > 0 ? searchTotal + ' 条结果' : (searchOpen ? '收起' : '展开') }}</span>
+          </div>
+          <div v-show="searchOpen" class="panel-body">
+            <el-input v-model="searchQuery" placeholder="搜索知识库内容…" @keyup.enter="doSearch" class="search-input">
+              <template #append><el-button @click="doSearch" :loading="searchLoading" :icon="Search" /></template>
+            </el-input>
+
+            <div v-if="searchResults.length" class="search-list">
+              <div v-for="(r, i) in searchResults" :key="i" class="search-hit" @click="expandedHit = expandedHit===i ? -1 : i">
+                <div class="hit-header">
+                  <span class="hit-title">{{ cleanTitle(r) }}</span>
+                  <el-tag size="small" type="info" effect="plain" v-if="r.score" class="hit-score">{{ (r.score*100).toFixed(0) }}%</el-tag>
+                </div>
+                <div class="hit-preview" v-if="expandedHit !== i">{{ cleanContent(r).slice(0, 140) }}…</div>
+                <div class="hit-full" v-else>
+                  <MdPreview :modelValue="proxyLocalUrls(cleanContent(r))" previewTheme="default" />
+                </div>
+                <div class="hit-actions" v-if="expandedHit === i">
+                  <el-button size="small" type="primary" :loading="chatLoading" @click.stop="askAbout(r)">让学伴讲解</el-button>
+                </div>
+              </div>
+            </div>
+            <div v-else-if="searchLoading" class="search-empty">搜索中…</div>
+            <el-empty v-else-if="searchQuery.trim()" description="未找到相关内容" />
+          </div>
+        </section>
+      </main>
     </div>
-
   </div>
 </template>
 
@@ -109,11 +199,12 @@
 import { ref, reactive, computed, nextTick, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, Search } from '@element-plus/icons-vue'
+import { Delete, Search, ArrowDown, ArrowRight } from '@element-plus/icons-vue'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import { useUserStore } from '@/store/user'
 import * as kbApi from '@/api/knowledgeBase'
+import KnowledgeGraphPreview from '@/components/knowledge/KnowledgeGraphPreview.vue'
 
 function unwrapData(data) {
   while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined)
@@ -132,6 +223,12 @@ const historyMap = reactive(loadHistories())
 const messages = ref([])
 const chatLoading = ref(false); const inputText = ref(''); const chatRef = ref(null)
 const searchOpen = ref(false); const searchQuery = ref(''); const searchResults = ref([]); const searchLoading = ref(false); const searchTotal = ref(0)
+const sectionOpen = reactive({
+  knowledgeBases: true,
+  files: true,
+  graph: true,
+  sessions: true
+})
 const expandedHit = ref(-1)
 const previewVisible = ref(false); const previewLoading = ref(false)
 const previewTitle = ref(''); const previewText = ref('')
@@ -172,6 +269,10 @@ function cleanContent(r) {
 function proxyLocalUrls(text) {
   if (!text) return ''
   return text.replace(/local:\/\/(\d+)\//g, '/api/weknora/local-file/$1/')
+}
+
+function toggleSection(key) {
+  sectionOpen[key] = !sectionOpen[key]
 }
 
 const exampleQuestions = ['请总结核心知识点', '重点和难点是什么', '给我出几道练习题']
@@ -556,150 +657,552 @@ onMounted(loadKBs)
 </script>
 
 <style scoped>
-.kb-page { display: flex; gap: 16px; height: calc(100vh - 140px); }
-.kb-left { width: 320px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-.kb-right { flex: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-.panel { background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; }
-.panel.flex-1 { flex: 1; display: flex; flex-direction: column; }
-.panel-title { padding: 10px 14px; font-weight: 600; font-size: 14px; color: #303133; border-bottom: 1px solid #ebeef5; display: flex; justify-content: space-between; align-items: center; }
-.panel-title .sub { font-weight: 400; font-size: 12px; color: #b0b0b0; }
-.panel-title.clickable { cursor: pointer; user-select: none; }
-.panel-body { padding: 8px; }
-.panel-body.scroll-y { flex: 1; overflow-y: auto; }
-.empty-hint { color: #c0c4cc; text-align: center; padding: 16px 0; font-size: 13px; }
-
-.kb-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; }
-.kb-item:hover { background: #f5f7fa; }
-.kb-item.active { background: #ecf5ff; border-left: 3px solid #409eff; }
-.kb-name { font-size: 13px; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.kb-count { font-size: 11px; color: #909399; background: #f0f0f0; padding: 1px 8px; border-radius: 10px; flex-shrink: 0; margin-left: 8px; }
-
-.file-item { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 4px; cursor: pointer; }
-.file-item:hover { background: #f5f7fa; }
-.file-icon { font-size: 16px; flex-shrink: 0; }
-.file-name { font-size: 12px; color: #303133; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-
-.session-item { padding: 8px 10px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
-.session-item:hover { background: #f5f7fa; }
-.session-item.active { background: #ecf5ff; }
-.session-title { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
-
-.chat-panel { flex: 1; display: flex; flex-direction: column; background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; }
-.chat-msgs { flex: 1; overflow-y: auto; padding: 12px; background: #fbf9f5; }
-.chat-welcome { text-align: center; padding: 40px 16px; }
-.welcome-icon { font-size: 42px; margin-bottom: 10px; }
-.welcome-text { font-size: 14px; color: #909399; margin-bottom: 16px; }
-.hint-list { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.hint-tag { padding: 4px 12px; border: 1px solid #dcdfe6; border-radius: 14px; font-size: 12px; color: #606266; cursor: pointer; }
-.hint-tag:hover { border-color: #409eff; color: #409eff; }
-
-.msg { display: flex; gap: 8px; margin-bottom: 12px; align-items: flex-start; }
-.msg.user { flex-direction: row-reverse; }
-.msg-who { width: 28px; height: 28px; border-radius: 50%; background: #409eff; color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; flex-shrink: 0; }
-.msg.user .msg-who { background: #67c23a; }
-.msg-text { max-width: 72%; padding: 8px 12px; border-radius: 10px; background: #fff; font-size: 14px; line-height: 1.7; color: #303133; word-break: break-word; }
-.msg-text :deep(.md-editor-preview) { background: transparent; padding: 0; }
-.msg-text :deep(.md-editor-preview a) { color: #409eff; }
-.msg.user .msg-text { background: #ecf5ff; }
-.msg-text.dim { color: #909399; font-size: 13px; }
-.chat-bar { display: flex; gap: 8px; padding: 10px 14px; border-top: 1px solid #ebeef5; }
-
-.search-panel { background: #fff; border-radius: 8px; border: 1px solid #ebeef5; overflow: hidden; }
-.search-sub { font-size:12px;color:#909399;font-weight:400;margin-left:4px }
-.search-input { margin-bottom: 8px }
-.search-list { max-height: 320px; overflow-y: auto; }
-.search-hit { padding: 8px 0; border-bottom: 1px solid #f0f0f0; cursor: pointer; }
-.search-hit:last-child { border-bottom: none; }
-.search-hit:hover { background: #fbf9f5; margin: 0 -8px; padding: 8px; border-radius: 4px; }
-.hit-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
-.hit-title { font-size: 13px; font-weight: 500; color: #303133; }
-.hit-score { flex-shrink: 0; }
-.hit-preview { font-size: 12px; color: #909399; line-height: 1.6; }
-.hit-full { font-size: 12px; color: #606266; line-height: 1.6; white-space: pre-wrap; max-height: 200px; overflow-y: auto; }
-.hit-actions { margin-top: 8px; }
-
-.preview-container {
-  min-height: 400px;
-  max-height: 75vh;
+.kb-page {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: calc(100vh - 140px);
+  min-height: calc(100vh - 140px);
   overflow: hidden;
 }
 
-.image-viewer {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+.kb-page-header p {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  line-height: 1.5;
 }
 
-.image-toolbar {
+.kb-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.kb-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.kb-right {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.kb-left > .panel {
+  flex-shrink: 0;
+}
+
+.panel {
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-color);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  min-height: 0;
+}
+
+.panel.flex-1 {
+  flex: 1 1 260px;
+  display: flex;
+  flex-direction: column;
+  min-height: 220px;
+}
+
+.panel-title,
+.chat-header {
+  padding: 16px 18px;
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 12px 16px;
-  background: #f5f7fa;
-  border-bottom: 1px solid #e4e7ed;
+  gap: 12px;
 }
 
-.page-info {
+.panel-sub {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-muted);
+}
+
+.panel-title.clickable {
+  cursor: pointer;
+  user-select: none;
+}
+
+.panel-title-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle-icon {
   font-size: 14px;
-  color: #606266;
+  color: var(--text-muted);
+  transition: transform 0.2s ease;
 }
 
-.image-display {
+.panel-body {
+  padding: 12px;
+}
+
+.panel-body.scroll-y {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.kb-left .panel:nth-child(2) .panel-body.scroll-y {
+  max-height: 220px;
+}
+
+.kb-left .panel:nth-child(3) .panel-body {
+  max-height: 260px;
+  overflow: hidden;
+}
+
+.kb-left .panel:nth-child(3) :deep(.preview-shell) {
+  min-height: 220px;
+  max-height: 220px;
+}
+
+.kb-left .panel:nth-child(3) :deep(.graph-preview-container) {
+  min-height: 0;
+  height: 220px;
+}
+
+.kb-item {
+  padding: 14px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid transparent;
+  transition: all .18s ease;
+}
+
+.kb-item + .kb-item {
+  margin-top: 8px;
+}
+
+.kb-item:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+}
+
+.kb-item.active {
+  background: var(--primary-color-soft);
+  border-color: var(--primary-color-light);
+}
+
+.kb-item-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.kb-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.kb-desc {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.file-item:last-child {
+  border-bottom: none;
+}
+
+.file-item-static {
+  cursor: default;
+}
+
+.file-icon {
+  font-size: 18px;
+  flex-shrink: 0;
+}
+
+.file-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.file-name {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.session-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+  border: 1px solid transparent;
+  transition: all .18s ease;
+}
+
+.session-item:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+}
+
+.session-item.active {
+  background: var(--primary-color-soft);
+  border-color: var(--primary-color-light);
+}
+
+.session-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-meta {
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.chat-panel {
   flex: 1;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  padding: 20px;
-  background: #f0f2f5;
-  overflow: auto;
-}
-
-.pdf-page-image {
-  max-width: 100%;
-  max-height: 100%;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  background: #fff;
-}
-
-.error-state,
-.unsupported-state {
-  display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.chat-title {
+  display: block;
+}
+
+.chat-header-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chat-msgs {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  background: #f8fafc;
+  min-height: 0;
+}
+
+.chat-welcome {
+  text-align: center;
+  padding: 28px 16px;
+}
+
+.welcome-icon {
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+
+.chat-welcome h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.welcome-text {
+  max-width: 520px;
+  margin: 0 auto 14px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.hint-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.hint-tag {
+  padding: 6px 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: all .18s ease;
+}
+
+.hint-tag:hover {
+  border-color: var(--primary-color-light);
+  background: var(--primary-color-soft);
+  color: var(--primary-color);
+}
+
+.msg {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 14px;
+  align-items: flex-start;
+}
+
+.msg.user {
+  flex-direction: row-reverse;
+}
+
+.msg-who {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4f46e5, #3b82f6);
+  color: #fff;
+  display: flex;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-  min-height: 400px;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-.error-icon,
-.unsupported-icon {
-  font-size: 60px;
-  margin-bottom: 16px;
+.msg.user .msg-who {
+  background: #334155;
 }
 
-.error-message,
-.unsupported-message {
-  font-size: 16px;
-  margin-bottom: 8px;
-  color: #303133;
-}
-
-.error-hint,
-.unsupported-hint {
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 16px;
-}
-
-.text-preview {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-  padding: 20px;
+.msg-text {
+  max-width: 78%;
+  padding: 12px 16px;
+  border-radius: 16px;
   background: #fff;
-  border-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  font-size: 14px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  word-break: break-word;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.02);
 }
-.text-preview :deep(.md-editor-preview) { background: transparent; padding: 0; }
+
+.msg.user .msg-text {
+  background: #fff;
+  color: var(--text-primary);
+}
+
+.msg-text :deep(.md-editor-preview),
+.msg-text :deep(.md-editor-preview-wrapper) {
+  background: transparent;
+  padding: 0;
+}
+
+.msg-text :deep(.md-editor-preview a) {
+  color: var(--primary-color);
+}
+
+.msg-text.dim {
+  color: var(--text-secondary);
+}
+
+.typing-indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.typing-indicator span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--text-muted);
+  animation: kb-bounce 1.4s infinite ease-in-out both;
+}
+
+.typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+.typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+
+.chat-bar {
+  padding: 10px 14px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+
+.chat-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+}
+
+.chat-tip {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.search-panel {
+  background: var(--bg-elevated);
+  flex-shrink: 0;
+}
+
+.search-panel .panel-body {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.search-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.search-input {
+  margin-bottom: 10px;
+}
+
+.search-list {
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.search-hit {
+  padding: 14px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  cursor: pointer;
+  margin-bottom: 10px;
+  background: var(--bg-elevated);
+  transition: all .18s ease;
+}
+
+.search-hit:hover {
+  border-color: var(--primary-color-light);
+  box-shadow: var(--shadow-xs);
+}
+
+.hit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.hit-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.hit-score {
+  flex-shrink: 0;
+}
+
+.hit-preview {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.hit-full {
+  font-size: 12px;
+  color: var(--text-secondary);
+  line-height: 1.7;
+}
+
+.hit-actions {
+  margin-top: 10px;
+}
+
+.search-empty {
+  text-align: center;
+  padding: 24px;
+  color: var(--text-muted);
+}
+
+@keyframes kb-bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+@media (max-width: 1100px) {
+  .kb-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .kb-right,
+  .chat-panel {
+    min-height: 420px;
+  }
+}
+
+@media (max-width: 768px) {
+  .kb-page-header,
+  .panel-title,
+  .chat-header,
+  .chat-actions,
+  .hit-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .msg-text {
+    max-width: calc(100% - 44px);
+  }
+}
 </style>

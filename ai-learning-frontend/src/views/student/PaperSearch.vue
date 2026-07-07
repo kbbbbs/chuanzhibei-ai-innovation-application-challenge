@@ -23,16 +23,20 @@
           <el-button v-if="searchForm.source !== 'local'" :loading="importing" @click="handleImport">
             导入到本地
           </el-button>
+          <el-button v-if="!showRecommendations" @click="showRecommendations = true">显示推荐</el-button>
         </el-form-item>
       </el-form>
     </el-card>
 
     <!-- 为你推荐 -->
-    <el-card style="margin-top:16px" v-if="!hasSearched && (recPapers.length > 0 || recLoading)">
+    <el-card style="margin-top:16px" v-if="showRecommendations">
       <template #header>
         <div class="card-header">
           <span>📖 为你推荐</span>
-          <el-button size="small" :loading="recLoading" @click="loadRecommend">刷新</el-button>
+          <div class="recommend-actions">
+            <el-button size="small" :loading="recLoading" @click="loadRecommend">刷新</el-button>
+            <el-button size="small" @click="showRecommendations = false">隐藏</el-button>
+          </div>
         </div>
       </template>
       <div v-loading="recLoading">
@@ -128,7 +132,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
@@ -150,6 +154,7 @@ const importing = ref(false)
 const recPapers = ref([])
 const recLoading = ref(false)
 const hasSearched = ref(false)
+const showRecommendations = ref(true)
 
 const detailVisible = ref(false)
 const detail = ref(null)
@@ -162,6 +167,8 @@ const loadRecommend = async () => {
     const res = await request.get('/api/paper/recommend', { params })
     if (res.code === '200' && res.data) {
       recPapers.value = res.data.data || []
+    } else {
+      recPapers.value = []
     }
   } catch { recPapers.value = [] }
   finally { recLoading.value = false }
@@ -173,6 +180,7 @@ const handleSearch = async () => {
     return
   }
   hasSearched.value = true
+  showRecommendations.value = false
   loading.value = true
   try {
     const res = await request.get('/api/paper/search', {

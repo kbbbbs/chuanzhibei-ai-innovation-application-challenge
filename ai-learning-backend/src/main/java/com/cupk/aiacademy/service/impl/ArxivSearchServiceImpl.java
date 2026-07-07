@@ -19,6 +19,7 @@ import java.util.concurrent.TimeUnit;
 public class ArxivSearchServiceImpl implements ArxivSearchService {
 
     private static final String API_BASE = "https://export.arxiv.org/api/query";
+    private static final String USER_AGENT = "AI-Academy/1.0 (mailto:2024015839@cupk.edu.cn)";
     private static final int ARXIV_MAX = 100;
     private static final String ATOM_NS = "http://www.w3.org/2005/Atom";
     private static final String OPENSEARCH_NS = "http://a9.com/-/spec/opensearch/1.1/";
@@ -33,25 +34,38 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
     @Override
     public Result search(String keyword, Integer page, Integer size) {
         try {
-            int start = (page - 1) * size;
-            int maxResults = Math.min(size, ARXIV_MAX - start);
-            if (maxResults <= 0) return Result.success(emptyResponse());
-
-            String url = API_BASE
-                + "?search_query=all:" + java.net.URLEncoder.encode(keyword, "UTF-8")
-                + "&start=" + start
-                + "&max_results=" + maxResults
-                + "&sortBy=relevance";
-
-            Request request = new Request.Builder().url(url).get().build();
-            Response response = client.newCall(request).execute();
-
-            if (!response.isSuccessful()) {
-                return Result.error("arXiv API returned " + response.code());
+            String q = keyword == null ? "" : keyword.trim();
+            if (q.isBlank()) {
+                return Result.success(emptyResponse());
             }
 
-            String body = response.body().string();
-            return Result.success(parseArxivXml(body));
+            int safePage = page == null || page < 1 ? 1 : page;
+            int safeSize = size == null || size < 1 ? 10 : Math.min(size, ARXIV_MAX);
+            int start = (safePage - 1) * safeSize;
+
+            String url = API_BASE
+                + "?search_query=all:" + java.net.URLEncoder.encode(q, "UTF-8")
+                + "&start=" + start
+                + "&max_results=" + safeSize
+                + "&sortBy=relevance";
+
+            Request request = new Request.Builder()
+                .url(url)
+                .header("User-Agent", USER_AGENT)
+                .get()
+                .build();
+
+            try (Response response = client.newCall(request).execute()) {
+                if (!response.isSuccessful()) {
+                    return Result.error("arXiv API returned " + response.code());
+                }
+                if (response.body() == null) {
+                    return Result.error("arXiv API returned empty body");
+                }
+
+                String body = response.body().string();
+                return Result.success(parseArxivXml(body));
+            }
         } catch (Exception e) {
             return Result.error("Failed to search arXiv: " + e.getMessage());
         }
@@ -76,7 +90,7 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
             PaperSearchResponse.Paper paper = new PaperSearchResponse.Paper();
 
             String idUrl = getTextNS(entry, ATOM_NS, "id");
-            String paperId = idUrl.replace("http://arxiv.org/abs/", "").strip();
+            String paperId = normalizeArxivId(idUrl);
             paper.setPaperId(paperId);
 
             paper.setTitle(getTextNS(entry, ATOM_NS, "title").replaceAll("\\s+", " ").strip());
@@ -121,6 +135,14 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
         result.setTotal(total);
         result.setData(papers);
         return result;
+    }
+
+    private String normalizeArxivId(String idUrl) {
+        if (idUrl == null) return "";
+        return idUrl
+            .replace("https://arxiv.org/abs/", "")
+            .replace("http://arxiv.org/abs/", "")
+            .strip();
     }
 
     private String getTextNS(Element parent, String ns, String localName) {

@@ -8,7 +8,7 @@
         <span>AI 智能伴学与教学助手</span>
       </div>
       <div class="header-controls">
-        <el-select v-model="selectedKbId" size="small" class="kb-select" placeholder="选择知识库" :disabled="!canUseAssistant" @change="handleKbChange" style="width: 130px">
+        <el-select v-if="!hideKbSelector" v-model="selectedKbId" size="small" class="kb-select" placeholder="选择知识库" :disabled="!canUseAssistant" @change="handleKbChange" style="width: 130px">
           <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
         </el-select>
         <el-select v-model="currentMode" size="small" class="mode-select" @change="handleModeChange" style="width: 130px">
@@ -25,7 +25,7 @@
           <el-radio-button label="knowledge">知识库问答 (RAG)</el-radio-button>
           <el-radio-button label="agent">Agent 智能助手</el-radio-button>
         </el-radio-group>
-        <el-select v-model="selectedKbId" size="small" placeholder="选择知识库" :disabled="!canUseAssistant" @change="handleKbChange" style="width: 140px; margin-left: 12px">
+        <el-select v-if="!hideKbSelector" v-model="selectedKbId" size="small" placeholder="选择知识库" :disabled="!canUseAssistant" @change="handleKbChange" style="width: 140px; margin-left: 12px">
           <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
         </el-select>
       </div>
@@ -123,6 +123,14 @@ const props = defineProps({
   inline: {
     type: Boolean,
     default: false
+  },
+  knowledgeBaseId: {
+    type: String,
+    default: ''
+  },
+  hideKbSelector: {
+    type: Boolean,
+    default: false
   }
 })
 
@@ -157,10 +165,26 @@ watch(messages, () => {
 onMounted(async () => {
   if (!canUseAssistant.value) return
   await loadKnowledgeBases()
+  if (props.knowledgeBaseId && knowledgeBases.value.some(kb => kb.id === props.knowledgeBaseId)) {
+    selectedKbId.value = props.knowledgeBaseId
+    await createNewSession(selectedKbId.value, '智能学习助手会话')
+    return
+  }
   if (knowledgeBases.value.length > 0) {
     selectedKbId.value = knowledgeBases.value[0].id
     await createNewSession(selectedKbId.value, '智能学习助手会话')
   }
+})
+
+watch(() => props.knowledgeBaseId, async (kbId) => {
+  if (!canUseAssistant.value || !kbId || kbId === selectedKbId.value) return
+  if (!knowledgeBases.value.length) {
+    await loadKnowledgeBases()
+  }
+  if (!knowledgeBases.value.some(kb => kb.id === kbId)) return
+  selectedKbId.value = kbId
+  messages.value = []
+  await createNewSession(kbId, '智能学习助手会话')
 })
 
 const handleKbChange = async (kbId) => {
