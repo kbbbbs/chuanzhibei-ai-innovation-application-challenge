@@ -47,6 +47,9 @@ public interface WeKnoraService {
     /** 更新知识库名称和描述 */
     Result updateKnowledgeBase(String kbId, String name, String description);
 
+    /** 获取知识库图谱配置 */
+    Result getKnowledgeGraph(String kbId);
+
     /** 获取知识文件的内容片段 */
     Result getKnowledgeContent(String kbId, String knowledgeId);
 

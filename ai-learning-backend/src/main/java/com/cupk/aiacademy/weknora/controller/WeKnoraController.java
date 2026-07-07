@@ -128,6 +128,11 @@ public class WeKnoraController {
             body.getOrDefault("description", ""));
     }
 
+    @GetMapping("/knowledge-bases/{kbId}/graph")
+    public Result getKnowledgeGraph(@PathVariable String kbId) {
+        return weKnoraService.getKnowledgeGraph(kbId);
+    }
+
     @GetMapping("/knowledge-bases/{kbId}/knowledge/{knowledgeId}/content")
     public Result getKnowledgeContent(@PathVariable String kbId,
                                        @PathVariable String knowledgeId) {

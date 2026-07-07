@@ -15,7 +15,10 @@
       </div>
 
       <div class="panel" v-if="selectedKb">
-        <div class="panel-title"> {{ selectedKb.name }} · 课件</div>
+        <div class="panel-title">
+          {{ selectedKb.name }} · 课件
+          <el-button size="small" type="primary" link @click="openGraph">知识图谱</el-button>
+        </div>
         <div class="panel-body scroll-y" v-loading="filesLoading" style="max-height:200px">
           <div v-if="files.length === 0 && !filesLoading" class="empty-hint">暂无课件</div>
           <div v-for="f in files" :key="f.id" class="file-item">
@@ -104,6 +107,7 @@
 
 <script setup>
 import { ref, reactive, computed, nextTick, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete, Search } from '@element-plus/icons-vue'
 import { MdPreview } from 'md-editor-v3'
@@ -118,6 +122,7 @@ function unwrapData(data) {
 }
 
 const userStore = useUserStore()
+const router = useRouter()
 const userId = computed(() => userStore.userId || 'anonymous')
 
 const kbs = ref([]); const selectedKb = ref(null); const kbLoading = ref(false)
@@ -239,6 +244,11 @@ function nextImage() {
   if (currentImageIndex.value < pdfImages.value.length - 1) {
     currentImageIndex.value++
   }
+}
+
+function openGraph() {
+  if (!selectedKb.value?.id) return
+  router.push({ name: 'KnowledgeGraph', query: { kbId: selectedKb.value.id } })
 }
 
 const loadKBs = async () => {

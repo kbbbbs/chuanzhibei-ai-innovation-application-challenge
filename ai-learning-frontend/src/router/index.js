@@ -155,6 +155,12 @@ export const layoutChildren = [
     meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
+    path: 'knowledge-graph',
+    name: 'KnowledgeGraph',
+    component: () => import('../views/student/KnowledgeGraph.vue'),
+    meta: { title: '知识图谱', icon: 'Share', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+  },
+  {
     path: 'work-study-jobs',
     name: 'WorkStudyJobs',
     component: () => import('../views/student/WorkStudyList.vue'),

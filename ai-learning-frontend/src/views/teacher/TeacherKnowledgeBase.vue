@@ -31,6 +31,7 @@
               :on-change="e => (uploadFile = e.raw)" :show-file-list="false">
               <el-button size="small">上传</el-button>
             </el-upload>
+            <el-button size="small" @click="openGraph">知识图谱</el-button>
             <el-button size="small" type="success" @click="openGenerateDialog">根据知识库出题</el-button>
             <el-button size="small" type="danger" @click="handleDeleteKb(selectedKb)">删除KB</el-button>
           </div>
@@ -240,6 +241,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
@@ -263,6 +265,7 @@ function unwrapList(data) {
 
 const kbs = ref([]); const kbLoading = ref(false)
 const selectedKb = ref(null)
+const router = useRouter()
 const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
 
@@ -285,6 +288,11 @@ function formatSize(bytes) {
   if (bytes < 1024) return bytes + ' B'
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
   return (bytes / 1048576).toFixed(1) + ' MB'
+}
+
+function openGraph() {
+  if (!selectedKb.value?.id) return
+  router.push({ name: 'KnowledgeGraph', query: { kbId: selectedKb.value.id } })
 }
 
 async function loadKBs() {

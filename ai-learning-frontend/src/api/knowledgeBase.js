@@ -19,3 +19,4 @@ export const createSession = (data) => request.post('/api/weknora/sessions', dat
 export const listSessions = () => request.get('/api/weknora/sessions')
 export const deleteSession = (id) => request.delete(`/api/weknora/sessions/${id}`)
 export const searchKB = (params) => request.post('/api/weknora/search', params)
+export const getKnowledgeGraph = (kbId) => request.get(`/api/weknora/knowledge-bases/${kbId}/graph`)

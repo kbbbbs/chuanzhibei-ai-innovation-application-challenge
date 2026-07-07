@@ -423,6 +423,24 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     }
 
     @Override
+    public Result getKnowledgeGraph(String kbId) {
+        try {
+            JSONObject resp = get("/api/v1/knowledge-bases/" + kbId);
+            JSONObject knowledgeBase = extractKnowledgeBaseObject(resp, kbId);
+
+            if (knowledgeBase == null) {
+                JSONObject listResp = get("/api/v1/knowledge-bases");
+                knowledgeBase = findKnowledgeBaseFromList(listResp, kbId);
+            }
+
+            return Result.success(normalizeKnowledgeGraph(kbId, knowledgeBase));
+        } catch (Exception e) {
+            log.error("getKnowledgeGraph failed", e);
+            return Result.error("获取知识图谱失败: " + e.getMessage());
+        }
+    }
+
+    @Override
     public Result getKnowledgeContent(String kbId, String knowledgeId) {
         try {
             JSONObject resp = get("/api/v1/knowledge/" + knowledgeId + "/content");
@@ -442,6 +460,89 @@ public class WeKnoraServiceImpl implements WeKnoraService {
             log.warn("getKnowledgeContent failed, trying fallback: {}", e.getMessage());
             return tryGetChunks(knowledgeId);
         }
+    }
+
+    private JSONObject extractKnowledgeBaseObject(JSONObject resp, String kbId) {
+        if (resp == null || !isWeKnoraSuccess(resp)) return null;
+        Object data = resp.get("data");
+        if (data instanceof JSONObject dataObj) {
+            String id = dataObj.getString("id");
+            if (id == null || kbId.equals(id)) {
+                return dataObj;
+            }
+        }
+        return null;
+    }
+
+    private JSONObject findKnowledgeBaseFromList(JSONObject resp, String kbId) {
+        if (resp == null || !isWeKnoraSuccess(resp)) return null;
+        Object data = resp.get("data");
+        Object items = extractListItems(data);
+        if (!(items instanceof JSONArray array)) return null;
+        for (int i = 0; i < array.size(); i++) {
+            Object item = array.get(i);
+            if (item instanceof JSONObject obj && kbId.equals(obj.getString("id"))) {
+                return obj;
+            }
+        }
+        return null;
+    }
+
+    private Map<String, Object> normalizeKnowledgeGraph(String kbId, JSONObject knowledgeBase) {
+        Map<String, Object> graph = new LinkedHashMap<>();
+        graph.put("knowledgeBaseId", kbId);
+        graph.put("enabled", false);
+        graph.put("nodes", Collections.emptyList());
+        graph.put("relations", Collections.emptyList());
+
+        if (knowledgeBase == null) {
+            return graph;
+        }
+
+        Object rawConfig = knowledgeBase.get("extract_config");
+        if (rawConfig == null) rawConfig = knowledgeBase.get("extractConfig");
+        JSONObject config = toJsonObject(rawConfig);
+        if (config == null) {
+            return graph;
+        }
+
+        List<Object> nodes = toPlainList(config.get("nodes"));
+        List<Object> relations = toPlainList(config.get("relations"));
+
+        Boolean enabled = config.getBoolean("enabled");
+        if (enabled == null) {
+            enabled = !nodes.isEmpty() || !relations.isEmpty();
+        }
+
+        graph.put("enabled", enabled);
+        graph.put("nodes", nodes);
+        graph.put("relations", relations);
+        return graph;
+    }
+
+    private JSONObject toJsonObject(Object value) {
+        if (value instanceof JSONObject obj) return obj;
+        if (value instanceof Map<?, ?> map) return new JSONObject(new LinkedHashMap<>(map));
+        if (value instanceof String str && !str.isBlank()) {
+            try {
+                Object parsed = JSON.parse(str);
+                if (parsed instanceof JSONObject obj) return obj;
+                if (parsed instanceof Map<?, ?> map) return new JSONObject(new LinkedHashMap<>(map));
+            } catch (Exception e) {
+                log.warn("parse graph config failed: {}", e.getMessage());
+            }
+        }
+        return null;
+    }
+
+    private List<Object> toPlainList(Object value) {
+        if (value instanceof JSONArray array) {
+            return new ArrayList<>(array);
+        }
+        if (value instanceof Collection<?> collection) {
+            return new ArrayList<>(collection);
+        }
+        return Collections.emptyList();
     }
 
     private Object extractContentChunks(Object data) {
