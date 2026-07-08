@@ -12,6 +12,8 @@ import com.cupk.aiacademy.dto.GenerateQuestionsFromKbRequest;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.mapper.AgentDefinitionMapper;
+import com.cupk.aiacademy.mapper.ExamAnswerMapper;
+import com.cupk.aiacademy.mapper.ExamPaperQuestionMapper;
 import com.cupk.aiacademy.mapper.QuestionMapper;
 import com.cupk.aiacademy.pojo.AgentDefinition;
 import com.cupk.aiacademy.pojo.Course;
@@ -55,6 +57,8 @@ public class QuestionService {
     private final PermissionService permissionService;
     private final AgentChatService agentChatService;
     private final AgentDefinitionMapper agentDefinitionMapper;
+    private final ExamPaperQuestionMapper examPaperQuestionMapper;
+    private final ExamAnswerMapper examAnswerMapper;
     private final OpenAiChatModel chatModel;
 
     public QuestionService(QuestionMapper questionMapper, ObjectMapper objectMapper,
@@ -62,6 +66,8 @@ public class QuestionService {
                            PermissionService permissionService,
                            AgentChatService agentChatService,
                            AgentDefinitionMapper agentDefinitionMapper,
+                           ExamPaperQuestionMapper examPaperQuestionMapper,
+                           ExamAnswerMapper examAnswerMapper,
                            OpenAiChatModel chatModel) {
         this.questionMapper = questionMapper;
         this.objectMapper = objectMapper;
@@ -69,6 +75,8 @@ public class QuestionService {
         this.permissionService = permissionService;
         this.agentChatService = agentChatService;
         this.agentDefinitionMapper = agentDefinitionMapper;
+        this.examPaperQuestionMapper = examPaperQuestionMapper;
+        this.examAnswerMapper = examAnswerMapper;
         this.chatModel = chatModel;
     }
 
@@ -174,6 +182,7 @@ public class QuestionService {
     public void delete(Long id) {
         Question question = getEntityById(id);
         requireQuestionTeacher(question);
+        ensureQuestionNotInUse(question.getId());
         questionMapper.deleteById(question.getId());
     }
 
@@ -488,6 +497,21 @@ public class QuestionService {
         return question;
     }
 
+    public Question findSameQuestion(QuestionRequestDTO request) {
+        if (request == null || request.getCourseId() == null || request.getTeacherId() == null
+                || request.getType() == null || request.getContent() == null || request.getContent().trim().isEmpty()) {
+            return null;
+        }
+        QueryWrapper<Question> query = new QueryWrapper<>();
+        query.eq("course_id", toInt(request.getCourseId(), "课程ID"))
+                .eq("teacher_id", toInt(request.getTeacherId(), "教师ID"))
+                .eq("question_type", request.getType().getStorageValue())
+                .eq("title", request.getContent().trim())
+                .orderByAsc("id")
+                .last("limit 1");
+        return questionMapper.selectOne(query);
+    }
+
     public QuestionResponseDTO toResponse(Question question) {
         return toResponse(question, true);
     }
@@ -546,6 +570,20 @@ public class QuestionService {
             return;
         }
         throw new ForbiddenException("无权维护该题目");
+    }
+
+    private void ensureQuestionNotInUse(Integer questionId) {
+        if (questionId == null) return;
+        QueryWrapper<com.cupk.aiacademy.pojo.ExamPaperQuestion> paperQuestionQuery = new QueryWrapper<>();
+        paperQuestionQuery.eq("question_id", questionId);
+        if (examPaperQuestionMapper.selectCount(paperQuestionQuery) > 0) {
+            throw new BusinessException("该题目已被试卷使用，请先从试卷中移除或归档试卷后再删除");
+        }
+        QueryWrapper<com.cupk.aiacademy.pojo.ExamAnswer> answerQuery = new QueryWrapper<>();
+        answerQuery.eq("question_id", questionId);
+        if (examAnswerMapper.selectCount(answerQuery) > 0) {
+            throw new BusinessException("该题目已有学生答题记录，不能删除，可将题目停用");
+        }
     }
 
     private boolean canReadWithAnswers(Question question) {

@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "key": "algorithm.stack-queue",
+  "title": "栈与队列：顺序规则的可视化",
+  "subject": "数据结构与算法",
+  "summary": "用可操作动画和输出日志理解 LIFO、FIFO 与不变量。",
+  "estimatedMinutes": 26,
+  "blocks": [
+    {
+      "type": "markdown",
+      "title": "学习目标",
+      "content": "## 两种顺序规则\n\n栈和队列都保存一组元素，但取出的顺序完全不同：\n\n- 栈：后进先出，像一摞盘子。\n- 队列：先进先出，像排队买票。\n\n本节的重点不是背英文缩写，而是能预测每一步操作后的结构状态。"
+    },
+    {
+      "type": "experiment",
+      "title": "栈队列动画",
+      "description": "在栈和队列之间切换，点击加入/取出节点，观察顺序变化。",
+      "kind": "structure",
+      "defaults": {
+        "items": [
+          "A",
+          "B",
+          "C"
+        ]
+      }
+    },
+    {
+      "type": "markdown",
+      "title": "核心讲解",
+      "content": "## 不变量决定操作是否正确\n\n数据结构的不变量是“无论怎么操作都必须保持的规则”。\n\n- 栈的不变量：下一次取出的一定是最后放入的元素。\n- 队列的不变量：下一次取出的一定是最早等待的元素。\n\n如果你写代码时无法解释输出顺序，说明你还没有真正掌握结构。最可靠的方法是打印每一步状态。"
+    },
+    {
+      "type": "ide",
+      "title": "Python：打印栈和队列的取出顺序",
+      "description": "运行后比较两段输出，解释为什么顺序不同。",
+      "language": "python",
+      "starterCode": "items = ['A', 'B', 'C']\n\nstack = items.copy()\nprint('stack:')\nwhile stack:\n    print(stack.pop())\n\nqueue = items.copy()\nprint('queue:')\nwhile queue:\n    print(queue.pop(0))",
+      "expectedOutputHint": "栈输出 C/B/A，队列输出 A/B/C。"
+    },
+    {
+      "type": "challenge",
+      "title": "预测题：下一步取出谁？",
+      "prompt": "按顺序放入 A、B、C。如果结构是栈，第一次 pop 得到谁？如果是队列，第一次 dequeue 得到谁？",
+      "answer": "栈得到 C；队列得到 A。"
+    },
+    {
+      "type": "checkpoint",
+      "title": "完成检查",
+      "items": [
+        "我能用生活类比解释栈和队列。",
+        "我能预测 push/pop/enqueue/dequeue 后的状态。",
+        "我能用代码输出验证顺序。"
+      ]
+    }
+  ]
+}

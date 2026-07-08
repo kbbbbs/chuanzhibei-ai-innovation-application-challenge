@@ -11,6 +11,9 @@ import com.cupk.aiacademy.pojo.Chapter;
 import com.cupk.aiacademy.pojo.Lesson;
 import com.cupk.aiacademy.service.CourseResourceService;
 import com.cupk.aiacademy.videoresource.VideoResourceService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -41,6 +44,9 @@ public class LessonController {
 
     @Autowired
     private AuthUtils authUtils;
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     @GetMapping("/lessons")
     public Result pages(@RequestParam(required = false) Integer chapterId,
@@ -160,6 +166,9 @@ public class LessonController {
         if (lesson.getTitle() == null || lesson.getTitle().trim().isEmpty()) {
             return Result.error("400", "课时名称不能为空");
         }
+        if (isInteractiveJsonType(lesson.getResourceType()) && !isValidLessonPageJson(lesson.getContent())) {
+            return Result.error("400", "互动课本 JSON 需要包含 blocks 数组");
+        }
         return null;
     }
 
@@ -182,6 +191,21 @@ public class LessonController {
     private void fixSortOrder(Lesson lesson) {
         if (lesson.getSortOrder() == null || lesson.getSortOrder() <= 0) {
             lesson.setSortOrder(null);
+        }
+    }
+
+    private boolean isInteractiveJsonType(String resourceType) {
+        return "interactive_json_builtin".equals(resourceType) || "interactive_json_upload".equals(resourceType);
+    }
+
+    private boolean isValidLessonPageJson(String content) {
+        if (content == null || content.isBlank()) return false;
+        try {
+            JsonNode node = objectMapper.readTree(content);
+            JsonNode blocks = node.isArray() ? node : node.get("blocks");
+            return blocks != null && blocks.isArray() && !blocks.isEmpty();
+        } catch (JsonProcessingException e) {
+            return false;
         }
     }
 

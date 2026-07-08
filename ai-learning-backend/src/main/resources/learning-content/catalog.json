@@ -1,0 +1,147 @@
+{
+  "profiles": [
+    {
+      "key": "java",
+      "label": "Java 编程",
+      "keywords": [
+        "java",
+        "spring",
+        "后端",
+        "面向对象"
+      ],
+      "tagline": "从语法到对象，把 Java 写成可运行、可调试、可解释的程序",
+      "audience": "适合零基础或准备后端开发的学习者",
+      "finalProject": "实现一个课程成绩计算器：类、方法、集合、异常和测试齐全",
+      "outcomes": [
+        "掌握 Java 基础语法和控制流",
+        "能用类和对象建模真实业务",
+        "能读懂并修复编译/运行错误",
+        "能完成一个小型命令行项目"
+      ],
+      "chapterDescriptionTemplate": "通过可运行代码和调试任务掌握 {chapterTitle}"
+    },
+    {
+      "key": "ml",
+      "label": "机器学习",
+      "keywords": [
+        "machine learning",
+        "deep learning",
+        "neural",
+        "gradient",
+        "机器学习",
+        "人工智能",
+        "深度学习",
+        "模型",
+        "梯度"
+      ],
+      "tagline": "把模型、误差和梯度做成看得见的地图、曲线和闯关任务",
+      "audience": "适合第一次接触 AI 的中学生/大学低年级学习者",
+      "finalProject": "完成一个能解释自己的小模型：画出函数、计算误差、调节学习率并提交实验报告",
+      "outcomes": [
+        "用函数机器解释模型预测",
+        "用误差尺理解损失函数",
+        "用可视化实验调参",
+        "能把一个小模型翻译成代码"
+      ],
+      "chapterDescriptionTemplate": "通过可视化和实验理解 {chapterTitle}"
+    },
+    {
+      "key": "python",
+      "label": "Python 编程",
+      "keywords": [
+        "python",
+        "数据分析",
+        "pandas",
+        "爬虫"
+      ],
+      "tagline": "用短代码完成数据清洗、可视化和自动化小任务",
+      "audience": "适合数据分析、AI 入门和自动化方向学习者",
+      "finalProject": "完成一份数据清洗与分析 notebook 风格报告",
+      "outcomes": [
+        "掌握变量、函数和容器",
+        "能批量处理数据",
+        "能解释异常和调试输出",
+        "能把分析过程写成报告"
+      ],
+      "chapterDescriptionTemplate": "通过数据任务和脚本练习掌握 {chapterTitle}"
+    },
+    {
+      "key": "web",
+      "label": "Web 前端",
+      "keywords": [
+        "vue",
+        "前端",
+        "web",
+        "javascript",
+        "html",
+        "css"
+      ],
+      "tagline": "把状态、组件和交互做成真实可用的学习页面",
+      "audience": "适合 Web 开发入门和产品原型学习者",
+      "finalProject": "做一个带筛选、表单校验和状态反馈的课程卡片页",
+      "outcomes": [
+        "理解组件、状态和事件",
+        "能构建可访问表单",
+        "能解释响应式渲染",
+        "能完成一个小型交互页面"
+      ],
+      "chapterDescriptionTemplate": "通过页面组件和交互实验掌握 {chapterTitle}"
+    },
+    {
+      "key": "database",
+      "label": "数据库",
+      "keywords": [
+        "sql",
+        "数据库",
+        "mysql",
+        "数据表"
+      ],
+      "tagline": "把表、关系和查询变成可视化的数据拼图",
+      "audience": "适合后端、数据和信息系统学习者",
+      "finalProject": "设计一个教学平台核心数据模型并写出查询报表",
+      "outcomes": [
+        "理解表、主键和外键",
+        "能写 JOIN 和聚合查询",
+        "能解释索引与约束",
+        "能设计可维护的数据模型"
+      ],
+      "chapterDescriptionTemplate": "通过表关系和查询案例掌握 {chapterTitle}"
+    },
+    {
+      "key": "algorithm",
+      "label": "数据结构与算法",
+      "keywords": [
+        "数据结构",
+        "算法",
+        "栈",
+        "队列",
+        "树"
+      ],
+      "tagline": "把抽象结构做成可操作的积木和路径动画",
+      "audience": "适合准备编程能力提升和算法入门的学习者",
+      "finalProject": "实现并可视化一个任务调度器：队列、栈、树和搜索",
+      "outcomes": [
+        "理解结构的不变量",
+        "能手写核心操作",
+        "能分析时间复杂度",
+        "能把算法步骤解释给他人"
+      ],
+      "chapterDescriptionTemplate": "通过动画和手写代码掌握 {chapterTitle}"
+    },
+    {
+      "key": "general",
+      "label": "精品课程",
+      "keywords": [],
+      "tagline": "用地图、案例、实验和项目把知识讲清楚",
+      "audience": "适合希望系统学习并完成作品的学习者",
+      "finalProject": "完成一份从知识地图到实践作品的学习档案",
+      "outcomes": [
+        "建立知识框架",
+        "用例子解释抽象概念",
+        "完成阶段练习",
+        "形成可展示作品"
+      ],
+      "chapterDescriptionTemplate": "通过讲解、案例和练习掌握 {chapterTitle}"
+    }
+  ]
+}

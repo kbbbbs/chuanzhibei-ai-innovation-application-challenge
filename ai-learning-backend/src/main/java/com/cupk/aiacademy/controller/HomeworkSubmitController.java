@@ -235,6 +235,9 @@ public class HomeworkSubmitController {
         if (submit.getStudentId() == null || submit.getStudentId() <= 0) {
             return Result.error("400", "学生用户不能为空");
         }
+        if (isBlank(submit.getSubmitContent()) && isBlank(submit.getAttachmentUrl())) {
+            return Result.error("400", "请填写作业内容或上传附件");
+        }
         Homework homework = homeworkMapper.selectById(submit.getHomeworkId());
         if (homework == null) {
             return Result.error("404", "作业不存在");
@@ -251,6 +254,10 @@ public class HomeworkSubmitController {
             return Result.error("404", "批改教师不存在");
         }
         return null;
+    }
+
+    private boolean isBlank(String value) {
+        return value == null || value.trim().isEmpty();
     }
 
     private void checkSubmitReadPermission(HomeworkSubmit submit) {

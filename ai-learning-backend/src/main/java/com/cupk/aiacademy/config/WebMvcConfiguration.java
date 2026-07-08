@@ -17,3 +17,4 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                 .excludePathPatterns("/auth/**", "/uploads/**", "/media/**");
     }
 }
+

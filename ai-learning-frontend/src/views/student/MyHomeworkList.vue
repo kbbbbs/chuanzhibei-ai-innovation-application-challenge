@@ -38,6 +38,12 @@
                 {{ row.score != null ? `${row.score}/${row.fullScore}` : '待批改' }}
               </template>
             </el-table-column>
+            <el-table-column label="附件" width="90">
+              <template #default="{ row }">
+                <el-link v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" type="primary">查看</el-link>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
             <el-table-column label="状态" width="100">
               <template #default="{ row }">
                 <el-tag v-if="isHomeworkGraded(row)" type="success">已批改</el-tag>
@@ -69,10 +75,32 @@
 
       <el-form :model="submitForm" label-width="100px">
         <el-form-item label="作业内容">
-          <el-input v-model="submitForm.content" type="textarea" :rows="6" placeholder="请输入作业内容" />
+          <el-input v-model="submitForm.content" type="textarea" :rows="6" placeholder="请输入作业内容，或上传附件作为答案" />
         </el-form-item>
-        <el-form-item label="附件地址">
-          <el-input v-model="submitForm.attachmentUrl" placeholder="选填：作业附件URL" />
+        <el-form-item label="上传附件">
+          <div class="attachment-uploader">
+            <el-upload
+              ref="submitUploadRef"
+              action="#"
+              :auto-upload="false"
+              :limit="1"
+              :disabled="attachmentUploading"
+              :on-change="handleAttachmentChange"
+              :on-remove="handleAttachmentRemove"
+              :on-exceed="handleAttachmentExceed"
+            >
+              <el-button :loading="attachmentUploading">
+                <el-icon><Upload /></el-icon>
+                选择文件
+              </el-button>
+              <template #tip>
+                <div class="el-upload__tip">支持文档、表格、压缩包、图片和视频，单个文件不超过 100MB</div>
+              </template>
+            </el-upload>
+            <el-link v-if="submitForm.attachmentUrl" :href="submitForm.attachmentUrl" target="_blank" type="success">
+              {{ submitAttachmentName || '查看已上传附件' }}
+            </el-link>
+          </div>
         </el-form-item>
       </el-form>
 
@@ -90,6 +118,9 @@
           {{ currentSubmission.submitTime ? new Date(currentSubmission.submitTime).toLocaleString() : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="我的答案">{{ currentSubmission.submitContent }}</el-descriptions-item>
+        <el-descriptions-item label="附件" v-if="currentSubmission.attachmentUrl">
+          <el-link :href="currentSubmission.attachmentUrl" target="_blank">查看附件</el-link>
+        </el-descriptions-item>
         <el-descriptions-item label="得分" v-if="currentSubmission.score != null">
           {{ currentSubmission.score }} / {{ currentSubmission.fullScore }}
         </el-descriptions-item>
@@ -105,9 +136,11 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Upload } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import { uploadHomeworkAttachment } from '@/api/homework'
 import { currentUserId, formatLocalDateTime, getRecords } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
@@ -125,6 +158,9 @@ const viewDialogVisible = ref(false)
 const currentHomework = ref({})
 const currentSubmission = ref({})
 const loading = ref(false)
+const attachmentUploading = ref(false)
+const submitUploadRef = ref(null)
+const submitAttachmentName = ref('')
 
 const submitForm = reactive({
   content: '',
@@ -192,6 +228,8 @@ const handleSubmit = (row) => {
   currentHomework.value = row
   submitForm.content = ''
   submitForm.attachmentUrl = ''
+  submitAttachmentName.value = ''
+  submitUploadRef.value?.clearFiles()
   submitDialogVisible.value = true
 }
 
@@ -205,8 +243,12 @@ const openHomeworkFromQuery = () => {
 }
 
 const handleSubmitHomework = async () => {
-  if (!submitForm.content) {
-    ElMessage.warning('请输入作业内容')
+  if (!submitForm.content.trim() && !submitForm.attachmentUrl) {
+    ElMessage.warning('请填写作业内容或上传附件')
+    return
+  }
+  if (attachmentUploading.value) {
+    ElMessage.warning('附件仍在上传，请稍候')
     return
   }
 
@@ -218,7 +260,7 @@ const handleSubmitHomework = async () => {
     const data = {
       homeworkId: currentHomework.value.id,
       studentId: currentUserId(userStore),
-      submitContent: submitForm.content,
+      submitContent: submitForm.content.trim(),
       attachmentUrl: submitForm.attachmentUrl,
       submitTime: formatLocalDateTime(new Date()),
       gradeStatus: 0
@@ -240,6 +282,35 @@ const handleSubmitHomework = async () => {
   }
 }
 
+const handleAttachmentChange = async (file) => {
+  if (!file?.raw) return
+  attachmentUploading.value = true
+  try {
+    const res = await uploadHomeworkAttachment(file.raw)
+    if (res.code === '200' && res.data?.url) {
+      submitForm.attachmentUrl = res.data.url
+      submitAttachmentName.value = res.data.originalName || file.name || '已上传附件'
+      ElMessage.success('附件上传成功')
+    } else {
+      handleAttachmentRemove()
+      ElMessage.error(res.msg || '附件上传失败')
+    }
+  } catch (e) {
+    handleAttachmentRemove()
+  } finally {
+    attachmentUploading.value = false
+  }
+}
+
+const handleAttachmentRemove = () => {
+  submitForm.attachmentUrl = ''
+  submitAttachmentName.value = ''
+}
+
+const handleAttachmentExceed = () => {
+  ElMessage.warning('每次只能上传一个附件')
+}
+
 const handleView = (row) => {
   currentSubmission.value = row
   viewDialogVisible.value = true
@@ -257,5 +328,12 @@ watch(() => route.query.homeworkId, () => {
 <style scoped>
 .dialog-info {
   margin-bottom: 20px;
+}
+
+.attachment-uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 </style>

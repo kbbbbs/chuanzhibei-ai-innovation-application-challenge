@@ -31,7 +31,7 @@ import java.util.UUID;
 @RequestMapping("/files")
 public class FileController {
     private static final Set<String> ALLOWED_BIZ_TYPES = new HashSet<>(Arrays.asList(
-            "course-cover", "lesson-resource", "homework", "grade", "common"
+            "course-cover", "lesson-resource", "homework", "exam-answer", "grade", "common"
     ));
 
     private static final Set<String> ALLOWED_EXTENSIONS = new HashSet<>(Arrays.asList(

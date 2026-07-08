@@ -248,6 +248,16 @@ class ApiRepairRegressionTest {
     }
 
     @Test
+    void emptyHomeworkSubmitContentAndAttachmentReturnBadRequest() throws Exception {
+        mockMvc.perform(authed(post("/homework-submits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"homeworkId\":1,\"submitContent\":\"  \",\"attachmentUrl\":\"\"}")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("400"))
+                .andExpect(jsonPath("$.msg").value("请填写作业内容或上传附件"));
+    }
+
+    @Test
     void duplicateRoleCodeReturnsConflictResult() throws Exception {
         when(roleMapper.selectCount(any())).thenReturn(1L);
 

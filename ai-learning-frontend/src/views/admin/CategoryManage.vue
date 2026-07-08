@@ -13,7 +13,7 @@
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="name" label="分类名称" />
         <el-table-column prop="description" label="描述" />
-        <el-table-column prop="sortOrder" label="排序" width="100" />
+<!--        <el-table-column prop="sortOrder" label="排序" width="100" />-->
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
@@ -32,9 +32,9 @@
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number v-model="form.sortOrder" :min="1" />
-        </el-form-item>
+<!--        <el-form-item label="排序">-->
+<!--          <el-input-number v-model="form.sortOrder" :min="1" />-->
+<!--        </el-form-item>-->
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>

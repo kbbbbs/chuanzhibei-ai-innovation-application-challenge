@@ -1,5 +1,121 @@
 <template>
-  <main class="student-dashboard" v-loading="loading">
+  <main v-if="isManagementWorkspace" class="student-dashboard workspace-dashboard" v-loading="loading">
+    <section class="dashboard-hero management-hero">
+      <div>
+        <p class="eyebrow">{{ todayText }}</p>
+        <h1>{{ workspaceTitle }}，{{ displayName }}</h1>
+        <p class="summary">{{ workspaceSummary }}</p>
+      </div>
+      <div class="hero-actions">
+        <el-button
+          v-for="action in workspaceHeroActions"
+          :key="action.path"
+          :type="action.primary ? 'primary' : 'default'"
+          @click="go(action.path)"
+        >
+          <el-icon><component :is="action.icon" /></el-icon>
+          {{ action.label }}
+        </el-button>
+      </div>
+    </section>
+
+    <section class="stat-grid">
+      <button v-for="item in workspaceStats" :key="item.label" class="stat-card" type="button" @click="go(item.path)">
+        <span class="stat-icon" :class="item.tone">
+          <el-icon><component :is="item.icon" /></el-icon>
+        </span>
+        <span class="stat-content">
+          <strong>{{ item.value }}</strong>
+          <small>{{ item.label }}</small>
+        </span>
+      </button>
+    </section>
+
+    <section class="dashboard-grid">
+      <div class="dashboard-main">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>{{ isAdmin ? '平台运营入口' : '教学工作台' }}</h2>
+              <p>{{ isAdmin ? '管理平台账号、教师入驻、课程分类与全局资源。' : '管理课程建设、题库试卷、作业发布与批改进度。' }}</p>
+            </div>
+          </div>
+
+          <div class="learning-list">
+            <article v-for="action in workspaceActions" :key="action.path" class="learning-item">
+              <div class="course-mark">
+                <el-icon><component :is="action.icon" /></el-icon>
+              </div>
+              <div class="learning-copy">
+                <h3>{{ action.label }}</h3>
+                <p>{{ action.description }}</p>
+              </div>
+              <el-button size="small" type="primary" @click="go(action.path)">进入</el-button>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>{{ isAdmin ? '待处理运营事项' : '教学交付提醒' }}</h2>
+              <p>{{ isAdmin ? '集中处理教师入驻和平台课程运营事项。' : '跟进课程、作业和考试的交付进度。' }}</p>
+            </div>
+          </div>
+
+          <div class="todo-columns">
+            <div v-for="block in workspaceTodoBlocks" :key="block.title" class="todo-block">
+              <div class="todo-title">
+                <el-icon><component :is="block.icon" /></el-icon>
+                <span>{{ block.title }}</span>
+              </div>
+              <article v-for="item in block.items.slice(0, 3)" :key="item.id || item.title" class="todo-item">
+                <div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ item.description }}</p>
+                </div>
+                <el-button size="small" @click="go(block.path)">处理</el-button>
+              </article>
+              <div v-if="!block.items.length" class="mini-empty">{{ block.emptyText }}</div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="dashboard-side">
+        <section class="panel ai-panel">
+          <div class="ai-icon">
+            <el-icon><DataLine /></el-icon>
+          </div>
+          <h2>{{ isAdmin ? '平台健康' : '课程交付健康' }}</h2>
+          <p>{{ workspaceHealthText }}</p>
+          <div class="side-actions">
+            <el-button type="primary" @click="go(isAdmin ? '/users' : '/courses')">{{ isAdmin ? '管理用户' : '管理课程' }}</el-button>
+            <el-button @click="go(isAdmin ? '/teacher-applications' : '/homeworks')">{{ isAdmin ? '教师审核' : '作业批改' }}</el-button>
+          </div>
+        </section>
+
+        <section class="panel compact-panel">
+          <div class="panel-header compact">
+            <h2>{{ isAdmin ? '角色权限' : '教学资产' }}</h2>
+          </div>
+          <div class="work-status">
+            <span v-for="item in workspaceSideMetrics" :key="item.label"><b>{{ item.value }}</b> {{ item.label }}</span>
+          </div>
+        </section>
+
+        <section class="panel compact-panel">
+          <div class="panel-header compact">
+            <h2>资料研究</h2>
+            <el-button link type="primary" @click="go('/paper-search')">进入</el-button>
+          </div>
+          <p class="muted">检索论文、查看推荐结果并整理课程资料。</p>
+        </section>
+      </aside>
+    </section>
+  </main>
+
+  <main v-else class="student-dashboard" v-loading="loading">
     <section class="dashboard-hero">
       <div>
         <p class="eyebrow">{{ todayText }}</p>
@@ -50,7 +166,14 @@
                 <h3>{{ item.courseName || '未命名课程' }}</h3>
                 <p>{{ item.className }} · {{ item.semester || '当前学期' }}</p>
               </div>
-              <el-button size="small" type="primary" @click="learnCourse(item)">进入学习</el-button>
+              <el-button
+                size="small"
+                type="primary"
+                :disabled="!canOpenCourse(item)"
+                @click="learnCourse(item)"
+              >
+                进入学习
+              </el-button>
             </article>
           </div>
           <div v-else class="empty-panel">
@@ -152,15 +275,21 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import {
   Aim,
   Checked,
   Cpu,
   DataLine,
+  Document,
+  Edit,
+  Menu,
   Reading,
   School,
   Tickets,
+  User,
+  UserFilled,
   Wallet
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
@@ -180,7 +309,22 @@ const dashboard = reactive({
   averageScore: null
 })
 
+const management = reactive({
+  courses: [],
+  classes: [],
+  homeworks: [],
+  exams: [],
+  papers: [],
+  questions: [],
+  users: [],
+  applications: [],
+  categories: []
+})
+
 const displayName = computed(() => userStore.nickname || userStore.username || '同学')
+const isAdmin = computed(() => userStore.roleCode === 'admin')
+const isTeacher = computed(() => userStore.roleCode === 'teacher')
+const isManagementWorkspace = computed(() => isAdmin.value || isTeacher.value)
 const todayText = computed(() => new Intl.DateTimeFormat('zh-CN', {
   month: 'long',
   day: 'numeric',
@@ -197,6 +341,9 @@ const greeting = computed(() => {
 const gradingCount = computed(() => completedExams.value.filter(item => item.status === 1).length)
 const pendingApplications = computed(() => workApplications.value.filter(item => Number(item.auditStatus) === 0).length)
 const averageScoreText = computed(() => dashboard.averageScore == null ? '-' : dashboard.averageScore)
+const pendingTeacherApplications = computed(() => management.applications.filter(item => Number(item.status) === 0 || item.status === 'PENDING').length)
+const publishedExams = computed(() => management.exams.filter(item => normalizeStatus(item.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, item.status) === 1).length)
+const publishedHomeworks = computed(() => management.homeworks.filter(item => normalizeStatus(item.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, item.status) === 1).length)
 
 const stats = computed(() => [
   { label: '已加入班级', value: classes.value.length, icon: School, path: '/my-classes', tone: 'tone-blue' },
@@ -206,6 +353,123 @@ const stats = computed(() => [
   { label: 'AI 推荐', value: '去看看', icon: Aim, path: '/recommendation', tone: 'tone-cyan' },
   { label: '岗位申请', value: workApplications.value.length, icon: Wallet, path: '/my-work-study', tone: 'tone-slate' }
 ])
+
+const workspaceTitle = computed(() => isAdmin.value ? '平台管理员工作台' : '教师工作台')
+const workspaceSummary = computed(() => isAdmin.value
+  ? '这里汇总账号、教师入驻审核、课程分类和平台级资源。'
+  : '这里汇总你负责的课程、教学班、题库、试卷、考试、作业与批改。')
+const workspaceHealthText = computed(() => isAdmin.value
+  ? `当前平台有 ${management.users.length} 个用户、${pendingTeacherApplications.value} 个教师申请待审核、${management.courses.length} 门课程可运营。`
+  : `你正在维护 ${management.courses.length} 门课程、${management.questions.length} 道题目、${publishedExams.value} 场已发布考试。`)
+
+const workspaceHeroActions = computed(() => isAdmin.value
+  ? [
+      { label: '用户管理', path: '/users', icon: User, primary: true },
+      { label: '教师审核', path: '/teacher-applications', icon: UserFilled },
+    ]
+  : [
+      { label: '课程管理', path: '/courses', icon: Reading, primary: true },
+      { label: '作业批改', path: '/homeworks', icon: Tickets },
+    ])
+
+const workspaceStats = computed(() => isAdmin.value
+  ? [
+      { label: '用户总数', value: management.users.length, icon: User, path: '/users', tone: 'tone-blue' },
+      { label: '待审教师', value: pendingTeacherApplications.value, icon: UserFilled, path: '/teacher-applications', tone: 'tone-amber' },
+      { label: '课程总数', value: management.courses.length, icon: Reading, path: '/courses', tone: 'tone-green' },
+      { label: '教学班', value: management.classes.length, icon: School, path: '/teaching-classes', tone: 'tone-cyan' },
+      { label: '分类', value: management.categories.length, icon: Menu, path: '/categories', tone: 'tone-slate' },
+      { label: '试卷', value: management.papers.length, icon: Document, path: '/papers', tone: 'tone-red' },
+    ]
+  : [
+      { label: '我的课程', value: management.courses.length, icon: Reading, path: '/courses', tone: 'tone-blue' },
+      { label: '教学班', value: management.classes.length, icon: School, path: '/teaching-classes', tone: 'tone-cyan' },
+      { label: '题库题目', value: management.questions.length, icon: Edit, path: '/questions', tone: 'tone-green' },
+      { label: '试卷', value: management.papers.length, icon: Document, path: '/papers', tone: 'tone-slate' },
+      { label: '已发布考试', value: publishedExams.value, icon: Checked, path: '/exams', tone: 'tone-red' },
+      { label: '已发布作业', value: publishedHomeworks.value, icon: Tickets, path: '/homeworks', tone: 'tone-amber' },
+    ])
+
+const workspaceActions = computed(() => isAdmin.value
+  ? [
+      { label: '用户管理', path: '/users', icon: User, description: '创建学生、教师和管理员账号，维护角色权限。' },
+      { label: '教师入驻审核', path: '/teacher-applications', icon: UserFilled, description: '审核教师申请，避免开放式教师注册带来的权限风险。' },
+      { label: '课程与分类治理', path: '/categories', icon: Menu, description: '维护课程分类、平台课程目录和内容结构。' },
+      { label: '全局考试资源巡检', path: '/papers', icon: Document, description: '查看平台试卷与考试资源，处理异常数据。' },
+    ]
+  : [
+      { label: '建设课程课本', path: '/courses', icon: Reading, description: '创建章节、图文课本、视频课时和互动学习内容。' },
+      { label: '维护题库', path: '/questions', icon: Edit, description: '创建单选、多选、判断、简答、文件上传题，并导入题目。' },
+      { label: '发布试卷考试', path: '/papers', icon: Document, description: '组卷、发布考试、查看答题结果与主观题批改。' },
+      { label: '布置和批改作业', path: '/homeworks', icon: Tickets, description: '发布作业、查看提交、批改分数与反馈。' },
+    ])
+
+const workspaceTodoBlocks = computed(() => {
+  if (isAdmin.value) {
+    return [
+      {
+        title: '教师申请',
+        icon: UserFilled,
+        path: '/teacher-applications',
+        emptyText: '暂无待审核教师申请',
+        items: management.applications
+          .filter(item => Number(item.status) === 0 || item.status === 'PENDING')
+          .map(item => ({
+            id: item.id,
+            title: item.username || item.realName || `申请 ${item.id}`,
+            description: item.reason || item.applyReason || '等待管理员审核教师权限'
+          }))
+      },
+      {
+        title: '平台课程',
+        icon: Reading,
+        path: '/courses',
+        emptyText: '暂无课程需要处理',
+        items: management.courses.slice(0, 3).map(item => ({
+          id: item.id,
+          title: item.title || `课程 ${item.id}`,
+          description: item.description || '请检查课程分类、教师和发布状态'
+        }))
+      }
+    ]
+  }
+  return [
+    {
+      title: '待交付作业',
+      icon: Tickets,
+      path: '/homeworks',
+      emptyText: '暂无作业交付提醒',
+      items: management.homeworks.slice(0, 3).map(item => ({
+        id: item.id,
+        title: item.title || `作业 ${item.id}`,
+        description: item.deadline ? `截止：${formatDateTime(item.deadline)}` : '请确认发布状态和批改入口'
+      }))
+    },
+    {
+      title: '考试安排',
+      icon: Checked,
+      path: '/exams',
+      emptyText: '暂无考试安排提醒',
+      items: management.exams.slice(0, 3).map(item => ({
+        id: item.id,
+        title: item.name || item.title || `考试 ${item.id}`,
+        description: item.startTime ? `${formatDateTime(item.startTime)} 开始` : '请确认试卷、时间和发布状态'
+      }))
+    }
+  ]
+})
+
+const workspaceSideMetrics = computed(() => isAdmin.value
+  ? [
+      { label: '个用户', value: management.users.length },
+      { label: '个教师申请', value: management.applications.length },
+      { label: '个分类', value: management.categories.length },
+    ]
+  : [
+      { label: '门课程', value: management.courses.length },
+      { label: '份试卷', value: management.papers.length },
+      { label: '道题目', value: management.questions.length },
+    ])
 
 function go(path) {
   router.push(path)
@@ -227,16 +491,16 @@ async function loadClasses() {
   const res = await request.get(`/class-students/student/${userStore.userId}`)
   if (res.code !== '200') return []
 
-  const memberships = getRecords(res.data)
-  const rows = await Promise.all(memberships.slice(0, 8).map(async item => {
+  const memberships = getRecords(res.data).filter(isActiveMembership)
+  const rows = (await Promise.all(memberships.slice(0, 8).map(async item => {
     try {
-      const classRes = await request.get(`/teaching-classes/${item.classId}`)
-      const teachingClass = classRes.code === '200' ? classRes.data : {}
+      const classRes = await request.get(`/teaching-classes/${item.classId}`, { silentError: true })
+      const teachingClass = classRes.code === '200' ? classRes.data : null
+      if (!teachingClass?.courseId) return null
       let course = {}
-      if (teachingClass.courseId) {
-        const courseRes = await request.get(`/courses/${teachingClass.courseId}`)
-        course = courseRes.code === '200' ? courseRes.data : {}
-      }
+      const courseRes = await request.get(`/courses/${teachingClass.courseId}`, { silentError: true })
+      course = courseRes.code === '200' ? courseRes.data : {}
+      if (!course?.id || !course?.title) return null
       return {
         ...item,
         ...teachingClass,
@@ -247,18 +511,12 @@ async function loadClasses() {
         courseName: course.title || '-'
       }
     } catch {
-      return {
-        ...item,
-        classStudentId: item.id,
-        classId: item.classId,
-        className: `教学班${item.classId}`,
-        courseName: '-'
-      }
+      return null
     }
-  }))
+  }))).filter(Boolean)
 
   classes.value = rows
-  return memberships.map(item => item.classId)
+  return rows.map(item => item.classId)
 }
 
 async function loadHomework(classIds) {
@@ -334,20 +592,99 @@ async function loadExams(classIds) {
     : null
 }
 
+function isActiveMembership(item) {
+  return Number(item.status ?? 1) === 1
+}
+
+function canOpenCourse(row) {
+  return Number.isFinite(Number(row?.courseId)) && Number(row.courseId) > 0 && Number.isFinite(Number(row?.classId)) && Number(row.classId) > 0
+}
+
 function learnCourse(row) {
-  if (!row.courseId) return
+  if (!canOpenCourse(row)) {
+    ElMessage.warning('课程信息不完整，暂不能进入学习')
+    return
+  }
   router.push({ name: 'CourseLearn', params: { courseId: row.courseId }, query: { classId: row.classId } })
 }
 
-async function loadDashboard() {
-  if (!userStore.userId) return
-  loading.value = true
+async function safeRecords(path, params = {}) {
+  try {
+    const res = await request.get(path, {
+      params: { pageSize: 100, size: 100, ...params },
+      silentError: true,
+    })
+    return res?.code === '200' ? getRecords(res.data) : []
+  } catch {
+    return []
+  }
+}
+
+function scopedTeacherRows(rows) {
+  if (isAdmin.value) return rows
+  const teacherId = Number(userStore.userId)
+  return rows.filter(item => {
+    const owner = Number(item.teacherId || item.createdBy || item.ownerId)
+    return !Number.isFinite(owner) || owner <= 0 || owner === teacherId
+  })
+}
+
+async function loadManagementDashboard() {
+  const teacherParam = isTeacher.value ? { teacherId: userStore.userId } : {}
+  const [
+    courses,
+    classes,
+    homeworks,
+    exams,
+    papers,
+    questions,
+    users,
+    applications,
+    categories
+  ] = await Promise.all([
+    safeRecords('/courses', teacherParam),
+    safeRecords('/teaching-classes', teacherParam),
+    safeRecords('/homeworks', teacherParam),
+    safeRecords('/api/exams', teacherParam),
+    safeRecords('/api/papers', teacherParam),
+    safeRecords('/api/questions', teacherParam),
+    isAdmin.value ? safeRecords('/users') : Promise.resolve([]),
+    isAdmin.value ? safeRecords('/teacher-applications') : Promise.resolve([]),
+    isAdmin.value ? safeRecords('/categories') : Promise.resolve([]),
+  ])
+
+  management.courses = scopedTeacherRows(courses)
+  management.classes = scopedTeacherRows(classes)
+  management.homeworks = scopedTeacherRows(homeworks)
+  management.exams = scopedTeacherRows(exams).map(mapExam)
+  management.papers = scopedTeacherRows(papers)
+  management.questions = scopedTeacherRows(questions)
+  management.users = users
+  management.applications = applications
+  management.categories = categories
+}
+
+async function loadStudentDashboard() {
   try {
     const classIds = await loadClasses()
     await Promise.allSettled([
       loadHomework(classIds),
       loadExams(classIds)
     ])
+  } finally {
+    loading.value = false
+  }
+}
+
+async function loadDashboard() {
+  if (!userStore.userId) return
+  loading.value = true
+  try {
+    if (isManagementWorkspace.value) {
+      await loadManagementDashboard()
+    } else {
+      await loadStudentDashboard()
+    }
   } finally {
     loading.value = false
   }

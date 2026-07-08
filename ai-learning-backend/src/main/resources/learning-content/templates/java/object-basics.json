@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "key": "java.object-basics",
+  "title": "Java 类与对象：从图纸到实例",
+  "subject": "Java 编程",
+  "summary": "用 Student 类理解字段、构造方法、实例方法和对象状态。",
+  "estimatedMinutes": 30,
+  "blocks": [
+    {
+      "type": "markdown",
+      "title": "学习目标",
+      "content": "## 为什么要学类与对象\n\nJava 的很多代码都围绕对象组织。类不是一个抽象名词，它更像一张图纸：规定对象有哪些状态、能做哪些动作。\n\n本节要完成三个目标：\n\n- 区分类、对象、字段、方法。\n- 写出一个能运行的 `Student` 类。\n- 解释对象状态如何影响方法输出。"
+    },
+    {
+      "type": "experiment",
+      "title": "对象机器拆解",
+      "description": "把类、字段、方法和对象拆成图纸、状态和按钮。",
+      "kind": "cards",
+      "defaults": {
+        "pairs": [
+          "类=图纸",
+          "对象=按图纸造出的机器",
+          "字段=对象状态",
+          "方法=对象能执行的动作"
+        ]
+      }
+    },
+    {
+      "type": "markdown",
+      "title": "核心讲解",
+      "content": "## 一段代码里的四个角色\n\n```java\nclass Student {\n  String name;\n  int score;\n\n  Student(String name, int score) {\n    this.name = name;\n    this.score = score;\n  }\n\n  String level() {\n    return score >= 90 ? \"A\" : \"B\";\n  }\n}\n```\n\n- `Student` 是类：它描述学生对象应该长什么样。\n- `name` 和 `score` 是字段：它们保存对象自己的状态。\n- 构造方法负责创建对象时填入初始状态。\n- `level()` 是方法：它读取对象状态并给出结果。\n\n### 常见错误\n\n1. 只写类，不创建对象：图纸不会自己变成机器。\n2. 字段没有初始化：对象状态为空或默认值，输出就会不符合预期。\n3. 方法里混入太多职责：一个方法最好只完成一个清楚动作。"
+    },
+    {
+      "type": "ide",
+      "title": "Java：创建学生对象并输出等级",
+      "description": "修改 name 和 score，观察对象状态如何影响输出。",
+      "language": "java",
+      "starterCode": "public class Main {\n  static class Student {\n    String name;\n    int score;\n\n    Student(String name, int score) {\n      this.name = name;\n      this.score = score;\n    }\n\n    String level() {\n      if (score >= 90) return \"A\";\n      if (score >= 80) return \"B\";\n      return \"C\";\n    }\n  }\n\n  public static void main(String[] args) {\n    Student student = new Student(\"Ada\", 95);\n    System.out.println(student.name + \" -> \" + student.level());\n  }\n}",
+      "expectedOutputHint": "应该输出 Ada -> A。把 95 改成 82 后应输出 B。"
+    },
+    {
+      "type": "challenge",
+      "title": "解释题：类和对象是什么关系？",
+      "prompt": "用“图纸”和“机器”的类比解释 Student 类与 new Student(\"Ada\", 95) 的关系。",
+      "answer": "Student 类是图纸，new Student(...) 创建出的对象是按图纸造出的具体机器，每个对象可以有自己的 name 和 score。"
+    },
+    {
+      "type": "checkpoint",
+      "title": "完成检查",
+      "items": [
+        "我能指出代码中的类、字段、构造方法和实例方法。",
+        "我能创建至少两个 Student 对象。",
+        "我能解释 score 改变后 level 输出为什么改变。"
+      ]
+    }
+  ]
+}

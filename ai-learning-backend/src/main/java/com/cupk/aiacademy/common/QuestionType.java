@@ -5,7 +5,8 @@ public enum QuestionType {
     MULTIPLE_CHOICE("multiple"),
     TRUE_FALSE("judge"),
     FILL_BLANK("blank"),
-    SHORT_ANSWER("short_answer");
+    SHORT_ANSWER("short_answer"),
+    FILE_UPLOAD("file_upload");
 
     private final String storageValue;
 

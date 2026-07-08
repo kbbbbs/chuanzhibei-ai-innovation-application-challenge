@@ -270,11 +270,18 @@ public class PaperService {
     }
 
     private PaperResponseDTO.PaperQuestionResponse toPaperQuestionResponse(ExamPaperQuestion item) {
-        Question question = questionService.getEntityById(toLong(item.getQuestionId()));
+        Question question = null;
+        try {
+            question = questionService.getEntityById(toLong(item.getQuestionId()));
+        } catch (BusinessException ignored) {
+            // Historical data may contain a paper-question row whose source question was deleted
+            // before referential checks existed. Keep the paper list readable and make the
+            // broken reference explicit instead of failing the whole page.
+        }
         PaperResponseDTO.PaperQuestionResponse response = new PaperResponseDTO.PaperQuestionResponse();
         response.setId(toLong(item.getId()));
         response.setQuestionId(toLong(item.getQuestionId()));
-        response.setQuestionContent(question.getTitle());
+        response.setQuestionContent(question == null ? "题目已删除（ID: " + item.getQuestionId() + "）" : question.getTitle());
         response.setSortOrder(item.getSortOrder());
         response.setScore(item.getScore());
         response.setRequiredAnswer(item.getRequiredAnswer() == null || item.getRequiredAnswer() == 1);

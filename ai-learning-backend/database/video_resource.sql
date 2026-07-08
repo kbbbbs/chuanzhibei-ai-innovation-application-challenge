@@ -20,6 +20,36 @@ CREATE TABLE IF NOT EXISTS video_resource (
     INDEX idx_video_resource_created_by (created_by)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='视频资源表';
 
-ALTER TABLE t_lesson
-    ADD COLUMN video_resource_id BIGINT NULL COMMENT '关联视频资源编号' AFTER video_url,
-    ADD INDEX idx_lesson_video_resource_id (video_resource_id);
+SET @lesson_video_resource_column_exists := (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.COLUMNS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 't_lesson'
+      AND COLUMN_NAME = 'video_resource_id'
+);
+
+SET @add_lesson_video_resource_column := IF(
+    @lesson_video_resource_column_exists = 0,
+    'ALTER TABLE t_lesson ADD COLUMN video_resource_id BIGINT NULL COMMENT ''关联视频资源编号'' AFTER video_url',
+    'SELECT ''t_lesson.video_resource_id already exists'''
+);
+PREPARE add_lesson_video_resource_column_stmt FROM @add_lesson_video_resource_column;
+EXECUTE add_lesson_video_resource_column_stmt;
+DEALLOCATE PREPARE add_lesson_video_resource_column_stmt;
+
+SET @lesson_video_resource_index_exists := (
+    SELECT COUNT(*)
+    FROM INFORMATION_SCHEMA.STATISTICS
+    WHERE TABLE_SCHEMA = DATABASE()
+      AND TABLE_NAME = 't_lesson'
+      AND INDEX_NAME = 'idx_lesson_video_resource_id'
+);
+
+SET @add_lesson_video_resource_index := IF(
+    @lesson_video_resource_index_exists = 0,
+    'ALTER TABLE t_lesson ADD INDEX idx_lesson_video_resource_id (video_resource_id)',
+    'SELECT ''idx_lesson_video_resource_id already exists'''
+);
+PREPARE add_lesson_video_resource_index_stmt FROM @add_lesson_video_resource_index;
+EXECUTE add_lesson_video_resource_index_stmt;
+DEALLOCATE PREPARE add_lesson_video_resource_index_stmt;

@@ -112,3 +112,10 @@ export const generateQuestionsFromKnowledgeBase = (data) => {
 export const batchCreateQuestions = (data) => {
   return request.post('/api/questions/batch', data)
 }
+
+export const uploadExamAnswerAttachment = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('bizType', 'exam-answer')
+  return request.post('/files/upload', formData)
+}

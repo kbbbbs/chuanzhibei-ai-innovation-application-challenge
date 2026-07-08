@@ -74,10 +74,14 @@ test.afterAll(cleanupFixtures)
 
 test('老师和学生权限隔离、越权提示、学生提交与老师批改', async ({ page }) => {
   await loginByUi(page, 'teacher', '123456', { clearStorage: true })
+  await expect(page.getByRole('heading', { name: /教师工作台/ })).toBeVisible()
+  await expect(page.getByText('不展示学生端“我的考试”')).toHaveCount(0)
+  await expect(page.getByText('教师权限约束')).toHaveCount(0)
   await expect(page.locator('.layout-aside').getByText('课程管理')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('作业管理')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('用户管理')).toHaveCount(0)
   await expect(page.locator('.layout-aside').getByText('我的班级')).toHaveCount(0)
+  await expect(page.locator('.layout-aside').getByText('我的考试')).toHaveCount(0)
 
   await page.goto('/users')
   await expectMessage(page, 'error', '无权限访问此页面')
@@ -90,6 +94,8 @@ test('老师和学生权限隔离、越权提示、学生提交与老师批改',
   await logout(page)
 
   await loginByUi(page, 'student', '123456', { clearStorage: true })
+  await expect(page.getByRole('heading', { name: /学生|同学/ })).toBeVisible()
+  await expect(page.getByText('教师工作台')).toHaveCount(0)
   await expect(page.locator('.layout-aside').getByText('我的班级')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('我的作业')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('题库管理')).toHaveCount(0)

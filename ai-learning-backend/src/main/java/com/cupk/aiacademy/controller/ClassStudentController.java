@@ -116,6 +116,7 @@ public class ClassStudentController {
             if (!user.getUserId().equals(studentId)) {
                 return Result.error("403", "只能查看自己的班级");
             }
+            queryWrapper.eq("status", 1);
         } else if (authUtils.isTeacher(user)) {
             java.util.List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
             if (classIds.isEmpty()) {

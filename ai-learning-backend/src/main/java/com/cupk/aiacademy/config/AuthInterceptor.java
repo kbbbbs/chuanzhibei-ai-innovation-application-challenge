@@ -53,6 +53,9 @@ public class AuthInterceptor implements HandlerInterceptor {
         if (path.matches(".*/auth/(login|register).*")) {
             return false;
         }
+        if ("/teacher-applications".equals(path) && "POST".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
         if (path.startsWith("/uploads")) {
             return false;
         }
@@ -66,3 +69,4 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 }
+

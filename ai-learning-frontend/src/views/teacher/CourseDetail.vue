@@ -94,9 +94,9 @@
         <el-form-item label="章节简介">
           <el-input v-model="chapterForm.description" type="textarea" :rows="3" />
         </el-form-item>
-        <el-form-item label="排序">
-          <el-input-number v-model="chapterForm.sortOrder" :min="1" />
-        </el-form-item>
+<!--        <el-form-item label="排序">-->
+<!--          <el-input-number v-model="chapterForm.sortOrder" :min="1" />-->
+<!--        </el-form-item>-->
       </el-form>
       <template #footer>
         <el-button @click="chapterDialogVisible = false">取消</el-button>
@@ -105,7 +105,7 @@
     </el-dialog>
 
     <!-- Lesson Dialog -->
-    <el-dialog v-model="lessonDialogVisible" :title="lessonForm.id ? '编辑课时' : '新增课时'" width="620px">
+    <el-dialog v-model="lessonDialogVisible" :title="lessonForm.id ? '编辑课时' : '新增课时'" width="760px">
       <el-form :model="lessonForm" :rules="lessonRules" ref="lessonFormRef" label-width="100px">
         <el-form-item label="课时标题">
           <el-input v-model="lessonForm.title" />
@@ -153,10 +153,77 @@
           <span v-else-if="lessonForm.videoResourceId" class="text-muted">状态加载中...</span>
           <span v-else class="text-muted">保存后进入下载队列，并在课时列表中显示处理状态</span>
         </el-form-item>
-        <el-form-item v-else-if="lessonForm.resourceType === 'article'" label="图文内容">
-          <el-input v-model="lessonForm.resourceUrl" type="textarea" :rows="5" />
+        <el-form-item v-if="lessonForm.resourceType === 'markdown'" label="Markdown">
+          <el-input
+            v-model="markdownDraft"
+            type="textarea"
+            :rows="12"
+            placeholder="用 Markdown 编写课本正文、例子、练习说明。保存后学生会在互动课本中阅读。"
+          />
         </el-form-item>
-        <el-form-item v-else label="资源文件">
+        <el-form-item v-else-if="lessonForm.resourceType === 'interactive_json_builtin'" label="内置课本">
+          <div class="interactive-editor">
+            <el-select
+              v-model="selectedTemplateKey"
+              filterable
+              placeholder="选择一个内置互动课本页面"
+              :loading="templateLoading"
+              @change="handleTemplateSelect"
+            >
+              <el-option
+                v-for="item in templateOptions"
+                :key="item.key"
+                :label="`${item.subject} · ${item.title}`"
+                :value="item.key"
+              >
+                <div class="template-option">
+                  <strong>{{ item.title }}</strong>
+                  <span>{{ item.summary }}</span>
+                </div>
+              </el-option>
+            </el-select>
+            <div v-if="selectedTemplateInfo" class="template-preview">
+              <strong>{{ selectedTemplateInfo.title }}</strong>
+              <span>{{ selectedTemplateInfo.summary }}</span>
+              <el-tag v-for="tag in selectedTemplateInfo.tags || []" :key="tag" size="small">{{ tag }}</el-tag>
+            </div>
+            <el-input
+              v-model="lessonForm.content"
+              type="textarea"
+              :rows="10"
+              spellcheck="false"
+              placeholder="选择模板后可在这里微调 JSON 内容"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item v-else-if="lessonForm.resourceType === 'interactive_json_upload'" label="上传 JSON">
+          <div class="interactive-editor">
+            <el-upload
+              ref="jsonUploadRef"
+              action="#"
+              :auto-upload="false"
+              :limit="1"
+              accept=".json,application/json"
+              :on-change="handleJsonFileChange"
+              :on-remove="handleJsonFileRemove"
+              :on-exceed="handleFileExceed"
+            >
+              <el-button type="primary">选择 JSON 文件</el-button>
+            </el-upload>
+            <div v-if="uploadedJsonName" class="template-preview">
+              <strong>{{ uploadedJsonName }}</strong>
+              <span>{{ lessonJsonBlockCount }} 个内容块</span>
+            </div>
+            <el-input
+              v-model="lessonForm.content"
+              type="textarea"
+              :rows="12"
+              spellcheck="false"
+              placeholder="上传后会显示 JSON 内容，也可以直接粘贴符合 blocks 结构的 JSON"
+            />
+          </div>
+        </el-form-item>
+        <el-form-item v-else-if="isUploadResourceType" label="资源文件">
           <div class="resource-upload">
             <el-upload
               ref="uploadRef"
@@ -238,12 +305,19 @@ const chapterRules = {
 const lessonDialogVisible = ref(false)
 const lessonFormRef = ref(null)
 const uploadRef = ref(null)
+const jsonUploadRef = ref(null)
+const markdownDraft = ref('')
+const selectedTemplateKey = ref('')
+const uploadedJsonName = ref('')
+const templateLoading = ref(false)
+const templateOptions = ref([])
 const lessonForm = reactive({
   id: null,
   chapterId: null,
   title: '',
-  resourceType: 'video_url',
+  resourceType: 'markdown',
   resourceUrl: '',
+  content: '',
   videoUrl: '',
   videoResourceId: null,
   duration: 0,
@@ -254,11 +328,13 @@ const lessonRules = {
 }
 
 const resourceTypeOptions = [
+  { label: 'Markdown 课本', value: 'markdown' },
+  { label: '内置互动 JSON', value: 'interactive_json_builtin' },
+  { label: '上传互动 JSON', value: 'interactive_json_upload' },
   { label: '视频 URL', value: 'video_url' },
   { label: '本地视频', value: 'video_file' },
   { label: 'PPT 课件', value: 'ppt' },
-  { label: '资料文件', value: 'file_link' },
-  { label: '图文内容', value: 'article' }
+  { label: '资料文件', value: 'file_link' }
 ]
 
 const uploadAcceptMap = {
@@ -282,6 +358,12 @@ const videoStatusTagTypes = {
 }
 
 const uploadAccept = computed(() => uploadAcceptMap[lessonForm.resourceType] || '')
+const isUploadResourceType = computed(() => ['video_file', 'ppt', 'file_link'].includes(lessonForm.resourceType))
+const selectedTemplateInfo = computed(() => templateOptions.value.find(item => item.key === selectedTemplateKey.value) || null)
+const lessonJsonBlockCount = computed(() => {
+  const page = parseLessonJson(lessonForm.content)
+  return page?.blocks?.length || 0
+})
 const currentVideoResource = computed(() => {
   if (!lessonForm.videoResourceId) return null
   return videoResources.value.get(Number(lessonForm.videoResourceId)) || null
@@ -293,8 +375,19 @@ const loadCourse = async () => {
     if (res.code === '200') {
       course.value = res.data
     }
-  } catch (e) {
-    // 全局已提示
+  } catch {}
+}
+
+const loadTemplateLibrary = async () => {
+  if (templateLoading.value || templateOptions.value.length) return
+  templateLoading.value = true
+  try {
+    const res = await request.get('/learning-content/templates')
+    if (res.code === '200') {
+      templateOptions.value = res.data?.templates || []
+    }
+  } catch {} finally {
+    templateLoading.value = false
   }
 }
 
@@ -304,17 +397,28 @@ const loadChapters = async () => {
     const res = await request.get(`/courses/${courseId.value}/chapters`)
     if (res.code === '200') {
       chapters.value = res.data
+      console.log('Loaded chapters:', chapters.value)
       // Load lessons for each chapter
       for (const chapter of chapters.value) {
-        const lessonsRes = await request.get(`/chapters/${chapter.id}/lessons`)
-        if (lessonsRes.code === '200') {
-          chapter.lessons = lessonsRes.data
+        try {
+          const lessonsRes = await request.get(`/chapters/${chapter.id}/lessons`, { silentError: true })
+          if (lessonsRes.code === '200') {
+            chapter.lessons = lessonsRes.data
+            console.log(`Loaded ${lessonsRes.data.length} lessons for chapter ${chapter.id}`)
+          } else {
+            console.warn(`Failed to load lessons for chapter ${chapter.id}: ${lessonsRes.msg}`)
+            chapter.lessons = []
+          }
+        } catch (error) {
+          console.error(`Error loading lessons for chapter ${chapter.id}:`, error)
+          chapter.lessons = []
         }
       }
       await loadVideoResources()
     }
-  } catch (e) {
-    // 全局已提示
+  } catch (error) {
+    console.error('Error loading chapters:', error)
+    ElMessage.error('加载章节失败')
   } finally {
     loading.value = false
   }
@@ -342,9 +446,7 @@ const loadVideoResources = async () => {
         if (res.code === '200' && res.data) {
           nextMap.set(Number(id), res.data)
         }
-      } catch (e) {
-        // 全局已提示
-      }
+      } catch {}
     }))
     videoResources.value = nextMap
     syncVideoResourcePolling()
@@ -381,9 +483,7 @@ const handleSaveChapter = async () => {
       chapterDialogVisible.value = false
       loadChapters()
     }
-  } catch (e) {
-    // 全局已提示
-  } finally {
+  } catch {} finally {
     submitLoading.value = false
   }
 }
@@ -397,9 +497,7 @@ const handleDeleteChapter = async (chapter) => {
       ElMessage.success('删除成功')
       loadChapters()
     }
-  } catch (e) {
-    // 全局已提示
-  }
+  } catch {}
 }
 
 const handleAddLesson = (chapter) => {
@@ -407,23 +505,28 @@ const handleAddLesson = (chapter) => {
     id: null,
     chapterId: chapter.id,
     title: '',
-    resourceType: 'video_url',
+    resourceType: 'markdown',
     resourceUrl: '',
+    content: '',
     videoUrl: '',
     videoResourceId: null,
     duration: 0,
     sortOrder: 1
   })
-  clearUploadFiles()
+  resetLessonContentState()
   lessonDialogVisible.value = true
 }
 
 const handleEditLesson = (lesson) => {
+  const resourceType = normalizeLessonResourceType(lesson.resourceType)
   Object.assign(lessonForm, {
     ...lesson,
-    resourceType: lesson.resourceType === 'video_link' ? 'video_url' : (lesson.resourceType || 'video_url')
+    resourceType
   })
-  clearUploadFiles()
+  resetLessonContentState({ keepContent: true })
+  if (resourceType === 'markdown') {
+    markdownDraft.value = markdownFromLesson(lesson)
+  }
   lessonDialogVisible.value = true
 }
 
@@ -438,7 +541,10 @@ const handleSaveLesson = async () => {
   try {
     const url = lessonForm.id ? `/lessons/${lessonForm.id}` : '/lessons'
     const method = lessonForm.id ? 'put' : 'post'
-    const res = await request[method](url, buildLessonPayload())
+    const payload = buildLessonPayload()
+    console.log('Saving lesson payload:', payload)
+    const res = await request[method](url, payload)
+    console.log('Save response:', res)
     if (res.code === '200') {
       const savedLesson = res.data || lessonForm
       if (lessonForm.resourceType === 'video_url') {
@@ -452,9 +558,12 @@ const handleSaveLesson = async () => {
       ElMessage.success(lessonForm.resourceType === 'video_url' ? '保存成功，视频已进入下载队列，可在列表查看处理状态' : '保存成功')
       lessonDialogVisible.value = false
       loadChapters()
+    } else {
+      ElMessage.error(res.msg || '保存失败')
     }
-  } catch (e) {
-    // 全局已提示
+  } catch (error) {
+    console.error('Save lesson error:', error)
+    ElMessage.error(error.response?.data?.msg || error.message || '保存失败')
   } finally {
     submitLoading.value = false
   }
@@ -462,9 +571,13 @@ const handleSaveLesson = async () => {
 
 const handleResourceTypeChange = () => {
   lessonForm.resourceUrl = ''
+  lessonForm.content = ''
   lessonForm.videoUrl = ''
   lessonForm.videoResourceId = null
-  clearUploadFiles()
+  resetLessonContentState()
+  if (lessonForm.resourceType === 'interactive_json_builtin') {
+    loadTemplateLibrary()
+  }
 }
 
 const handleFileChange = async (uploadFile) => {
@@ -479,7 +592,7 @@ const handleFileChange = async (uploadFile) => {
       }
       ElMessage.success('上传成功')
     }
-  } catch (e) {
+  } catch {
     clearUploadFiles()
   } finally {
     uploadLoading.value = false
@@ -497,6 +610,48 @@ const handleFileExceed = () => {
   ElMessage.warning('每次只能选择一个文件')
 }
 
+const handleTemplateSelect = async (key) => {
+  if (!key) return
+  templateLoading.value = true
+  try {
+    const res = await request.get(`/learning-content/templates/${encodeURIComponent(key)}`)
+    if (res.code === '200' && res.data) {
+      lessonForm.content = JSON.stringify(res.data, null, 2)
+      if (!lessonForm.title?.trim()) {
+        lessonForm.title = res.data.title || ''
+      }
+    }
+  } catch {} finally {
+    templateLoading.value = false
+  }
+}
+
+const handleJsonFileChange = async (uploadFile) => {
+  if (!uploadFile?.raw) return
+  try {
+    const text = await readTextFile(uploadFile.raw)
+    const page = parseLessonJson(text)
+    if (!page?.blocks?.length) {
+      ElMessage.error('JSON 需要包含非空 blocks 数组')
+      jsonUploadRef.value?.clearFiles()
+      return
+    }
+    lessonForm.content = JSON.stringify(page, null, 2)
+    uploadedJsonName.value = uploadFile.name || uploadFile.raw.name || '互动课本 JSON'
+    if (!lessonForm.title?.trim()) {
+      lessonForm.title = page.title || ''
+    }
+    ElMessage.success('JSON 已读取')
+  } catch {
+    ElMessage.error('JSON 文件格式不正确，请检查后重新上传')
+    jsonUploadRef.value?.clearFiles()
+  }
+}
+
+const handleJsonFileRemove = () => {
+  uploadedJsonName.value = ''
+}
+
 const handleRetryVideo = async (lesson) => {
   retryingResourceId.value = lesson.videoResourceId
   try {
@@ -506,9 +661,7 @@ const handleRetryVideo = async (lesson) => {
       syncVideoResourcePolling()
       ElMessage.success('已重新提交下载')
     }
-  } catch (e) {
-    // 全局已提示
-  } finally {
+  } catch {} finally {
     retryingResourceId.value = null
   }
 }
@@ -522,9 +675,7 @@ const handleDeleteLesson = async (lesson) => {
       ElMessage.success('删除成功')
       loadChapters()
     }
-  } catch (e) {
-    // 全局已提示
-  }
+  } catch {}
 }
 
 const loadPage = () => {
@@ -534,11 +685,26 @@ const loadPage = () => {
   activeChapters.value = []
   videoResources.value = new Map()
   loadCourse()
+  loadTemplateLibrary()
   loadChapters()
 }
 
 const buildLessonPayload = () => {
   const payload = { ...lessonForm }
+  if (payload.resourceType === 'markdown') {
+    payload.content = JSON.stringify(markdownPagePayload(), null, 2)
+    payload.resourceUrl = ''
+  } else if (isInteractiveJsonType(payload.resourceType)) {
+    const parsed = parseLessonJson(payload.content)
+    if (!parsed) {
+      console.error('Failed to parse interactive JSON content:', payload.content)
+      throw new Error('互动课本 JSON 格式不正确')
+    }
+    payload.content = JSON.stringify(parsed, null, 2)
+    payload.resourceUrl = ''
+  } else {
+    payload.content = payload.content || ''
+  }
   if (payload.resourceType === 'video_url') {
     payload.videoUrl = ''
     payload.videoResourceId = null
@@ -553,6 +719,12 @@ const buildLessonPayload = () => {
 }
 
 const validateLessonResource = () => {
+  if (lessonForm.resourceType === 'markdown' && !markdownDraft.value.trim()) {
+    return '请输入 Markdown 课本内容'
+  }
+  if (isInteractiveJsonType(lessonForm.resourceType) && !parseLessonJson(lessonForm.content)?.blocks?.length) {
+    return '互动课本 JSON 需要包含非空 blocks 数组'
+  }
   if (lessonForm.resourceType === 'video_url' && !lessonForm.resourceUrl?.trim()) {
     return '请输入视频 URL'
   }
@@ -564,12 +736,73 @@ const validateLessonResource = () => {
 
 const clearUploadFiles = () => {
   uploadRef.value?.clearFiles()
+  jsonUploadRef.value?.clearFiles()
 }
+
+const resetLessonContentState = ({ keepContent = false } = {}) => {
+  clearUploadFiles()
+  markdownDraft.value = keepContent ? markdownFromLesson(lessonForm) : ''
+  selectedTemplateKey.value = ''
+  uploadedJsonName.value = ''
+  if (!keepContent) {
+    lessonForm.content = ''
+  }
+}
+
+const normalizeLessonResourceType = (resourceType) => {
+  if (resourceType === 'video_link') return 'video_url'
+  if (resourceType === 'article') return 'markdown'
+  return resourceType || 'markdown'
+}
+
+const isInteractiveJsonType = (resourceType) => {
+  return ['interactive_json_builtin', 'interactive_json_upload'].includes(resourceType)
+}
+
+const markdownPagePayload = () => ({
+  schemaVersion: 1,
+  title: lessonForm.title,
+  summary: markdownDraft.value.replace(/\s+/g, ' ').slice(0, 120),
+  blocks: [
+    {
+      type: 'markdown',
+      title: lessonForm.title || '课本正文',
+      content: markdownDraft.value
+    }
+  ]
+})
+
+const markdownFromLesson = (lesson) => {
+  const page = parseLessonJson(lesson?.content || '')
+  const firstMarkdown = page?.blocks?.find(block => (block.type || 'markdown') === 'markdown')
+  if (firstMarkdown?.content) return firstMarkdown.content
+  return lesson?.content || lesson?.resourceUrl || ''
+}
+
+const parseLessonJson = (content) => {
+  if (!content?.trim()) return null
+  try {
+    const parsed = JSON.parse(content)
+    const page = Array.isArray(parsed) ? { blocks: parsed } : parsed
+    if (!Array.isArray(page?.blocks)) return null
+    return page
+  } catch {
+    return null
+  }
+}
+
+const readTextFile = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onload = () => resolve(String(reader.result || ''))
+  reader.onerror = () => reject(reader.error)
+  reader.readAsText(file, 'utf-8')
+})
 
 const resourceTypeLabel = (value) => {
   const matched = resourceTypeOptions.find(item => item.value === value)
   if (matched) return matched.label
   if (value === 'video_link') return '视频链接'
+  if (value === 'article') return 'Markdown 课本'
   return value || '-'
 }
 
@@ -624,7 +857,7 @@ const knowledgeStatusTipByResource = (resource) => {
   if (!resource) return '视频保存后才会进入下载与知识点处理流程'
   if (['PENDING', 'DOWNLOADING'].includes(resource.status)) return '视频仍在下载，知识点处理需等待视频完成'
   if (resource.status === 'FAILED') return '视频下载失败，暂未进入知识点处理'
-  if (hasKnowledgeSummary(resource)) return '已生成知识点摘要；当前后端尚未返回 WeKnora 入库结果字段'
+  if (hasKnowledgeSummary(resource)) return '已生成视频知识点摘要'
   return '尚未发现知识点摘要或知识库录入记录'
 }
 
@@ -703,6 +936,39 @@ onUnmounted(() => {
   display: grid;
   gap: 10px;
   width: 100%;
+}
+
+.interactive-editor {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+
+.template-option {
+  display: grid;
+  gap: 2px;
+  line-height: 1.4;
+}
+
+.template-option span {
+  color: #909399;
+  font-size: 12px;
+}
+
+.template-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid #dbeafe;
+  border-radius: 12px;
+  background: #f8fbff;
+}
+
+.template-preview span {
+  color: #606266;
+  line-height: 1.5;
 }
 
 .text-muted {

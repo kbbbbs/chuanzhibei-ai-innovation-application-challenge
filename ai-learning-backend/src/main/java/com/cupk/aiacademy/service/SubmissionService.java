@@ -155,7 +155,7 @@ public class SubmissionService {
             Question question = questionService.getEntityById(answer.getQuestionId().longValue());
             ExamPaperQuestion paperQuestion = paperQuestionMapper.selectById(answer.getPaperQuestionId());
             QuestionType type = QuestionType.fromStorageValue(question.getQuestionType());
-            if (type == QuestionType.SHORT_ANSWER) {
+            if (type == QuestionType.SHORT_ANSWER || type == QuestionType.FILE_UPLOAD) {
                 answer.setGradeStatus(JudgeStatus.PENDING_MANUAL_REVIEW.getCode());
                 answer.setScore(BigDecimal.ZERO);
                 hasSubjective = true;
@@ -214,7 +214,7 @@ public class SubmissionService {
             answerMapper.updateById(answer);
         }
         BigDecimal subjectiveScore = listAnswers(record.getId()).stream()
-                .filter(answer -> QuestionType.fromStorageValue(questionService.getEntityById(answer.getQuestionId().longValue()).getQuestionType()) == QuestionType.SHORT_ANSWER)
+                .filter(answer -> isManualQuestion(answer.getQuestionId()))
                 .map(answer -> answer.getScore() == null ? BigDecimal.ZERO : answer.getScore())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         record.setSubjectiveScore(subjectiveScore);
@@ -371,6 +371,11 @@ public class SubmissionService {
         return response;
     }
 
+    private boolean isManualQuestion(Integer questionId) {
+        QuestionType type = QuestionType.fromStorageValue(questionService.getEntityById(questionId.longValue()).getQuestionType());
+        return type == QuestionType.SHORT_ANSWER || type == QuestionType.FILE_UPLOAD;
+    }
+
     private ExamRecord findExistingRecord(Integer examId, String candidateId, Long studentId) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
         query.eq("exam_session_id", examId);
@@ -413,6 +418,9 @@ public class SubmissionService {
                     .sorted()
                     .collect(Collectors.joining(","));
         }
+        if (!isBlank(item.getAttachmentUrl())) {
+            return item.getAttachmentUrl().trim();
+        }
         return item.getAnswerContent();
     }
 
@@ -432,7 +440,7 @@ public class SubmissionService {
             case SINGLE_CHOICE, TRUE_FALSE -> normalize(submittedAnswer).equals(normalize(standardAnswers.get(0)));
             case MULTIPLE_CHOICE -> normalizeMulti(submittedAnswer).equals(normalizeMulti(String.join(",", standardAnswers)));
             case FILL_BLANK -> standardAnswers.stream().anyMatch(answer -> normalizeBlank(answer).equals(normalizeBlank(submittedAnswer)));
-            case SHORT_ANSWER -> false;
+            case SHORT_ANSWER, FILE_UPLOAD -> false;
         };
     }
 

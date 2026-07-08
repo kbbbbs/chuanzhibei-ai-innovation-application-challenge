@@ -195,7 +195,7 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
   await expect(page.locator('.layout-aside').getByText('课程管理')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('用户管理')).toBeVisible()
 
-  for (const path of ['/courses', '/questions', '/papers', '/exams', '/homeworks', '/teaching-classes', '/users', '/categories', '/my-classes', '/my-homeworks', '/my-exams', '/my-grades', '/home']) {
+  for (const path of ['/courses', '/questions', '/papers', '/exams', '/homeworks', '/teaching-classes', '/users', '/categories', '/my-classes', '/learning-routes', '/my-homeworks', '/my-exams', '/my-grades', '/home']) {
     await page.goto(path)
     await page.waitForLoadState('networkidle')
     await expect(page.locator('.layout-aside')).toBeVisible()
@@ -249,7 +249,7 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
   await expect(page.getByText(`UI章节_${suffix}`)).toBeVisible()
   await page.locator('.el-collapse-item').filter({ hasText: `UI章节_${suffix}` }).locator('.chapter-actions').getByRole('button', { name: '添加课时' }).click()
   await fillFormInput(page, '课时标题', `UI课时_${suffix}`)
-  await fillFormInput(page, '资源地址', 'UI课时内容')
+  await fillFormInput(page, 'Markdown', 'UI课时内容')
   await saveDialog(page)
   await page.locator('.el-collapse-item').filter({ hasText: `UI章节_${suffix}` }).locator('.el-collapse-item__header').click()
   await expect(page.getByText(`UI课时_${suffix}`)).toBeVisible()
@@ -333,7 +333,13 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
   await logout(page, { fromHome: true, ifNeeded: true })
   await loginByUi(page, 'student', '123456')
   await expect(page.locator('.layout-aside').getByText('我的班级')).toBeVisible()
+  await expect(page.locator('.layout-aside').getByText('学习路线')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('课程管理')).toHaveCount(0)
+
+  await page.goto('/learning-routes')
+  await expect(page.getByRole('heading', { name: '学习路线地图集' })).toBeVisible()
+  await expect(page.getByText(created.course.title)).toBeVisible()
+  await expect(page.getByRole('button', { name: '打开完整学习地图' }).first()).toBeVisible()
 
   await page.goto('/my-classes')
   await clickRowButton(page, created.course.title, '进入学习')

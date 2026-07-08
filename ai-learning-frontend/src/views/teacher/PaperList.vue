@@ -4,7 +4,10 @@
       <template #header>
         <div class="card-header">
           <span>试卷管理</span>
-          <el-button type="primary" @click="handleCreate">创建试卷</el-button>
+          <div class="header-actions">
+            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="primary" @click="handleCreate">创建试卷</el-button>
+          </div>
         </div>
       </template>
 
@@ -149,6 +152,13 @@
         <el-button v-else type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
       </template>
     </el-dialog>
+
+    <ImportDialog
+      v-model="importDialogVisible"
+      type="papers"
+      title="试卷 Excel 导入"
+      @imported="loadPapers"
+    />
   </div>
 </template>
 
@@ -158,6 +168,7 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ImportDialog from '@/components/ImportDialog.vue'
 import { getCourses } from '@/utils/course'
 import { currentUserId, enumName, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
@@ -181,6 +192,7 @@ const pagination = reactive({
 })
 
 const dialogVisible = ref(false)
+const importDialogVisible = ref(false)
 const paperStep = ref(0)
 
 const form = reactive({
@@ -538,6 +550,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
 }
 
 .pagination-bar {

@@ -73,7 +73,7 @@ request.interceptors.response.use(response => {
   } else if (status === 403) {
     if (!silent) ElMessage.error('无权限访问该资源')
   } else if (status >= 500) {
-    if (!silent) ElMessage.error('服务器异常，请稍后重试')
+    // if (!silent) ElMessage.error('服务器异常，请稍后重试')
   } else {
     if (!silent) ElMessage.error(error.message || '网络请求失败')
   }

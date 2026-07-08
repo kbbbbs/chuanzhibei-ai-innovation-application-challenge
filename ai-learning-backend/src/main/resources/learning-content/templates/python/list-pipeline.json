@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "key": "python.list-pipeline",
+  "title": "Python 列表流水线：从输入到结论",
+  "subject": "Python 编程",
+  "summary": "把数据处理拆成输入、转换、过滤、聚合和检查。",
+  "estimatedMinutes": 27,
+  "blocks": [
+    {
+      "type": "markdown",
+      "title": "学习目标",
+      "content": "## 数据流水线是什么\n\nPython 很适合把一批数据按步骤处理：先读入，再转换，再过滤，最后得到结论。真正重要的不是代码短，而是每一步都能解释和检查。\n\n本节你要完成：\n\n- 读懂列表中的每个样本。\n- 用函数表达一次转换。\n- 用过滤条件留下需要的数据。\n- 用输出检查结果是否可信。"
+    },
+    {
+      "type": "experiment",
+      "title": "列表流水线",
+      "description": "修改输入列表，观察平方、过滤和平均值如何变化。",
+      "kind": "pipeline",
+      "defaults": {
+        "values": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ]
+      }
+    },
+    {
+      "type": "markdown",
+      "title": "核心讲解",
+      "content": "## 让中间结果可见\n\n数据处理最常见的问题是“最后结果错了，但不知道哪一步错”。解决办法是把流水线拆开，打印关键中间结果。\n\n典型步骤：\n\n1. 原始输入：确认数据长什么样。\n2. 转换：例如平方、清洗、格式化。\n3. 过滤：只保留满足条件的样本。\n4. 聚合：计算平均值、总和或最大值。\n5. 检查：解释输出是否符合预期。"
+    },
+    {
+      "type": "ide",
+      "title": "Python：可检查的数据流水线",
+      "description": "修改 xs 和阈值 threshold，观察每一步输出。",
+      "language": "python",
+      "starterCode": "xs = [1, 2, 3, 4, 5]\nthreshold = 4\n\nsquared = [x * x for x in xs]\nfiltered = [x for x in squared if x > threshold]\naverage = sum(filtered) / len(filtered) if filtered else 0\n\nprint('input:', xs)\nprint('squared:', squared)\nprint('filtered:', filtered)\nprint('average:', round(average, 2))",
+      "expectedOutputHint": "应该看到原始列表、平方结果、过滤结果和平均值。"
+    },
+    {
+      "type": "challenge",
+      "title": "调试题：为什么要打印中间变量？",
+      "prompt": "如果最终平均值不对，为什么打印 squared 和 filtered 比只看 average 更有帮助？",
+      "answer": "因为它能定位错误发生在哪一步：转换错、过滤错，还是聚合错。"
+    },
+    {
+      "type": "checkpoint",
+      "title": "完成检查",
+      "items": [
+        "我能说清每一步输入和输出。",
+        "我能修改过滤条件并预测结果变化。",
+        "我能用中间变量定位错误。"
+      ]
+    }
+  ]
+}

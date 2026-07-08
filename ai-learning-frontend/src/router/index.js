@@ -107,6 +107,18 @@ export const layoutChildren = [
     meta: { title: '我的班级', icon: 'School', roles: ['admin', 'student'], requiresAuth: true }
   },
   {
+    path: 'learning-routes',
+    name: 'LearningRoutes',
+    component: () => import('../views/student/LearningRoutes.vue'),
+    meta: { title: '学习路线', icon: 'MapLocation', roles: ['admin', 'student'], requiresAuth: true }
+  },
+  {
+    path: 'learning-map/:courseId',
+    name: 'LearningMap',
+    component: () => import('../views/student/LearningMap.vue'),
+    meta: { title: '学习地图', hidden: true, roles: ['admin', 'student'], requiresAuth: true }
+  },
+  {
     path: 'course-learn/:courseId',
     name: 'CourseLearn',
     component: () => import('../views/student/CourseLearn.vue'),
@@ -187,6 +199,12 @@ export const layoutChildren = [
     meta: { title: '用户管理', icon: 'User', roles: ['admin'], requiresAuth: true }
   },
   {
+    path: 'teacher-applications',
+    name: 'TeacherApplications',
+    component: () => import('../views/admin/TeacherApplications.vue'),
+    meta: { title: '教师审核', icon: 'UserFilled', roles: ['admin'], requiresAuth: true }
+  },
+  {
     path: 'categories',
     name: 'CategoryManage',
     component: () => import('../views/admin/CategoryManage.vue'),
@@ -259,3 +277,6 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
+
+
+
