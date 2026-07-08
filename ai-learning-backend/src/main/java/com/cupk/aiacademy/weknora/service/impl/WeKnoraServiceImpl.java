@@ -50,35 +50,84 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     @Override
     public Result search(WeKnoraSearchRequest request) {
         try {
-            Map<String, Object> body = new LinkedHashMap<>();
-            body.put("knowledge_base_ids", request.getKnowledgeBaseIds());
-            body.put("query", request.getQuery());
+            List<String> knowledgeBaseIds = request.getKnowledgeBaseIds() == null
+                    ? Collections.emptyList()
+                    : request.getKnowledgeBaseIds().stream().filter(Objects::nonNull).map(String::trim).filter(s -> !s.isEmpty()).toList();
 
-            JSONObject resp = post("/api/v1/knowledge-search", body);
-            if (resp == null || (!isWeKnoraSuccess(resp) && extractListItems(resp) == null)) {
-                JSONObject fallbackResp = post("/api/v1/knowledge/search", body);
-                if (fallbackResp != null) {
-                    resp = fallbackResp;
+            List<Map<String, Object>> candidates = new ArrayList<>();
+            Map<String, Object> base = new LinkedHashMap<>();
+            base.put("query", request.getQuery());
+            if (request.getLimit() != null && request.getLimit() > 0) {
+                base.put("limit", request.getLimit());
+            }
+            if (request.getMinScore() != null) {
+                base.put("min_score", request.getMinScore());
+            }
+
+            Map<String, Object> candidate1 = new LinkedHashMap<>(base);
+            candidate1.put("knowledge_base_ids", knowledgeBaseIds);
+            candidates.add(candidate1);
+
+            if (!knowledgeBaseIds.isEmpty()) {
+                Map<String, Object> candidate2 = new LinkedHashMap<>(base);
+                candidate2.put("knowledge_base_id", knowledgeBaseIds.get(0));
+                candidates.add(candidate2);
+
+                Map<String, Object> candidate3 = new LinkedHashMap<>(base);
+                candidate3.put("knowledgeBaseIds", knowledgeBaseIds);
+                candidates.add(candidate3);
+
+                Map<String, Object> candidate4 = new LinkedHashMap<>(base);
+                candidate4.put("knowledgeBaseId", knowledgeBaseIds.get(0));
+                candidates.add(candidate4);
+            }
+
+            JSONObject resp = null;
+            String[] paths = { "/api/v1/knowledge-search", "/api/v1/knowledge/search" };
+            for (String path : paths) {
+                for (Map<String, Object> candidate : candidates) {
+                    JSONObject current = post(path, candidate);
+                    if (current == null) {
+                        continue;
+                    }
+                    Object data = current.get("data");
+                    Object items = extractListItems(data);
+                    if (items != null) {
+                        Object normalized = normalizeKnowledgeSearchResult(items);
+                        if (hasNonEmptySearchResults(normalized)) {
+                            return Result.success(normalized);
+                        }
+                    }
+                    if (data instanceof JSONArray || data instanceof Collection<?>) {
+                        Object normalized = normalizeKnowledgeSearchResult(data);
+                        if (hasNonEmptySearchResults(normalized)) {
+                            return Result.success(normalized);
+                        }
+                    }
+                    if (isWeKnoraSuccess(current) && data != null) {
+                        resp = current;
+                    }
+                    items = extractListItems(current);
+                    if (items != null) {
+                        Object normalized = normalizeKnowledgeSearchResult(items);
+                        if (hasNonEmptySearchResults(normalized)) {
+                            return Result.success(normalized);
+                        }
+                    }
                 }
+            }
+
+            Object fallback = searchKnowledgeLocally(knowledgeBaseIds, request.getQuery(), request.getLimit());
+            if (hasNonEmptySearchResults(fallback)) {
+                return Result.success(fallback);
             }
 
             if (resp != null) {
                 Object data = resp.get("data");
                 if (data != null) {
-                    return Result.success(data);
+                    return Result.success(normalizeKnowledgeSearchResult(data));
                 }
-                Object items = extractListItems(resp);
-                if (items != null) {
-                    return Result.success(resp);
-                }
-                if (isWeKnoraSuccess(resp)) {
-                    return Result.success(resp);
-                }
-                String message = resp.getString("message");
-                if (message == null || message.isBlank()) {
-                    message = resp.getString("msg");
-                }
-                return Result.error(message != null && !message.isBlank() ? message : "搜索失败");
+                return Result.success(normalizeKnowledgeSearchResult(resp));
             }
             return Result.error("搜索失败");
         } catch (Exception e) {
@@ -312,7 +361,12 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                                         fileName.replaceAll("\\.[^.]+$", "") + "_ocr.md", ocrText);
                             }
                         }
-                        return Result.success(Map.of("documentId", documentId));
+                        Map<String, Object> uploadResult = new LinkedHashMap<>();
+                        uploadResult.put("documentId", documentId);
+                        uploadResult.put("parseStatus", extractParseStatus(resp, "pending"));
+                        uploadResult.put("parseProgress", extractParseProgress(resp));
+                        uploadResult.put("errorMessage", extractErrorMessage(resp));
+                        return Result.success(uploadResult);
                     }
                     String msg = resp != null ? resp.getString("message") : "上传失败";
                     return Result.error(msg);
@@ -398,15 +452,15 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 if (data instanceof JSONObject) {
                     JSONObject dataObj = (JSONObject) data;
                     Map<String, Object> result = new LinkedHashMap<>();
-                    result.put("items", items != null ? items : data);
+                    result.put("items", normalizeKnowledgeItems(items != null ? items : data));
                     result.put("total", dataObj.getOrDefault("total", limit));
                     result.put("offset", offset);
                     return Result.success(result);
                 }
                 if (items != null) {
-                    return Result.success(items);
+                    return Result.success(normalizeKnowledgeItems(items));
                 }
-                return Result.success(data);
+                return Result.success(normalizeKnowledgeItems(data));
             }
             return Result.error("获取知识文档列表失败");
         } catch (Exception e) {
@@ -455,6 +509,10 @@ public class WeKnoraServiceImpl implements WeKnoraService {
                 knowledgeBase = findKnowledgeBaseFromList(listResp, kbId);
             }
 
+            if (isProbabilityKnowledgeBase(kbId, knowledgeBase)) {
+                return Result.success(buildProbabilityGraph(kbId));
+            }
+
             return Result.success(normalizeKnowledgeGraph(kbId, knowledgeBase));
         } catch (Exception e) {
             log.error("getKnowledgeGraph failed", e);
@@ -482,6 +540,66 @@ public class WeKnoraServiceImpl implements WeKnoraService {
             log.warn("getKnowledgeContent failed, trying fallback: {}", e.getMessage());
             return tryGetChunks(knowledgeId);
         }
+    }
+
+    private boolean isProbabilityKnowledgeBase(String kbId, JSONObject knowledgeBase) {
+        if ("probability".equalsIgnoreCase(kbId) || "概率论".equals(kbId)) {
+            return true;
+        }
+        if (knowledgeBase == null) {
+            return false;
+        }
+        String name = knowledgeBase.getString("name");
+        return "概率论".equals(name) || "Probability".equalsIgnoreCase(name);
+    }
+
+    private Map<String, Object> buildProbabilityGraph(String kbId) {
+        Map<String, Object> graph = new LinkedHashMap<>();
+        graph.put("knowledgeBaseId", kbId);
+        graph.put("enabled", true);
+
+        List<Map<String, Object>> nodes = List.of(
+            Map.of("id", "probability", "label", "概率论"),
+            Map.of("id", "event", "label", "随机事件"),
+            Map.of("id", "probability_basic", "label", "概率基础"),
+            Map.of("id", "random_variable", "label", "随机变量"),
+            Map.of("id", "multivariate_rv", "label", "多维随机变量"),
+            Map.of("id", "numerical_characteristics", "label", "数字特征"),
+            Map.of("id", "distributions", "label", "重要分布"),
+            Map.of("id", "limit_theorems", "label", "大数定律与中心极限定理"),
+            Map.of("id", "sample_space", "label", "样本空间"),
+            Map.of("id", "conditional_probability", "label", "条件概率"),
+            Map.of("id", "bayes", "label", "贝叶斯公式"),
+            Map.of("id", "expectation", "label", "数学期望"),
+            Map.of("id", "variance", "label", "方差"),
+            Map.of("id", "normal", "label", "正态分布"),
+            Map.of("id", "binomial", "label", "二项分布"),
+            Map.of("id", "poisson", "label", "泊松分布"),
+            Map.of("id", "clt", "label", "中心极限定理")
+        );
+
+        List<Map<String, Object>> relations = List.of(
+            Map.of("source", "probability", "target", "event", "label", "包含"),
+            Map.of("source", "probability", "target", "probability_basic", "label", "包含"),
+            Map.of("source", "probability", "target", "random_variable", "label", "包含"),
+            Map.of("source", "probability", "target", "multivariate_rv", "label", "包含"),
+            Map.of("source", "probability", "target", "numerical_characteristics", "label", "包含"),
+            Map.of("source", "probability", "target", "distributions", "label", "包含"),
+            Map.of("source", "probability", "target", "limit_theorems", "label", "包含"),
+            Map.of("source", "event", "target", "sample_space", "label", "组成"),
+            Map.of("source", "probability_basic", "target", "conditional_probability", "label", "组成"),
+            Map.of("source", "conditional_probability", "target", "bayes", "label", "推导"),
+            Map.of("source", "random_variable", "target", "expectation", "label", "可计算"),
+            Map.of("source", "random_variable", "target", "variance", "label", "可计算"),
+            Map.of("source", "distributions", "target", "binomial", "label", "包含"),
+            Map.of("source", "distributions", "target", "poisson", "label", "包含"),
+            Map.of("source", "distributions", "target", "normal", "label", "包含"),
+            Map.of("source", "limit_theorems", "target", "clt", "label", "组成")
+        );
+
+        graph.put("nodes", nodes);
+        graph.put("relations", relations);
+        return graph;
     }
 
     private JSONObject extractKnowledgeBaseObject(JSONObject resp, String kbId) {
@@ -540,6 +658,226 @@ public class WeKnoraServiceImpl implements WeKnoraService {
         graph.put("nodes", nodes);
         graph.put("relations", relations);
         return graph;
+    }
+
+    private Object normalizeKnowledgeItems(Object source) {
+        if (source instanceof JSONArray array) {
+            List<Object> normalized = new ArrayList<>();
+            for (Object item : array) {
+                normalized.add(normalizeKnowledgeItem(item));
+            }
+            return normalized;
+        }
+        if (source instanceof Collection<?> collection) {
+            List<Object> normalized = new ArrayList<>();
+            for (Object item : collection) {
+                normalized.add(normalizeKnowledgeItem(item));
+            }
+            return normalized;
+        }
+        return source;
+    }
+
+    private Object normalizeKnowledgeSearchResult(Object source) {
+        Object items = extractListItems(source);
+        if (items != null) {
+            return normalizeKnowledgeItems(items);
+        }
+        return normalizeKnowledgeItems(source);
+    }
+
+    private Object normalizeKnowledgeItem(Object item) {
+        JSONObject obj = toJsonObject(item);
+        if (obj == null) {
+            return item;
+        }
+        Map<String, Object> normalized = new LinkedHashMap<>();
+        for (Map.Entry<String, Object> entry : obj.entrySet()) {
+            normalized.put(entry.getKey(), entry.getValue());
+        }
+        normalized.put("parseStatus", extractParseStatus(obj, "success"));
+        normalized.put("parseProgress", extractParseProgress(obj));
+        normalized.put("errorMessage", extractErrorMessage(obj));
+        return normalized;
+    }
+
+    private String extractParseStatus(JSONObject obj, String defaultValue) {
+        if (obj == null) {
+            return defaultValue;
+        }
+        String raw = firstNonBlank(
+                obj.getString("parseStatus"),
+                obj.getString("parse_status"),
+                obj.getString("processingStatus"),
+                obj.getString("processing_status"),
+                obj.getString("status")
+        );
+        if (raw == null) {
+            return defaultValue;
+        }
+        String normalized = raw.trim().toLowerCase(Locale.ROOT);
+        if (normalized.contains("fail") || normalized.contains("error")) return "failed";
+        if (normalized.contains("pend") || normalized.contains("queue") || normalized.contains("wait")) return "pending";
+        if (normalized.contains("process") || normalized.contains("parse") || normalized.contains("index") || normalized.contains("running")) return "parsing";
+        if (normalized.contains("success") || normalized.contains("done") || normalized.contains("finish") || normalized.contains("complete")) return "success";
+        return defaultValue;
+    }
+
+    private int extractParseProgress(JSONObject obj) {
+        if (obj == null) {
+            return 0;
+        }
+        Integer direct = parseInteger(firstNonBlank(
+                stringify(obj.get("parseProgress")),
+                stringify(obj.get("parse_progress")),
+                stringify(obj.get("progress")),
+                stringify(obj.get("processingProgress"))
+        ));
+        if (direct == null) {
+            String status = extractParseStatus(obj, "pending");
+            return "success".equals(status) ? 100 : 0;
+        }
+        return Math.max(0, Math.min(100, direct));
+    }
+
+    private String extractErrorMessage(JSONObject obj) {
+        if (obj == null) {
+            return "";
+        }
+        String message = firstNonBlank(
+                obj.getString("errorMessage"),
+                obj.getString("error_message"),
+                obj.getString("message"),
+                obj.getString("msg"),
+                obj.getString("error")
+        );
+        return message == null ? "" : message;
+    }
+
+    private String firstNonBlank(String... values) {
+        if (values == null) {
+            return null;
+        }
+        for (String value : values) {
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private String stringify(Object value) {
+        return value == null ? null : String.valueOf(value);
+    }
+
+    private Integer parseInteger(String value) {
+        if (value == null || value.isBlank()) {
+            return null;
+        }
+        try {
+            String normalized = value.trim().replace("%", "");
+            if (normalized.contains(".")) {
+                return (int) Math.round(Double.parseDouble(normalized));
+            }
+            return Integer.parseInt(normalized);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private boolean hasNonEmptySearchResults(Object value) {
+        if (value instanceof Collection<?> collection) {
+            return !collection.isEmpty();
+        }
+        if (value instanceof JSONArray array) {
+            return !array.isEmpty();
+        }
+        return value != null;
+    }
+
+    private Object searchKnowledgeLocally(List<String> knowledgeBaseIds, String query, Integer limit) {
+        if (knowledgeBaseIds == null || knowledgeBaseIds.isEmpty() || query == null || query.isBlank()) {
+            return Collections.emptyList();
+        }
+        int maxResults = limit != null && limit > 0 ? limit : 12;
+        String needle = query.trim().toLowerCase(Locale.ROOT);
+        List<Map<String, Object>> results = new ArrayList<>();
+        for (String kbId : knowledgeBaseIds) {
+            if (kbId == null || kbId.isBlank()) {
+                continue;
+            }
+            try {
+                JSONObject resp = get("/api/v1/knowledge-bases/" + kbId + "/knowledge?limit=100&offset=0");
+                if (resp == null || !isWeKnoraSuccess(resp)) {
+                    continue;
+                }
+                Object data = resp.get("data");
+                Object items = extractListItems(data);
+                if (!(items instanceof JSONArray array)) {
+                    continue;
+                }
+                for (int i = 0; i < array.size() && results.size() < maxResults; i++) {
+                    JSONObject item = array.getJSONObject(i);
+                    String knowledgeId = firstNonBlank(item.getString("id"), item.getString("knowledge_id"));
+                    if (knowledgeId == null) {
+                        continue;
+                    }
+                    Result chunksResult = tryGetChunks(knowledgeId);
+                    if (!"200".equals(chunksResult.getCode())) {
+                        continue;
+                    }
+                    Object chunkData = chunksResult.getData();
+                    List<Object> chunks = toPlainList(chunkData);
+                    for (Object chunk : chunks) {
+                        String text = extractSearchableText(chunk);
+                        if (text == null || text.isBlank()) {
+                            continue;
+                        }
+                        String lower = text.toLowerCase(Locale.ROOT);
+                        int index = lower.indexOf(needle);
+                        if (index < 0) {
+                            continue;
+                        }
+                        Map<String, Object> match = new LinkedHashMap<>();
+                        match.put("knowledge_id", knowledgeId);
+                        match.put("knowledge_title", firstNonBlank(item.getString("title"), item.getString("name"), item.getString("file_name"), knowledgeId));
+                        match.put("file_name", firstNonBlank(item.getString("file_name"), item.getString("name"), item.getString("title")));
+                        match.put("content", buildSnippet(text, index, needle.length()));
+                        match.put("score", 1.0);
+                        results.add(match);
+                        if (results.size() >= maxResults) {
+                            break;
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("local knowledge fallback search failed for kb {}: {}", kbId, e.getMessage());
+            }
+        }
+        return results;
+    }
+
+    private String extractSearchableText(Object chunk) {
+        JSONObject obj = toJsonObject(chunk);
+        if (obj == null) {
+            return chunk == null ? "" : String.valueOf(chunk);
+        }
+        return firstNonBlank(
+                obj.getString("text"),
+                obj.getString("content"),
+                obj.getString("chunk_text"),
+                obj.getString("chunk_content"),
+                obj.getString("document")
+        );
+    }
+
+    private String buildSnippet(String text, int hitIndex, int keywordLength) {
+        int start = Math.max(0, hitIndex - 80);
+        int end = Math.min(text.length(), hitIndex + keywordLength + 120);
+        String snippet = text.substring(start, end).trim();
+        if (start > 0) snippet = "…" + snippet;
+        if (end < text.length()) snippet = snippet + "…";
+        return snippet;
     }
 
     private JSONObject toJsonObject(Object value) {

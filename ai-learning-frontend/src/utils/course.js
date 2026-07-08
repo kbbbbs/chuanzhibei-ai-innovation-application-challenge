@@ -28,6 +28,13 @@ export const addCourse = data => {
   return request.post('/courses', data)
 }
 
+export const addCourseWithOutline = (course, file) => {
+  const formData = new FormData()
+  formData.append('course', JSON.stringify(course))
+  if (file) formData.append('file', file)
+  return request.post('/courses/with-outline', formData)
+}
+
 export const updateCourse = (id, data) => {
   return request.put('/courses/' + id, data)
 }

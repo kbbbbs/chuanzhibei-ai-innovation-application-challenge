@@ -10,6 +10,7 @@ import okhttp3.Response;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.util.Comparator;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -17,7 +18,7 @@ public class PaperSearchServiceImpl implements PaperSearchService {
 
     private static final String API_BASE = "https://api.semanticscholar.org/graph/v1";
     private static final String SEARCH_FIELDS =
-        "title,authors,year,abstract,url,openAccessPdf,venue,citationCount";
+        "title,authors,year,abstract,url,openAccessPdf,venue,citationCount,publicationDate,externalIds";
 
     @Value("${academic.semantic-scholar.api-key:}")
     private String apiKey;
@@ -28,14 +29,15 @@ public class PaperSearchServiceImpl implements PaperSearchService {
         .build();
 
     @Override
-    public Result searchPapers(String keyword, Integer page, Integer size) {
+    public Result searchPapers(String keyword, Integer page, Integer size, String sortBy) {
         try {
             int offset = (page - 1) * size;
+            String fields = SEARCH_FIELDS;
             String url = API_BASE + "/paper/search"
                 + "?query=" + java.net.URLEncoder.encode(keyword, "UTF-8")
                 + "&limit=" + size
                 + "&offset=" + offset
-                + "&fields=" + SEARCH_FIELDS;
+                + "&fields=" + fields;
 
             Request.Builder reqBuilder = new Request.Builder().url(url).get();
             if (apiKey != null && !apiKey.isBlank()) {
@@ -54,6 +56,7 @@ public class PaperSearchServiceImpl implements PaperSearchService {
             PaperSearchResponse result = JSON.parseObject(body, PaperSearchResponse.class);
             if (result.getData() != null) {
                 result.getData().forEach(p -> p.setSource("semantic_scholar"));
+                applySort(result, sortBy);
             }
             return Result.success(result);
         } catch (Exception e) {
@@ -86,6 +89,21 @@ public class PaperSearchServiceImpl implements PaperSearchService {
             return Result.success(paper);
         } catch (Exception e) {
             return Result.error("Failed to get paper detail: " + e.getMessage());
+        }
+    }
+
+    private void applySort(PaperSearchResponse result, String sortBy) {
+        if (result == null || result.getData() == null || sortBy == null) {
+            return;
+        }
+        if ("latest".equalsIgnoreCase(sortBy)) {
+            result.getData().sort(Comparator
+                .comparing(PaperSearchResponse.Paper::getYear, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(PaperSearchResponse.Paper::getCitationCount, Comparator.nullsLast(Comparator.reverseOrder())));
+        } else if ("citations".equalsIgnoreCase(sortBy)) {
+            result.getData().sort(Comparator
+                .comparing(PaperSearchResponse.Paper::getCitationCount, Comparator.nullsLast(Comparator.reverseOrder()))
+                .thenComparing(PaperSearchResponse.Paper::getYear, Comparator.nullsLast(Comparator.reverseOrder())));
         }
     }
 }

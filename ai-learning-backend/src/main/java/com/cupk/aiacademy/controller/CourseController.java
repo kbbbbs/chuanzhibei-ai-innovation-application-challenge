@@ -1,5 +1,6 @@
 package com.cupk.aiacademy.controller;
 
+import com.alibaba.fastjson2.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.AuthUtils;
@@ -9,10 +10,12 @@ import com.cupk.aiacademy.dto.CourseDto;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.service.CourseImportService;
 import com.cupk.aiacademy.service.CourseResourceService;
 import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,9 +25,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/courses")
@@ -40,6 +46,9 @@ public class CourseController {
 
     @Autowired
     private CourseResourceService courseResourceService;
+
+    @Autowired
+    private CourseImportService courseImportService;
 
     @Autowired
     private PermissionService permissionService;
@@ -104,6 +113,39 @@ public class CourseController {
         stampCourseForCreate(course);
         int row = courseMapper.insert(course);
         return row > 0 ? Result.success() : Result.error();
+    }
+
+    @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/with-outline")
+    public Result addWithOutline(@RequestPart("course") String courseJson,
+                                 @RequestPart(value = "file", required = false) MultipartFile file) {
+        permissionService.requireTeacherOrAdmin();
+
+        CourseDto request;
+        try {
+            request = JSON.parseObject(courseJson, CourseDto.class);
+        } catch (Exception e) {
+            return Result.error("400", "课程信息格式不正确");
+        }
+        if (request == null) {
+            return Result.error("400", "课程信息不能为空");
+        }
+
+        Course course = request.toEntity();
+        applyCourseTeacher(course, null);
+        Result checkResult = checkCourse(course);
+        if (checkResult != null) {
+            return checkResult;
+        }
+
+        Map<String, Object> data;
+        try {
+            data = courseImportService.createCourseWithOutline(course, file);
+        } catch (IllegalArgumentException e) {
+            return Result.error("400", e.getMessage());
+        } catch (IllegalStateException e) {
+            return Result.error("500", e.getMessage());
+        }
+        return Result.success(data);
     }
 
     @PutMapping("/{id}")

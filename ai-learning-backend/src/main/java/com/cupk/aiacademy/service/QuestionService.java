@@ -305,7 +305,7 @@ public class QuestionService {
         StringBuilder knowledgeContext = new StringBuilder();
         if (weKnoraService != null) {
             try {
-                var searchResult = weKnoraService.search(new WeKnoraSearchRequest(kbIds, "知识库内容概要"));
+                var searchResult = weKnoraService.search(new WeKnoraSearchRequest(kbIds, "知识库内容概要", null, null));
                 if (searchResult != null && "200".equals(searchResult.getCode()) && searchResult.getData() != null) {
                     var root = objectMapper.valueToTree(searchResult.getData());
                     List<String> snippets = new ArrayList<>();

@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -12,4 +13,6 @@ import java.util.List;
 public class WeKnoraSearchRequest {
     private List<String> knowledgeBaseIds;
     private String query;
+    private Integer limit;
+    private BigDecimal minScore;
 }

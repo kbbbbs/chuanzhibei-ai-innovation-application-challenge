@@ -117,11 +117,11 @@ public class PaperRecommendService {
                 continue;
             }
 
-            appendExternalResults(results, seenKeys, openAlexSearchService.search(keyword, 1, maxPerCourse), maxTotal);
+            appendExternalResults(results, seenKeys, openAlexSearchService.search(keyword, 1, maxPerCourse, "relevance"), maxTotal);
             if (results.size() >= maxTotal) {
                 break;
             }
-            appendExternalResults(results, seenKeys, arxivSearchService.search(keyword, 1, maxPerCourse), maxTotal);
+            appendExternalResults(results, seenKeys, arxivSearchService.search(keyword, 1, maxPerCourse, "relevance"), maxTotal);
         }
 
         return results;

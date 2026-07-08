@@ -138,8 +138,20 @@
 
             <div v-for="(msg, i) in messages" :key="i" :class="['msg', msg.role]">
               <span class="msg-who">{{ msg.role === 'user' ? '我' : 'AI' }}</span>
-              <div class="msg-text">
-                <MdPreview :modelValue="proxyLocalUrls(msg.content)" previewTheme="default" />
+              <div class="msg-bubble">
+                <div class="msg-text">
+                  <MdPreview :modelValue="proxyLocalUrls(msg.content)" previewTheme="default" />
+                </div>
+                <div v-if="msg.role === 'assistant' && msg.citations?.length" class="citation-box">
+                  <div class="citation-title">引用来源</div>
+                  <div v-for="citation in msg.citations" :key="citation.key" class="citation-item">
+                    <div class="citation-head">
+                      <span class="citation-name">{{ citationTitle(citation) }}</span>
+                      <span v-if="formatParseScore(citation.scoreLabel)" class="citation-score">{{ formatParseScore(citation.scoreLabel) }}</span>
+                    </div>
+                    <div class="citation-excerpt">{{ citationExcerpt(citation) }}</div>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -198,18 +210,38 @@
               <template #append><el-button @click="doSearch" :loading="searchLoading" :icon="Search" /></template>
             </el-input>
 
-            <div v-if="searchResults.length" class="search-list">
-              <div v-for="(r, i) in searchResults" :key="i" class="search-hit" @click="expandedHit = expandedHit===i ? -1 : i">
-                <div class="hit-header">
-                  <span class="hit-title">{{ cleanTitle(r) }}</span>
-                  <el-tag size="small" type="info" effect="plain" v-if="r.score" class="hit-score">{{ (r.score*100).toFixed(0) }}%</el-tag>
+            <div v-if="groupedSearchResults.length" class="search-groups">
+              <div v-for="group in groupedSearchResults" :key="group.key" class="search-group">
+                <div class="search-group-header">
+                  <div>
+                    <div class="search-group-title">{{ group.title }}</div>
+                    <div class="search-group-meta">{{ group.items.length }} 个命中片段</div>
+                  </div>
+                  <el-tag size="small" type="info" effect="plain">最高 {{ group.topScore }}%</el-tag>
                 </div>
-                <div class="hit-preview" v-if="expandedHit !== i">{{ cleanContent(r).slice(0, 140) }}…</div>
-                <div class="hit-full" v-else>
-                  <MdPreview :modelValue="proxyLocalUrls(cleanContent(r))" previewTheme="default" />
-                </div>
-                <div class="hit-actions" v-if="expandedHit === i">
-                  <el-button size="small" type="primary" :loading="chatLoading" @click.stop="askAbout(r)">让学伴讲解</el-button>
+
+                <div class="search-list">
+                  <div
+                    v-for="item in group.items"
+                    :key="item.key"
+                    class="search-hit"
+                    @click="toggleHit(item.key)"
+                  >
+                    <div class="hit-header">
+                      <div class="hit-header-main">
+                        <span class="hit-title">{{ item.title }}</span>
+                        <span class="hit-file" v-if="item.fileLabel">{{ item.fileLabel }}</span>
+                      </div>
+                      <el-tag size="small" type="info" effect="plain" v-if="item.scoreLabel" class="hit-score">{{ item.scoreLabel }}</el-tag>
+                    </div>
+                    <div class="hit-preview" v-if="expandedHit !== item.key" v-html="item.previewHtml"></div>
+                    <div class="hit-full" v-else>
+                      <MdPreview :modelValue="proxyLocalUrls(item.content)" previewTheme="default" />
+                    </div>
+                    <div class="hit-actions" v-if="expandedHit === item.key">
+                      <el-button size="small" type="primary" :loading="chatLoading" @click.stop="askAbout(item.raw)">让学伴讲解</el-button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -231,6 +263,7 @@ import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
 import { useUserStore } from '@/store/user'
 import * as kbApi from '@/api/knowledgeBase'
+import { weKnoraStreamChat } from '@/api/weknora'
 import KnowledgeGraphPreview from '@/components/knowledge/KnowledgeGraphPreview.vue'
 
 function unwrapData(data) {
@@ -257,7 +290,7 @@ const sectionOpen = reactive({
   graph: true,
   sessions: true
 })
-const expandedHit = ref(-1)
+const expandedHit = ref('')
 const previewVisible = ref(false); const previewLoading = ref(false)
 const previewTitle = ref(''); const previewText = ref('')
 const previewFileTypeObj = ref({})
@@ -294,9 +327,145 @@ function cleanContent(r) {
   }
 }
 
+function escapeHtml(text) {
+  return String(text || '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function highlightText(text, keyword) {
+  const safeText = escapeHtml(text)
+  const trimmed = keyword?.trim()
+  if (!trimmed) return safeText
+  const escaped = trimmed.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return safeText.replace(new RegExp(`(${escaped})`, 'ig'), '<mark>$1</mark>')
+}
+
+function buildSearchItem(raw, index) {
+  const title = cleanTitle(raw)
+  const content = cleanContent(raw)
+  const fileLabel = raw.file_name || raw.knowledge_title || raw.title || ''
+  const score = Number(raw.score || 0)
+  const key = `${fileLabel || title}-${index}`
+  return {
+    key,
+    raw,
+    title,
+    content,
+    fileLabel: fileLabel && fileLabel !== title ? fileLabel : '',
+    score,
+    scoreLabel: score ? `${Math.round(score * 100)}%` : '',
+    previewHtml: highlightText(`${content.slice(0, 180)}${content.length > 180 ? '…' : ''}`, searchQuery.value)
+  }
+}
+
+const groupedSearchResults = computed(() => {
+  const groups = new Map()
+  searchResults.value.forEach((raw, index) => {
+    const item = buildSearchItem(raw, index)
+    const groupKey = item.fileLabel || item.title || '未命名资料'
+    if (!groups.has(groupKey)) {
+      groups.set(groupKey, {
+        key: groupKey,
+        title: groupKey,
+        items: [],
+        topScore: 0
+      })
+    }
+    const group = groups.get(groupKey)
+    group.items.push(item)
+    group.topScore = Math.max(group.topScore, Math.round(item.score * 100))
+  })
+  return Array.from(groups.values())
+})
+
+function unwrapSearchList(data) {
+  const unwrapped = unwrapData(data)
+  if (Array.isArray(unwrapped)) return unwrapped
+  return unwrapped?.results || unwrapped?.items || unwrapped?.list || unwrapped?.documents || unwrapped?.records || []
+}
+
+function toggleHit(key) {
+  expandedHit.value = expandedHit.value === key ? '' : key
+}
+
 function proxyLocalUrls(text) {
   if (!text) return ''
   return text.replace(/local:\/\/(\d+)\//g, '/api/weknora/local-file/$1/')
+}
+
+function normalizeCitation(item, index = 0) {
+  if (!item) return null
+  const raw = typeof item === 'string' ? { content: item } : item
+  const title = raw.title || raw.knowledge_title || raw.file_name || raw.document_name || raw.name || `引用 ${index + 1}`
+  const excerpt = cleanContent(raw) || raw.chunk || raw.snippet || raw.excerpt || raw.content || raw.text || raw.chunk_content || raw.chunk_text || ''
+  const score = Number(raw.score || raw.similarity || raw.relevance || 0)
+  return {
+    key: `${title}-${index}`,
+    title,
+    excerpt,
+    score,
+    scoreLabel: score ? `${Math.round(score * 100)}%` : '',
+    knowledgeId: raw.knowledge_id || raw.knowledgeId || raw.document_id || raw.documentId || '',
+    raw
+  }
+}
+
+function normalizeCitations(payload) {
+  const sourceLists = [
+    payload?.citations,
+    payload?.references,
+    payload?.sources,
+    payload?.search_result,
+    payload?.search_results,
+    payload?.results,
+    payload?.chunks
+  ]
+  const list = sourceLists.find(Array.isArray) || []
+  return list.map(normalizeCitation).filter(Boolean)
+}
+
+function mergeCitations(existing = [], incoming = []) {
+  const merged = [...existing]
+  const seen = new Set(existing.map(item => item.key))
+  incoming.forEach(item => {
+    if (!item || seen.has(item.key)) return
+    seen.add(item.key)
+    merged.push(item)
+  })
+  return merged
+}
+
+async function fillCitationFallback(question, message) {
+  if (!selectedKb.value?.id || message.citations?.length) return
+  try {
+    const res = await kbApi.searchKB({
+      knowledgeBaseIds: [selectedKb.value.id],
+      query: question,
+      limit: 3
+    })
+    if (res.code !== '200' || !res.data) return
+    const searchData = unwrapData(res.data)
+    const list = Array.isArray(searchData) ? searchData : (searchData?.results || [])
+    message.citations = mergeCitations(message.citations, list.slice(0, 3).map(normalizeCitation).filter(Boolean))
+  } catch {
+    // ignore fallback failure
+  }
+}
+
+function citationTitle(citation) {
+  return citation?.title || '未命名资料'
+}
+
+function citationExcerpt(citation) {
+  return citation?.excerpt || '暂无原文片段'
+}
+
+function formatParseScore(scoreLabel) {
+  return scoreLabel || ''
 }
 
 function toggleSection(key) {
@@ -304,6 +473,7 @@ function toggleSection(key) {
 }
 
 const exampleQuestions = ['请总结核心知识点', '重点和难点是什么', '给我出几道练习题']
+
 
 function historyKey(id) { return 'kb_history_' + id }
 function loadHistories() {
@@ -430,6 +600,8 @@ const selectKb = async (kb) => {
       }
     }
   } catch { sessions.value = [] }
+  await nextTick()
+  scrollBottom()
 }
 
 async function openFilePreview(f) {
@@ -593,81 +765,69 @@ const sendMessage = async () => {
   if (!(await ensureSession())) { ElMessage.error('创建对话失败'); return }
 
   messages.value.push({ role: 'user', content: q })
-  const aiIdx = messages.value.length; messages.value.push({ role: 'assistant', content: '' })
+  const aiMessage = { role: 'assistant', content: '', citations: [] }
+  messages.value.push(aiMessage)
+  const aiIdx = messages.value.length - 1
   chatLoading.value = true; await nextTick(); scrollBottom()
 
-  let url = `/api/weknora/knowledge-chat/${currentSessionId.value}?query=${encodeURIComponent(q)}`
-  if (selectedKb.value?.id) url += `&knowledgeBaseIds=${encodeURIComponent(selectedKb.value.id)}`
-  try {
-    const resp = await fetch(url, { method: 'POST', headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` } })
-    if (!resp.ok) {
-      if (resp.status === 401) {
-        ElMessage.error('登录已过期，请重新登录')
-        localStorage.removeItem('token')
-        localStorage.removeItem('userId')
-        localStorage.removeItem('username')
-        localStorage.removeItem('nickname')
-        localStorage.removeItem('roleCode')
-        window.location.href = '/login'
-        return
-      }
-
-      let errorMessage = `获取知识库对话失败（HTTP ${resp.status}）`
-      try {
-        const raw = await resp.text()
-        if (raw) {
-          try {
-            const parsed = JSON.parse(raw)
-            errorMessage = parsed?.msg || parsed?.message || parsed?.error || errorMessage
-          } catch {
-            errorMessage = raw || errorMessage
+  await new Promise((resolve, reject) => {
+    let finished = false
+    weKnoraStreamChat('knowledge', currentSessionId.value, q, selectedKb.value?.id ? [selectedKb.value.id] : [], {
+      onMessage(parsed) {
+        const payload = typeof parsed === 'string' ? { content: parsed, response_type: 'answer' } : parsed
+        if (payload?.error) {
+          if (!finished) {
+            finished = true
+            reject(new Error(payload.error))
           }
+          return
         }
-      } catch { /* ignore */ }
-
-      throw new Error(errorMessage)
-    }
-
-    const reader = resp.body?.getReader()
-    if (!reader) throw new Error('获取知识库对话失败')
-    const dec = new TextDecoder(); let buf = ''
-    while (true) {
-      const { done, value } = await reader.read(); if (done) break
-      buf += dec.decode(value, { stream: true })
-      const lines = buf.split('\n'); buf = lines.pop()
-      for (const line of lines) {
-        if (!line.startsWith('data:')) continue
-        const raw = line.substring(5).trim(); if (raw === '[DONE]') continue
-        try {
-          const j = JSON.parse(raw)
-          if (j?.error) throw new Error(j.error)
-          if (j.response_type !== 'answer') continue
-          if (j.content) messages.value[aiIdx].content += j.content
-        } catch (err) {
-          if (err instanceof SyntaxError) continue
-          throw err
+        const incomingCitations = normalizeCitations(payload)
+        if (incomingCitations.length) {
+          messages.value[aiIdx].citations = mergeCitations(messages.value[aiIdx].citations, incomingCitations)
+        }
+        if (payload?.response_type === 'answer' && payload.content) {
+          messages.value[aiIdx].content += payload.content
+        }
+        scrollBottom()
+      },
+      onDone() {
+        if (!finished) {
+          finished = true
+          resolve()
+        }
+      },
+      onError(err) {
+        if (!finished) {
+          finished = true
+          reject(new Error(err?.error || '获取知识库对话失败'))
         }
       }
-      scrollBottom()
-    }
+    })
+  }).then(async () => {
+    await fillCitationFallback(q, messages.value[aiIdx])
     if (currentSessionId.value) { historyMap[currentSessionId.value] = [...messages.value]; saveHistory(currentSessionId.value) }
-  } catch (err) {
+  }).catch(err => {
     messages.value[aiIdx].content = err?.message || '获取知识库对话失败'
     ElMessage.error(messages.value[aiIdx].content)
-  }
-  finally { chatLoading.value = false }
+  }).finally(() => {
+    chatLoading.value = false
+  })
 }
 
 const scrollBottom = () => nextTick(() => { const el = chatRef.value; if (el) el.scrollTop = el.scrollHeight })
 
 const doSearch = async () => {
   if (!searchQuery.value.trim() || !selectedKb.value) return
-  searchLoading.value = true; expandedHit.value = -1
+  searchLoading.value = true; expandedHit.value = ''
   try {
-    const res = await kbApi.searchKB({ knowledgeBaseIds: [selectedKb.value.id], query: searchQuery.value.trim() })
+    const res = await kbApi.searchKB({
+      knowledgeBaseIds: [selectedKb.value.id],
+      query: searchQuery.value.trim(),
+      limit: 12
+    })
     if (res.code === '200' && res.data) {
-      const searchData = unwrapData(res.data)
-      let list = Array.isArray(searchData) ? searchData : (searchData?.results || [])
+      const list = unwrapSearchList(res.data)
       list.sort((a, b) => (b.score || 0) - (a.score || 0))
       searchResults.value = list
       searchTotal.value = list.length
@@ -1204,8 +1364,42 @@ onMounted(loadKBs)
 }
 
 .search-list {
-  max-height: 160px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.search-groups {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.search-group {
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  padding: 12px;
+  background: color-mix(in srgb, var(--bg-elevated) 92%, white);
+}
+
+.search-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.search-group-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.search-group-meta {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .search-hit {
@@ -1213,7 +1407,6 @@ onMounted(loadKBs)
   border: 1px solid var(--border-color);
   border-radius: 14px;
   cursor: pointer;
-  margin-bottom: 10px;
   background: var(--bg-elevated);
   transition: all .18s ease;
 }
@@ -1231,10 +1424,21 @@ onMounted(loadKBs)
   margin-bottom: 6px;
 }
 
+.hit-header-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
 .hit-title {
   font-size: 13px;
   font-weight: 600;
   color: var(--text-primary);
+}
+
+.hit-file {
+  font-size: 12px;
+  color: var(--text-muted);
 }
 
 .hit-score {
@@ -1245,6 +1449,13 @@ onMounted(loadKBs)
   font-size: 12px;
   color: var(--text-secondary);
   line-height: 1.7;
+}
+
+.hit-preview :deep(mark) {
+  background: #fef3c7;
+  color: #92400e;
+  padding: 0 2px;
+  border-radius: 4px;
 }
 
 .hit-full {

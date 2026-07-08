@@ -48,7 +48,7 @@ public class WeKnoraKnowledgeContextProvider implements KnowledgeContextProvider
         }
 
         try {
-            Result result = weKnoraService.search(new WeKnoraSearchRequest(knowledgeBaseIds, currentUserContent.trim()));
+            Result result = weKnoraService.search(new WeKnoraSearchRequest(knowledgeBaseIds, currentUserContent.trim(), null, null));
             if (result == null || !"200".equals(result.getCode()) || result.getData() == null) {
                 return "";
             }
