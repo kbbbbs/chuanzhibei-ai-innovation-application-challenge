@@ -8,10 +8,9 @@ import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
-import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
-import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.HomeworkService;
 import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,8 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.time.LocalDateTime;
-
 @RestController
 public class HomeworkController {
     @Autowired
@@ -34,14 +31,14 @@ public class HomeworkController {
     @Autowired
     private HomeworkSubmitMapper submitMapper;
 
-    @Autowired
-    private TeachingClassMapper classMapper;
-
     @Autowired(required = false)
     private AuthUtils authUtils;
 
     @Autowired
     private PermissionService permissionService;
+
+    @Autowired
+    private HomeworkService homeworkService;
 
     @GetMapping("/homeworks")
     public Result pages(@RequestParam(required = false) Integer classId,
@@ -113,36 +110,12 @@ public class HomeworkController {
 
     @PostMapping("/homeworks")
     public Result add(@Valid @RequestBody HomeworkDto request) {
-        permissionService.requireTeacherOrAdmin();
-        Homework homework = request.toEntity();
-        applyHomeworkTeacher(homework);
-        Result checkResult = checkHomework(homework);
-        if (checkResult != null) {
-            return checkResult;
-        }
-        stampHomeworkForCreate(homework);
-        int row = homeworkMapper.insert(homework);
-        return row > 0 ? Result.success() : Result.error();
+        return homeworkService.create(request);
     }
 
     @PutMapping("/homeworks/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkDto request) {
-        Homework homework = homeworkMapper.selectById(id);
-        if (homework == null) {
-            return Result.error("404", "作业不存在");
-        }
-
-        permissionService.requireHomeworkTeacher(homework);
-
-        homework = request.toEntity();
-        applyHomeworkTeacher(homework);
-        Result checkResult = checkHomework(homework);
-        if (checkResult != null) {
-            return checkResult;
-        }
-        stampHomeworkForUpdate(homework, id);
-        int row = homeworkMapper.updateById(homework);
-        return row > 0 ? Result.success() : Result.error();
+        return homeworkService.update(id, request);
     }
 
     @DeleteMapping("/homeworks/{id}")
@@ -156,31 +129,6 @@ public class HomeworkController {
 
         int row = homeworkMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
-    }
-
-    private Result checkHomework(Homework homework) {
-        if (homework == null) {
-            return Result.error("400", "作业信息不能为空");
-        }
-        TeachingClass teachingClass = homework.getClassId() == null ? null : classMapper.selectById(homework.getClassId());
-        if (teachingClass == null) {
-            return Result.error("404", "教学班不存在");
-        }
-        if (homework.getTeacherId() == null || homework.getTeacherId() <= 0) {
-            return Result.error("400", "教师用户不能为空");
-        }
-        try {
-            permissionService.requireUserRole(homework.getTeacherId(), "teacher", "教师用户不存在或角色不正确");
-        } catch (RuntimeException e) {
-            return Result.error("404", e.getMessage());
-        }
-        if (!homework.getTeacherId().equals(teachingClass.getTeacherId())) {
-            return Result.error("400", "作业教师必须与教学班教师一致");
-        }
-        if (homework.getTitle() == null || homework.getTitle().trim().isEmpty()) {
-            return Result.error("400", "作业标题不能为空");
-        }
-        return null;
     }
 
     private int fixPageNum(Integer pageNum) {
@@ -197,31 +145,6 @@ public class HomeworkController {
 
     private boolean isTeacher(AuthUtils.LoginUser user) {
         return authUtils != null && authUtils.isTeacher(user);
-    }
-
-    private void stampHomeworkForCreate(Homework homework) {
-        LocalDateTime now = LocalDateTime.now();
-        homework.setTitle(homework.getTitle().trim());
-        homework.setCreateTime(now);
-        homework.setUpdateTime(now);
-    }
-
-    private void stampHomeworkForUpdate(Homework homework, Integer id) {
-        homework.setId(id);
-        homework.setTitle(homework.getTitle().trim());
-        homework.setUpdateTime(LocalDateTime.now());
-    }
-
-    private void applyHomeworkTeacher(Homework homework) {
-        AuthUtils.LoginUser user = permissionService.currentUser();
-        if (isTeacher(user)) {
-            homework.setTeacherId(user.getUserId());
-        } else if (homework.getClassId() != null && (homework.getTeacherId() == null || homework.getTeacherId() <= 0)) {
-            TeachingClass teachingClass = classMapper.selectById(homework.getClassId());
-            if (teachingClass != null) {
-                homework.setTeacherId(teachingClass.getTeacherId());
-            }
-        }
     }
 
     private void checkHomeworkReadPermission(Homework homework) {

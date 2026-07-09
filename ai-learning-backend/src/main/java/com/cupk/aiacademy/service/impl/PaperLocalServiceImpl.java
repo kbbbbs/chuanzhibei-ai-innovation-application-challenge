@@ -53,21 +53,27 @@ public class PaperLocalServiceImpl implements PaperLocalService {
         .build();
 
     @Override
-    public Result search(String keyword, Integer page, Integer size) {
+    public Result search(String keyword, Integer page, Integer size,
+                         String author, String venue,
+                         Integer yearFrom, Integer yearTo,
+                         Integer minCitations, String sortBy,
+                         Boolean openAccessOnly) {
         try {
-            String safe = sanitizeKeyword(keyword);
-            QueryWrapper<Paper> wrapper = new QueryWrapper<>();
-            wrapper.apply("MATCH(title, abstract_text) AGAINST({0} IN BOOLEAN MODE)", safe);
-            wrapper.orderByDesc("year");
+            String trimmedKeyword = keyword == null ? "" : keyword.trim();
+            String safe = sanitizeKeyword(trimmedKeyword);
+            int safePage = page == null || page < 1 ? 1 : page;
+            int safeSize = size == null || size < 1 ? 10 : size;
 
-            Page<Paper> pageParam = new Page<>(page, size);
+            QueryWrapper<Paper> wrapper = buildBaseQuery(trimmedKeyword, safe, author, venue, yearFrom, yearTo, minCitations, openAccessOnly, true);
+            applySort(wrapper, sortBy);
+
+            Page<Paper> pageParam = new Page<>(safePage, safeSize);
             Page<Paper> pageResult = paperMapper.selectPage(pageParam, wrapper);
 
             if (pageResult.getTotal() == 0) {
-                wrapper = new QueryWrapper<>();
-                wrapper.like("title", keyword).or().like("abstract_text", keyword);
-                wrapper.orderByDesc("year");
-                pageResult = paperMapper.selectPage(pageParam, wrapper);
+                QueryWrapper<Paper> fallback = buildBaseQuery(trimmedKeyword, safe, author, venue, yearFrom, yearTo, minCitations, openAccessOnly, false);
+                applySort(fallback, sortBy);
+                pageResult = paperMapper.selectPage(pageParam, fallback);
             }
 
             List<PaperSearchResponse.Paper> papers = pageResult.getRecords().stream()
@@ -77,6 +83,7 @@ public class PaperLocalServiceImpl implements PaperLocalService {
             PaperSearchResponse response = new PaperSearchResponse();
             response.setTotal((int) pageResult.getTotal());
             response.setData(papers);
+            response.setOffset((safePage - 1) * safeSize);
             return Result.success(response);
         } catch (Exception e) {
             return Result.error("本地论文搜索失败: " + e.getMessage());
@@ -86,8 +93,7 @@ public class PaperLocalServiceImpl implements PaperLocalService {
     @Override
     public Result getDetail(String paperId) {
         try {
-            Paper paper = paperMapper.selectOne(
-                new QueryWrapper<Paper>().eq("arxiv_id", paperId));
+            Paper paper = paperMapper.selectOne(new QueryWrapper<Paper>().eq("arxiv_id", paperId).last("LIMIT 1"));
             if (paper == null) {
                 return Result.error("论文不存在");
             }
@@ -118,6 +124,9 @@ public class PaperLocalServiceImpl implements PaperLocalService {
                 .get()
                 .build();
             try (Response response = client.newCall(request).execute()) {
+                if (response.code() == 429) {
+                    return Result.error("429", "arXiv 请求过于频繁，请稍后重试后再导入，或先切换到 OpenAlex / Semantic Scholar 搜索");
+                }
                 if (!response.isSuccessful()) {
                     return Result.error("arXiv API returned " + response.code());
                 }
@@ -241,8 +250,59 @@ public class PaperLocalServiceImpl implements PaperLocalService {
         }
     }
 
+    private QueryWrapper<Paper> buildBaseQuery(String keyword, String safeKeyword,
+                                               String author, String venue,
+                                               Integer yearFrom, Integer yearTo,
+                                               Integer minCitations, Boolean openAccessOnly,
+                                               boolean useFullText) {
+        QueryWrapper<Paper> wrapper = new QueryWrapper<>();
+        boolean hasKeyword = keyword != null && !keyword.isBlank();
+
+        if (hasKeyword) {
+            if (useFullText && safeKeyword != null && !safeKeyword.isBlank()) {
+                wrapper.apply("MATCH(title, abstract_text) AGAINST({0} IN BOOLEAN MODE)", safeKeyword);
+            } else {
+                wrapper.and(q -> q.like("title", keyword).or().like("abstract_text", keyword));
+            }
+        }
+
+        if (venue != null && !venue.isBlank()) {
+            wrapper.like("venue", venue.trim());
+        }
+        if (yearFrom != null) {
+            wrapper.ge("year", yearFrom);
+        }
+        if (yearTo != null) {
+            wrapper.le("year", yearTo);
+        }
+        if (minCitations != null) {
+            wrapper.ge("citation_count", minCitations);
+        }
+        if (Boolean.TRUE.equals(openAccessOnly)) {
+            wrapper.isNotNull("pdf_url").ne("pdf_url", "");
+        }
+        if (author != null && !author.isBlank()) {
+            wrapper.inSql("id", "SELECT paper_id FROM t_paper_author WHERE name LIKE '%" + escapeSqlLike(author.trim()) + "%'");
+        }
+        return wrapper;
+    }
+
+    private void applySort(QueryWrapper<Paper> wrapper, String sortBy) {
+        String safeSort = sortBy == null ? "relevance" : sortBy.trim().toLowerCase(Locale.ROOT);
+        switch (safeSort) {
+            case "citations" -> wrapper.orderByDesc("citation_count").orderByDesc("year");
+            case "latest" -> wrapper.orderByDesc("year").orderByDesc("updated_at");
+            default -> wrapper.orderByDesc("year").orderByDesc("citation_count");
+        }
+    }
+
     private String sanitizeKeyword(String keyword) {
+        if (keyword == null) return "";
         return keyword.replaceAll("[+\\-@*()~<>\"]", " ").replaceAll("\\s+", " ").trim();
+    }
+
+    private String escapeSqlLike(String value) {
+        return value.replace("'", "''");
     }
 
     private PaperSearchResponse.Paper toDto(Paper entity) {
@@ -259,7 +319,7 @@ public class PaperLocalServiceImpl implements PaperLocalService {
         dto.setUrl(entity.getUrl());
         dto.setVenue(entity.getVenue());
         dto.setCitationCount(entity.getCitationCount() != null ? entity.getCitationCount() : 0);
-        dto.setSource("local");
+        dto.setSource(entity.getSource() != null ? entity.getSource() : "local");
 
         if (entity.getPdfUrl() != null && !entity.getPdfUrl().isEmpty()) {
             PaperSearchResponse.OpenAccessPdf pdf = new PaperSearchResponse.OpenAccessPdf();

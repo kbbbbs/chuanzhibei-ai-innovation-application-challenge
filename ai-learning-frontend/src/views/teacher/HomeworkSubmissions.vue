@@ -21,6 +21,12 @@
           </template>
         </el-table-column>
         <el-table-column prop="submitContent" label="提交内容" show-overflow-tooltip />
+        <el-table-column label="附件" width="90">
+          <template #default="{ row }">
+            <el-link v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" type="primary">查看</el-link>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
         <el-table-column label="得分" width="100">
           <template #default="{ row }">
             {{ row.score != null ? row.score : '-' }}
@@ -52,9 +58,9 @@
         <el-descriptions-item label="提交时间">
           {{ currentSubmission.submitTime ? new Date(currentSubmission.submitTime).toLocaleString() : '-' }}
         </el-descriptions-item>
-        <el-descriptions-item label="提交内容">{{ currentSubmission.submitContent }}</el-descriptions-item>
+        <el-descriptions-item label="提交内容">{{ currentSubmission.submitContent || '未填写文本答案' }}</el-descriptions-item>
         <el-descriptions-item label="附件" v-if="currentSubmission.attachmentUrl">
-          <a :href="currentSubmission.attachmentUrl" target="_blank">查看附件</a>
+          <el-link :href="currentSubmission.attachmentUrl" target="_blank" type="primary">查看附件</el-link>
         </el-descriptions-item>
       </el-descriptions>
 

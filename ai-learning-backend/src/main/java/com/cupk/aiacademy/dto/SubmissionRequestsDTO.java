@@ -41,6 +41,9 @@ public class SubmissionRequestsDTO {
 
         @Size(max = 2000)
         private String answerContent;
+
+        @Size(max = 500)
+        private String attachmentUrl;
     }
 
     @Getter

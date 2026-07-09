@@ -32,6 +32,26 @@
           <el-input v-model="form.coverUrl" placeholder="请输入封面URL" />
         </el-form-item>
 
+        <el-form-item v-if="!isEdit" label="导入 PPT">
+          <el-upload
+            ref="uploadRef"
+            :auto-upload="false"
+            :limit="1"
+            accept=".ppt,.pptx"
+            :on-change="handlePptChange"
+            :on-remove="handlePptRemove"
+            :on-exceed="handlePptExceed"
+            :show-file-list="true"
+          >
+            <template #trigger>
+              <el-button>选择 PPT</el-button>
+            </template>
+            <template #tip>
+              <div class="el-upload__tip">可选，上传 PPT/PPTX 后将自动生成章节和课时。</div>
+            </template>
+          </el-upload>
+        </el-form-item>
+
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status">
             <el-radio :label="2">草稿</el-radio>
@@ -53,13 +73,14 @@ import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
-import { getCourseById, addCourse, updateCourse, getCategories } from '@/utils/course'
+import { getCourseById, addCourse, addCourseWithOutline, updateCourse, getCategories } from '@/utils/course'
 import { currentUserId } from '@/utils/apiHelpers'
 
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
 const formRef = ref(null)
+const uploadRef = ref(null)
 
 const isEdit = ref(false)
 const editingId = computed(() => {
@@ -69,6 +90,7 @@ const editingId = computed(() => {
 const loading = ref(false)
 const submitLoading = ref(false)
 const categories = ref([])
+const selectedPptFile = ref(null)
 
 const defaultForm = () => ({
   title: '',
@@ -126,13 +148,27 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value && editingId.value) {
       res = await updateCourse(editingId.value, data)
+    } else if (selectedPptFile.value) {
+      res = await addCourseWithOutline(data, selectedPptFile.value)
     } else {
       res = await addCourse(data)
     }
 
     if (res.code === '200') {
-      ElMessage.success(isEdit.value ? '修改成功' : '创建成功')
-      router.push('/courses')
+      const result = res.data || {}
+      if (!isEdit.value && selectedPptFile.value) {
+        const chaptersCreated = result.chaptersCreated || 0
+        const lessonsCreated = result.lessonsCreated || 0
+        const warnings = Array.isArray(result.warnings) ? result.warnings.filter(Boolean) : []
+        ElMessage.success(`创建成功，已生成 ${chaptersCreated} 个章节 / ${lessonsCreated} 个课时`)
+        if (warnings.length) {
+          ElMessage.warning(warnings[0])
+        }
+        router.push(`/courses/${result.courseId || ''}`)
+      } else {
+        ElMessage.success(isEdit.value ? '修改成功' : '创建成功')
+        router.push('/courses')
+      }
     }
   } catch (e) {
     // 全局已提示
@@ -145,6 +181,24 @@ const handleCancel = () => {
   router.back()
 }
 
+const handlePptChange = (uploadFile) => {
+  selectedPptFile.value = uploadFile?.raw || null
+}
+
+const handlePptRemove = () => {
+  selectedPptFile.value = null
+}
+
+const handlePptExceed = (files) => {
+  const nextFile = files?.[0]?.raw || files?.[0] || null
+  uploadRef.value?.clearFiles()
+  if (nextFile) {
+    uploadRef.value?.handleStart(nextFile)
+    selectedPptFile.value = nextFile
+  }
+  ElMessage.warning('每次只能选择一个 PPT 文件')
+}
+
 onMounted(() => {
   loadCategories()
 })
@@ -154,6 +208,8 @@ watch(
   async (id) => {
     formRef.value?.clearValidate?.()
     Object.assign(form, defaultForm())
+    selectedPptFile.value = null
+    uploadRef.value?.clearFiles?.()
     isEdit.value = !!id
 
     if (!id) return

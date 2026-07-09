@@ -25,6 +25,8 @@ public class PaperSearchResponse {
         private String venue;
         private int citationCount;
         private String source;
+        private String doi;
+        private String publishedDate;
     }
 
     @Data

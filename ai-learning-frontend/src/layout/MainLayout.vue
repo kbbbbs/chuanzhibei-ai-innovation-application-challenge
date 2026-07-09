@@ -37,9 +37,12 @@
                 </el-dropdown-item>
 
                 <!-- Student Menu Items -->
-                <template v-if="userStore.roleCode === 'student' || userStore.roleCode === 'admin'">
+                <template v-if="userStore.roleCode === 'student'">
                   <el-dropdown-item command="my-classes">
                     <el-icon><School /></el-icon> 我的班级
+                  </el-dropdown-item>
+                  <el-dropdown-item command="learning-routes">
+                    <el-icon><MapLocation /></el-icon> 学习路线
                   </el-dropdown-item>
                   <el-dropdown-item command="my-homeworks">
                     <el-icon><Tickets /></el-icon> 我的作业
@@ -74,6 +77,19 @@
                   </el-dropdown-item>
                   <el-dropdown-item command="teacher-knowledge-base">
                     <el-icon><Collection /></el-icon> 知识库管理
+                  </el-dropdown-item>
+                </template>
+
+                <!-- Admin Menu Items -->
+                <template v-if="userStore.roleCode === 'admin'">
+                  <el-dropdown-item command="users">
+                    <el-icon><User /></el-icon> 用户管理
+                  </el-dropdown-item>
+                  <el-dropdown-item command="teacher-applications">
+                    <el-icon><UserFilled /></el-icon> 教师审核
+                  </el-dropdown-item>
+                  <el-dropdown-item command="categories">
+                    <el-icon><Menu /></el-icon> 分类管理
                   </el-dropdown-item>
                 </template>
 
@@ -129,7 +145,7 @@ import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
 import {
   DataBoard, Cpu, School, Tickets, Checked,
-  DataLine, Reading, Edit, Document, SwitchButton, User, Menu, Collection, Bell
+  DataLine, Reading, Edit, Document, SwitchButton, User, UserFilled, Menu, Collection, Bell, MapLocation
 } from '@element-plus/icons-vue'
 
 const router = useRouter()
@@ -147,10 +163,21 @@ const activeMenu = computed(() => {
 const resolveMenuPath = (routeRecord) => `/${routeRecord.path}`.replace(/\/+/g, '/')
 
 const menuRoutes = computed(() => {
+  const adminHiddenPersonalPaths = new Set([
+    'my-classes',
+    'learning-routes',
+    'my-homeworks',
+    'my-exams',
+    'my-grades',
+    'recommendation',
+    'work-study-jobs',
+    'my-work-study',
+    'knowledge-base',
+  ])
   return layoutChildren.filter(r => {
     if (r.meta?.hidden) return false
     if (!r.meta?.roles) return true
-    if (userStore.roleCode === 'admin') return true
+    if (userStore.roleCode === 'admin') return !adminHiddenPersonalPaths.has(r.path)
     return r.meta.roles.includes(userStore.roleCode)
   })
 })

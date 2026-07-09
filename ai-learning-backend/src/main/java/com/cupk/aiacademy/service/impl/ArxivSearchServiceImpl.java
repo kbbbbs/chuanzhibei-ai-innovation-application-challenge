@@ -32,7 +32,7 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
         .build();
 
     @Override
-    public Result search(String keyword, Integer page, Integer size) {
+    public Result search(String keyword, Integer page, Integer size, String sortBy) {
         try {
             String q = keyword == null ? "" : keyword.trim();
             if (q.isBlank()) {
@@ -43,11 +43,16 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
             int safeSize = size == null || size < 1 ? 10 : Math.min(size, ARXIV_MAX);
             int start = (safePage - 1) * safeSize;
 
+            String arxivSortBy = "relevance";
+            if ("latest".equalsIgnoreCase(sortBy)) {
+                arxivSortBy = "submittedDate";
+            }
+
             String url = API_BASE
                 + "?search_query=all:" + java.net.URLEncoder.encode(q, "UTF-8")
                 + "&start=" + start
                 + "&max_results=" + safeSize
-                + "&sortBy=relevance";
+                + "&sortBy=" + arxivSortBy;
 
             Request request = new Request.Builder()
                 .url(url)
@@ -56,6 +61,9 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
                 .build();
 
             try (Response response = client.newCall(request).execute()) {
+                if (response.code() == 429) {
+                    return Result.error("429", "arXiv 请求过于频繁，请稍后重试或切换到 OpenAlex / Semantic Scholar");
+                }
                 if (!response.isSuccessful()) {
                     return Result.error("arXiv API returned " + response.code());
                 }

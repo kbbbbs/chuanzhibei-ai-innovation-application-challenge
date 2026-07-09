@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "key": "database.join-builder",
+  "title": "SQL JOIN：把两张表拼成答案",
+  "subject": "数据库",
+  "summary": "从业务问题出发理解主键、外键和 JOIN 的结果行。",
+  "estimatedMinutes": 24,
+  "blocks": [
+    {
+      "type": "markdown",
+      "title": "学习目标",
+      "content": "## 业务问题\n\n教师想看到“每个学生的作业成绩”。学生姓名在 `students` 表，成绩在 `submissions` 表。单看任何一张表都回答不完整，必须按关系把两张表拼起来。\n\n本节你要学会：\n\n- 用主键识别一行。\n- 用外键表达两张表的关系。\n- 用 JOIN 把分散的数据变成业务答案。"
+    },
+    {
+      "type": "experiment",
+      "title": "JOIN 拼图",
+      "description": "观察 students 与 submissions 如何按 student_id 拼成成绩报表。",
+      "kind": "join",
+      "defaults": {
+        "left": "students",
+        "right": "submissions"
+      }
+    },
+    {
+      "type": "markdown",
+      "title": "核心讲解",
+      "content": "## 三个关键词\n\n- **主键**：一张表里唯一识别一行，例如 `students.id`。\n- **外键**：另一张表保存的连接线，例如 `submissions.student_id` 指向学生。\n- **JOIN**：按照连接条件把相关行放到同一条结果里。\n\n对应 SQL 思路：\n\n```sql\nSELECT s.name, sub.score\nFROM students s\nJOIN submissions sub ON sub.student_id = s.id;\n```\n\n如果 `student_id` 写错，JOIN 结果就会缺失或错配。因此数据库设计不是只建表，还要保证关系可信。"
+    },
+    {
+      "type": "ide",
+      "title": "JavaScript：用数组模拟 JOIN",
+      "description": "先用数组理解 JOIN，再把它翻译成 SQL。",
+      "language": "javascript",
+      "starterCode": "const students = [{ id: 1, name: '林同学' }, { id: 2, name: '周同学' }];\nconst submissions = [{ studentId: 1, score: 92 }, { studentId: 2, score: 85 }];\n\nconst rows = submissions.map(submission => ({\n  name: students.find(student => student.id === submission.studentId).name,\n  score: submission.score,\n}));\n\nconsole.log(JSON.stringify(rows, null, 2));",
+      "expectedOutputHint": "应该看到每个成绩记录带上学生姓名。"
+    },
+    {
+      "type": "challenge",
+      "title": "设计题：为什么要存 student_id？",
+      "prompt": "作业提交表已经有成绩，为什么还必须保存 student_id？",
+      "answer": "因为成绩必须关联到具体学生，student_id 是连接 submissions 和 students 的外键。"
+    },
+    {
+      "type": "checkpoint",
+      "title": "完成检查",
+      "items": [
+        "我能指出 students 表的主键。",
+        "我能解释 submissions.student_id 为什么是连接线。",
+        "我能写出 JOIN 的连接条件。"
+      ]
+    }
+  ]
+}

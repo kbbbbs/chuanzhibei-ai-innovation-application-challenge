@@ -36,6 +36,7 @@ import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.service.CourseImportService;
 import com.cupk.aiacademy.service.PermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -148,6 +149,9 @@ class ApiRepairRegressionTest {
     private CourseResourceService courseResourceService;
 
     @MockitoBean
+    private CourseImportService courseImportService;
+
+    @MockitoBean
     private PermissionService permissionService;
 
     @BeforeEach
@@ -245,6 +249,16 @@ class ApiRepairRegressionTest {
         mockMvc.perform(authed(put("/learning-progress/9001").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
+    }
+
+    @Test
+    void emptyHomeworkSubmitContentAndAttachmentReturnBadRequest() throws Exception {
+        mockMvc.perform(authed(post("/homework-submits")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"homeworkId\":1,\"submitContent\":\"  \",\"attachmentUrl\":\"\"}")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("400"))
+                .andExpect(jsonPath("$.msg").value("请填写作业内容或上传附件"));
     }
 
     @Test

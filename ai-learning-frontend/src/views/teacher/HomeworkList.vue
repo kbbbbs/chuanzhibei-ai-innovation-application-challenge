@@ -4,7 +4,10 @@
       <template #header>
         <div class="card-header">
           <span>作业管理</span>
-          <el-button type="primary" @click="handleCreate">发布作业</el-button>
+          <div class="header-actions">
+            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="primary" @click="handleCreate">发布作业</el-button>
+          </div>
         </div>
       </template>
 
@@ -15,6 +18,12 @@
         <el-table-column label="截止时间" width="180">
           <template #default="{ row }">
             {{ row.deadline ? new Date(row.deadline).toLocaleString() : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="附件" width="90">
+          <template #default="{ row }">
+            <el-link v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" type="primary">查看</el-link>
+            <span v-else>-</span>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
@@ -59,8 +68,30 @@
         <el-form-item label="作业内容" prop="content">
           <el-input v-model="form.content" type="textarea" :rows="5" />
         </el-form-item>
-        <el-form-item label="附件地址">
-          <el-input v-model="form.attachmentUrl" placeholder="作业附件URL（可选）" />
+        <el-form-item label="作业附件">
+          <div class="attachment-uploader">
+            <el-upload
+              ref="homeworkUploadRef"
+              action="#"
+              :auto-upload="false"
+              :limit="1"
+              :disabled="attachmentUploading"
+              :on-change="handleAttachmentChange"
+              :on-remove="handleAttachmentRemove"
+              :on-exceed="handleAttachmentExceed"
+            >
+              <el-button :loading="attachmentUploading">
+                <el-icon><Upload /></el-icon>
+                选择文件
+              </el-button>
+              <template #tip>
+                <div class="el-upload__tip">可上传题目说明、模板、数据集或参考材料，单个文件不超过 100MB</div>
+              </template>
+            </el-upload>
+            <el-link v-if="form.attachmentUrl" :href="form.attachmentUrl" target="_blank" type="success">
+              {{ attachmentName || '查看已上传附件' }}
+            </el-link>
+          </div>
         </el-form-item>
         <el-form-item label="截止时间" prop="deadline">
           <el-date-picker v-model="form.deadline" type="datetime" placeholder="选择截止时间" />
@@ -80,6 +111,13 @@
         <el-button type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
       </template>
     </el-dialog>
+
+    <ImportDialog
+      v-model="importDialogVisible"
+      type="homeworks"
+      title="作业 Excel 导入"
+      @imported="loadHomework"
+    />
   </div>
 </template>
 
@@ -87,9 +125,12 @@
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { Upload } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ImportDialog from '@/components/ImportDialog.vue'
+import { uploadHomeworkAttachment } from '@/api/homework'
 import request from '@/utils/request'
 import { getTeachingClasses } from '@/api/teachingClass'
 import { currentUserId, formatLocalDateTime, getRecords, getTotal, scopedTeacherParams } from '@/utils/apiHelpers'
@@ -102,6 +143,9 @@ const formRef = ref(null)
 const loading = ref(false)
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
+const attachmentUploading = ref(false)
+const homeworkUploadRef = ref(null)
+const attachmentName = ref('')
 const homeworkList = ref([])
 const classList = ref([])
 
@@ -112,6 +156,7 @@ const pagination = reactive({
 })
 
 const dialogVisible = ref(false)
+const importDialogVisible = ref(false)
 
 const form = reactive({
   id: null,
@@ -179,6 +224,8 @@ const handleCreate = () => {
     fullScore: 100,
     status: 1
   })
+  attachmentName.value = ''
+  homeworkUploadRef.value?.clearFiles()
   dialogVisible.value = true
 }
 
@@ -187,11 +234,17 @@ const handleEdit = async (row) => {
   if (form.deadline) {
     form.deadline = new Date(form.deadline)
   }
+  attachmentName.value = fileNameFromUrl(form.attachmentUrl)
+  homeworkUploadRef.value?.clearFiles()
   dialogVisible.value = true
 }
 
 const handleSubmit = async () => {
   await formRef.value.validate()
+  if (attachmentUploading.value) {
+    ElMessage.warning('附件仍在上传，请稍候')
+    return
+  }
 
   const data = { ...form }
   const selectedClass = classList.value.find(item => item.id === form.classId)
@@ -219,6 +272,41 @@ const handleSubmit = async () => {
   } finally {
     submitLoading.value = false
   }
+}
+
+const handleAttachmentChange = async (file) => {
+  if (!file?.raw) return
+  attachmentUploading.value = true
+  try {
+    const res = await uploadHomeworkAttachment(file.raw)
+    if (res.code === '200' && res.data?.url) {
+      form.attachmentUrl = res.data.url
+      attachmentName.value = res.data.originalName || file.name || '已上传附件'
+      ElMessage.success('附件上传成功')
+    } else {
+      handleAttachmentRemove()
+      ElMessage.error(res.msg || '附件上传失败')
+    }
+  } catch (e) {
+    handleAttachmentRemove()
+  } finally {
+    attachmentUploading.value = false
+  }
+}
+
+const handleAttachmentRemove = () => {
+  form.attachmentUrl = ''
+  attachmentName.value = ''
+}
+
+const handleAttachmentExceed = () => {
+  ElMessage.warning('每次只能上传一个附件')
+}
+
+const fileNameFromUrl = (url) => {
+  if (!url) return ''
+  const parts = String(url).split('/')
+  return parts[parts.length - 1] || ''
 }
 
 const handleDelete = async (row) => {
@@ -255,8 +343,20 @@ onMounted(() => {
   align-items: center;
 }
 
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.attachment-uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
 }
 </style>

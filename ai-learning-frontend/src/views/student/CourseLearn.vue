@@ -40,9 +40,11 @@
               </template>
 
               <div v-for="lesson in chapter.lessons" :key="lesson.id"
-                   :class="['lesson-item', { active: currentLesson?.id === lesson.id }]"
+                   :class="['lesson-item', { active: currentLesson?.id === lesson.id, locked: isLessonLocked(lesson.id) }]"
+                   :aria-disabled="isLessonLocked(lesson.id)"
                    @click="selectLesson(lesson)">
-                <span>{{ lesson.title }}</span>
+                <span>{{ isLessonLocked(lesson.id) ? '战争迷雾 · ' : '' }}{{ lesson.title }}</span>
+                <el-icon v-if="isLessonLocked(lesson.id)" color="#94a3b8"><Lock /></el-icon>
                 <el-icon v-if="isLessonCompleted(lesson.id)" color="#67c23a"><Check /></el-icon>
               </div>
             </el-collapse-item>
@@ -57,9 +59,12 @@
             <template #header>
               <div class="lesson-header">
                 <span>{{ currentLesson.title }}</span>
-                <el-button v-if="!isLessonCompleted(currentLesson.id)" type="primary" size="small" @click="markComplete">
-                  标记完成
-                </el-button>
+                <div class="lesson-header-actions">
+                  <el-button size="small" @click="openLearningMap">查看学习地图</el-button>
+                  <el-button v-if="!isLessonCompleted(currentLesson.id)" type="primary" size="small" @click="markComplete">
+                    标记完成
+                  </el-button>
+                </div>
               </div>
             </template>
 
@@ -71,6 +76,15 @@
                 :src="playerSource"
                 @timeupdate="handleVideoTimeUpdate"
               />
+              <div v-else-if="externalVideoUrl" class="external-video-card">
+                <div>
+                  <h3>外部网课视频</h3>
+                  <p>该课时使用 B 站/公开课程链接。为避免播放器误判网页地址，请在新标签打开观看；看完后回到本页继续完成课本、实验和 IDE 任务。</p>
+                </div>
+                <el-button type="primary" tag="a" :href="externalVideoUrl" target="_blank" rel="noopener noreferrer">
+                  打开学习视频
+                </el-button>
+              </div>
               <el-result
                 v-else-if="playbackStatus === 'FAILED'"
                 icon="error"
@@ -78,12 +92,23 @@
                 :sub-title="playback?.errorMessage || '请稍后重试'"
               />
               <el-empty v-else :description="playbackStatusText" />
+              <LessonPageRenderer
+                v-if="hasCurrentLessonPage"
+                class="mt-16"
+                :lesson="currentRichLesson"
+                :page="currentLessonPage"
+                :progress="currentLessonProgress"
+                :resolve-url="resolveResourceUrl"
+              />
             </div>
 
-            <div v-else-if="currentLesson.resourceType === 'article'" class="lesson-content">
-              <div class="article-content">
-                {{ currentLesson.resourceUrl || '暂无内容' }}
-              </div>
+            <div v-else-if="hasCurrentLessonPage" class="lesson-content">
+              <LessonPageRenderer
+                :lesson="currentRichLesson"
+                :page="currentLessonPage"
+                :progress="currentLessonProgress"
+                :resolve-url="resolveResourceUrl"
+              />
             </div>
 
             <div v-else class="lesson-content">
@@ -112,22 +137,28 @@
       </el-col>
 
       <el-col v-if="currentLesson" :span="7" class="study-tools-col">
-        <MarkdownNotePanel
-          :key="`note-${currentLesson.id}`"
-          :lesson-id="currentLesson.id"
-          :lesson-title="currentLesson.title"
-          :current-video-time="currentVideoTime"
-          :has-video="canPlayCurrentVideo"
-          :video-summary-md="playback?.summaryMd || ''"
-          @update:content="noteContent = $event"
-        />
-        <LessonQuickChat
-          :key="`chat-${currentLesson.id}`"
-          :lesson-title="currentLesson.title"
-          :note-content="noteContent"
-          :video-summary-md="playback?.summaryMd || ''"
-          :current-video-time="currentVideoTime"
-        />
+        <el-tabs v-model="activeToolTab" class="tool-tabs">
+          <el-tab-pane label="笔记" name="notes">
+            <MarkdownNotePanel
+              :key="`note-${currentLesson.id}`"
+              :lesson-id="currentLesson.id"
+              :lesson-title="currentLesson.title"
+              :current-video-time="currentVideoTime"
+              :has-video="canPlayCurrentVideo"
+              :video-summary-md="playback?.summaryMd || ''"
+              @update:content="noteContent = $event"
+            />
+          </el-tab-pane>
+          <el-tab-pane label="问答" name="chat">
+            <LessonQuickChat
+              :key="`chat-${currentLesson.id}`"
+              :lesson-title="currentLesson.title"
+              :note-content="noteContent"
+              :video-summary-md="playback?.summaryMd || ''"
+              :current-video-time="currentVideoTime"
+            />
+          </el-tab-pane>
+        </el-tabs>
       </el-col>
     </el-row>
   </div>
@@ -137,12 +168,13 @@
 import { ref, computed, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { Check, Expand, Fold } from '@element-plus/icons-vue'
+import { Check, Expand, Fold, Lock } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import LessonCommentPanel from '@/components/comments/LessonCommentPanel.vue'
 import LessonQuickChat from '@/components/ai/LessonQuickChat.vue'
 import MarkdownNotePanel from '@/components/notes/MarkdownNotePanel.vue'
 import PlyrVideoPlayer from '@/components/player/PlyrVideoPlayer.vue'
+import LessonPageRenderer from '@/components/learning/LessonPageRenderer.vue'
 import { getLessonPlayback } from '@/api/videoResource'
 import { getCourseById } from '@/utils/course'
 import { currentUserId, formatLocalDateTime, getRecords } from '@/utils/apiHelpers'
@@ -168,12 +200,52 @@ const noteContent = ref('')
 const completedLessons = ref(new Set())
 const progressByLessonId = ref(new Map())
 const playerRenderVersion = ref(0)
+const activeToolTab = ref('notes')
+const experience = ref({ overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] })
 let playbackRequestSeq = 0
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
 
 const allLessons = computed(() => {
   return chapters.value.flatMap(ch => ch.lessons || [])
+})
+
+const richLessonsById = computed(() => {
+  const map = new Map()
+  for (const chapter of experience.value.textbook || []) {
+    for (const lesson of chapter.lessons || []) {
+      map.set(Number(lesson.id), lesson)
+    }
+  }
+  return map
+})
+
+const currentRichLesson = computed(() => {
+  if (!currentLesson.value) return null
+  return richLessonsById.value.get(Number(currentLesson.value.id)) || currentLesson.value
+})
+
+const currentLessonPage = computed(() => {
+  const richLesson = currentRichLesson.value
+  if (richLesson?.page?.blocks?.length) return richLesson.page
+  const fallbackContent = richLesson?.content || currentLesson.value?.content || currentLesson.value?.resourceUrl || ''
+  if (!fallbackContent) return null
+  return {
+    title: richLesson?.title || currentLesson.value?.title,
+    summary: String(fallbackContent).replace(/\s+/g, ' ').slice(0, 120),
+    blocks: [{ type: 'markdown', title: '核心讲解', content: fallbackContent }]
+  }
+})
+
+const hasCurrentLessonPage = computed(() => Boolean(currentLessonPage.value?.blocks?.length))
+const currentLessonProgress = computed(() => Number(currentRichLesson.value?.progress ?? currentLesson.value?.progress ?? 0))
+
+const pathNodeByLessonId = computed(() => {
+  const map = new Map()
+  for (const node of experience.value.path || []) {
+    map.set(Number(node.id), node)
+  }
+  return map
 })
 
 const lessonContentSpan = computed(() => isLessonSidebarCollapsed.value ? 17 : 12)
@@ -186,13 +258,13 @@ const toggleLessonSidebar = () => {
 const hasPrev = computed(() => {
   if (!currentLesson.value) return false
   const idx = allLessons.value.findIndex(l => l.id === currentLesson.value.id)
-  return idx > 0
+  return allLessons.value.slice(0, idx).some(lesson => !isLessonLocked(lesson.id))
 })
 
 const hasNext = computed(() => {
   if (!currentLesson.value) return false
   const idx = allLessons.value.findIndex(l => l.id === currentLesson.value.id)
-  return idx < allLessons.value.length - 1
+  return allLessons.value.slice(idx + 1).some(lesson => !isLessonLocked(lesson.id))
 })
 
 const isCurrentVideoLesson = computed(() => isVideoLesson(currentLesson.value))
@@ -214,6 +286,13 @@ const playerSource = computed(() => {
   return resolveResourceUrl(url)
 })
 
+const externalVideoUrl = computed(() => {
+  if (!isCurrentVideoLesson.value) return ''
+  const url = fallbackVideoUrl.value
+  if (!url || isDirectMediaUrl(url)) return ''
+  return resolveResourceUrl(url)
+})
+
 const playerKey = computed(() => `${currentLesson.value?.id || 'none'}:${playerRenderVersion.value}:${playerSource.value}`)
 
 const playbackStatus = computed(() => {
@@ -222,7 +301,7 @@ const playbackStatus = computed(() => {
 })
 
 const canPlayCurrentVideo = computed(() => {
-  return playbackStatus.value === 'READY' && Boolean(playerSource.value)
+  return playbackStatus.value === 'READY' && Boolean(playerSource.value) && isDirectMediaUrl(playerSource.value)
 })
 
 const showCommentPanel = computed(() => {
@@ -245,9 +324,7 @@ const loadCourse = async () => {
     if (res.code === '200') {
       course.value = res.data
     }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
-  }
+  } catch {}
 }
 
 const loadChapters = async () => {
@@ -261,7 +338,7 @@ const loadChapters = async () => {
           if (lessonsRes.code === '200') {
             chapter.lessons = lessonsRes.data
           }
-        } catch (e) {
+        } catch {
           chapter.lessons = []
         }
       }
@@ -273,9 +350,7 @@ const loadChapters = async () => {
         await selectLesson(defaultLesson)
       }
     }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
-  }
+  } catch {}
 }
 
 const loadProgress = async () => {
@@ -302,8 +377,25 @@ const loadProgress = async () => {
           .map(p => Number(p.lessonId))
       )
     }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
+  } catch {}
+}
+
+const loadExperience = async () => {
+  try {
+    const res = await request.get(`/courses/${courseId.value}/experience`, { params: { classId: classId.value } })
+    if (res.code === '200') {
+      const data = res.data || {}
+      experience.value = {
+        overview: {},
+        textbook: [],
+        experiments: [],
+        challenges: [],
+        codeLabs: data.codeLabs?.length ? data.codeLabs : (data.codeLab ? [data.codeLab] : []),
+        ...data
+      }
+    }
+  } catch {
+    experience.value = { overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] }
   }
 }
 
@@ -311,8 +403,17 @@ const isLessonCompleted = (lessonId) => {
   return completedLessons.value.has(Number(lessonId))
 }
 
+const isLessonLocked = (lessonId) => {
+  const node = pathNodeByLessonId.value.get(Number(lessonId))
+  return node ? !node.unlocked : false
+}
+
 const selectLesson = async (lesson, options = { syncRoute: true }) => {
   if (!lesson) return
+  if (isLessonLocked(lesson.id)) {
+    ElMessage.info('先完成前一个节点来驱散战争迷雾')
+    return
+  }
   const previousLessonId = currentLesson.value?.id
   currentLesson.value = lesson
   if (Number(previousLessonId) !== Number(lesson.id)) {
@@ -354,7 +455,7 @@ const loadPlayback = async (lesson) => {
     if (res.code === '200') {
       playback.value = res.data
     }
-  } catch (e) {
+  } catch {
     if (requestId !== playbackRequestSeq) return
     playback.value = null
   } finally {
@@ -395,24 +496,26 @@ const markComplete = async () => {
       progressByLessonId.value = nextProgress
       completedLessons.value = new Set([...completedLessons.value, lessonId])
       ElMessage.success('已标记完成')
+      await loadProgress()
+      await loadExperience()
       nextLesson()
     }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
-  }
+  } catch {}
 }
 
 const prevLesson = () => {
   const idx = allLessons.value.findIndex(l => l.id === currentLesson.value.id)
-  if (idx > 0) {
-    selectLesson(allLessons.value[idx - 1])
+  const target = [...allLessons.value.slice(0, idx)].reverse().find(lesson => !isLessonLocked(lesson.id))
+  if (target) {
+    selectLesson(target)
   }
 }
 
 const nextLesson = () => {
   const idx = allLessons.value.findIndex(l => l.id === currentLesson.value.id)
-  if (idx < allLessons.value.length - 1) {
-    selectLesson(allLessons.value[idx + 1])
+  const target = allLessons.value.slice(idx + 1).find(lesson => !isLessonLocked(lesson.id))
+  if (target) {
+    selectLesson(target)
   }
 }
 
@@ -420,7 +523,7 @@ const handleVideoTimeUpdate = (seconds) => {
   currentVideoTime.value = seconds
 }
 
-const loadPage = () => {
+const loadPage = async () => {
   course.value = {}
   chapters.value = []
   activeChapters.value = null
@@ -431,9 +534,22 @@ const loadPage = () => {
   playerRenderVersion.value = 0
   completedLessons.value = new Set()
   progressByLessonId.value = new Map()
+  activeToolTab.value = 'notes'
+  experience.value = { overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] }
   loading.value = true
-  Promise.all([loadCourse(), loadChapters(), loadProgress()]).finally(() => {
+  try {
+    await Promise.all([loadCourse(), loadProgress(), loadExperience()])
+    await loadChapters()
+  } finally {
     loading.value = false
+  }
+}
+
+const openLearningMap = () => {
+  router.push({
+    name: 'LearningMap',
+    params: { courseId: route.params.courseId },
+    query: { classId: route.query.classId }
   })
 }
 
@@ -441,9 +557,9 @@ const findInitialLesson = () => {
   const queryLessonId = Number(route.query.lessonId)
   if (Number.isFinite(queryLessonId) && queryLessonId > 0) {
     const matched = allLessons.value.find(lesson => Number(lesson.id) === queryLessonId)
-    if (matched) return matched
+    if (matched && !isLessonLocked(matched.id)) return matched
   }
-  return allLessons.value[0] || null
+  return allLessons.value.find(lesson => !isLessonLocked(lesson.id)) || allLessons.value[0] || null
 }
 
 const isVideoLesson = (lesson) => {
@@ -459,6 +575,12 @@ const resolveResourceUrl = (url) => {
     return `${apiBaseUrl}${url}`
   }
   return url
+}
+
+const isDirectMediaUrl = (url) => {
+  if (!url) return false
+  const clean = String(url).split('?')[0].toLowerCase()
+  return /(\.mp4|\.webm|\.mov|\.m3u8)$/.test(clean) || clean.startsWith('blob:') || clean.startsWith('data:video/')
 }
 
 watch(
@@ -554,6 +676,14 @@ watch(
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+}
+
+.lesson-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .lesson-item {
@@ -575,12 +705,63 @@ watch(
   color: #1890ff;
 }
 
+.lesson-item.locked {
+  cursor: not-allowed;
+  color: #94a3b8;
+  background:
+    radial-gradient(circle at 20% 20%, rgba(148, 163, 184, .28), transparent 34%),
+    linear-gradient(135deg, #f8fafc, #eef2f7);
+}
+
+.lesson-item.locked:hover {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(148, 163, 184, .34), transparent 34%),
+    linear-gradient(135deg, #f8fafc, #eef2f7);
+}
+
 .lesson-content {
   min-height: 400px;
 }
 
+.mt-16 {
+  margin-top: 16px;
+}
+
+.tool-tabs {
+  width: 100%;
+}
+
+.tool-tabs :deep(.el-tabs__content) {
+  overflow: visible;
+}
+
 .media-state {
   min-height: 320px;
+}
+
+.external-video-card {
+  min-height: 220px;
+  padding: 24px;
+  border-radius: 18px;
+  border: 1px solid #dbeafe;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(37, 99, 235, .18), transparent 26%),
+    linear-gradient(135deg, #eff6ff, #fff);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.external-video-card h3 {
+  margin: 0 0 8px;
+  color: #172033;
+}
+
+.external-video-card p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.8;
 }
 
 .lesson-content :deep(.plyr) {
@@ -592,11 +773,6 @@ watch(
   padding: 50px;
   text-align: center;
   color: #999;
-}
-
-.article-content {
-  padding: 20px;
-  line-height: 1.8;
 }
 
 .resource-link {

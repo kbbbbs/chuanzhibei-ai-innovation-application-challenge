@@ -1,0 +1,58 @@
+{
+  "templates": [
+    {
+      "key": "ml.gradient-descent",
+      "title": "梯度下降：学习率与收敛",
+      "subject": "机器学习",
+      "summary": "用曲线、滑杆和 Python 循环理解学习率为什么会让训练收敛、震荡或变慢。",
+      "path": "ml/gradient-descent.json",
+      "tags": ["机器学习", "可视化", "Python", "实验"],
+      "estimatedMinutes": 28
+    },
+    {
+      "key": "java.object-basics",
+      "title": "Java 类与对象：从图纸到实例",
+      "subject": "Java 编程",
+      "summary": "把类、字段、方法和对象放进可运行代码，完成一次面向对象建模练习。",
+      "path": "java/object-basics.json",
+      "tags": ["Java", "面向对象", "在线 IDE"],
+      "estimatedMinutes": 30
+    },
+    {
+      "key": "database.join-builder",
+      "title": "SQL JOIN：把两张表拼成答案",
+      "subject": "数据库",
+      "summary": "用学生表和提交表观察主键、外键和 JOIN 结果行如何生成。",
+      "path": "database/join-builder.json",
+      "tags": ["数据库", "SQL", "JOIN", "关系模型"],
+      "estimatedMinutes": 24
+    },
+    {
+      "key": "algorithm.stack-queue",
+      "title": "栈与队列：顺序规则的可视化",
+      "subject": "数据结构与算法",
+      "summary": "通过按钮实验和代码输出理解后进先出、先进先出与结构不变量。",
+      "path": "algorithm/stack-queue.json",
+      "tags": ["算法", "数据结构", "可视化"],
+      "estimatedMinutes": 26
+    },
+    {
+      "key": "web.state-view",
+      "title": "前端状态：事件如何驱动视图",
+      "subject": "Web 前端",
+      "summary": "把用户点击、状态更新、表单校验和页面反馈连成一条可解释的交互链。",
+      "path": "web/state-view.json",
+      "tags": ["Web", "JavaScript", "Vue", "交互"],
+      "estimatedMinutes": 25
+    },
+    {
+      "key": "python.list-pipeline",
+      "title": "Python 列表流水线：从输入到结论",
+      "subject": "Python 编程",
+      "summary": "用列表、函数、过滤和聚合完成一条可调试的数据处理流水线。",
+      "path": "python/list-pipeline.json",
+      "tags": ["Python", "数据处理", "函数", "调试"],
+      "estimatedMinutes": 27
+    }
+  ]
+}

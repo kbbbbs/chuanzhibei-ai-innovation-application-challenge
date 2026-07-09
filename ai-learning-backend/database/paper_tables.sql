@@ -31,3 +31,18 @@ CREATE TABLE t_paper_author (
     INDEX idx_paper_id (paper_id),
     CONSTRAINT fk_pa_paper FOREIGN KEY (paper_id) REFERENCES t_paper(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Paper authors';
+
+CREATE TABLE paper_user_mark (
+    id INT AUTO_INCREMENT PRIMARY KEY COMMENT 'User paper mark primary key',
+    user_id INT NOT NULL COMMENT 'Current user id',
+    paper_id VARCHAR(100) NOT NULL COMMENT 'External or local paper identifier',
+    title VARCHAR(500) COMMENT 'Paper title snapshot',
+    source VARCHAR(50) COMMENT 'Paper source snapshot',
+    is_favorite TINYINT(1) DEFAULT 0 COMMENT 'Favorite flag',
+    read_status VARCHAR(20) DEFAULT 'UNREAD' COMMENT 'Read status',
+    note_md TEXT COMMENT 'Personal markdown note',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_user_paper (user_id, paper_id),
+    INDEX idx_user_updated (user_id, updated_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User paper favorites and notes';

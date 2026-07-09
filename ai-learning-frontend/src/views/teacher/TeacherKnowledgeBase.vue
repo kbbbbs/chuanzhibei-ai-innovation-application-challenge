@@ -76,8 +76,15 @@
             <el-empty v-if="files.length === 0 && !filesLoading" description="暂无文件" />
             <div v-for="f in files" :key="f.id" class="file-item">
               <div class="file-main">
-                <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
+                <div class="file-title-row">
+                  <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
+                  <el-tag size="small" :type="parseStatusTag(f.parseStatus)" effect="light">{{ parseStatusLabel(f.parseStatus) }}</el-tag>
+                </div>
                 <span class="file-meta">{{ f.file_type || f.type || '未知类型' }} · {{ formatSize(f.file_size) }}</span>
+                <div v-if="normalizeParseStatus(f.parseStatus) === 'parsing'" class="file-progress-row">
+                  <el-progress :percentage="Number(f.parseProgress || 0)" :stroke-width="6" />
+                </div>
+                <div v-else-if="normalizeParseStatus(f.parseStatus) === 'failed' && f.errorMessage" class="file-error">{{ f.errorMessage }}</div>
               </div>
               <el-button size="small" type="danger" :icon="Delete" circle @click.stop="handleDeleteFile(f)" />
             </div>
@@ -298,7 +305,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Delete } from '@element-plus/icons-vue'
@@ -328,6 +335,7 @@ const router = useRouter()
 const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
 const graphRefreshKey = ref(0)
+const statusPollTimer = ref(null)
 
 const createVisible = ref(false); const creating = ref(false)
 const createForm = reactive({ name: '', description: '' })
@@ -349,6 +357,45 @@ function formatSize(bytes) {
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
   return (bytes / 1048576).toFixed(1) + ' MB'
 }
+function normalizeParseStatus(value) {
+  const status = String(value || 'pending').toLowerCase()
+  if (status === 'success') return 'success'
+  if (status === 'failed') return 'failed'
+  if (status === 'parsing') return 'parsing'
+  return 'pending'
+}
+function parseStatusLabel(value) {
+  return {
+    pending: '待处理',
+    parsing: '处理中',
+    success: '已完成',
+    failed: '失败'
+  }[normalizeParseStatus(value)] || '待处理'
+}
+function parseStatusTag(value) {
+  return {
+    pending: 'info',
+    parsing: 'warning',
+    success: 'success',
+    failed: 'danger'
+  }[normalizeParseStatus(value)] || 'info'
+}
+function fileHasRunningStatus(file) {
+  return ['pending', 'parsing'].includes(normalizeParseStatus(file?.parseStatus))
+}
+function stopStatusPolling() {
+  if (statusPollTimer.value) {
+    clearTimeout(statusPollTimer.value)
+    statusPollTimer.value = null
+  }
+}
+function scheduleStatusPolling() {
+  stopStatusPolling()
+  if (!files.value.some(fileHasRunningStatus) || !selectedKb.value?.id) return
+  statusPollTimer.value = setTimeout(async () => {
+    await loadFiles()
+  }, 3000)
+}
 
 function openGraph() {
   if (!selectedKb.value?.id) return
@@ -364,6 +411,7 @@ async function loadKBs() {
 }
 
 function selectKb(kb) {
+  stopStatusPolling()
   selectedKb.value = kb
   uploadFile.value = null
   loadFiles()
@@ -375,7 +423,10 @@ async function loadFiles() {
   try {
     const res = await kbApi.listKnowledge(selectedKb.value.id)
     if (res.code === '200') files.value = unwrapList(res.data)
-  } finally { filesLoading.value = false }
+  } finally {
+    filesLoading.value = false
+    scheduleStatusPolling()
+  }
 }
 
 async function doUpload() {
@@ -389,6 +440,7 @@ async function doUpload() {
       await loadFiles()
       await loadKBs()
       graphRefreshKey.value++
+      scheduleStatusPolling()
     } else ElMessage.error(res.msg || '上传失败')
   } finally { uploading.value = false }
 }
@@ -645,6 +697,7 @@ async function skipGenSave() {
 }
 
 onMounted(loadKBs)
+onBeforeUnmount(stopStatusPolling)
 </script>
 
 <style scoped>

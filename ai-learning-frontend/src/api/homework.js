@@ -39,6 +39,13 @@ export const submitHomework = (data) => {
   return request.post('/homework-submits', data)
 }
 
+export const uploadHomeworkAttachment = (file) => {
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('bizType', 'homework')
+  return request.post('/files/upload', formData)
+}
+
 export const updateHomeworkSubmit = (id, data) => {
   return request.put(`/homework-submits/${id}`, data)
 }

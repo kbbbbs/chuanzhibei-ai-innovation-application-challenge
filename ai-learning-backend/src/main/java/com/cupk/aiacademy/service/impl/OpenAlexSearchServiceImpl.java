@@ -30,12 +30,20 @@ public class OpenAlexSearchServiceImpl implements OpenAlexSearchService {
         .build();
 
     @Override
-    public Result search(String keyword, Integer page, Integer size) {
+    public Result search(String keyword, Integer page, Integer size, String sortBy) {
         try {
             String url = API_BASE
                 + "?search=" + java.net.URLEncoder.encode(keyword, "UTF-8")
                 + "&per_page=" + size
                 + "&page=" + page;
+
+            if ("latest".equalsIgnoreCase(sortBy)) {
+                url += "&sort=publication_date:desc";
+            } else if ("citations".equalsIgnoreCase(sortBy)) {
+                url += "&sort=cited_by_count:desc";
+            } else {
+                url += "&sort=relevance_score:desc";
+            }
 
             Request request = new Request.Builder()
                 .url(url)

@@ -113,6 +113,18 @@ export const layoutChildren = [
     meta: { title: '我的班级', icon: 'School', roles: ['admin', 'student'], requiresAuth: true }
   },
   {
+    path: 'learning-routes',
+    name: 'LearningRoutes',
+    component: () => import('../views/student/LearningRoutes.vue'),
+    meta: { title: '学习路线', icon: 'MapLocation', roles: ['admin', 'student'], requiresAuth: true }
+  },
+  {
+    path: 'learning-map/:courseId',
+    name: 'LearningMap',
+    component: () => import('../views/student/LearningMap.vue'),
+    meta: { title: '学习地图', hidden: true, roles: ['admin', 'student'], requiresAuth: true }
+  },
+  {
     path: 'course-learn/:courseId',
     name: 'CourseLearn',
     component: () => import('../views/student/CourseLearn.vue'),
@@ -170,7 +182,7 @@ export const layoutChildren = [
     path: 'knowledge-graph',
     name: 'KnowledgeGraph',
     component: () => import('../views/student/KnowledgeGraph.vue'),
-    meta: { title: '知识图谱', icon: 'Share', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+    meta: { title: '知识图谱', icon: 'Share', hidden: true, roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'work-study-jobs',
@@ -191,6 +203,12 @@ export const layoutChildren = [
     name: 'UserManage',
     component: () => import('../views/admin/UserManage.vue'),
     meta: { title: '用户管理', icon: 'User', roles: ['admin'], requiresAuth: true }
+  },
+  {
+    path: 'teacher-applications',
+    name: 'TeacherApplications',
+    component: () => import('../views/admin/TeacherApplications.vue'),
+    meta: { title: '教师审核', icon: 'UserFilled', roles: ['admin'], requiresAuth: true }
   },
   {
     path: 'categories',

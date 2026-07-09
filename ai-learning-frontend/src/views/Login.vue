@@ -46,7 +46,7 @@ const rules = {
 const login = async () => {
   try {
     await formRef.value.validate()
-  } catch (e) {
+  } catch {
     return
   }
 
@@ -58,9 +58,7 @@ const login = async () => {
       ElMessage.success('登录成功')
       router.push(route.query.redirect || '/home')
     }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
-  } finally {
+  } catch {} finally {
     loading.value = false
   }
 }
