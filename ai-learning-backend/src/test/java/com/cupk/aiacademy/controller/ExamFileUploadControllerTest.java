@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.cupk.aiacademy.teacherapply.TeacherApplication;
 import com.cupk.aiacademy.teacherapply.TeacherApplicationMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -24,6 +25,9 @@ class ExamFileUploadControllerTest {
 
     @MockitoBean
     private AuthUtils authUtils;
+
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @Test
     void uploadExamAnswerFileWorks() throws Exception {

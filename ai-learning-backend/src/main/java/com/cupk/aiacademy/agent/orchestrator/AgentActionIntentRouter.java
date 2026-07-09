@@ -131,6 +131,11 @@ public class AgentActionIntentRouter {
                 && looksLikeNoticeUpdateRequest(currentUserContent)) {
             return Optional.of("notice_update_plan");
         }
+        if (isEnabledTool(enabledTools, "teacher_application_review_plan", "teacher_apply_review_plan",
+                "teacher_application_approve_plan", "teacher_application_reject_plan")
+                && looksLikeTeacherApplicationReviewRequest(currentUserContent)) {
+            return Optional.of("teacher_application_review_plan");
+        }
         if (isEnabledTool(enabledTools, "course_resource_remove_plan", "lesson_resource_remove_plan",
                 "course_resource_delete_plan", "lesson_resource_delete_plan")
                 && looksLikeCourseResourceRemoveRequest(currentUserContent)) {
@@ -206,6 +211,21 @@ public class AgentActionIntentRouter {
                 "teaching_class_modify_plan", "class_modify_plan", "teaching_class_edit_plan")
                 && looksLikeTeachingClassUpdateRequest(currentUserContent)) {
             return Optional.of("teaching_class_update_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_category_delete_plan", "category_delete_plan",
+                "course_category_remove_plan", "category_remove_plan")
+                && looksLikeCourseCategoryDeleteRequest(currentUserContent)) {
+            return Optional.of("course_category_delete_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_category_create_plan", "category_create_plan",
+                "course_category_add_plan", "category_add_plan")
+                && looksLikeCourseCategoryCreateRequest(currentUserContent)) {
+            return Optional.of("course_category_create_plan");
+        }
+        if (isEnabledTool(enabledTools, "course_category_update_plan", "category_update_plan",
+                "course_category_modify_plan", "category_modify_plan")
+                && looksLikeCourseCategoryUpdateRequest(currentUserContent)) {
+            return Optional.of("course_category_update_plan");
         }
         if (isEnabledTool(enabledTools, "course_status_plan", "course_publish_status_plan",
                 "course_archive_plan", "course_delete_plan", "course_remove_plan")
@@ -350,6 +370,12 @@ public class AgentActionIntentRouter {
                 "状态改为", "状态改成", "调整状态", "变更状态");
     }
 
+    private boolean looksLikeTeacherApplicationReviewRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return containsAny(value, "教师申请", "老师申请", "教师入驻", "入驻申请", "申请当老师")
+                && containsAny(value, "审核", "通过", "拒绝", "驳回", "同意", "批准", "不通过");
+    }
+
     private boolean looksLikeHomeworkCreateRequest(String content) {
         String value = content == null ? "" : content.trim();
         return containsAny(value, "作业", "练习", "任务")
@@ -358,6 +384,9 @@ public class AgentActionIntentRouter {
 
     private boolean looksLikeCourseCreateRequest(String content) {
         String value = content == null ? "" : content.trim();
+        if (looksLikeCourseCategoryObjectTarget(value)) {
+            return false;
+        }
         return containsAny(value, "课程", "门课")
                 && containsAny(value, "创建", "新建", "新增", "添加", "开设", "发布", "建一门", "加一门");
     }
@@ -511,9 +540,62 @@ public class AgentActionIntentRouter {
 
     private boolean looksLikeCourseStatusRequest(String content) {
         String value = content == null ? "" : content.trim();
+        if (looksLikeCourseCategoryObjectTarget(value)) {
+            return false;
+        }
         return looksLikeCourseTarget(value)
                 && containsAny(value, "上架", "下架", "停用", "启用", "恢复", "归档", "关闭",
                 "删除", "移除", "撤销", "作废", "删掉", "删去");
+    }
+
+    private boolean looksLikeCourseCategoryCreateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeCourseCategoryObjectTarget(value)
+                && containsAny(value, "创建", "新建", "新增", "添加", "建一个", "加一个");
+    }
+
+    private boolean looksLikeCourseCategoryUpdateRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        if (!looksLikeCourseCategoryObjectTarget(value)) {
+            return false;
+        }
+        if (containsAny(value, "课程分类改成", "课程分类改为", "课程分类调整为")) {
+            return false;
+        }
+        return containsAny(value, "修改", "调整", "更改", "更新", "编辑", "改名", "重命名",
+                "改成", "改为", "描述", "说明", "排序");
+    }
+
+    private boolean looksLikeCourseCategoryDeleteRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        return looksLikeCourseCategoryObjectTarget(value)
+                && containsAny(value, "删除", "移除", "删掉", "删去", "去掉", "级联删除");
+    }
+
+    private boolean looksLikeCourseCategoryObjectTarget(String value) {
+        if (value == null || value.isBlank()) {
+            return false;
+        }
+        if (looksLikeCourseEntityTargetWithCategoryParameter(value)) {
+            return false;
+        }
+        if (containsAny(value, "课程分类", "课程类别")) {
+            return true;
+        }
+        return containsAny(value, "分类", "类别") && !looksLikeCourseTarget(value);
+    }
+
+    private boolean looksLikeCourseEntityTargetWithCategoryParameter(String value) {
+        if (!containsAny(value, "课程分类", "课程类别", "分类ID", "分类id", "分类Id",
+                "分类编号", "类别ID", "类别id", "类别Id", "类别编号")) {
+            return false;
+        }
+        if (containsAny(value, "创建课程分类", "新建课程分类", "新增课程分类", "添加课程分类",
+                "创建课程类别", "新建课程类别", "新增课程类别", "添加课程类别")) {
+            return false;
+        }
+        return containsAny(value, "一门课程", "一门课", "门课程", "门课", "建一门", "加一门",
+                "创建课程", "新建课程", "新增课程", "添加课程", "开设课程", "发布课程");
     }
 
     private boolean looksLikeCourseTarget(String value) {

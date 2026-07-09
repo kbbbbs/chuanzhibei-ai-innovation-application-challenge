@@ -3,6 +3,7 @@ package com.cupk.aiacademy.agent.action;
 import com.cupk.aiacademy.agent.core.controller.AgentExceptionHandler;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -34,6 +35,9 @@ class AgentActionControllerTest {
 
     @MockitoBean
     private AgentPendingActionQueryService pendingActionQueryService;
+
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @Test
     void listPendingReturnsResultShape() throws Exception {

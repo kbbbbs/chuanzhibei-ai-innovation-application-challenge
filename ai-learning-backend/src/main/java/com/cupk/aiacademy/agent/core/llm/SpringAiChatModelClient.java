@@ -5,7 +5,6 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import reactor.core.publisher.Flux;
 
 @Component
 public class SpringAiChatModelClient implements ChatModelClient {
@@ -34,11 +33,6 @@ public class SpringAiChatModelClient implements ChatModelClient {
     @Override
     public ChatResponse call(Prompt prompt) {
         return chatModel.call(prompt);
-    }
-
-    @Override
-    public Flux<ChatResponse> stream(Prompt prompt) {
-        return chatModel.stream(prompt);
     }
 
     private String providerFromBaseUrl(String baseUrl) {

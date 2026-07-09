@@ -10,10 +10,27 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     @Autowired
     private AuthInterceptor authInterceptor;
 
+    @Autowired(required = false)
+    private UsageLogInterceptor usageLogInterceptor;
+
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/**")
                 .excludePathPatterns("/auth/**", "/uploads/**", "/media/**");
+
+        if (usageLogInterceptor != null) {
+            registry.addInterceptor(usageLogInterceptor)
+                    .addPathPatterns("/**")
+                    .excludePathPatterns(
+                            "/operation-logs/**",
+                            "/uploads/**",
+                            "/media/**",
+                            "/api/weknora/local-file/**",
+                            "/favicon.ico",
+                            "/assets/**",
+                            "/static/**",
+                            "/webjars/**");
+        }
     }
 }

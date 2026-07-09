@@ -146,39 +146,17 @@ export function useWeKnora() {
     messages.value.push({ role: 'assistant', content: '', streaming: true })
     loading.value = true
     error.value = null
-    let streamError = null
 
     try {
-      const completePayload = await agentApi.streamAgentMessage(currentAgentSessionId.value, { content: query }, {
-        onMessage(chunk) {
-          messages.value[aiIndex].content += typeof chunk === 'string'
-            ? chunk
-            : (chunk?.content || chunk?.answer || chunk?.text || '')
-        },
-        onComplete(payload) {
-          const content = payloadContent(payload)
-          if (!messages.value[aiIndex].content && content) {
-            messages.value[aiIndex].content = content
-          }
-          const pendingAction = pendingActionFromPayload(payload)
-          if (pendingAction) {
-            messages.value[aiIndex].pendingAction = pendingAction
-          }
-        },
-        onError(payload) {
-          streamError = payload
-        }
-      })
-      if (streamError) {
-        throw new Error(extractMessage(streamError, 'Agent 回复失败，请稍后重试'))
-      }
-      const pendingAction = pendingActionFromPayload(completePayload)
+      const payload = await agentApi.sendAgentMessage(currentAgentSessionId.value, { content: query })
+      messages.value[aiIndex].content = payloadContent(payload) || '抱歉，未能获取回复。'
+      const pendingAction = pendingActionFromPayload(payload)
       if (pendingAction) {
         messages.value[aiIndex].pendingAction = pendingAction
       }
       messages.value[aiIndex].streaming = false
       loading.value = false
-      return messages.value[aiIndex].content || payloadContent(completePayload)
+      return messages.value[aiIndex].content
     } catch (e) {
       messages.value[aiIndex].streaming = false
       messages.value[aiIndex].error = true

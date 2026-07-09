@@ -4,8 +4,12 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.agent.tool.support.AgentToolSupport;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.UserContext;
+import com.cupk.aiacademy.entity.Paper;
 import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.ClassStudentMapper;
+import com.cupk.aiacademy.mapper.CourseCategoryMapper;
+import com.cupk.aiacademy.mapper.CourseMapper;
+import com.cupk.aiacademy.mapper.ExamPaperMapper;
 import com.cupk.aiacademy.mapper.ExamRecordMapper;
 import com.cupk.aiacademy.mapper.ExamSessionMapper;
 import com.cupk.aiacademy.mapper.GradeRecordMapper;
@@ -13,11 +17,16 @@ import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.mapper.LearningProgressMapper;
 import com.cupk.aiacademy.mapper.LessonMapper;
+import com.cupk.aiacademy.mapper.NoticeMapper;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
+import com.cupk.aiacademy.mapper.PaperMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Chapter;
 import com.cupk.aiacademy.pojo.ClassStudent;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.pojo.CourseCategory;
+import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.ExamRecord;
 import com.cupk.aiacademy.pojo.ExamSession;
 import com.cupk.aiacademy.pojo.GradeRecord;
@@ -25,8 +34,12 @@ import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
 import com.cupk.aiacademy.pojo.LearningProgress;
 import com.cupk.aiacademy.pojo.Lesson;
+import com.cupk.aiacademy.pojo.Notice;
+import com.cupk.aiacademy.pojo.OperationLog;
 import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
+import com.cupk.aiacademy.teacherapply.TeacherApplication;
+import com.cupk.aiacademy.teacherapply.TeacherApplicationMapper;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +60,8 @@ public class NaturalLanguageQueryService {
     private final NaturalLanguageEntityResolver entityResolver;
     private final NaturalLanguageTimeParser timeParser;
     private final AgentToolSupport support;
+    private final CourseMapper courseMapper;
+    private final CourseCategoryMapper categoryMapper;
     private final TeachingClassMapper teachingClassMapper;
     private final ClassStudentMapper classStudentMapper;
     private final HomeworkMapper homeworkMapper;
@@ -57,11 +72,18 @@ public class NaturalLanguageQueryService {
     private final LessonMapper lessonMapper;
     private final ExamSessionMapper examSessionMapper;
     private final ExamRecordMapper examRecordMapper;
+    private final ExamPaperMapper examPaperMapper;
+    private final NoticeMapper noticeMapper;
+    private final OperationLogMapper operationLogMapper;
+    private final PaperMapper paperMapper;
+    private final TeacherApplicationMapper teacherApplicationMapper;
     private final UserMapper userMapper;
 
     public NaturalLanguageQueryService(NaturalLanguageEntityResolver entityResolver,
                                        NaturalLanguageTimeParser timeParser,
                                        AgentToolSupport support,
+                                       CourseMapper courseMapper,
+                                       CourseCategoryMapper categoryMapper,
                                        TeachingClassMapper teachingClassMapper,
                                        ClassStudentMapper classStudentMapper,
                                        HomeworkMapper homeworkMapper,
@@ -72,10 +94,17 @@ public class NaturalLanguageQueryService {
                                        LessonMapper lessonMapper,
                                        ExamSessionMapper examSessionMapper,
                                        ExamRecordMapper examRecordMapper,
+                                       ExamPaperMapper examPaperMapper,
+                                       NoticeMapper noticeMapper,
+                                       OperationLogMapper operationLogMapper,
+                                       PaperMapper paperMapper,
+                                       TeacherApplicationMapper teacherApplicationMapper,
                                        UserMapper userMapper) {
         this.entityResolver = entityResolver;
         this.timeParser = timeParser;
         this.support = support;
+        this.courseMapper = courseMapper;
+        this.categoryMapper = categoryMapper;
         this.teachingClassMapper = teachingClassMapper;
         this.classStudentMapper = classStudentMapper;
         this.homeworkMapper = homeworkMapper;
@@ -86,6 +115,11 @@ public class NaturalLanguageQueryService {
         this.lessonMapper = lessonMapper;
         this.examSessionMapper = examSessionMapper;
         this.examRecordMapper = examRecordMapper;
+        this.examPaperMapper = examPaperMapper;
+        this.noticeMapper = noticeMapper;
+        this.operationLogMapper = operationLogMapper;
+        this.paperMapper = paperMapper;
+        this.teacherApplicationMapper = teacherApplicationMapper;
         this.userMapper = userMapper;
     }
 
@@ -102,6 +136,30 @@ public class NaturalLanguageQueryService {
         String disambiguation = disambiguationMessage(query, context);
         if (!disambiguation.isBlank()) {
             return disambiguation;
+        }
+        if (isCategoryCourseQuery(query)) {
+            return categoryCoursesAnswer(context, limit);
+        }
+        if (isCategoryListQuery(query)) {
+            return categoryListAnswer(context, limit);
+        }
+        if (isNoticeQuery(query)) {
+            return noticeAnswer(context, limit);
+        }
+        if (isExamPaperQuery(query)) {
+            return examPaperAnswer(context, limit);
+        }
+        if (isAcademicPaperQuery(query)) {
+            return academicPaperAnswer(context, limit);
+        }
+        if (isTeacherApplicationQuery(query)) {
+            return teacherApplicationAnswer(context, limit);
+        }
+        if (isImportStatusQuery(query)) {
+            return importStatusAnswer(context, limit);
+        }
+        if (isTeachingClassQuery(query)) {
+            return teachingClassAnswer(context, limit);
         }
         if (isHomeworkSubmissionQuery(query)) {
             return homeworkSubmissionAnswer(context, limit);
@@ -127,10 +185,17 @@ public class NaturalLanguageQueryService {
         if (isCourseStatsQuery(query)) {
             return courseStatsAnswer(context);
         }
-        return courseAnswer(context, limit);
+        if (isCourseQuery(query, context)) {
+            return courseAnswer(context, limit);
+        }
+        if (isQueryLike(query)) {
+            return unsupportedQueryAnswer(query);
+        }
+        return "";
     }
 
     private QueryContext buildContext(String query, NaturalLanguageTimeRange timeRange, int limit) {
+        List<CourseCategory> categories = resolveCategories(query, limit);
         List<Course> courses = entityResolver.resolveCourses(query, limit);
         List<Integer> courseIds = ids(courses, Course::getId);
         List<TeachingClass> classes = entityResolver.resolveTeachingClasses(query, courseIds, limit);
@@ -149,10 +214,19 @@ public class NaturalLanguageQueryService {
             }
         }
         List<Homework> homeworks = entityResolver.resolveHomeworks(query, classIds, timeRange, limit);
-        return new QueryContext(query, timeRange, courses, classes, classIds, students, homeworks);
+        return new QueryContext(query, timeRange, categories, courses, classes, classIds, students, homeworks);
     }
 
     private String disambiguationMessage(String query, QueryContext context) {
+        if (isCategoryCourseQuery(query) && context.categories().size() > 1) {
+            return "匹配到多个课程分类，请补充更完整分类名后重试：\n" + categoryLines(context.categories());
+        }
+        if (requiresSingleCourse(query) && context.courses().size() > 1 && !isBroadListQuery(query)) {
+            return "匹配到多门课程，请补充更完整课程名、教师名或分类后重试：\n" + courseLines(context.courses());
+        }
+        if (requiresSingleClass(query) && context.classes().size() > 1 && !isBroadListQuery(query)) {
+            return "匹配到多个教学班，请补充更完整班级名、课程名或学期后重试：\n" + teachingClassLines(context.classes());
+        }
         if (isGradeQuery(query) || isHomeworkSubmissionQuery(query) || isLearningProgressQuery(query)) {
             if (context.students().size() > 1) {
                 return "匹配到多个学生，请补充学号、手机号或更完整姓名后重试：\n" + userLines(context.students());
@@ -163,6 +237,166 @@ public class NaturalLanguageQueryService {
             return "匹配到多门课程，请补充更完整课程名后重试：\n" + courseLines(context.courses());
         }
         return "";
+    }
+
+    private String categoryListAnswer(QueryContext context, int limit) {
+        QueryWrapper<CourseCategory> query = new QueryWrapper<>();
+        query.orderByAsc("sort_order").orderByAsc("id").last(limit(limit));
+        List<CourseCategory> categories = categoryMapper.selectList(query);
+        if (categories == null || categories.isEmpty()) {
+            return withQueryScope(context, "课程分类列表", "t_course_category",
+                    "name/description/sort_order", "未查询到课程分类，可检查分类表是否已有数据。");
+        }
+        return withQueryScope(context, "课程分类列表", "t_course_category",
+                "name/description/sort_order", categoryLines(categories));
+    }
+
+    private String categoryCoursesAnswer(QueryContext context, int limit) {
+        List<CourseCategory> categories = context.categories();
+        if (categories.isEmpty()) {
+            return "未匹配到课程分类。分类关键词=" + extractCategoryTerms(context.query())
+                    + "；查询范围=t_course_category.name/description；可先问“当前课程分类都有什么”。";
+        }
+        List<Integer> categoryIds = ids(categories, CourseCategory::getId);
+        if (categoryIds.isEmpty()) {
+            return "匹配到课程分类，但分类 ID 为空，无法继续查询课程。";
+        }
+
+        QueryWrapper<Course> query = new QueryWrapper<>();
+        if (!support.applyCourseVisibility(query)) {
+            return withQueryScope(context, "课程分类下课程", "t_course_category,t_course",
+                    "t_course_category.name/description -> t_course.category_id", "没有可查询的课程范围。");
+        }
+        query.in("category_id", categoryIds)
+                .orderByDesc("id")
+                .last(limit(limit));
+        List<Course> courses = courseMapper.selectList(query);
+        if (courses == null || courses.isEmpty()) {
+            return withQueryScope(context, "课程分类下课程", "t_course_category,t_course",
+                    "t_course_category.name/description -> t_course.category_id",
+                    "匹配到课程分类，但该分类下没有当前账号可见课程。");
+        }
+        return withQueryScope(context, "课程分类下课程", "t_course_category,t_course",
+                "t_course_category.name/description -> t_course.category_id", courseLines(courses));
+    }
+
+    private String noticeAnswer(QueryContext context, int limit) {
+        QueryWrapper<Notice> query = new QueryWrapper<>();
+        applyNoticeVisibility(query);
+        applyKeywordFilter(query, entityResolver.extractTerms(context.query()), "title", "content", "notice_type");
+        query.orderByDesc("create_time").orderByDesc("id").last(limit(limit));
+        List<Notice> notices = noticeMapper.selectList(query);
+        if (notices == null || notices.isEmpty()) {
+            return withQueryScope(context, "通知查询", "t_notice",
+                    "title/content/notice_type", "未查询到匹配通知。");
+        }
+        return withQueryScope(context, "通知查询", "t_notice",
+                "title/content/notice_type", noticeLines(notices));
+    }
+
+    private String examPaperAnswer(QueryContext context, int limit) {
+        QueryWrapper<ExamPaper> query = new QueryWrapper<>();
+        if (!applyExamPaperVisibility(query)) {
+            return withQueryScope(context, "试卷查询", "t_exam_paper",
+                    "title/description/course_id/teacher_id", "没有可查询的试卷范围。");
+        }
+        if (!context.courses().isEmpty()) {
+            query.in("course_id", ids(context.courses(), Course::getId));
+        }
+        applyKeywordFilter(query, entityResolver.extractTerms(context.query()), "title", "description");
+        query.orderByDesc("id").last(limit(limit));
+        List<ExamPaper> papers = examPaperMapper.selectList(query);
+        if (papers == null || papers.isEmpty()) {
+            return withQueryScope(context, "试卷查询", "t_exam_paper",
+                    "title/description/course_id/teacher_id", "未查询到匹配试卷。");
+        }
+        return withQueryScope(context, "试卷查询", "t_exam_paper",
+                "title/description/course_id/teacher_id", examPaperLines(papers));
+    }
+
+    private String academicPaperAnswer(QueryContext context, int limit) {
+        QueryWrapper<Paper> query = new QueryWrapper<>();
+        applyKeywordFilter(query, entityResolver.extractTerms(context.query()), "title", "abstract_text", "venue", "source");
+        query.orderByDesc("year").orderByDesc("citation_count").orderByDesc("id").last(limit(limit));
+        List<Paper> papers = paperMapper.selectList(query);
+        if (papers == null || papers.isEmpty()) {
+            return withQueryScope(context, "论文查询", "t_paper",
+                    "title/abstract_text/venue/source", "未查询到匹配论文。");
+        }
+        return withQueryScope(context, "论文查询", "t_paper",
+                "title/abstract_text/venue/source", academicPaperLines(papers));
+    }
+
+    private String teacherApplicationAnswer(QueryContext context, int limit) {
+        AuthUtils.LoginUser user = UserContext.get();
+        if (!support.isAdmin(user)) {
+            return withQueryScope(context, "教师申请查询", "t_teacher_application",
+                    "username/nickname/email/phone/reason/review_comment/status",
+                    "只有管理员可以查询教师申请。");
+        }
+        QueryWrapper<TeacherApplication> query = new QueryWrapper<>();
+        Integer status = teacherApplicationStatus(context.query());
+        if (status != null) {
+            query.eq("status", status);
+        }
+        applyKeywordFilter(query, entityResolver.extractTerms(context.query()),
+                "username", "nickname", "email", "phone", "reason", "review_comment");
+        query.orderByDesc("id").last(limit(limit));
+        List<TeacherApplication> applications = teacherApplicationMapper.selectList(query);
+        if (applications == null || applications.isEmpty()) {
+            return withQueryScope(context, "教师申请查询", "t_teacher_application",
+                    "username/nickname/email/phone/reason/review_comment/status",
+                    "未查询到匹配教师申请。");
+        }
+        return withQueryScope(context, "教师申请查询", "t_teacher_application",
+                "username/nickname/email/phone/reason/review_comment/status",
+                teacherApplicationLines(applications));
+    }
+
+    private String importStatusAnswer(QueryContext context, int limit) {
+        QueryWrapper<OperationLog> query = new QueryWrapper<>();
+        if (!applyImportLogVisibility(query)) {
+            return withQueryScope(context, "导入状态查询", "t_operation_log",
+                    "url/operation/params/create_time", "只有管理员或教师可以查询导入状态。");
+        }
+        query.and(wrapper -> wrapper.like("url", "/api/imports").or().like("operation", "import"));
+        Integer httpStatus = importHttpStatus(context.query());
+        if (httpStatus != null) {
+            query.like("params", "\"status\":" + httpStatus);
+        }
+        applyTimeRange(query, "create_time", context.timeRange());
+        query.orderByDesc("id").last(limit(limit));
+        List<OperationLog> logs = operationLogMapper.selectList(query);
+        if (logs == null || logs.isEmpty()) {
+            return withQueryScope(context, "导入状态查询", "t_operation_log",
+                    "url/operation/params/create_time", "未查询到导入相关记录。");
+        }
+        return withQueryScope(context, "导入状态查询", "t_operation_log",
+                "url/operation/params/create_time", operationLogLines(logs));
+    }
+
+    private String teachingClassAnswer(QueryContext context, int limit) {
+        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
+        if (!support.applyTeachingClassVisibility(query)) {
+            return withQueryScope(context, "教学班查询", "t_teaching_class",
+                    "class_name/semester/description/course_id", "没有可查询的教学班范围。");
+        }
+        if (!context.classes().isEmpty()) {
+            query.in("id", ids(context.classes(), TeachingClass::getId));
+        } else {
+            if (!context.courses().isEmpty()) {
+                query.in("course_id", ids(context.courses(), Course::getId));
+            }
+            applyKeywordFilter(query, entityResolver.extractTerms(context.query()), "class_name", "semester", "description");
+        }
+        query.orderByDesc("id").last(limit(limit));
+        List<TeachingClass> classes = teachingClassMapper.selectList(query);
+        if (classes == null || classes.isEmpty()) {
+            return withQueryScope(context, "教学班查询", "t_teaching_class",
+                    "class_name/semester/description/course_id", "未查询到匹配教学班。");
+        }
+        return withQueryScope(context, "教学班查询", "t_teaching_class",
+                "class_name/semester/description/course_id", teachingClassLines(classes));
     }
 
     private String homeworkSubmissionAnswer(QueryContext context, int limit) {
@@ -476,6 +710,18 @@ public class NaturalLanguageQueryService {
         return withScope(context, courseLines(courses.stream().limit(limit).toList()));
     }
 
+    private List<CourseCategory> resolveCategories(String query, int limit) {
+        List<String> terms = extractCategoryTerms(query);
+        if (terms.isEmpty()) {
+            return List.of();
+        }
+        QueryWrapper<CourseCategory> categoryQuery = new QueryWrapper<>();
+        applyKeywordFilter(categoryQuery, terms, "name", "description");
+        categoryQuery.orderByAsc("sort_order").orderByAsc("id").last(limit(limit));
+        List<CourseCategory> categories = categoryMapper.selectList(categoryQuery);
+        return categories == null ? List.of() : categories;
+    }
+
     private List<Homework> listHomeworksByClasses(List<Integer> classIds, NaturalLanguageTimeRange timeRange, int limit) {
         QueryWrapper<Homework> query = new QueryWrapper<>();
         if (!support.applyHomeworkVisibility(query)) {
@@ -516,6 +762,61 @@ public class NaturalLanguageQueryService {
         } else if (!support.isAdmin(user)) {
             query.eq("id", -1);
         }
+    }
+
+    private void applyNoticeVisibility(QueryWrapper<Notice> query) {
+        AuthUtils.LoginUser user = UserContext.get();
+        if (support.isAdmin(user)) {
+            return;
+        }
+        if (support.isStudent(user)) {
+            List<Integer> classIds = support.findVisibleClassIds();
+            if (classIds.isEmpty()) {
+                query.isNull("class_id");
+            } else {
+                query.and(wrapper -> wrapper.isNull("class_id").or().in("class_id", classIds));
+            }
+            return;
+        }
+        if (support.isTeacher(user)) {
+            List<Integer> classIds = support.findVisibleClassIds();
+            query.and(wrapper -> {
+                wrapper.eq("publisher_id", user.getUserId()).or().isNull("class_id");
+                if (!classIds.isEmpty()) {
+                    wrapper.or().in("class_id", classIds);
+                }
+            });
+            return;
+        }
+        query.eq("status", 1).isNull("class_id");
+    }
+
+    private boolean applyExamPaperVisibility(QueryWrapper<ExamPaper> query) {
+        AuthUtils.LoginUser user = UserContext.get();
+        if (support.isStudent(user)) {
+            List<Integer> courseIds = support.findVisibleCourseIds();
+            if (courseIds.isEmpty()) {
+                return false;
+            }
+            query.in("course_id", courseIds);
+        } else if (support.isTeacher(user)) {
+            query.eq("teacher_id", user.getUserId());
+        } else if (!support.isAdmin(user)) {
+            query.eq("status", 1);
+        }
+        return true;
+    }
+
+    private boolean applyImportLogVisibility(QueryWrapper<OperationLog> query) {
+        AuthUtils.LoginUser user = UserContext.get();
+        if (support.isAdmin(user)) {
+            return true;
+        }
+        if (support.isTeacher(user)) {
+            query.eq("user_id", user.getUserId());
+            return true;
+        }
+        return false;
     }
 
     private <T> void applyKeywordFilter(QueryWrapper<T> query, List<String> terms, String... columns) {
@@ -607,11 +908,21 @@ public class NaturalLanguageQueryService {
                     .map(course -> course.getTitle() + "#" + course.getId())
                     .collect(Collectors.joining("、")));
         }
+        if (!context.categories().isEmpty()) {
+            scope.add("课程分类候选=" + context.categories().stream()
+                    .limit(3)
+                    .map(category -> category.getName() + "#" + category.getId())
+                    .collect(Collectors.joining("、")));
+        }
         if (!context.classes().isEmpty()) {
             scope.add("班级候选=" + context.classes().stream()
                     .limit(3)
                     .map(item -> item.getClassName() + "#" + item.getId())
                     .collect(Collectors.joining("、")));
+        }
+        String teacherCandidates = teacherCandidates(context);
+        if (!teacherCandidates.isBlank()) {
+            scope.add("教师候选=" + teacherCandidates);
         }
         if (!context.students().isEmpty()) {
             scope.add("学生候选=" + context.students().stream()
@@ -622,15 +933,134 @@ public class NaturalLanguageQueryService {
         return scope.isEmpty() ? content : "解析范围：" + String.join("；", scope) + "\n" + content;
     }
 
+    private String withQueryScope(QueryContext context, String queryType, String tables, String fields, String content) {
+        return withScope(context, "查询范围：类型=" + queryType
+                + "；数据表=" + tables
+                + "；匹配字段=" + fields
+                + "\n" + content);
+    }
+
     private String courseLines(List<Course> courses) {
         return courses.stream()
                 .map(course -> "课程ID=" + course.getId()
                         + "；名称=" + value(course.getTitle())
+                        + "；分类=" + categoryDisplay(course.getCategoryId())
                         + "；教师=" + value(course.getTeacher())
                         + "；难度=" + value(course.getDifficulty())
                         + "；状态=" + value(course.getStatus())
                         + "；简介=" + support.summarize(course.getDescription(), 100))
                 .collect(Collectors.joining("\n"));
+    }
+
+    private String categoryLines(List<CourseCategory> categories) {
+        return categories.stream()
+                .map(category -> "课程分类ID=" + value(category.getId())
+                        + "；名称=" + value(category.getName())
+                        + "；课程数=" + countVisibleCoursesByCategory(category.getId())
+                        + "；描述=" + support.summarize(category.getDescription(), 80))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String teachingClassLines(List<TeachingClass> classes) {
+        return classes.stream()
+                .map(teachingClass -> "教学班ID=" + value(teachingClass.getId())
+                        + "；课程ID=" + value(teachingClass.getCourseId())
+                        + "；教师ID=" + value(teachingClass.getTeacherId())
+                        + "；班级名称=" + value(teachingClass.getClassName())
+                        + "；学期=" + value(teachingClass.getSemester())
+                        + "；状态=" + value(teachingClass.getStatus())
+                        + "；说明=" + support.summarize(teachingClass.getDescription(), 100))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String noticeLines(List<Notice> notices) {
+        return notices.stream()
+                .map(notice -> "通知ID=" + value(notice.getId())
+                        + "；发布人ID=" + value(notice.getPublisherId())
+                        + "；教学班ID=" + value(notice.getClassId())
+                        + "；标题=" + value(notice.getTitle())
+                        + "；类型=" + value(notice.getNoticeType())
+                        + "；发布时间=" + value(notice.getCreateTime())
+                        + "；状态=" + value(notice.getStatus())
+                        + "；内容=" + support.summarize(notice.getContent(), 120))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String examPaperLines(List<ExamPaper> papers) {
+        return papers.stream()
+                .map(paper -> "试卷ID=" + value(paper.getId())
+                        + "；课程ID=" + value(paper.getCourseId())
+                        + "；教师ID=" + value(paper.getTeacherId())
+                        + "；标题=" + value(paper.getTitle())
+                        + "；总分=" + value(paper.getTotalScore())
+                        + "；时长=" + value(paper.getDurationMinutes())
+                        + "；状态=" + value(paper.getStatus())
+                        + "；说明=" + support.summarize(paper.getDescription(), 100))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String academicPaperLines(List<Paper> papers) {
+        return papers.stream()
+                .map(paper -> "论文ID=" + value(paper.getId())
+                        + "；标题=" + value(paper.getTitle())
+                        + "；年份=" + value(paper.getYear())
+                        + "；来源=" + value(paper.getSource())
+                        + "；会议/期刊=" + value(paper.getVenue())
+                        + "；引用数=" + value(paper.getCitationCount())
+                        + "；链接=" + value(paper.getUrl())
+                        + "；摘要=" + support.summarize(paper.getAbstractText(), 160))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String teacherApplicationLines(List<TeacherApplication> applications) {
+        return applications.stream()
+                .map(application -> "教师申请ID=" + value(application.getId())
+                        + "；用户名=" + value(application.getUsername())
+                        + "；昵称=" + value(application.getNickname())
+                        + "；邮箱=" + value(application.getEmail())
+                        + "；手机号=" + value(application.getPhone())
+                        + "；状态=" + teacherApplicationStatusLabel(application.getStatus())
+                        + "；申请时间=" + value(application.getCreateTime())
+                        + "；审核人ID=" + value(application.getReviewerId())
+                        + "；审核时间=" + value(application.getReviewTime())
+                        + "；原因=" + support.summarize(application.getReason(), 100)
+                        + "；审核意见=" + support.summarize(application.getReviewComment(), 80))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private String operationLogLines(List<OperationLog> logs) {
+        return logs.stream()
+                .map(log -> "操作日志ID=" + value(log.getId())
+                        + "；用户ID=" + value(log.getUserId())
+                        + "；操作=" + value(log.getOperation())
+                        + "；方法=" + value(log.getMethod())
+                        + "；地址=" + value(log.getUrl())
+                        + "；时间=" + value(log.getCreateTime())
+                        + "；摘要=" + support.summarize(log.getParams(), 160))
+                .collect(Collectors.joining("\n"));
+    }
+
+    private int countVisibleCoursesByCategory(Integer categoryId) {
+        if (categoryId == null || categoryId <= 0) {
+            return 0;
+        }
+        QueryWrapper<Course> query = new QueryWrapper<>();
+        if (!support.applyCourseVisibility(query)) {
+            return 0;
+        }
+        query.eq("category_id", categoryId);
+        return Math.toIntExact(courseMapper.selectCount(query));
+    }
+
+    private String categoryDisplay(Integer categoryId) {
+        if (categoryId == null || categoryId <= 0) {
+            return "无";
+        }
+        CourseCategory category = categoryMapper.selectById(categoryId);
+        if (category == null) {
+            return "未知#" + categoryId;
+        }
+        return value(category.getName()) + "#" + categoryId;
     }
 
     private String userLines(List<User> users) {
@@ -702,8 +1132,88 @@ public class NaturalLanguageQueryService {
         return support.value(value);
     }
 
+    private Integer importHttpStatus(String query) {
+        if (containsAny(query, "失败", "错误", "异常", "不成功")) {
+            return 400;
+        }
+        if (containsAny(query, "成功", "正常")) {
+            return 200;
+        }
+        return null;
+    }
+
+    private Integer teacherApplicationStatus(String query) {
+        if (containsAny(query, "待审核", "待处理", "未审核", "等待审核")) {
+            return 0;
+        }
+        if (containsAny(query, "审核通过", "已通过", "通过的", "通过申请")) {
+            return 1;
+        }
+        if (containsAny(query, "审核拒绝", "已拒绝", "被拒绝", "未通过", "驳回")) {
+            return 2;
+        }
+        return null;
+    }
+
+    private String teacherApplicationStatusLabel(Integer status) {
+        if (status == null) {
+            return "无";
+        }
+        return switch (status) {
+            case 0 -> "待审核#0";
+            case 1 -> "通过#1";
+            case 2 -> "拒绝#2";
+            default -> status.toString();
+        };
+    }
+
     private boolean isHomeworkSubmissionQuery(String query) {
         return containsAny(query, "提交率", "提交情况", "未提交", "没交", "未交", "哪些学生还没交");
+    }
+
+    private boolean isCategoryCourseQuery(String query) {
+        return containsAny(query, "课", "课程", "门课")
+                && containsAny(query,
+                "属于", "分类下", "类别下", "类下", "方向下",
+                "分类的课", "类别的课", "类的课", "相关的课",
+                "分类课程", "类别课程", "类课程", "相关课程");
+    }
+
+    private boolean isCategoryListQuery(String query) {
+        return containsAny(query, "课程分类", "分类", "类别")
+                && containsAny(query, "显示", "列出", "列表", "查看", "查询", "当前", "现在", "所有", "全部", "有哪些", "都有什么", "有什么");
+    }
+
+    private boolean isNoticeQuery(String query) {
+        return containsAny(query, "通知", "公告") && isQueryLike(query);
+    }
+
+    private boolean isExamPaperQuery(String query) {
+        return containsAny(query, "试卷", "卷子") && isQueryLike(query);
+    }
+
+    private boolean isAcademicPaperQuery(String query) {
+        return containsAny(query, "论文", "文献", "paper", "Paper") && isQueryLike(query);
+    }
+
+    private boolean isTeacherApplicationQuery(String query) {
+        return containsAny(query, "教师申请", "老师申请", "教师入驻", "入驻申请", "申请当老师")
+                && isQueryLike(query);
+    }
+
+    private boolean isImportStatusQuery(String query) {
+        return containsAny(query, "导入")
+                && (isQueryLike(query) || containsAny(query, "状态", "进度", "成功", "失败", "错误", "记录"));
+    }
+
+    private boolean isTeachingClassQuery(String query) {
+        if (!containsAny(query, "教学班", "授课班", "课程班", "班级")) {
+            return false;
+        }
+        if (containsAny(query, "作业", "考试", "测验", "成绩", "分数", "学习进度", "学生", "成员", "名单")) {
+            return false;
+        }
+        return isQueryLike(query);
     }
 
     private boolean isGradeQuery(String query) {
@@ -735,6 +1245,100 @@ public class NaturalLanguageQueryService {
         return query.contains("统计") && containsAny(query, "课程", "章节", "课时", "教学班", "作业");
     }
 
+    private boolean isCourseQuery(String query, QueryContext context) {
+        if (!context.courses().isEmpty()) {
+            return true;
+        }
+        return containsAny(query, "课程", "门课")
+                || (query.contains("课") && !containsAny(query, "课时", "上课"));
+    }
+
+    private boolean isQueryLike(String query) {
+        return containsAny(query,
+                "查询", "查一下", "查", "查看", "显示", "列出", "统计", "有哪些", "都有什么",
+                "有什么", "多少", "平均", "当前", "现在", "最近");
+    }
+
+    private String unsupportedQueryAnswer(String query) {
+        return "当前 Agent 尚未接入该类自然语言查询能力。已识别为查询请求，但没有匹配到课程分类、课程、教学班、通知、作业、提交、成绩、学习进度、考试、试卷、论文、教师申请、导入状态或课程结构查询；请改用系统对应页面，或补充这些已支持模块的查询条件。原始请求="
+                + query;
+    }
+
+    private boolean requiresSingleCourse(String query) {
+        return isHomeworkSubmissionQuery(query)
+                || isCourseStructureQuery(query)
+                || isCourseStatsQuery(query)
+                || isExamStatsQuery(query);
+    }
+
+    private boolean requiresSingleClass(String query) {
+        return isTeachingClassQuery(query)
+                || isHomeworkSubmissionQuery(query)
+                || isHomeworkQuery(query)
+                || isExamQuery(query);
+    }
+
+    private boolean isBroadListQuery(String query) {
+        return containsAny(query, "有哪些", "都有什么", "所有", "全部", "列表", "列出");
+    }
+
+    private String teacherCandidates(QueryContext context) {
+        LinkedHashSet<String> teachers = new LinkedHashSet<>();
+        for (Course course : context.courses()) {
+            if (course.getTeacher() != null && !course.getTeacher().isBlank()) {
+                teachers.add(course.getTeacher());
+            }
+            if (course.getTeacherId() != null && course.getTeacherId() > 0) {
+                teachers.add("教师ID#" + course.getTeacherId());
+            }
+        }
+        for (TeachingClass teachingClass : context.classes()) {
+            if (teachingClass.getTeacherId() != null && teachingClass.getTeacherId() > 0) {
+                teachers.add("教师ID#" + teachingClass.getTeacherId());
+            }
+        }
+        return teachers.stream().limit(3).collect(Collectors.joining("、"));
+    }
+
+    private List<String> extractCategoryTerms(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return List.of();
+        }
+        LinkedHashSet<String> terms = new LinkedHashSet<>();
+        List<String> extractedTerms = entityResolver.extractTerms(query);
+        if (extractedTerms != null) {
+            for (String term : extractedTerms) {
+                addCategoryTerm(terms, term);
+            }
+        }
+        if (terms.isEmpty()) {
+            addCategoryTerm(terms, query);
+        }
+        return new ArrayList<>(terms);
+    }
+
+    private void addCategoryTerm(Set<String> terms, String rawValue) {
+        String term = cleanCategoryTerm(rawValue);
+        if (term.length() >= 2) {
+            terms.add(term);
+        }
+    }
+
+    private String cleanCategoryTerm(String value) {
+        String text = value == null ? "" : value.trim();
+        String[] removals = {
+                "课程分类", "分类名称", "都有什么", "有哪些", "有什么", "哪几类",
+                "的课程", "的课", "门课", "课程", "分类", "类别", "相关", "方向",
+                "帮我", "请问", "查询", "查一下", "查看", "显示", "列出", "找一下",
+                "当前", "现在", "所有", "全部", "哪些", "什么", "属于",
+                "下面", "下", "里面", "里", "中的", "中", "的", "类", "课"
+        };
+        for (String removal : removals) {
+            text = text.replace(removal, "");
+        }
+        return text.replaceAll("[\\s，。！？?、,;；:：]+", "").trim();
+    }
+
     private boolean containsAny(String value, String... candidates) {
         if (value == null || candidates == null) {
             return false;
@@ -750,6 +1354,7 @@ public class NaturalLanguageQueryService {
     private record QueryContext(
             String query,
             NaturalLanguageTimeRange timeRange,
+            List<CourseCategory> categories,
             List<Course> courses,
             List<TeachingClass> classes,
             List<Integer> classIds,
@@ -758,6 +1363,7 @@ public class NaturalLanguageQueryService {
     ) {
         private QueryContext {
             timeRange = timeRange == null ? new NaturalLanguageTimeRange(null, null, "") : timeRange;
+            categories = categories == null ? List.of() : categories;
             courses = courses == null ? List.of() : courses;
             classes = classes == null ? List.of() : classes;
             classIds = classIds == null ? List.of() : classIds;

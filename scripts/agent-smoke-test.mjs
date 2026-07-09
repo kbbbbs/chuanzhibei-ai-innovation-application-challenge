@@ -85,13 +85,13 @@ async function main() {
   }
   console.log(`[OK] 会话已创建：sessionId=${sessionId}`)
 
-  console.log('\n[5/7] 发送普通流式聊天请求')
-  const normalReply = await streamAgent(sessionId, config.chat, token)
+  console.log('\n[5/7] 发送普通非流式聊天请求')
+  const normalReply = await chatAgent(sessionId, config.chat, token)
   if (normalReply.error) {
     console.log('[WARN] 普通聊天失败，通常是模型配置或模型服务问题：')
     console.log(format(normalReply.error))
     if (config.requireModel) {
-      throw withDetails(new Error('普通流式聊天失败，且启用了 --require-model'), normalReply.error)
+      throw withDetails(new Error('普通非流式聊天失败，且启用了 --require-model'), normalReply.error)
     }
   } else {
     console.log('[OK] 普通聊天完成，回复预览：')
@@ -99,7 +99,7 @@ async function main() {
   }
 
   console.log('\n[6/7] 发送自然语言写操作计划请求')
-  const planReply = await streamAgent(sessionId, config.actionPrompt, token)
+  const planReply = await chatAgent(sessionId, config.actionPrompt, token)
   if (planReply.error) {
     throw withDetails(new Error('生成待确认操作计划失败'), planReply.error)
   }
@@ -126,7 +126,7 @@ async function main() {
 
   if (!config.confirm) {
     console.log('\n[7/7] 跳过确认执行。需要真正写入一条通知时，加 --confirm。')
-    console.log('\n[PASS] Agent 冒烟测试完成：登录、模型健康检查、会话、流式接口、写操作计划、pending action 均已覆盖。')
+    console.log('\n[PASS] Agent 冒烟测试完成：登录、模型健康检查、会话、非流式聊天、写操作计划、pending action 均已覆盖。')
     return
   }
 
@@ -168,7 +168,7 @@ function smokeAgentPayload() {
   return {
     code: TEST_AGENT_CODE,
     name: 'Agent 冒烟测试助手',
-    description: '用于本地验证 Agent 会话、流式接口和待确认写操作。',
+    description: '用于本地验证 Agent 会话、非流式聊天和待确认写操作。',
     systemPrompt: '你是 AI 智学平台的 Agent 冒烟测试助手。请用简洁中文回答，并严格遵守写操作先生成待确认计划的规则。',
     temperature: 0.2,
     knowledgeBaseIds: '[]',
@@ -186,76 +186,23 @@ function includesTool(value, expectedTool) {
   }
 }
 
-async function streamAgent(sessionId, content, token) {
-  const response = await fetch(`${config.baseUrl}/api/agent/sessions/${sessionId}/stream`, {
+async function chatAgent(sessionId, content, token) {
+  const response = await fetch(`${config.baseUrl}/api/agent/sessions/${sessionId}/chat`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: 'text/event-stream',
       'Content-Type': 'application/json;charset=utf-8'
     },
     body: JSON.stringify({ content })
   })
 
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`流式请求失败：HTTP ${response.status} ${text}`)
+  const text = await response.text()
+  const payload = parseMaybeJson(text)
+  if (!response.ok || (payload?.code && String(payload.code) !== '200')) {
+    return { content: '', complete: null, error: payload || `HTTP ${response.status} ${text}` }
   }
-  if (!response.body) {
-    throw new Error('当前 Node 运行时不支持读取 fetch response.body')
-  }
-
-  const decoder = new TextDecoder('utf-8')
-  const reader = response.body.getReader()
-  let buffer = ''
-  let contentBuffer = ''
-  let complete = null
-  let error = null
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const events = buffer.split(/\r?\n\r?\n/)
-    buffer = events.pop() || ''
-    for (const event of events) {
-      const parsed = parseSse(event)
-      if (!parsed.data) continue
-      if (parsed.event === 'message') {
-        contentBuffer += parsed.data
-      } else if (parsed.event === 'complete') {
-        complete = parseMaybeJson(parsed.data)
-      } else if (parsed.event === 'error') {
-        error = parseMaybeJson(parsed.data)
-      }
-    }
-  }
-
-  buffer += decoder.decode()
-  if (buffer.trim()) {
-    const parsed = parseSse(buffer)
-    if (parsed.event === 'message') contentBuffer += parsed.data
-    if (parsed.event === 'complete') complete = parseMaybeJson(parsed.data)
-    if (parsed.event === 'error') error = parseMaybeJson(parsed.data)
-  }
-
-  return { content: contentBuffer || complete?.content || '', complete, error }
-}
-
-function parseSse(rawEvent) {
-  const lines = rawEvent.split(/\r?\n/)
-  let event = 'message'
-  const data = []
-  for (const line of lines) {
-    if (!line || line.startsWith(':')) continue
-    const index = line.indexOf(':')
-    const field = index === -1 ? line : line.slice(0, index)
-    let value = index === -1 ? '' : line.slice(index + 1)
-    if (value.startsWith(' ')) value = value.slice(1)
-    if (field === 'event') event = value || 'message'
-    if (field === 'data') data.push(value)
-  }
-  return { event, data: data.join('\n') }
+  const complete = unwrapData(payload)
+  return { content: complete?.content || '', complete, error: null }
 }
 
 async function getJson(path, token) {

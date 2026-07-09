@@ -5,7 +5,9 @@
         <div class="card-header">
           <span>题库管理</span>
           <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
+            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">新建题目</el-button>
           </div>
         </div>
@@ -136,7 +138,7 @@
     <ImportDialog
       v-model="importDialogVisible"
       type="questions"
-      title="题库 Excel 导入"
+      title="题库导入"
       @imported="loadQuestions"
     />
   </div>
@@ -149,6 +151,7 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import ImportDialog from '@/components/ImportDialog.vue'
+import { exportImportData } from '@/api/imports'
 import { getCourses } from '@/utils/course'
 import { currentUserId, enumName, getRecords, getTotal, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
@@ -160,6 +163,7 @@ const formRef = ref(null)
 const loading = ref(false)
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
+const exporting = ref(false)
 const questions = ref([])
 const courses = ref([])
 
@@ -391,6 +395,37 @@ const loadCourses = async () => {
 const handleSearch = () => {
   pagination.pageNum = 1
   loadQuestions()
+}
+
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.questionType) {
+      params.type = TYPE_TO_ENUM[searchForm.questionType]
+    }
+    if (searchForm.courseId) {
+      params.courseId = searchForm.courseId
+    }
+    const blob = await exportImportData('questions', params)
+    downloadBlob(blob, `题库_${new Date().toISOString().slice(0, 10)}.${format}`)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+const downloadBlob = (blob, fileName) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 const handleCreate = async () => {

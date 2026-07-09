@@ -25,4 +25,10 @@ public class OperationLog {
 
     @TableField("create_time")
     private LocalDateTime createTime;
+
+    @TableField(exist = false)
+    private String username;
+
+    @TableField(exist = false)
+    private String nickname;
 }

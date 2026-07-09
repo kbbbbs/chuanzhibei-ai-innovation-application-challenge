@@ -3,6 +3,7 @@ package com.cupk.aiacademy.agent.core.controller;
 import com.cupk.aiacademy.agent.core.service.AgentChatService;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -27,6 +28,9 @@ class AgentExceptionHandlerTest {
 
     @MockitoBean
     private AgentChatService agentChatService;
+
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @Test
     void agentBusinessExceptionReturnsResultShape() throws Exception {

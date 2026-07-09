@@ -176,7 +176,7 @@ async function main() {
 }
 
 async function assertPlan(sessionId, token, expected) {
-  const reply = await streamAgent(sessionId, expected.prompt, token)
+  const reply = await chatAgent(sessionId, expected.prompt, token)
   if (reply.error) {
     throw withDetails(new Error(`生成 ${expected.actionCode} 待确认计划失败`), reply.error)
   }
@@ -270,76 +270,23 @@ function includesAllTools(value, expectedTools) {
   }
 }
 
-async function streamAgent(sessionId, content, token) {
-  const response = await fetch(`${config.baseUrl}/api/agent/sessions/${sessionId}/stream`, {
+async function chatAgent(sessionId, content, token) {
+  const response = await fetch(`${config.baseUrl}/api/agent/sessions/${sessionId}/chat`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
-      Accept: 'text/event-stream',
       'Content-Type': 'application/json;charset=utf-8'
     },
     body: JSON.stringify({ content })
   })
 
-  if (!response.ok) {
-    const text = await response.text()
-    throw new Error(`流式请求失败：HTTP ${response.status} ${text}`)
+  const text = await response.text()
+  const payload = parseMaybeJson(text)
+  if (!response.ok || (payload?.code && String(payload.code) !== '200')) {
+    return { content: '', complete: null, error: payload || `HTTP ${response.status} ${text}` }
   }
-  if (!response.body) {
-    throw new Error('当前 Node 运行时不支持读取 fetch response.body')
-  }
-
-  const decoder = new TextDecoder('utf-8')
-  const reader = response.body.getReader()
-  let buffer = ''
-  let contentBuffer = ''
-  let complete = null
-  let error = null
-
-  while (true) {
-    const { done, value } = await reader.read()
-    if (done) break
-    buffer += decoder.decode(value, { stream: true })
-    const events = buffer.split(/\r?\n\r?\n/)
-    buffer = events.pop() || ''
-    for (const event of events) {
-      const parsed = parseSse(event)
-      if (!parsed.data) continue
-      if (parsed.event === 'message') {
-        contentBuffer += parsed.data
-      } else if (parsed.event === 'complete') {
-        complete = parseMaybeJson(parsed.data)
-      } else if (parsed.event === 'error') {
-        error = parseMaybeJson(parsed.data)
-      }
-    }
-  }
-
-  buffer += decoder.decode()
-  if (buffer.trim()) {
-    const parsed = parseSse(buffer)
-    if (parsed.event === 'message') contentBuffer += parsed.data
-    if (parsed.event === 'complete') complete = parseMaybeJson(parsed.data)
-    if (parsed.event === 'error') error = parseMaybeJson(parsed.data)
-  }
-
-  return { content: contentBuffer || complete?.content || '', complete, error }
-}
-
-function parseSse(rawEvent) {
-  const lines = rawEvent.split(/\r?\n/)
-  let event = 'message'
-  const data = []
-  for (const line of lines) {
-    if (!line || line.startsWith(':')) continue
-    const index = line.indexOf(':')
-    const field = index === -1 ? line : line.slice(0, index)
-    let value = index === -1 ? '' : line.slice(index + 1)
-    if (value.startsWith(' ')) value = value.slice(1)
-    if (field === 'event') event = value || 'message'
-    if (field === 'data') data.push(value)
-  }
-  return { event, data: data.join('\n') }
+  const complete = unwrapData(payload)
+  return { content: complete?.content || '', complete, error: null }
 }
 
 async function getJson(path, token) {

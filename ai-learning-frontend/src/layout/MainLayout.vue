@@ -78,6 +78,9 @@
                   <el-dropdown-item command="teacher-knowledge-base">
                     <el-icon><Collection /></el-icon> 知识库管理
                   </el-dropdown-item>
+                  <el-dropdown-item command="operation-logs">
+                    <el-icon><Document /></el-icon> 操作日志
+                  </el-dropdown-item>
                 </template>
 
                 <!-- Admin Menu Items -->

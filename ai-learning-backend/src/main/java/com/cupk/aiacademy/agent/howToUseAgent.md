@@ -5,7 +5,7 @@
 Agent 聊天不是只把用户问题直接发给大模型。当前实现会先读取 Agent 定义，再按配置补充知识库资料和平台工具数据，最后一起进入模型 Prompt。
 
 ```text
-用户请求 /api/agent/sessions/{sessionId}/chat 或 /stream
+用户请求 /api/agent/sessions/{sessionId}/chat
   -> AgentChatService.ensureSession()
   -> AgentChatService.ensureAgentDefinition()
   -> AgentActionIntentRouter.buildDirectActionReply()
@@ -13,11 +13,11 @@ Agent 聊天不是只把用户问题直接发给大模型。当前实现会先�
   -> AgentPromptAssembler.buildPrompt()
       -> KnowledgeContextProvider.retrieve()
       -> AgentToolExecutor.buildToolContext()
-  -> ChatModelClient.call() 或 ChatModelClient.stream()
+  -> ChatModelClient.call()
       -> AgentModelDiagnostics 记录失败类别
 ```
 
-作用：说明普通聊天和流式聊天都会走同一套上下文构造流程。
+作用：说明普通非流式聊天会走完整的上下文构造流程。
 
 代码含义：`knowledgeBaseIds` 控制是否检索知识库，`enabledTools` 控制是否读取课程、作业、学习进度和学习计划数据。
 
@@ -347,21 +347,6 @@ Content-Type: application/json
 ```json
 {
   "content": "我有哪些 Java 作业还没提交？帮我安排学习计划。"
-}
-```
-
-流式聊天：
-
-```http
-POST /api/agent/sessions/{sessionId}/stream
-Authorization: Bearer <student token>
-Content-Type: application/json
-Accept: text/event-stream
-```
-
-```json
-{
-  "content": "查询我的课程进度，并给我学习建议。"
 }
 ```
 
@@ -770,29 +755,6 @@ Content-Type: application/json
 
 代码含义：如果 Agent 配置了知识库和工具，这个问题会同时触发 `knowledgeBaseIds` 检索、`course_search`、`homework_search`、`learning_progress` 和 `learning_plan`。
 
-### 10.3 流式聊天
-
-```http
-POST /api/agent/sessions/{sessionId}/stream
-Authorization: Bearer <student token>
-Content-Type: application/json
-Accept: text/event-stream
-```
-
-```json
-{
-  "content": "按我现在的学习进度，今天应该先学什么？"
-}
-```
-
-作用：和普通聊天一样构造 Prompt，但用 SSE 流式返回模型结果。
-
-代码含义：
-
-- `message` 事件返回模型增量文本。
-- `complete` 事件返回完整回复和消息 ID。
-- `error` 事件返回模型失败信息。
-
 ## 12. 上下文规模配置
 
 ```yaml
@@ -823,6 +785,5 @@ agent:
 6. 用管理员 token 调用 `POST /api/agent/definitions`，创建带 `knowledgeBaseIds` 和 `enabledTools` 的 Agent。
 7. 学生登录，获取 `student token`。
 8. 用学生 token 调用 `POST /api/agent/sessions` 创建会话。
-9. 调用 `POST /api/agent/sessions/{sessionId}/chat` 测普通聊天。
-10. 调用 `POST /api/agent/sessions/{sessionId}/stream` 测流式聊天。
-11. 如工具结果不符合预期，分别用 `/courses`、`/homeworks`、`/homework-submits`、`/learning-progress` 检查源数据。
+9. 调用 `POST /api/agent/sessions/{sessionId}/chat` 测普通非流式聊天。
+10. 如工具结果不符合预期，分别用 `/courses`、`/homeworks`、`/homework-submits`、`/learning-progress` 检查源数据。

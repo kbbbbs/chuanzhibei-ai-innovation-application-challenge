@@ -6,7 +6,8 @@
           <span>劳务费名单管理</span>
           <div>
             <el-button type="success" @click="handleImport">导入名单</el-button>
-            <el-button type="warning" @click="handleExport">导出名单</el-button>
+            <el-button type="warning" :loading="loading" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="loading" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">新增记录</el-button>
           </div>
         </div>
@@ -124,18 +125,18 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="Excel 文件">
+        <el-form-item label="表格文件">
           <el-upload
             ref="uploadRef"
             action=""
             :auto-upload="false"
             :limit="1"
             :on-change="handleFileChange"
-            accept=".xlsx,.xls"
+            accept=".xlsx,.xls,.csv"
           >
             <el-button type="primary">选择文件</el-button>
             <template #tip>
-              <div class="el-upload__tip">请上传 xlsx/xls 格式文件</div>
+              <div class="el-upload__tip">请上传 xlsx/xls/csv 格式文件；多余列会忽略，缺失列按空值校验</div>
             </template>
           </el-upload>
         </el-form-item>
@@ -324,6 +325,13 @@ const handleImport = () => {
 }
 
 const handleFileChange = (file) => {
+  const fileName = file.name || file.raw?.name || ''
+  if (!/\.(xlsx|xls|csv)$/i.test(fileName)) {
+    ElMessage.error('请选择 xlsx、xls 或 csv 格式文件')
+    uploadRef.value?.clearFiles()
+    importFile.value = null
+    return
+  }
   importFile.value = file.raw
 }
 
@@ -352,18 +360,20 @@ const handleImportSubmit = async () => {
   }
 }
 
-const handleExport = async () => {
+const handleExport = async (format) => {
   loading.value = true
   try {
     const res = await exportWorkStudyStudents({
       workStudyId: searchForm.workStudyId,
       studentId: searchForm.studentId,
-      workMonth: searchForm.workMonth
+      workMonth: searchForm.workMonth,
+      format
     })
-    const blob = new Blob([res], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+    const contentType = format === 'csv' ? 'text/csv;charset=utf-8' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    const blob = new Blob([res], { type: contentType })
     const link = document.createElement('a')
     link.href = URL.createObjectURL(blob)
-    link.download = `劳务费名单_${new Date().toISOString().slice(0, 10)}.xlsx`
+    link.download = `劳务费名单_${new Date().toISOString().slice(0, 10)}.${format}`
     link.click()
     URL.revokeObjectURL(link.href)
     ElMessage.success('导出成功')

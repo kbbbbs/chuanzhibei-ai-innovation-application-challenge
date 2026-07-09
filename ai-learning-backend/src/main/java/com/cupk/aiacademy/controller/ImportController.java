@@ -5,6 +5,7 @@ import com.cupk.aiacademy.dto.imports.ImportConfirmRequest;
 import com.cupk.aiacademy.dto.imports.ImportConfirmResponse;
 import com.cupk.aiacademy.dto.imports.ImportPreviewResponse;
 import com.cupk.aiacademy.service.ImportService;
+import com.cupk.aiacademy.service.imports.TabularFileSupport.ExportFile;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -17,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/imports")
@@ -62,5 +65,19 @@ public class ImportController {
     @PostMapping("/{type}/confirm")
     public ApiResponse<ImportConfirmResponse> confirm(@PathVariable String type, @RequestBody ImportConfirmRequest request) {
         return ApiResponse.success(importService.confirm(type, request));
+    }
+
+    @GetMapping("/{type}/export")
+    public ResponseEntity<byte[]> export(@PathVariable String type,
+                                         @RequestParam(defaultValue = "xlsx") String format,
+                                         @RequestParam Map<String, String> params) {
+        ExportFile file = importService.exportData(type, format, params);
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
+                        .filename(file.fileName())
+                        .build()
+                        .toString())
+                .contentType(MediaType.parseMediaType(file.contentType()))
+                .body(file.bytes());
     }
 }

@@ -104,6 +104,12 @@ export const layoutChildren = [
     component: () => import('../views/AiChat.vue'),
     meta: { title: 'Agent 助手', icon: 'Cpu', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true, fullWidth: true }
   },
+  {
+    path: 'operation-logs',
+    name: 'OperationLogList',
+    component: () => import('../views/common/OperationLogList.vue'),
+    meta: { title: '操作日志', icon: 'Document', roles: ['admin', 'teacher'], requiresAuth: true }
+  },
 
   // Student routes
   {

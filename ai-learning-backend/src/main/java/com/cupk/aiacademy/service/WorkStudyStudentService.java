@@ -17,6 +17,6 @@ public interface WorkStudyStudentService extends IService<WorkStudyStudent> {
     boolean updateWorkStudyStudent(Integer id, WorkStudyStudentRequest request);
     boolean applyForPosition(WorkStudyApplicationRequest request);
     boolean auditApplication(WorkStudyAuditRequest request);
-    void exportExcel(Integer workStudyId, Integer studentId, String workMonth, HttpServletResponse response) throws IOException;
+    void exportExcel(Integer workStudyId, Integer studentId, String workMonth, String format, HttpServletResponse response) throws IOException;
     void importExcel(Integer workStudyId, MultipartFile file) throws IOException;
 }

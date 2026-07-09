@@ -482,6 +482,12 @@ public class AgentParameterExtractor {
         if (isBlank(rawRequest)) {
             return null;
         }
+        if (containsAny(rawRequest, "拒绝", "驳回", "不通过", "未通过")) {
+            return 2;
+        }
+        if (containsAny(rawRequest, "审核通过", "通过", "同意", "批准")) {
+            return 1;
+        }
         if (containsAny(rawRequest, "上架", "启用", "恢复", "正常", "发布")) {
             return 1;
         }

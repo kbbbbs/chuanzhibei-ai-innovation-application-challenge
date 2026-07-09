@@ -87,13 +87,6 @@
               <el-icon><Setting /></el-icon>
             </el-button>
           </el-tooltip>
-          <el-switch
-            v-model="streamEnabled"
-            class="stream-switch"
-            active-text="流式"
-            inactive-text="普通"
-            :disabled="loading"
-          />
         </div>
       </div>
 
@@ -161,7 +154,7 @@
           </el-avatar>
         </div>
 
-        <div v-if="loading && !streamEnabled" class="message-wrapper message-ai">
+        <div v-if="loading" class="message-wrapper message-ai">
           <div class="message-avatar">
             <el-icon :size="28"><Service /></el-icon>
           </div>
@@ -184,16 +177,6 @@
           resize="none"
         />
         <el-button
-          v-if="loading && streamEnabled"
-          class="send-btn"
-          type="danger"
-          @click="stopStreaming"
-        >
-          <el-icon><Close /></el-icon>
-          停止
-        </el-button>
-        <el-button
-          v-else
           class="send-btn"
           type="primary"
           :disabled="!inputMessage.trim() || loading || messagesLoading"
@@ -510,7 +493,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   ChatDotRound,
   ChatLineRound,
-  Close,
   CircleCheck,
   CopyDocument,
   Delete,
@@ -535,7 +517,6 @@ import {
   getAgentPendingAction,
   getAgentSessions,
   sendAgentMessage,
-  streamAgentMessage,
   updateAgentDefinition,
   updateAgentDefinitionStatus,
   updateAgentSession,
@@ -565,8 +546,6 @@ const agentsLoading = ref(false)
 const sessionsLoading = ref(false)
 const messagesLoading = ref(false)
 const creatingSession = ref(false)
-const streamEnabled = ref(false)
-const streamAbortController = ref(null)
 const messages = ref([])
 const sessions = ref([])
 const messagesContainer = ref(null)
@@ -837,7 +816,7 @@ async function handleNewSession() {
 async function switchSession(session) {
   if (!session || isCurrentSession(session.id)) return
   if (loading.value) {
-    ElMessage.warning('回复生成中，请先停止或等待完成')
+    ElMessage.warning('回复生成中，请等待完成')
     return
   }
   currentSessionId.value = session.id
@@ -929,11 +908,7 @@ async function sendMessage() {
     await nextTick()
     scrollToBottom()
 
-    if (streamEnabled.value) {
-      shouldRefreshHistory = await sendStreamMessage(content)
-    } else {
-      shouldRefreshHistory = await sendNormalMessage(content)
-    }
+    shouldRefreshHistory = await sendNormalMessage(content)
 
     if (activeSession) {
       activeSession.updatedAt = new Date().toISOString()
@@ -973,55 +948,6 @@ async function sendNormalMessage(content) {
     createdAt: payload?.createTime || new Date().toISOString()
   })
   return !pendingAction
-}
-
-async function sendStreamMessage(content) {
-  const controller = new AbortController()
-  streamAbortController.value = controller
-  const assistantMessage = {
-    localId: `assistant_stream_${Date.now()}`,
-    role: 'assistant',
-    content: '',
-    createdAt: new Date().toISOString()
-  }
-  messages.value.push(assistantMessage)
-  try {
-    await streamAgentMessage(currentSessionId.value, { content }, {
-      signal: controller.signal,
-      onMessage(chunk) {
-        assistantMessage.content += chunk
-        scrollToBottom()
-      },
-      onComplete(payload) {
-        const data = unwrapData(payload)
-        assistantMessage.id = data?.assistantMessageId
-        assistantMessage.content = normalizeReply(data) || assistantMessage.content
-        assistantMessage.pendingAction = pendingActionFromPayload(payload)
-        assistantMessage.createdAt = data?.createTime || assistantMessage.createdAt
-      },
-      onError(error) {
-        const message = typeof error === 'string' ? error : (error?.msg || error?.message)
-        assistantMessage.content = message || '流式回复失败，请稍后重试。'
-      }
-    })
-    return !assistantMessage.pendingAction
-  } catch (e) {
-    if (controller.signal.aborted) {
-      assistantMessage.content = assistantMessage.content
-        ? assistantMessage.content + '\n\n已停止生成。'
-        : '已停止生成。'
-      return false
-    }
-    throw e
-  } finally {
-    if (streamAbortController.value === controller) {
-      streamAbortController.value = null
-    }
-  }
-}
-
-function stopStreaming() {
-  streamAbortController.value?.abort()
 }
 
 async function refreshActiveMessages() {
@@ -1798,10 +1724,6 @@ onMounted(async () => {
 .chat-actions :deep(.el-button.is-circle:hover) {
   background: var(--primary-color-soft);
   color: var(--primary-color);
-}
-
-.stream-switch {
-  margin-left: 4px;
 }
 
 .agent-option {

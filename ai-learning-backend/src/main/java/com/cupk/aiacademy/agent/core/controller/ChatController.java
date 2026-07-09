@@ -7,7 +7,6 @@ import com.cupk.aiacademy.dto.AgentSessionCreateRequest;
 import com.cupk.aiacademy.dto.AgentSessionUpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 @RestController
 public class ChatController {
@@ -78,12 +76,5 @@ public class ChatController {
     public Result chat(@PathVariable Integer sessionId,
                        @Valid @RequestBody AgentChatRequest request) {
         return Result.success(agentChatService.chat(sessionId, request));
-    }
-
-    // 流式 Agent 对话接口，前端可监听 message、complete、error 三类 SSE 事件。
-    @PostMapping(value = "/api/agent/sessions/{sessionId}/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter streamChat(@PathVariable Integer sessionId,
-                                 @Valid @RequestBody AgentChatRequest request) {
-        return agentChatService.streamChat(sessionId, request);
     }
 }

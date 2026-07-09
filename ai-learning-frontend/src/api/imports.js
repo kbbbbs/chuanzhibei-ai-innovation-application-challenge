@@ -19,3 +19,11 @@ export const downloadImportTemplate = (type) => {
     silentError: true
   })
 }
+
+export const exportImportData = (type, params = {}) => {
+  return request.get(`/api/imports/${type}/export`, {
+    params,
+    responseType: 'blob',
+    silentError: true
+  })
+}

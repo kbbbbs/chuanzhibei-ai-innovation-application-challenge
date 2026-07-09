@@ -5,7 +5,9 @@
         <div class="card-header">
           <span>考试管理</span>
           <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
+            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">发布考试</el-button>
           </div>
         </div>
@@ -130,7 +132,7 @@
     <ImportDialog
       v-model="importDialogVisible"
       type="exams"
-      title="考试 Excel 导入"
+      title="考试导入"
       @imported="loadExams"
     />
   </div>
@@ -144,6 +146,7 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import ImportDialog from '@/components/ImportDialog.vue'
+import { exportImportData } from '@/api/imports'
 import { getTeachingClasses } from '@/api/teachingClass'
 import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
@@ -156,6 +159,7 @@ const formRef = ref(null)
 const loading = ref(false)
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
+const exporting = ref(false)
 const exams = ref([])
 const papers = ref([])
 const classList = ref([])
@@ -274,6 +278,30 @@ const loadClasses = async () => {
   } catch (e) {
     classList.value = []
   }
+}
+
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const blob = await exportImportData('exams', scopedTeacherParams(userStore, { format }))
+    downloadBlob(blob, `考试_${new Date().toISOString().slice(0, 10)}.${format}`)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+const downloadBlob = (blob, fileName) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 const handleCreate = () => {

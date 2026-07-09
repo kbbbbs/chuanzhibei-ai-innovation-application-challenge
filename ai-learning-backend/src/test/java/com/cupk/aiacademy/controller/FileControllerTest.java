@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +30,9 @@ class FileControllerTest {
 
     @MockitoBean
     private AuthUtils authUtils;
+
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @BeforeEach
     void setUpLogin() {

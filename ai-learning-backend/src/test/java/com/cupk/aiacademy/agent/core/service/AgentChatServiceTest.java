@@ -29,7 +29,6 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatOptions;
-import reactor.core.publisher.Flux;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -1545,58 +1544,6 @@ class AgentChatServiceTest {
         assertEquals("current-question", captor.getValue().getInstructions().get(2).getContent());
     }
 
-    @Test
-    void streamChatStoresAssistantMessageAfterStreaming() {
-        AgentChatService service = newService();
-        loginAs(10);
-        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
-        when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
-        when(messageMapper.selectList(any())).thenReturn(List.of(message(1, "user", "历史问题")));
-        when(chatModelClient.stream(any(Prompt.class))).thenReturn(Flux.just(
-                chatResponse("递归"),
-                chatResponse("是函数调用自身。")
-        ));
-        AtomicInteger idSequence = new AtomicInteger(100);
-        doAnswer(invocation -> {
-            AgentMessage message = invocation.getArgument(0);
-            message.setId(idSequence.getAndIncrement());
-            return 1;
-        }).when(messageMapper).insert(any(AgentMessage.class));
-
-        service.streamChat(1, chatRequest("讲一下递归"));
-
-        verify(chatModelClient).stream(any(Prompt.class));
-        ArgumentCaptor<AgentMessage> captor = ArgumentCaptor.forClass(AgentMessage.class);
-        verify(messageMapper, org.mockito.Mockito.times(2)).insert(captor.capture());
-        assertEquals("user", captor.getAllValues().get(0).getRole());
-        assertEquals("assistant", captor.getAllValues().get(1).getRole());
-        assertEquals("递归是函数调用自身。", captor.getAllValues().get(1).getContent());
-    }
-
-    @Test
-    void streamChatRecordsFailureMessageWhenModelStreamFails() {
-        AgentChatService service = newService();
-        loginAs(10);
-        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
-        when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
-        when(messageMapper.selectList(any())).thenReturn(List.of(message(1, "user", "历史问题")));
-        when(chatModelClient.stream(any(Prompt.class))).thenReturn(Flux.error(new RuntimeException("timeout")));
-        AtomicInteger idSequence = new AtomicInteger(100);
-        doAnswer(invocation -> {
-            AgentMessage message = invocation.getArgument(0);
-            message.setId(idSequence.getAndIncrement());
-            return 1;
-        }).when(messageMapper).insert(any(AgentMessage.class));
-
-        service.streamChat(1, chatRequest("讲一下递归"));
-
-        ArgumentCaptor<AgentMessage> captor = ArgumentCaptor.forClass(AgentMessage.class);
-        verify(messageMapper, org.mockito.Mockito.times(2)).insert(captor.capture());
-        assertEquals("user", captor.getAllValues().get(0).getRole());
-        assertEquals("assistant", captor.getAllValues().get(1).getRole());
-        assertEquals("AI 回复失败，请稍后重试。", captor.getAllValues().get(1).getContent());
-    }
-
     private AgentChatService newService() {
         return newService(new AgentChatProperties());
     }
@@ -1611,7 +1558,7 @@ class AgentChatServiceTest {
 
     private AgentChatService newService(AgentChatProperties chatProperties) {
         return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
-                Runnable::run, new ObjectMapper(), knowledgeContextProvider, agentToolExecutor, null);
+                new ObjectMapper(), knowledgeContextProvider, agentToolExecutor, null);
     }
 
     private AgentChatProperties chatProperties(int historyMessageLimit, int historyMaxCharacters) {

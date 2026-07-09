@@ -14,9 +14,9 @@ import com.cupk.aiacademy.agent.action.AgentActionSelectionService;
 import com.cupk.aiacademy.agent.action.AgentPendingActionResponse;
 import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
 import com.cupk.aiacademy.agent.orchestrator.AgentActionIntentRouter;
+import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
 import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.common.BusinessException;
-import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.AgentChatRequest;
 import com.cupk.aiacademy.dto.AgentChatResponse;
@@ -30,7 +30,6 @@ import com.cupk.aiacademy.pojo.AgentDefinition;
 import com.cupk.aiacademy.pojo.AgentMessage;
 import com.cupk.aiacademy.pojo.AgentSession;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.annotation.PreDestroy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,23 +37,17 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 @Service
 public class AgentChatService {
     /**
-     * Agent 聊天服务的基础配置常量：包含默认提示词、默认 Agent、状态值、失败兜底文案和流式响应超时时间。
+     * Agent 聊天服务的基础配置常量：包含默认提示词、默认 Agent、状态值和失败兜底文案。
      */
     private static final Logger log = LoggerFactory.getLogger(AgentChatService.class);
     private static final String SYSTEM_PROMPT = "你是一个智能教学管理平台助手";
@@ -64,6 +57,9 @@ public class AgentChatService {
             + "\"course_create_plan\","
             + "\"course_update_plan\","
             + "\"course_status_plan\","
+            + "\"course_category_create_plan\","
+            + "\"course_category_update_plan\","
+            + "\"course_category_delete_plan\","
             + "\"chapter_create_plan\","
             + "\"chapter_update_plan\","
             + "\"chapter_sort_plan\","
@@ -101,14 +97,14 @@ public class AgentChatService {
             + "\"question_delete_plan\","
             + "\"grade_record_create_plan\","
             + "\"grade_record_update_plan\","
-            + "\"grade_record_delete_plan\""
+            + "\"grade_record_delete_plan\","
+            + "\"teacher_application_review_plan\""
             + "]";
     private static final int ACTIVE_STATUS = 1;
     private static final int DELETED_STATUS = 0;
     private static final String MODEL_FAILURE_CONTENT = "AI 回复失败，请稍后重试。";
-    private static final long STREAM_TIMEOUT_MILLIS = 120_000L;
     /**
-     * 外部依赖：模型调用、配置、数据库 Mapper、JSON 处理、知识库检索、工具调用和流式执行线程池。
+     * 外部依赖：模型调用、配置、数据库 Mapper、JSON 处理、知识库检索和工具调用。
      */
     private final ChatModelClient chatModelClient;
     private final AgentChatProperties chatProperties;
@@ -120,11 +116,10 @@ public class AgentChatService {
     private final AgentToolExecutor agentToolExecutor;
     private final AgentPromptAssembler promptAssembler;
     private final AgentActionIntentRouter actionIntentRouter;
-    private final Executor streamExecutor;
-    private final ExecutorService ownedStreamExecutor;
+    private final SchemaDrivenAgentPlanner schemaDrivenAgentPlanner;
 
     /**
-     * Spring 注入使用的构造方法，默认创建一个缓存线程池承载 SSE 流式响应任务。
+     * Spring 注入使用的构造方法。
      */
     @Autowired
     public AgentChatService(ChatModelClient chatModelClient,
@@ -138,7 +133,8 @@ public class AgentChatService {
                             com.cupk.aiacademy.agent.query.NaturalLanguageQueryService naturalLanguageQueryService,
                             ObjectProvider<AgentActionSelectionService> actionSelectionServiceProvider,
                             ObjectProvider<AgentActionCatalog> actionCatalogProvider,
-                            ObjectProvider<AgentActionPlanFactory> actionPlanFactoryProvider
+                            ObjectProvider<AgentActionPlanFactory> actionPlanFactoryProvider,
+                            ObjectProvider<SchemaDrivenAgentPlanner> schemaDrivenAgentPlannerProvider
     ) {
         this(
                 chatModelClient,
@@ -146,14 +142,14 @@ public class AgentChatService {
                 agentDefinitionMapper,
                 sessionMapper,
                 messageMapper,
-                Executors.newCachedThreadPool(),
                 objectMapper,
                 knowledgeContextProvider,
                 agentToolExecutor,
                 naturalLanguageQueryService,
                 actionSelectionServiceProvider == null ? null : actionSelectionServiceProvider.getIfAvailable(),
                 actionCatalogProvider == null ? null : actionCatalogProvider.getIfAvailable(),
-                actionPlanFactoryProvider == null ? null : actionPlanFactoryProvider.getIfAvailable()
+                actionPlanFactoryProvider == null ? null : actionPlanFactoryProvider.getIfAvailable(),
+                schemaDrivenAgentPlannerProvider == null ? null : schemaDrivenAgentPlannerProvider.getIfAvailable()
         );
     }
 
@@ -164,8 +160,7 @@ public class AgentChatService {
                      AgentChatProperties chatProperties,
                      AgentDefinitionMapper agentDefinitionMapper,
                      AgentSessionMapper sessionMapper,
-                     AgentMessageMapper messageMapper,
-                     Executor streamExecutor
+                     AgentMessageMapper messageMapper
     ) {
         this(
                 chatModelClient,
@@ -173,7 +168,6 @@ public class AgentChatService {
                 agentDefinitionMapper,
                 sessionMapper,
                 messageMapper,
-                streamExecutor,
                 new ObjectMapper(),
                 null,
                 null,
@@ -182,22 +176,24 @@ public class AgentChatService {
     }
 
     /**
-     * 统一初始化入口，负责设置默认配置、默认 ObjectMapper，并识别当前服务是否拥有线程池生命周期。
+     * 统一初始化入口，负责设置默认配置和默认 ObjectMapper。
      */
     AgentChatService(ChatModelClient chatModelClient,
                      AgentChatProperties chatProperties,
                      AgentDefinitionMapper agentDefinitionMapper,
                      AgentSessionMapper sessionMapper,
                      AgentMessageMapper messageMapper,
-                     Executor streamExecutor,
                       ObjectMapper objectMapper,
                       KnowledgeContextProvider knowledgeContextProvider,
                       AgentToolExecutor agentToolExecutor,
                       com.cupk.aiacademy.agent.query.NaturalLanguageQueryService naturalLanguageQueryService
      ) {
-        this(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper, streamExecutor,
+        this(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
                 objectMapper, knowledgeContextProvider, agentToolExecutor, naturalLanguageQueryService,
-                null, null, null);
+                (AgentActionSelectionService) null,
+                (AgentActionCatalog) null,
+                (AgentActionPlanFactory) null,
+                (SchemaDrivenAgentPlanner) null);
     }
 
     AgentChatService(ChatModelClient chatModelClient,
@@ -205,14 +201,14 @@ public class AgentChatService {
                      AgentDefinitionMapper agentDefinitionMapper,
                      AgentSessionMapper sessionMapper,
                      AgentMessageMapper messageMapper,
-                     Executor streamExecutor,
                      ObjectMapper objectMapper,
                      KnowledgeContextProvider knowledgeContextProvider,
                      AgentToolExecutor agentToolExecutor,
                      com.cupk.aiacademy.agent.query.NaturalLanguageQueryService naturalLanguageQueryService,
                      AgentActionSelectionService actionSelectionService,
                      AgentActionCatalog actionCatalog,
-                     AgentActionPlanFactory actionPlanFactory
+                     AgentActionPlanFactory actionPlanFactory,
+                     SchemaDrivenAgentPlanner schemaDrivenAgentPlanner
      ) {
         this.chatModelClient = chatModelClient;
         this.chatProperties = chatProperties == null ? new AgentChatProperties() : chatProperties;
@@ -230,18 +226,7 @@ public class AgentChatService {
                 naturalLanguageQueryService);
         this.actionIntentRouter = new AgentActionIntentRouter(configurationParser, this.agentToolExecutor,
                 actionSelectionService, actionCatalog, actionPlanFactory);
-        this.streamExecutor = streamExecutor;
-        this.ownedStreamExecutor = streamExecutor instanceof ExecutorService executorService ? executorService : null;
-    }
-
-    /**
-     * Bean 销毁时关闭本服务创建的流式响应线程池，避免应用退出后线程仍然存活。
-     */
-    @PreDestroy
-    public void shutdownStreamExecutor() {
-        if (ownedStreamExecutor != null) {
-            ownedStreamExecutor.shutdown();
-        }
+        this.schemaDrivenAgentPlanner = schemaDrivenAgentPlanner;
     }
 
     /**
@@ -320,6 +305,12 @@ public class AgentChatService {
                 .toList();
     }
 
+    private boolean plannerFallbackRouterEnabled() {
+        return schemaDrivenAgentPlanner == null
+                || !schemaDrivenAgentPlanner.isEnabled()
+                || schemaDrivenAgentPlanner.isFallbackRouterEnabled();
+    }
+
     /**
      * 普通非流式聊天入口：保存用户消息、调用模型、保存助手回复，并返回本轮问答的消息 ID 和内容。
      */
@@ -333,7 +324,14 @@ public class AgentChatService {
         AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
         String content = request.getContent().trim();
 
-        Optional<AgentDirectActionReply> directReply = actionIntentRouter.buildDirectActionReply(agent, content);
+        Optional<AgentDirectActionReply> directReply = schemaDrivenAgentPlanner == null
+                ? Optional.empty()
+                : schemaDrivenAgentPlanner.tryPlan(agent, content);
+
+        if (directReply.isEmpty() && plannerFallbackRouterEnabled()) {
+            directReply = actionIntentRouter.buildDirectActionReply(agent, content);
+        }
+
         if (directReply.isPresent()) {
             AgentDirectActionReply reply = directReply.get();
             AgentMessage userMessage = setMessage(sessionId, "user", content);
@@ -373,63 +371,6 @@ public class AgentChatService {
     }
 
     /**
-     * 使用 SSE 推送模型流式响应。
-     * <p>
-     * 事件约定：
-     * message  - 模型增量文本；
-     * complete - 完整回复和消息 ID；
-     * error    - 模型失败时的 Result 错误结构。
-     */
-    public SseEmitter streamChat(Integer sessionId, AgentChatRequest request) {
-        if (request == null || isBlank(request.getContent())) {
-            throw new BusinessException("消息内容不能为空");
-        }
-
-        // 流式聊天在启动异步任务前完成校验、Prompt 构造和用户消息落库。
-        AgentSession session = ensureSession(sessionId);
-        AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
-        String content = request.getContent().trim();
-        Optional<AgentDirectActionReply> directReply = actionIntentRouter.buildDirectActionReply(agent, content);
-        if (directReply.isPresent()) {
-            AgentDirectActionReply reply = directReply.get();
-            AgentMessage userMessage = setMessage(sessionId, "user", content);
-            ensureSessionTitle(session, content);
-            return streamDirectReply(sessionId, userMessage.getId(), reply);
-        }
-
-        applyProviderModelCompatibility(agent);
-
-        Prompt prompt = promptAssembler.buildPrompt(agent, loadMessages(sessionId), content);
-        AgentMessage userMessage = setMessage(sessionId, "user", content);
-        ensureSessionTitle(session, content);
-
-        // 返回 SseEmitter 给 Controller，同时在线程池中持续拉取模型增量回复。
-        SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MILLIS);
-        streamExecutor.execute(() -> streamModelReply(emitter, sessionId, userMessage.getId(), prompt));
-        return emitter;
-    }
-
-    private SseEmitter streamDirectReply(Integer sessionId, Integer userMessageId, AgentDirectActionReply reply) {
-        SseEmitter emitter = new SseEmitter(STREAM_TIMEOUT_MILLIS);
-        streamExecutor.execute(() -> {
-            try {
-                String assistantContent = reply.content();
-                sendStreamChunk(emitter, new StringBuilder(), assistantContent);
-                AgentMessage assistantMessage = setMessage(sessionId, "assistant", assistantContent);
-                touchSession(sessionId);
-                emitter.send(SseEmitter.event()
-                        .name("complete")
-                        .data(toChatResponse(sessionId, userMessageId, assistantMessage, reply.pendingAction()),
-                                MediaType.APPLICATION_JSON));
-                emitter.complete();
-            } catch (Exception e) {
-                emitter.completeWithError(e);
-            }
-        });
-        return emitter;
-    }
-
-    /**
      * 单轮无会话聊天入口：只使用默认系统提示词和当前用户消息，不保存历史记录。
      */
     public String chatOnce(String content) {
@@ -455,78 +396,6 @@ public class AgentChatService {
             throw emptyModelResponseFailure(null, null, null);
         }
         return assistantContent;
-    }
-
-    private void streamModelReply(SseEmitter emitter, Integer sessionId, Integer userMessageId, Prompt prompt) {
-        StringBuilder assistantContent = new StringBuilder();
-        try {
-            // 订阅模型流式输出：每个增量片段都会立即推送给前端，并累计成完整回复。
-            chatModelClient.stream(prompt)
-                    .doOnNext(chatResponse -> sendStreamChunk(emitter, assistantContent, assistantContent(chatResponse)))
-                    .blockLast();
-
-            // 流结束后仍没有有效内容，按模型失败处理并记录失败消息。
-            if (isBlank(assistantContent.toString())) {
-                throw emptyModelResponseFailure(sessionId, userMessageId, null);
-            }
-
-            // 完整回复落库后发送 complete 事件，通知前端本轮流式对话已结束。
-            AgentMessage assistantMessage = setMessage(sessionId, "assistant", assistantContent.toString());
-            touchSession(sessionId);
-            emitter.send(SseEmitter.event()
-                    .name("complete")
-                    .data(toChatResponse(sessionId, userMessageId, assistantMessage), MediaType.APPLICATION_JSON));
-            emitter.complete();
-        } catch (Exception e) {
-            // 客户端断开或 SSE 写出失败时结束连接，不再额外记录模型失败。
-            if (isStreamSendFailure(e)) {
-                emitter.completeWithError(e);
-                return;
-            }
-
-            // 模型侧异常统一记录兜底助手消息，并通过 error 事件返回结构化错误信息。
-            AgentModelCallException modelException = e instanceof AgentModelCallException agentException
-                    ? recordModelFailure(sessionId, userMessageId, agentException)
-                    : recordModelFailure(sessionId, userMessageId, e);
-            sendStreamError(emitter, modelException);
-        }
-    }
-
-    /**
-     * 推送单个 SSE 增量消息：过滤空片段，累计完整助手回复，并把本片段发送给前端。
-     */
-    private void sendStreamChunk(SseEmitter emitter, StringBuilder assistantContent, String chunk) {
-        if (isBlank(chunk)) {
-            return;
-        }
-        assistantContent.append(chunk);
-        try {
-            emitter.send(SseEmitter.event().name("message").data(chunk, MediaType.TEXT_PLAIN));
-        } catch (IOException e) {
-            throw new IllegalStateException("SSE 推送失败", e);
-        }
-    }
-
-    /**
-     * 推送 SSE 错误事件：把模型异常包装成统一 Result 结构后结束本次流式连接。
-     */
-    private void sendStreamError(SseEmitter emitter, AgentModelCallException e) {
-        try {
-            emitter.send(SseEmitter.event()
-                    .name("error")
-                    .data(Result.error("500", e.getMessage(), modelFailureData(e)), MediaType.APPLICATION_JSON));
-        } catch (IOException ignored) {
-            emitter.completeWithError(ignored);
-            return;
-        }
-        emitter.complete();
-    }
-
-    /**
-     * 判断异常是否来自 SSE 写出失败，用于区分客户端连接问题和模型调用失败。
-     */
-    private boolean isStreamSendFailure(Exception e) {
-        return e instanceof IllegalStateException && "SSE 推送失败".equals(e.getMessage());
     }
 
     /**
@@ -578,20 +447,6 @@ public class AgentChatService {
         response.setPendingAction(pendingAction);
         response.setCreateTime(assistantMessage.getCreateTime());
         return response;
-    }
-
-    /**
-     * 构造模型失败时返回给前端的扩展数据，方便前端定位本轮失败对应的消息记录。
-     */
-    private Map<String, Object> modelFailureData(AgentModelCallException e) {
-        Map<String, Object> data = new LinkedHashMap<>();
-        data.put("sessionId", e.getSessionId());
-        data.put("userMessageId", e.getUserMessageId());
-        data.put("assistantMessageId", e.getAssistantMessageId());
-        if (e.getDiagnostics() != null) {
-            data.put("diagnostics", e.getDiagnostics().toData());
-        }
-        return data;
     }
 
     private AgentModelCallException modelFailure(Integer sessionId,
