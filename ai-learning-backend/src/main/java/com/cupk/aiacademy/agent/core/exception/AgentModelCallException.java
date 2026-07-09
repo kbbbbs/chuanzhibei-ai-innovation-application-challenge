@@ -1,5 +1,7 @@
 package com.cupk.aiacademy.agent.core.exception;
 
+import com.cupk.aiacademy.agent.core.llm.AgentModelDiagnostics;
+
 /**
  * Agent 模型调用失败异常。
  * <p>
@@ -10,16 +12,27 @@ public class AgentModelCallException extends RuntimeException {
     private final Integer sessionId;
     private final Integer userMessageId;
     private final Integer assistantMessageId;
+    private final AgentModelDiagnostics diagnostics;
 
     public AgentModelCallException(String message,
                                    Integer sessionId,
                                    Integer userMessageId,
                                    Integer assistantMessageId,
                                    Throwable cause) {
+        this(message, sessionId, userMessageId, assistantMessageId, null, cause);
+    }
+
+    public AgentModelCallException(String message,
+                                   Integer sessionId,
+                                   Integer userMessageId,
+                                   Integer assistantMessageId,
+                                   AgentModelDiagnostics diagnostics,
+                                   Throwable cause) {
         super(message, cause);
         this.sessionId = sessionId;
         this.userMessageId = userMessageId;
         this.assistantMessageId = assistantMessageId;
+        this.diagnostics = diagnostics;
     }
 
     public AgentModelCallException(String message,
@@ -39,5 +52,9 @@ public class AgentModelCallException extends RuntimeException {
 
     public Integer getAssistantMessageId() {
         return assistantMessageId;
+    }
+
+    public AgentModelDiagnostics getDiagnostics() {
+        return diagnostics;
     }
 }

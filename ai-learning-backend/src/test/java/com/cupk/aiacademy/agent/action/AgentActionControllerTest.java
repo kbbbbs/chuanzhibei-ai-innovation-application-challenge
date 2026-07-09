@@ -12,11 +12,13 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -29,6 +31,33 @@ class AgentActionControllerTest {
 
     @MockitoBean
     private AgentActionExecutionService actionExecutionService;
+
+    @MockitoBean
+    private AgentPendingActionQueryService pendingActionQueryService;
+
+    @Test
+    void listPendingReturnsResultShape() throws Exception {
+        when(pendingActionQueryService.listCurrentUserPending(20))
+                .thenReturn(List.of(pendingActionResponse()));
+
+        mockMvc.perform(get("/api/agent/actions/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data[0].actionId").value("action-1"))
+                .andExpect(jsonPath("$.data[0].actionCode").value("notice.create"));
+    }
+
+    @Test
+    void getPendingReturnsResultShape() throws Exception {
+        when(pendingActionQueryService.getCurrentUserPending("action-1"))
+                .thenReturn(pendingActionResponse());
+
+        mockMvc.perform(get("/api/agent/actions/pending/action-1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.actionId").value("action-1"))
+                .andExpect(jsonPath("$.data.actionName").value("发布通知"));
+    }
 
     @Test
     void confirmReturnsResultShape() throws Exception {
@@ -83,5 +112,24 @@ class AgentActionControllerTest {
                 .andExpect(jsonPath("$.code").value("400"))
                 .andExpect(jsonPath("$.msg").value("只有教师或管理员可以发布通知"))
                 .andExpect(jsonPath("$.success").doesNotExist());
+    }
+
+    private AgentPendingActionResponse pendingActionResponse() {
+        return new AgentPendingActionResponse(
+                "action-1",
+                "notice.create",
+                "发布通知",
+                "notice",
+                "MEDIUM",
+                true,
+                null,
+                null,
+                7,
+                Map.of("rawRequest", "发布通知"),
+                List.of("会新增一条通知记录"),
+                LocalDateTime.now(),
+                LocalDateTime.now().plusMinutes(10),
+                false
+        );
     }
 }

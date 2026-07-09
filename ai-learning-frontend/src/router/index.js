@@ -45,6 +45,12 @@ export const layoutChildren = [
     meta: { title: '教学班管理', icon: 'School', roles: ['admin', 'teacher'], requiresAuth: true }
   },
   {
+    path: 'notices',
+    name: 'NoticeList',
+    component: () => import('../views/teacher/NoticeList.vue'),
+    meta: { title: '通知管理', icon: 'Bell', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+  },
+  {
     path: 'questions',
     name: 'QuestionList',
     component: () => import('../views/teacher/QuestionList.vue'),

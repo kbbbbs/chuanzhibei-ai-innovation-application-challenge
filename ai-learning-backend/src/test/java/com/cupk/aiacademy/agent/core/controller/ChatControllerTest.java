@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.agent.core.controller;
 
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
+import com.cupk.aiacademy.agent.core.llm.AgentModelDiagnostics;
 import com.cupk.aiacademy.agent.core.service.AgentChatService;
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
 import com.cupk.aiacademy.dto.AgentChatRequest;
@@ -55,7 +56,14 @@ class ChatControllerTest {
     @Test
     void chatOnceModelFailureReturnsResultShape() throws Exception {
         when(agentChatService.chatOnce("你好"))
-                .thenThrow(new AgentModelCallException("AI 回复失败，请稍后重试。", null, null, null));
+                .thenThrow(new AgentModelCallException("AI 回复失败，请稍后重试。",
+                        null,
+                        null,
+                        null,
+                        AgentModelDiagnostics.from("deepseek",
+                                "deepseek-v4-flash",
+                                new RuntimeException("401 invalid api key [REDACTED]")),
+                        null));
 
         mockMvc.perform(post("/api/agent/chat-once")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -63,6 +71,9 @@ class ChatControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value("500"))
                 .andExpect(jsonPath("$.msg").value("AI 回复失败，请稍后重试。"))
+                .andExpect(jsonPath("$.data.diagnostics.provider").value("deepseek"))
+                .andExpect(jsonPath("$.data.diagnostics.model").value("deepseek-v4-flash"))
+                .andExpect(jsonPath("$.data.diagnostics.category").value("AUTHENTICATION"))
                 .andExpect(jsonPath("$.success").doesNotExist());
     }
 

@@ -27,8 +27,13 @@ public class AgentToolExecutor {
             return "";
         }
 
+        List<AgentTool> tools = resolveTools(enabledTools, true);
+        if (tools.isEmpty()) {
+            return "";
+        }
+
         StringBuilder context = new StringBuilder();
-        for (AgentToolResult result : executeTools(enabledTools, query, maxItems)) {
+        for (AgentToolResult result : executeResolvedTools(tools, query, maxItems)) {
             appendToolSection(context, result);
             if (context.length() >= maxCharacters) {
                 break;
@@ -37,17 +42,21 @@ public class AgentToolExecutor {
         return limit(context.toString(), maxCharacters);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public List<AgentToolResult> executeTools(List<String> enabledTools, String query, int maxItems) {
         if (enabledTools == null || enabledTools.isEmpty() || maxItems <= 0) {
             return List.of();
         }
 
-        List<AgentTool> tools = resolveTools(enabledTools);
+        List<AgentTool> tools = resolveTools(enabledTools, false);
         if (tools.isEmpty()) {
             return List.of();
         }
 
+        return executeResolvedTools(tools, query, maxItems);
+    }
+
+    private List<AgentToolResult> executeResolvedTools(List<AgentTool> tools, String query, int maxItems) {
         List<AgentToolResult> results = new ArrayList<>();
         AgentToolContext toolContext = new AgentToolContext(query, maxItems);
         for (AgentTool tool : tools) {
@@ -80,11 +89,11 @@ public class AgentToolExecutor {
         }
     }
 
-    private List<AgentTool> resolveTools(List<String> enabledTools) {
+    private List<AgentTool> resolveTools(List<String> enabledTools, boolean promptContextOnly) {
         LinkedHashSet<AgentTool> resolved = new LinkedHashSet<>();
         for (String enabledTool : enabledTools) {
             AgentTool tool = toolsByName.get(normalizeName(enabledTool));
-            if (tool != null) {
+            if (tool != null && (!promptContextOnly || tool.promptContextEnabled())) {
                 resolved.add(tool);
             }
         }

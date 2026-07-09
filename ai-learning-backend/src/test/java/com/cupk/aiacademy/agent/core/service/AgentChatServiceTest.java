@@ -9,6 +9,7 @@ import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.UserContext;
+import com.cupk.aiacademy.dto.AgentChatResponse;
 import com.cupk.aiacademy.dto.AgentSessionUpdateRequest;
 import com.cupk.aiacademy.mapper.AgentDefinitionMapper;
 import com.cupk.aiacademy.mapper.AgentMessageMapper;
@@ -37,6 +38,8 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -164,6 +167,28 @@ class AgentChatServiceTest {
     }
 
     @Test
+    void chatIgnoresIncompatibleAgentModelWhenProviderIsDeepSeek() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setModel("claude-3");
+        when(chatModelClient.provider()).thenReturn("deepseek");
+        when(chatModelClient.configuredModel()).thenReturn("deepseek-v4-flash");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(messageMapper.selectList(any())).thenReturn(List.of());
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+
+        service.chat(1, chatRequest("讲一下递归"));
+
+        ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
+        verify(chatModelClient).call(captor.capture());
+        OpenAiChatOptions options = (OpenAiChatOptions) captor.getValue().getOptions();
+        assertNull(options.getModel());
+        assertEquals(0.3, options.getTemperature());
+    }
+
+    @Test
     void chatAddsKnowledgeSearchResultToPromptWhenAgentHasKnowledgeBases() {
         AgentChatService service = newService();
         loginAs(10);
@@ -243,9 +268,9 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("帮我发布一条通知，提醒一班明天交作业"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=发布通知"));
-        assertTrue(response.getContent().contains("actionId=action-1"));
+        assertDirectActionReply(response);
+        assertEquals("action-1", response.getPendingAction().actionId());
+        assertEquals("notice.create", response.getPendingAction().actionCode());
         verifyNoInteractions(chatModelClient);
     }
 
@@ -259,7 +284,7 @@ class AgentChatServiceTest {
         when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
         when(agentToolExecutor.executeTools(
                 org.mockito.ArgumentMatchers.eq(List.of("course_create_plan")),
-                org.mockito.ArgumentMatchers.eq("帮我新建一门 Java 基础课程"),
+                org.mockito.ArgumentMatchers.eq("新建一门课程，名字叫我只睡了5个多小时，课程分类1"),
                 org.mockito.ArgumentMatchers.eq(1)
         )).thenReturn(List.of(AgentToolResult.writePlan(
                 "course_create_plan",
@@ -273,12 +298,43 @@ class AgentChatServiceTest {
             return 1;
         }).when(messageMapper).insert(any(AgentMessage.class));
 
-        var response = service.chat(1, chatRequest("帮我新建一门 Java 基础课程"));
+        var response = service.chat(1, chatRequest("新建一门课程，名字叫我只睡了5个多小时，课程分类1"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=创建课程"));
-        assertTrue(response.getContent().contains("actionId=action-course-1"));
+        assertDirectActionReply(response);
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatUsesDefaultAgentWritePlanToolsWhenDefaultAgentHasNoToolConfig() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(1);
+        agent.setCode("learning_assistant");
+        agent.setEnabledTools(null);
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 1));
+        when(agentDefinitionMapper.selectById(1)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("course_create_plan")),
+                org.mockito.ArgumentMatchers.eq("帮我创建一门课程，标题是我不想吃肉，分类ID是1"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "course_create_plan",
+                "操作计划=创建课程；需要确认=是；确认ID=action-course-default",
+                Map.of("actionCode", "course.create", "actionId", "action-course-default")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("帮我创建一门课程，标题是我不想吃肉，分类ID是1"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertDirectActionReply(response);
+        assertEquals("action-course-default", response.getPendingAction().actionId());
         verifyNoInteractions(chatModelClient);
     }
 
@@ -309,9 +365,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("给第一章新增一个课时，标题是变量与数据类型"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=创建课时"));
-        assertTrue(response.getContent().contains("actionId=action-lesson-1"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -342,9 +396,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 41 号课时标题改为变量、常量与数据类型"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改课时"));
-        assertTrue(response.getContent().contains("actionId=action-lesson-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -375,9 +427,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("给 41 号课时挂载视频资源"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=挂载课程资源"));
-        assertTrue(response.getContent().contains("actionId=action-resource-1"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -409,10 +459,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("移除 41 号课时的视频资源"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=移除课程资源"));
-        assertTrue(response.getContent().contains("二次确认文本=确认移除课程资源"));
-        assertTrue(response.getContent().contains("actionId=action-resource-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -443,9 +490,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("调整第一章课时顺序，把运算符排到变量前面"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=调整课时排序"));
-        assertTrue(response.getContent().contains("actionId=action-lesson-3"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -477,10 +522,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("下架 41 号课时"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=变更课时状态"));
-        assertTrue(response.getContent().contains("二次确认文本=确认变更课时状态"));
-        assertTrue(response.getContent().contains("actionId=action-lesson-4"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -511,9 +553,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("给 12 号课程新增第一章 Java 入门"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=创建章节"));
-        assertTrue(response.getContent().contains("actionId=action-chapter-1"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -544,9 +584,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 21 号章节标题改为 Java 基础"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改章节"));
-        assertTrue(response.getContent().contains("actionId=action-chapter-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -577,9 +615,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("调整 12 号课程章节顺序，把第二章排到第一章前面"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=调整章节排序"));
-        assertTrue(response.getContent().contains("actionId=action-chapter-3"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -611,10 +647,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("删除 21 号章节"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=删除章节"));
-        assertTrue(response.getContent().contains("二次确认文本=确认删除章节"));
-        assertTrue(response.getContent().contains("actionId=action-chapter-4"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -645,9 +678,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 30 号学生加入 51 号教学班"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=添加班级学生"));
-        assertTrue(response.getContent().contains("actionId=action-class-student-1"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -679,10 +710,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("从 51 号教学班移除 30 号学生"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=移除班级学生"));
-        assertTrue(response.getContent().contains("二次确认文本=确认移除班级学生"));
-        assertTrue(response.getContent().contains("actionId=action-class-student-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -714,10 +742,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 51 号教学班的 30 号学生状态改为休学"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=变更班级学生状态"));
-        assertTrue(response.getContent().contains("二次确认文本=确认变更班级学生状态"));
-        assertTrue(response.getContent().contains("actionId=action-class-student-3"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -748,9 +773,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("给 12 号课程新建 Java 基础一班教学班"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=创建教学班"));
-        assertTrue(response.getContent().contains("actionId=action-class-1"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -781,9 +804,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 51 号教学班名称改为 Java 进阶一班"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改教学班"));
-        assertTrue(response.getContent().contains("actionId=action-class-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -815,10 +836,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("结束 51 号教学班"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=变更教学班状态"));
-        assertTrue(response.getContent().contains("二次确认文本=确认变更教学班状态"));
-        assertTrue(response.getContent().contains("actionId=action-class-3"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -849,9 +867,38 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 12 号课程名称改为 Java 进阶"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改课程"));
-        assertTrue(response.getContent().contains("actionId=action-course-2"));
+        assertDirectActionReply(response);
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesCourseTitleOnlyRenameRequestToWritePlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_update_plan\",\"course_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("course_update_plan")),
+                org.mockito.ArgumentMatchers.eq("修改标题是我不想吃肉，改成我想吃肉"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "course_update_plan",
+                "操作计划=修改课程；需要确认=是；确认ID=action-course-title-rename",
+                Map.of("actionCode", "course.update", "actionId", "action-course-title-rename")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("修改标题是我不想吃肉，改成我想吃肉"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -883,10 +930,135 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("下架 12 号课程"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=变更课程状态"));
-        assertTrue(response.getContent().contains("二次确认文本=确认变更课程状态"));
-        assertTrue(response.getContent().contains("actionId=action-course-3"));
+        assertDirectActionReply(response);
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesCourseStatusByCourseNameRequestToHighRiskWritePlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_status_plan\",\"course_update_plan\",\"course_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("course_status_plan")),
+                org.mockito.ArgumentMatchers.eq("下架课程名为高勋的课"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "course_status_plan",
+                "操作计划=变更课程状态；风险等级=HIGH；二次确认文本=确认变更课程状态；确认ID=action-course-status-title-1",
+                Map.of("actionCode", "course.status", "actionId", "action-course-status-title-1",
+                        "confirmationText", "确认变更课程状态")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("下架课程名为高勋的课"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertDirectActionReply(response);
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesCourseDeleteByTitleRequestToStatusPlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_status_plan\",\"course_update_plan\",\"course_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("course_status_plan")),
+                org.mockito.ArgumentMatchers.eq("删除标题是我有点想吃肉的课，授课老师王老师，难度入门，分类ID是1"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "course_status_plan",
+                "操作计划=变更课程状态；风险等级=HIGH；二次确认文本=确认变更课程状态；确认ID=action-course-delete-1",
+                Map.of("actionCode", "course.status", "actionId", "action-course-delete-1",
+                        "confirmationText", "确认变更课程状态")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("删除标题是我有点想吃肉的课，授课老师王老师，难度入门，分类ID是1"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertDirectActionReply(response);
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesCourseStatusDisableByCourseNameRequestToStatusPlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_status_plan\",\"course_update_plan\",\"course_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("course_status_plan")),
+                org.mockito.ArgumentMatchers.eq("停用课名叫 Java 入门的课程"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "course_status_plan",
+                "操作计划=变更课程状态；风险等级=HIGH；二次确认文本=确认变更课程状态；确认ID=action-course-disable-1",
+                Map.of("actionCode", "course.status", "actionId", "action-course-disable-1",
+                        "confirmationText", "确认变更课程状态")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("停用课名叫 Java 入门的课程"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertDirectActionReply(response);
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatRoutesCourseRestoreByCourseNameRequestToStatusPlanWithoutCallingModel() {
+        AgentChatService service = newService();
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_status_plan\",\"course_update_plan\",\"course_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(agentToolExecutor.executeTools(
+                org.mockito.ArgumentMatchers.eq(List.of("course_status_plan")),
+                org.mockito.ArgumentMatchers.eq("恢复 Java 入门 课程"),
+                org.mockito.ArgumentMatchers.eq(1)
+        )).thenReturn(List.of(AgentToolResult.writePlan(
+                "course_status_plan",
+                "操作计划=变更课程状态；风险等级=HIGH；二次确认文本=确认变更课程状态；确认ID=action-course-restore-1",
+                Map.of("actionCode", "course.status", "actionId", "action-course-restore-1",
+                        "confirmationText", "确认变更课程状态")
+        )));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        var response = service.chat(1, chatRequest("恢复 Java 入门 课程"));
+
+        assertEquals(101, response.getAssistantMessageId());
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -917,9 +1089,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("帮我布置第一章作业，明天截止"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=发布作业"));
-        assertTrue(response.getContent().contains("actionId=action-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -950,9 +1120,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 88 号作业截止时间改到明天 18 点"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改作业"));
-        assertTrue(response.getContent().contains("actionId=action-8"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -983,10 +1151,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("删除 88 号作业"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=删除作业"));
-        assertTrue(response.getContent().contains("二次确认文本=确认删除作业"));
-        assertTrue(response.getContent().contains("actionId=action-9"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1018,10 +1183,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("批改 501 号作业提交，给 92 分，反馈完成质量较高"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=批改作业提交"));
-        assertTrue(response.getContent().contains("二次确认文本=确认批改作业"));
-        assertTrue(response.getContent().contains("actionId=action-10"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1052,10 +1214,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("帮我创建一场 Java 期末考试"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=创建考试安排"));
-        assertTrue(response.getContent().contains("二次确认文本=确认创建考试"));
-        assertTrue(response.getContent().contains("actionId=action-3"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1086,10 +1245,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("帮我关闭 99 号考试"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=关闭考试安排"));
-        assertTrue(response.getContent().contains("二次确认文本=确认关闭考试"));
-        assertTrue(response.getContent().contains("actionId=action-4"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1120,10 +1276,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("帮我批改 2001 号答卷的 3001 号主观题，给 8 分"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=批改考试答题"));
-        assertTrue(response.getContent().contains("二次确认文本=确认批改考试"));
-        assertTrue(response.getContent().contains("actionId=action-5"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1154,9 +1307,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("给 Java 课程新增一道单选题"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=创建试题"));
-        assertTrue(response.getContent().contains("actionId=action-question-1"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1187,9 +1338,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 3001 号试题题干改为 Java int 默认值是多少"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改试题"));
-        assertTrue(response.getContent().contains("actionId=action-question-2"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1221,10 +1370,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("删除 3001 号试题"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=删除试题"));
-        assertTrue(response.getContent().contains("二次确认文本=确认删除试题"));
-        assertTrue(response.getContent().contains("actionId=action-question-3"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1255,10 +1401,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("给学生 30 录入 Java 期末成绩 95 分"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=录入成绩记录"));
-        assertTrue(response.getContent().contains("二次确认文本=确认录入成绩"));
-        assertTrue(response.getContent().contains("actionId=action-6"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1289,10 +1432,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("删除 1001 号成绩记录"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=删除成绩记录"));
-        assertTrue(response.getContent().contains("二次确认文本=确认删除成绩"));
-        assertTrue(response.getContent().contains("actionId=action-7"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1323,10 +1463,7 @@ class AgentChatServiceTest {
         var response = service.chat(1, chatRequest("把 1001 号成绩改成 95 分"));
 
         assertEquals(101, response.getAssistantMessageId());
-        assertTrue(response.getContent().contains("已生成待确认操作计划"));
-        assertTrue(response.getContent().contains("操作计划=修改成绩记录"));
-        assertTrue(response.getContent().contains("二次确认文本=确认修改成绩"));
-        assertTrue(response.getContent().contains("actionId=action-5"));
+        assertDirectActionReply(response);
         verifyNoInteractions(chatModelClient);
     }
 
@@ -1464,9 +1601,17 @@ class AgentChatServiceTest {
         return newService(new AgentChatProperties());
     }
 
+    private void assertDirectActionReply(AgentChatResponse response) {
+        assertTrue(response.getContent().contains("1. 指令模式：待确认"));
+        assertTrue(response.getContent().contains("2. 指令类型："));
+        assertTrue(response.getContent().contains("3. 指令内容："));
+        assertTrue(response.getContent().contains("4. 确认按钮：请点击下方确认动作"));
+        assertNotNull(response.getPendingAction());
+    }
+
     private AgentChatService newService(AgentChatProperties chatProperties) {
         return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
-                Runnable::run, new ObjectMapper(), knowledgeContextProvider, agentToolExecutor);
+                Runnable::run, new ObjectMapper(), knowledgeContextProvider, agentToolExecutor, null);
     }
 
     private AgentChatProperties chatProperties(int historyMessageLimit, int historyMaxCharacters) {

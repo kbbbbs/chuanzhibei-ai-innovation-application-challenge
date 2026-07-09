@@ -3,6 +3,7 @@ package com.cupk.aiacademy.agent.action.course;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionContext;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionResult;
 import com.cupk.aiacademy.agent.action.AgentActionExecutor;
+import com.cupk.aiacademy.agent.query.AgentWriteEntityLocator;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.ChapterMapper;
@@ -21,10 +22,14 @@ public class ChapterCreateActionExecutor implements AgentActionExecutor {
 
     private final ChapterMapper chapterMapper;
     private final CourseMapper courseMapper;
+    private final AgentWriteEntityLocator entityLocator;
 
-    public ChapterCreateActionExecutor(ChapterMapper chapterMapper, CourseMapper courseMapper) {
+    public ChapterCreateActionExecutor(ChapterMapper chapterMapper,
+                                       CourseMapper courseMapper,
+                                       AgentWriteEntityLocator entityLocator) {
         this.chapterMapper = chapterMapper;
         this.courseMapper = courseMapper;
+        this.entityLocator = entityLocator;
     }
 
     @Override
@@ -43,8 +48,7 @@ public class ChapterCreateActionExecutor implements AgentActionExecutor {
         requireTeacherOrAdmin(user);
 
         Map<String, Object> parameters = context.parameters();
-        Integer courseId = requiredInteger(parameters, "courseId", "course_id");
-        Course course = requireManagedCourse(courseId, user, "只能在当前登录教师负责的课程下创建章节");
+        Course course = resolveManagedCourse(parameters, user);
         String title = requiredString(parameters, "title", 100);
         Integer sortOrder = optionalPositiveInteger(parameters, "sortOrder", "sort_order");
 
@@ -79,13 +83,29 @@ public class ChapterCreateActionExecutor implements AgentActionExecutor {
         );
     }
 
-    private Course requireManagedCourse(Integer courseId, AuthUtils.LoginUser user, String permissionMessage) {
+    private Course resolveManagedCourse(Map<String, Object> parameters, AuthUtils.LoginUser user) {
+        Course course = resolveCourse(parameters);
+        if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
+            throw new BusinessException("只能在当前登录教师负责的课程下创建章节");
+        }
+        return course;
+    }
+
+    private Course resolveCourse(Map<String, Object> parameters) {
+        Integer courseId = optionalInteger(parameters, "courseId", "course_id", "id");
+        String courseTitle = optionalString(parameters, "courseTitle", "course_title", "courseName", "course_name");
+        String teacher = optionalString(parameters, "teacher");
+        String difficulty = optionalString(parameters, "difficulty");
+        Integer categoryId = optionalInteger(parameters, "categoryId", "category_id");
+        if (entityLocator != null) {
+            return entityLocator.locateCourse(courseId, courseTitle, teacher, difficulty, categoryId);
+        }
+        if (courseId == null || courseId <= 0) {
+            throw new BusinessException("请提供 courseId，或提供课程名称、教师、难度、分类ID等唯一定位条件");
+        }
         Course course = courseMapper.selectById(courseId);
         if (course == null) {
             throw new BusinessException("课程不存在");
-        }
-        if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
-            throw new BusinessException(permissionMessage);
         }
         return course;
     }
@@ -144,6 +164,15 @@ public class ChapterCreateActionExecutor implements AgentActionExecutor {
             throw new BusinessException(key + " 长度不能超过 " + maxLength);
         }
         return text;
+    }
+
+    private String optionalString(Map<String, Object> parameters, String... keys) {
+        Object value = firstValue(parameters, keys);
+        if (value == null) {
+            return null;
+        }
+        String text = String.valueOf(value).trim();
+        return text.isEmpty() ? null : text;
     }
 
     private Integer optionalInteger(Map<String, Object> parameters, String... keys) {

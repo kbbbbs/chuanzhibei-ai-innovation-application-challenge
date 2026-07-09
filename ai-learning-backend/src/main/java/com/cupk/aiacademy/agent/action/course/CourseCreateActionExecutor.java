@@ -9,11 +9,13 @@ import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.pojo.CourseCategory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -49,10 +51,7 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
 
         Map<String, Object> parameters = context.parameters();
         String title = requiredString(parameters, "title", 100);
-        Integer categoryId = requiredInteger(parameters, "categoryId", "category_id");
-        if (categoryMapper.selectById(categoryId) == null) {
-            throw new BusinessException("课程分类不存在");
-        }
+        Integer categoryId = resolveCategoryId(parameters);
 
         Integer teacherId = optionalInteger(parameters, "teacherId", "teacher_id");
         if (teacherId == null) {
@@ -97,6 +96,7 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
         data.put("courseId", course.getId());
         data.put("title", course.getTitle());
         data.put("categoryId", course.getCategoryId());
+        data.put("categoryName", categoryName(course.getCategoryId()));
         data.put("teacherId", course.getTeacherId());
         data.put("difficulty", course.getDifficulty());
         data.put("status", course.getStatus());
@@ -108,6 +108,39 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
                 data,
                 LocalDateTime.now()
         );
+    }
+
+    private Integer resolveCategoryId(Map<String, Object> parameters) {
+        Integer categoryId = optionalInteger(parameters, "categoryId", "category_id");
+        if (categoryId != null) {
+            if (categoryMapper.selectById(categoryId) == null) {
+                throw new BusinessException("课程分类不存在");
+            }
+            return categoryId;
+        }
+        String categoryName = optionalString(parameters,
+                "categoryName", "category_name", "课程分类", "分类名称", "分类");
+        if (categoryName == null || categoryName.isBlank()) {
+            throw new BusinessException("categoryId 或 categoryName 不能为空");
+        }
+        List<CourseCategory> categories = categoryMapper.selectList(
+                new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<CourseCategory>()
+                        .eq("name", categoryName.trim()));
+        if (categories == null || categories.isEmpty()) {
+            throw new BusinessException("课程分类不存在：" + categoryName);
+        }
+        if (categories.size() > 1) {
+            throw new BusinessException("课程分类名称不唯一，请补充 categoryId：" + categoryName);
+        }
+        return categories.get(0).getId();
+    }
+
+    private String categoryName(Integer categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        CourseCategory category = categoryMapper.selectById(categoryId);
+        return category == null ? null : category.getName();
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {

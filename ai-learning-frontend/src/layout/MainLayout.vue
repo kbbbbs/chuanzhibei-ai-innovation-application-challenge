@@ -54,12 +54,15 @@
 
                 <!-- Teacher Menu Items -->
                 <template v-if="userStore.roleCode === 'teacher' || userStore.roleCode === 'admin'">
-                  <el-dropdown-item command="courses">
-                    <el-icon><Reading /></el-icon> 课程管理
+                 <el-dropdown-item command="courses">
+                   <el-icon><Reading /></el-icon> 课程管理
+                 </el-dropdown-item>
+                  <el-dropdown-item command="notices">
+                    <el-icon><Bell /></el-icon> 通知管理
                   </el-dropdown-item>
-                  <el-dropdown-item command="teaching-classes">
-                    <el-icon><School /></el-icon> 教学班级管理
-                  </el-dropdown-item>
+                 <el-dropdown-item command="teaching-classes">
+                   <el-icon><School /></el-icon> 教学班级管理
+                 </el-dropdown-item>
                   <el-dropdown-item command="questions">
                     <el-icon><Edit /></el-icon> 题库管理
                   </el-dropdown-item>
@@ -126,7 +129,7 @@ import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
 import {
   DataBoard, Cpu, School, Tickets, Checked,
-  DataLine, Reading, Edit, Document, SwitchButton, User, Menu, Collection
+  DataLine, Reading, Edit, Document, SwitchButton, User, Menu, Collection, Bell
 } from '@element-plus/icons-vue'
 
 const router = useRouter()

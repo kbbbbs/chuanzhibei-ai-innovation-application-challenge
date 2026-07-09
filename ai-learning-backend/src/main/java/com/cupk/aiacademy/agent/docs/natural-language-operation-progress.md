@@ -13,6 +13,9 @@
 | Agent 模块结构 | 已完成 | 已拆为 `core`、`definition`、`knowledge`、`tool`、`action`、`docs` 等目录。 |
 | 工具协议 | 已完成 | 已有 `AgentTool`、`AgentToolContext`、`AgentToolResult` 和工具别名注册。 |
 | 写操作计划 | 已完成 | 已有 `AgentActionPlan`，写工具只生成计划，不直接落库。 |
+| 通用动作规格 | 已完成第一版 | 新增 `AgentActionSpec`、`AgentActionParameterSpec`、`AgentActionPlanFactory`，统一动作编码、风险、参数 schema、待确认计划和 pending action 创建。 |
+| Schema-first 参数抽取 | 已完成第一版 | `AgentActionParameterSpec` 已支持 type、enum、aliases、examples 和 JSON Schema；`AgentActionSchemaValidator` 统一处理模型/本地抽取结果的类型转换、枚举校验、缺字段和未知字段诊断。 |
+| 动作能力目录 | 已完成第一版 | `AgentActionCatalog` 可从已迁移的 PlanTool 自动收集 `AgentActionSpec`，为后续“先选择动作，再抽取参数”的通用路由做准备。 |
 | 待确认动作 | 已完成 | 已有 `AgentPendingActionStore`，支持 `actionId` 和过期时间。 |
 | 确认执行接口 | 已完成 | 已有 `POST /api/agent/actions/confirm`。 |
 | 高风险确认文本 | 已完成 | `HIGH`/`CRITICAL` 操作必须匹配确认文本。 |
@@ -43,9 +46,9 @@
 
 | 业务域 | 计划工具 | 执行动作 | 风险 | 当前状态 |
 | --- | --- | --- | --- | --- |
-| 课程 | `course_create_plan` | `course.create` | 中 | 已完成创建课程。 |
-| 课程 | `course_update_plan` | `course.update` | 中 | 已完成修改课程基础信息，不允许修改教师归属、人数、浏览量和状态。 |
-| 课程 | `course_status_plan` | `course.status` | 高 | 已完成课程状态变更，用于上下架、停用、恢复等场景；不物理删除课程记录。 |
+| 课程 | `course_create_plan` | `course.create` | 中 | 已完成创建课程；支持课程分类名称到 ID 解析（categoryName），名称不唯一时要求补充 categoryId。 |
+| 课程 | `course_update_plan` | `course.update` | 中 | 已完成修改课程基础信息，不允许修改教师归属、人数、浏览量和状态；支持按分类名称修改 categoryId。 |
+| 课程 | `course_status_plan` | `course.status` | 高 | 已完成课程状态变更，用于上下架、停用、恢复等场景；不物理删除课程记录；返回 impactPreview（受影响章节/课时/教学班/学生数）。 |
 | 章节 | `chapter_create_plan` | `chapter.create` | 中 | 已完成创建章节。 |
 | 章节 | `chapter_update_plan` | `chapter.update` | 中 | 已完成修改章节，支持修改标题、描述、排序值和所属课程。 |
 | 章节 | `chapter_sort_plan` | `chapter.sort` | 中 | 已完成同一课程下章节排序调整。 |
@@ -63,6 +66,8 @@
 | 班级学生 | `class_student_remove_plan` | `class.student.remove` | 高 | 已完成从教学班学生名单中移除学生；不删除学生账号、学习进度或成绩。 |
 | 班级学生 | `class_student_status_plan` | `class.student.status` | 高 | 已完成班级学生正常/休学状态变更。 |
 | 通知 | `notice_create_plan` | `notice.create` | 中 | 已完成发布通知。 |
+| 通知 | `notice_update_plan` | `notice.update` | 中 | 已完成修改通知，支持按 noticeId 或原通知标题唯一定位，修改标题、正文、通知类型和目标教学班；教师只能修改自己发布的通知。 |
+| 通知 | `notice_status_plan` | `notice.status` | 高 | 已完成通知状态变更，支持撤回（0）/发布（1），删除类表达映射为撤回，不物理删除通知记录。 |
 | 作业 | `homework_create_plan` | `homework.create` | 中 | 已完成发布作业。 |
 | 作业 | `homework_update_plan` | `homework.update` | 中 | 已完成修改作业。 |
 | 作业 | `homework_delete_plan` | `homework.delete` | 高 | 已完成删除作业。 |
@@ -83,6 +88,37 @@
 | 成绩 | `grade_record_update_plan` | `grade.record.update` | 高 | 已完成修改成绩记录。 |
 | 成绩 | `grade_record_delete_plan` | `grade.record.delete` | 高 | 已完成删除成绩记录。 |
 
+## 通用动作模型迁移状态
+
+当前已经确定后续写操作的标准实现路线：
+
+1. 计划工具只声明 `AgentActionSpec`，不再手写 `AgentActionPlan` 和 `pendingActionStore.create(...)`。
+2. 参数字段必须声明 type、必要 aliases、必要 enum 和 examples，让模型看到的是动作 schema，而不是整套数据库或 Java 代码。
+3. `AgentParameterExtractor` 用 schema 构造抽取提示；模型不可用或输出不合格时回退本地规则。
+4. `AgentActionSchemaValidator` 统一校验抽取结果，并把 `validationIssues` 放入 `parameterExtraction` 元数据。
+5. `AgentActionPlanFactory` 统一生成 `WRITE_PLAN`、`parameterSchema`、`jsonSchema`、`missingRequiredFields`、`actionId`、`expiresAt`。
+6. `AgentToolExecutor.buildToolContext(...)` 只运行读工具；写计划工具只通过明确意图路由或显式工具执行触发，避免普通聊天生成无关 pending action。
+7. 前端优先读取结构化 `pendingAction` 和 pending action 列表，旧文本解析只作为历史消息兜底。
+
+这条路线等价于在 Java/Spring 内实现 TypeChat 的核心模式：用强 schema 约束模型输出，再用本地校验和业务执行器兜底；不需要把 TypeChat 的 TypeScript runtime 直接引入到后端。
+
+已迁移样板：
+
+| 工具 | 状态 | 说明 |
+| --- | --- | --- |
+| `notice_create_plan` | 已迁移 | 使用 `AgentActionSpec` + `AgentActionPlanFactory`，返回参数 schema、缺失字段和 pending action。 |
+| `notice_update_plan` | 已迁移 | 通知修改计划已统一走 `AgentActionSpec` + `AgentActionPlanFactory`，支持按 ID 或原标题定位。 |
+| `notice_status_plan` | 已迁移 | 通知状态变更计划已统一走 `AgentActionSpec` + `AgentActionPlanFactory`，保留高风险确认文本。 |
+| `course_create_plan` | 已迁移 | 课程创建计划已统一走 `AgentActionSpec` + `AgentActionPlanFactory`。 |
+| `course_update_plan` | 已迁移 | 课程修改计划已统一走 `AgentActionSpec` + `AgentActionPlanFactory`。 |
+| `course_status_plan` | 已迁移 | 课程状态变更计划已统一走 `AgentActionSpec` + `AgentActionPlanFactory`，保留高风险确认文本。 |
+
+下一批建议迁移顺序：
+
+1. 课时/章节域：`chapter_create_plan`、`chapter_update_plan`、`lesson_create_plan`、`lesson_update_plan`。
+2. 作业域：`homework_create_plan`、`homework_update_plan`、`homework_delete_plan`。
+3. 考试和成绩高风险域：先迁移计划工具，再补确认文本、影响预览和更严格参数 schema。
+
 ## 待实现内容模块总览
 
 | 优先级 | 模块 | 待实现内容 | 原因 |
@@ -98,7 +134,7 @@
 | P1 | 考试记录 | 强制交卷、重置答卷、重新计算成绩。 | 属于高风险考试流程操作。 |
 | P1 | 成绩导入 | 批量导入、导入日志查询、导入回滚策略。 | 计划中已有导入成绩方向，但尚未落地。 |
 | P2 | 学习进度 | 手动修正进度、重置学习记录。 | 需要谨慎，防止影响学习统计。 |
-| P2 | 通知 | 通知修改、撤回/删除。 | 当前只完成发布通知。 |
+| P2 | 通知 | 影响预览。 | 创建、修改、撤回/状态变更已完成；前端列表/详情跳转入口已完成（NoticeList 视图+路由+agent 深链）。 |
 | P2 | 论文 | 外部检索、推荐、收藏/本地论文入库。 | 当前只有本地论文查询工具。 |
 | P2 | 用户与角色 | 用户查询、禁用/启用、角色调整。 | 高风险管理操作，需要更严格确认。 |
 | P2 | 文件 | 上传引用、资源绑定、文件删除。 | 需要和课程资源、作业附件结合设计。 |
@@ -113,7 +149,7 @@
 
 ## 每个新动作的标准落地清单
 
-1. 新增计划工具：放到对应 `agent/tool/{domain}` 包，返回 `AgentActionPlan`。
+1. 新增计划工具：放到对应 `agent/tool/{domain}` 包，优先声明 `AgentActionSpec` 并调用 `AgentActionPlanFactory.createWritePlan(...)`。
 2. 新增执行器：放到对应 `agent/action/{domain}` 包，实现 `AgentActionExecutor`。
 3. 补路由：在 `AgentChatService` 增加明确意图识别和工具别名。
 4. 补权限：执行器内校验角色、数据归属、状态和参数范围。
@@ -126,3 +162,60 @@
 - 暂不拆真实 MCP server。当前内部工具协议还在扩展，先保持 Spring Boot 单体内模块化。
 - 暂不优先实现完整 ReAct/plan-replan。先把工具协议、权限、确认、审计和业务动作覆盖做扎实。
 - 暂不让模型直接生成数据库写操作参数并执行。所有写操作仍必须走计划、确认和执行器校验。
+
+## 统一中间层（查询链路升级）
+
+当前已落地统一中间层，把查询从「盲跑所有读工具做关键词 LIKE」升级为「IntentParser→EntityResolver→TimeResolver→QuerySpec→Disambiguation→执行」。
+
+### 已落地组件
+
+| 组件 | 位置 | 职责 |
+| --- | --- | --- |
+| NaturalLanguageEntityResolver | agent/query | 人名/课程名/班级名→ID，模糊匹配+重名候选，跨表 studentClassIds/classIdsForCourses |
+| NaturalLanguageTimeParser | agent/query | 相对/周期/模糊时间→时间区间（今天/本周/下周五/最近N天/N天前等） |
+| NaturalLanguageTimeRange | agent/query | 解析后的时间区间，用于过滤查询 |
+| NaturalLanguageQueryService | agent/query | 统一查询执行：选意图→解析实体→解析时间→执行跨表链路→消歧→汇总 |
+| AgentPromptAssembler 接入 | agent/core/prompt | 模型回答前优先走 NaturalLanguageQueryService，拿到结构化结果再拼进 Prompt；无结果时回退读工具 |
+
+### 支持的跨表查询链路
+
+| 查询 | 链路 | 状态 |
+| --- | --- | --- |
+| 学生作业提交情况 | 学生→学生班级∩课程班级→作业→提交→已交/未交/提交率 | 已实现 |
+| 成绩查询 | 学生/课程/班级→成绩记录→统计 | 已实现 |
+| 学习进度 | 学生/课程→学习进度→统计 | 已实现 |
+| 课程结构 | 课程→章节→课时→资源 | 已实现 |
+| 考试 | 课程/班级→考试安排/答卷→统计 | 已实现 |
+| 课程统计 | 课程→章节/课时/教学班/学生计数 | 已实现 |
+
+### 消歧
+
+NaturalLanguageQueryService 在实体解析返回多个候选时返回结构化消歧提示，要求用户补充学号/手机号或更完整名称后重试，避免在重名场景下猜测执行。
+
+### 接入点
+
+AgentPromptAssembler.retrieveToolContext 现在先调用 NaturalLanguageQueryService.answer()，拿到非空结果就优先用结构化查询结果作为工具上下文；只有当统一查询无法识别意图时，才回退到原有「执行全部 enabled 读工具」的关键词 LIKE 流程。这保证既有的只读工具和行为不受影响，同时让「查张三在某门课里的作业提交情况」这类多跳查询能稳定命中。
+
+### 测试
+
+- NaturalLanguageQueryServiceTest：覆盖学生作业提交情况的跨表链路（课程→班级→作业→提交→提交率统计）和空查询兜底。
+- AgentToolExecutorTest / AgentChatServiceTest：回归验证接入后写操作链路和意图路由不受影响。
+### 写操作实体定位回流
+
+写操作执行器已从硬编码按标题 `eq` 精确匹配升级为复用统一实体定位能力：
+
+| 执行器 | 改造前 | 改造后 |
+| --- | --- | --- |
+| CourseUpdateActionExecutor | QueryWrapper eq title + LIMIT 2，多匹配只报「请补充 courseId」 | AgentWriteEntityLocator.locateCourse，title 用 like 模糊匹配，多匹配列出候选「11=Java 入门、12=Java 进阶」 |
+| CourseStatusActionExecutor | 同上硬编码 | 同上 |
+| NoticeUpdateActionExecutor | QueryWrapper eq title + LIMIT 2 | AgentWriteEntityLocator.locateNotice，title 用 like，多匹配列出候选 |
+| NoticeStatusActionExecutor | 同上硬编码 | 同上 |
+
+AgentWriteEntityLocator（agent/query）是写操作专用定位层：与查询层 NaturalLanguageEntityResolver 的区别是强制唯一锁定，多候选时抛出带候选 ID+名称的 BusinessException 让用户补充 ID 消歧，而不是返回多结果。这样「把 Java 入门这门课改一下」这类自然定位不再要求标题完全一致，重名时也能直接看到候选 ID 选择。
+
+测试：AgentWriteEntityLocatorTest 覆盖按 ID/模糊标题定位、唯一命中、多候选消歧、无定位条件、未找到；CourseActionExecutorTest/NoticeActionExecutorTest 改用真实 locator + mock mapper 回归。
+### 统计查询扩展
+
+新增考试统计聚合 `examStatsAnswer`：按学生/时间范围过滤考试记录后，计算记录数、平均分、最高分、最低分、低分学生数（低于平均分 60%），并列出低分学生姓名+分数。意图检测 `isExamStatsQuery` 命中「考试+平均分/最高分/最低分/低分/及格率/统计」，且排在 `isGradeQuery` 之前，避免被普通成绩查询截获。
+
+当前已支持的统计聚合：作业提交率/未交名单、成绩平均分、学习进度平均值、考试平均分+低分学生、课程结构计数（章节/课时/教学班/作业数）。测试：NaturalLanguageQueryServiceTest.examStatsComputesAverageAndLowScoreStudents。

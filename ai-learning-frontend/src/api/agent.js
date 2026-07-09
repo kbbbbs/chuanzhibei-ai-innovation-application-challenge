@@ -25,6 +25,8 @@ export const deleteAgentSession = (sessionId) => unwrap(request.delete(`/api/age
 export const getAgentMessages = (sessionId) => unwrap(request.get(`/api/agent/sessions/${sessionId}/messages`))
 export const sendAgentMessage = (sessionId, data) => unwrap(request.post(`/api/agent/sessions/${sessionId}/chat`, data))
 export const agentChatOnce = (data) => unwrap(request.post('/api/agent/chat-once', data))
+export const getAgentPendingActions = (params) => unwrap(request.get('/api/agent/actions/pending', { params }))
+export const getAgentPendingAction = (actionId) => unwrap(request.get(`/api/agent/actions/pending/${actionId}`))
 export const confirmAgentAction = (data) => unwrap(request.post('/api/agent/actions/confirm', data))
 
 function buildApiUrl(path) {

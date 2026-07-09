@@ -1,6 +1,9 @@
 import { ref, readonly } from 'vue'
 import { ElMessage } from 'element-plus'
 import * as weknoraApi from '../api/weknora.js'
+import * as agentApi from '../api/agent.js'
+
+const DEFAULT_AGENT_ID = 1
 
 function unwrapData(data) {
   while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined) {
@@ -9,12 +12,31 @@ function unwrapData(data) {
   return data
 }
 
+function payloadContent(payload) {
+  const data = unwrapData(payload)
+  if (typeof data === 'string') return data
+  return data?.content || data?.reply || data?.message || ''
+}
+
+function pendingActionFromPayload(payload) {
+  const data = unwrapData(payload)
+  return data?.pendingAction || data?.pending_action || null
+}
+
+function extractMessage(payload, fallback) {
+  if (!payload) return fallback
+  if (payload instanceof Error) return payload.message || fallback
+  if (typeof payload === 'string') return payload || fallback
+  return payload.msg || payload.message || payload.error || fallback
+}
+
 export function useWeKnora() {
   const messages = ref([])
   const sessions = ref([])
   const knowledgeBases = ref([])
   const loading = ref(false)
   const currentSessionId = ref(null)
+  const currentAgentSessionId = ref(null)
   const currentKbId = ref(null)
   const error = ref(null)
 
@@ -45,6 +67,23 @@ export function useWeKnora() {
     } catch (e) {
       error.value = e
       ElMessage.error('创建会话失败')
+      return null
+    } finally {
+      loading.value = false
+    }
+  }
+
+  async function createNewAgentSession(title = 'Agent 智能助手会话') {
+    try {
+      loading.value = true
+      const res = await agentApi.createAgentSession({ agentId: DEFAULT_AGENT_ID, title })
+      const data = unwrapData(res?.data ?? res)
+      currentAgentSessionId.value = data?.id || null
+      messages.value = []
+      return currentAgentSessionId.value
+    } catch (e) {
+      error.value = e
+      ElMessage.error(extractMessage(e, '创建 Agent 会话失败'))
       return null
     } finally {
       loading.value = false
@@ -91,7 +130,71 @@ export function useWeKnora() {
     }
   }
 
+  async function sendLocalAgentMessage(query, displayContent = query) {
+    if (!currentAgentSessionId.value) {
+      const sessionId = await createNewAgentSession()
+      if (!sessionId) {
+        const err = new Error('请先创建 Agent 会话')
+        error.value = err
+        return Promise.reject(err)
+      }
+    }
+
+    messages.value.push({ role: 'user', content: displayContent || query })
+
+    const aiIndex = messages.value.length
+    messages.value.push({ role: 'assistant', content: '', streaming: true })
+    loading.value = true
+    error.value = null
+    let streamError = null
+
+    try {
+      const completePayload = await agentApi.streamAgentMessage(currentAgentSessionId.value, { content: query }, {
+        onMessage(chunk) {
+          messages.value[aiIndex].content += typeof chunk === 'string'
+            ? chunk
+            : (chunk?.content || chunk?.answer || chunk?.text || '')
+        },
+        onComplete(payload) {
+          const content = payloadContent(payload)
+          if (!messages.value[aiIndex].content && content) {
+            messages.value[aiIndex].content = content
+          }
+          const pendingAction = pendingActionFromPayload(payload)
+          if (pendingAction) {
+            messages.value[aiIndex].pendingAction = pendingAction
+          }
+        },
+        onError(payload) {
+          streamError = payload
+        }
+      })
+      if (streamError) {
+        throw new Error(extractMessage(streamError, 'Agent 回复失败，请稍后重试'))
+      }
+      const pendingAction = pendingActionFromPayload(completePayload)
+      if (pendingAction) {
+        messages.value[aiIndex].pendingAction = pendingAction
+      }
+      messages.value[aiIndex].streaming = false
+      loading.value = false
+      return messages.value[aiIndex].content || payloadContent(completePayload)
+    } catch (e) {
+      messages.value[aiIndex].streaming = false
+      messages.value[aiIndex].error = true
+      messages.value[aiIndex].errorMessage = extractMessage(e, 'Agent 回复失败，请稍后重试')
+      loading.value = false
+      error.value = e
+      ElMessage.error(extractMessage(e, 'Agent 回复失败，请稍后重试'))
+      return Promise.reject(e)
+    }
+  }
+
   function sendMessage(mode, query, displayContent = query) {
+    if (mode === 'agent') {
+      return sendLocalAgentMessage(query, displayContent)
+    }
+
     if (!currentSessionId.value) {
       error.value = new Error('请先创建会话')
       ElMessage.warning('请先创建会话')
@@ -148,10 +251,12 @@ export function useWeKnora() {
     knowledgeBases,
     loading,
     currentSessionId,
+    currentAgentSessionId,
     error: readonly(error),
 
     loadKnowledgeBases,
     createNewSession,
+    createNewAgentSession,
     loadSessions,
     removeSession,
     searchInKB,

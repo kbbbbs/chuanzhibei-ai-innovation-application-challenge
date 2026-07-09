@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
  * 保证 /api/agent/** 的成功和失败响应结构一致，同时避免影响其他团队维护的全局模块。
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)
-@RestControllerAdvice(assignableTypes = {ChatController.class, AgentDefinitionController.class, AgentActionController.class})
+@RestControllerAdvice(assignableTypes = {ChatController.class, AgentModelController.class, AgentDefinitionController.class, AgentActionController.class})
 public class AgentExceptionHandler {
 
     /**
@@ -107,6 +107,9 @@ public class AgentExceptionHandler {
         data.put("sessionId", e.getSessionId());
         data.put("userMessageId", e.getUserMessageId());
         data.put("assistantMessageId", e.getAssistantMessageId());
+        if (e.getDiagnostics() != null) {
+            data.put("diagnostics", e.getDiagnostics().toData());
+        }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Result.error("500", e.getMessage(), data));
     }
