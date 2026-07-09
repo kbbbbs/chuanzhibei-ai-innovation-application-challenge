@@ -6,6 +6,10 @@
         <el-tag :type="graphEnabled ? 'success' : 'info'" effect="light" size="small">
           {{ graphEnabled ? '已启用' : '未启用' }}
         </el-tag>
+        <el-tag v-if="graphSource === 'wiki'" type="primary" effect="light" size="small">Wiki</el-tag>
+        <el-tag v-if="graphMeta?.truncated" type="warning" effect="light" size="small">
+          显示 {{ graphMeta?.returned }}/{{ graphMeta?.total }}
+        </el-tag>
       </div>
       <div class="graph-preview-stats" v-if="graphEnabled">
         <span>{{ normalizedNodes.length }} 节点</span>
@@ -22,20 +26,31 @@
     <div v-else-if="!normalizedNodes.length" class="graph-preview-empty">
       <el-empty description="当前知识库暂无可展示的图谱节点" :image-size="72" />
     </div>
-    <div v-else class="graph-preview-stage">
+    <div v-else class="graph-preview-stage" @click="handleStageClick">
       <VueFlow
+        ref="vueFlowRef"
         :nodes="flowNodes"
         :edges="flowEdges"
         class="graph-preview-flow"
         fit-view-on-init
-        :min-zoom="0.4"
-        :max-zoom="1.8"
-        :zoom-on-scroll="true"
-        :pan-on-drag="true"
-        :nodes-draggable="true"
-        :elements-selectable="true"
+        :min-zoom="0.6"
+        :max-zoom="1.4"
+        :nodes-draggable="false"
+        :elements-selectable="false"
+        @node-click="handleNodeClick"
       />
     </div>
+
+    <!-- Wiki page dialog -->
+    <el-dialog
+      v-model="wikiVisible"
+      :title="wikiPage?.title || '加载中...'"
+      width="680px"
+      destroy-on-close
+    >
+      <div v-if="wikiPage" class="wiki-page-body markdown-body" v-html="wikiHtml" />
+      <div v-else v-loading="wikiLoading" style="min-height:200px" />
+    </el-dialog>
   </div>
 </template>
 
@@ -47,20 +62,22 @@ import '@vue-flow/core/dist/theme-default.css'
 import * as kbApi from '@/api/knowledgeBase'
 
 const props = defineProps({
-  kbId: {
-    type: String,
-    default: ''
-  },
-  refreshKey: {
-    type: Number,
-    default: 0
-  }
+  kbId: { type: String, default: '' },
+  refreshKey: { type: Number, default: 0 }
 })
 
 const emit = defineEmits(['loaded'])
 
 const loading = ref(false)
+const vueFlowRef = ref(null)
 const graphData = ref({ enabled: false, nodes: [], relations: [] })
+const graphSource = ref('')
+const graphMeta = ref(null)
+
+const wikiVisible = ref(false)
+const wikiLoading = ref(false)
+const wikiPage = ref(null)
+const wikiHtml = ref('')
 
 function unwrapData(data) {
   while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined)
@@ -173,16 +190,7 @@ const flowEdges = computed(() => {
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      label: edge.label,
-      labelStyle: {
-        fill: '#475569',
-        fontSize: '10px',
-        fontWeight: 600
-      },
-      style: {
-        stroke: '#3b82f6',
-        strokeWidth: 1.8
-      }
+      style: { stroke: '#94a3b8', strokeWidth: 1 }
     }))
 })
 
@@ -194,6 +202,8 @@ function truncate(text, max) {
 async function loadGraph() {
   if (!props.kbId) {
     graphData.value = { enabled: false, nodes: [], relations: [] }
+    graphSource.value = ''
+    graphMeta.value = null
     emitLoaded()
     return
   }
@@ -208,13 +218,51 @@ async function loadGraph() {
         nodes: Array.isArray(data.nodes) ? data.nodes : [],
         relations: Array.isArray(data.relations) ? data.relations : []
       }
+      graphSource.value = data.source || ''
+      graphMeta.value = data.meta || null
     } else {
       graphData.value = { enabled: false, nodes: [], relations: [] }
+      graphSource.value = ''
+      graphMeta.value = null
     }
   } finally {
     loading.value = false
     emitLoaded()
   }
+}
+
+async function handleNodeClick({ node }) {
+  if (!props.kbId || graphSource.value !== 'wiki') return
+
+  wikiVisible.value = true
+  wikiPage.value = null
+  wikiHtml.value = ''
+  wikiLoading.value = true
+  try {
+    const res = await kbApi.getWikiPage(props.kbId, node.id)
+    if (res.code === '200' && res.data) {
+      wikiPage.value = res.data
+      wikiHtml.value = renderWikiMarkdown(res.data.content || '')
+    }
+  } finally {
+    wikiLoading.value = false
+  }
+}
+
+function renderWikiMarkdown(content) {
+  if (!content) return ''
+  return content
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
+    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
+    .replace(/^# (.+)$/gm, '<h2>$1</h2>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
+    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '<span class="wiki-link">$2</span>')
+    .replace(/\[\[([^\]]+)\]\]/g, '<span class="wiki-link">$1</span>')
+    .replace(/\n\n/g, '</p><p>')
+    .replace(/\n/g, '<br>')
+    .replace(/^/, '<p>').replace(/$/, '</p>')
 }
 
 function emitLoaded() {
@@ -288,20 +336,34 @@ watch(() => [props.kbId, props.refreshKey], loadGraph, { immediate: true })
 }
 
 :deep(.vue-flow__node) {
-  min-width: 72px;
-  max-width: 140px;
-  border: 1px solid #bfdbfe;
-  border-radius: 999px;
-  padding: 8px 12px;
+  min-width: 52px;
+  max-width: 100px;
+  border: none;
+  border-radius: 6px;
+  padding: 3px 8px;
   background: #2563eb;
   color: #ffffff;
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
   text-align: center;
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.16);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.10);
+  cursor: pointer;
 }
 
 :deep(.vue-flow__edge-textbg) {
   fill: rgba(255, 255, 255, 0.92);
 }
+
+.wiki-page-body {
+  line-height: 1.8;
+  font-size: 14px;
+  color: #303133;
+}
+
+.wiki-page-body h2 { font-size: 18px; margin: 16px 0 8px; }
+.wiki-page-body h3 { font-size: 16px; margin: 14px 0 6px; }
+.wiki-page-body h4 { font-size: 14px; margin: 12px 0 6px; }
+.wiki-page-body p { margin: 8px 0; }
+.wiki-page-body strong { color: #1f2937; }
+.wiki-page-body .wiki-link { color: #3b82f6; text-decoration: underline; cursor: pointer; }
 </style>

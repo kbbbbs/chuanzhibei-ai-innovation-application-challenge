@@ -30,6 +30,8 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -117,7 +119,8 @@ public class CourseController {
 
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE, value = "/with-outline")
     public Result addWithOutline(@RequestPart("course") String courseJson,
-                                 @RequestPart(value = "file", required = false) MultipartFile file) {
+                                 @RequestPart(value = "file", required = false) MultipartFile singleFile,
+                                 @RequestPart(value = "files", required = false) List<MultipartFile> files) {
         permissionService.requireTeacherOrAdmin();
 
         CourseDto request;
@@ -137,9 +140,14 @@ public class CourseController {
             return checkResult;
         }
 
+        // merge single file + multi files
+        List<MultipartFile> allFiles = new ArrayList<>();
+        if (singleFile != null && !singleFile.isEmpty()) allFiles.add(singleFile);
+        if (files != null) files.stream().filter(f -> f != null && !f.isEmpty()).forEach(allFiles::add);
+
         Map<String, Object> data;
         try {
-            data = courseImportService.createCourseWithOutline(course, file);
+            data = courseImportService.createCourseWithOutline(course, allFiles);
         } catch (IllegalArgumentException e) {
             return Result.error("400", e.getMessage());
         } catch (IllegalStateException e) {

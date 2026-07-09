@@ -25,8 +25,8 @@ public class OpenAlexSearchServiceImpl implements OpenAlexSearchService {
     private String contactEmail;
 
     private final OkHttpClient client = new OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(8, TimeUnit.SECONDS)
         .build();
 
     @Override

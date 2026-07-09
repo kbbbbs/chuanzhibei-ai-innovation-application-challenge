@@ -50,6 +50,9 @@ public interface WeKnoraService {
     /** 获取知识库图谱配置 */
     Result getKnowledgeGraph(String kbId);
 
+    /** 获取 WeKnora Wiki 页面内容 */
+    Result getWikiPage(String kbId, String slug);
+
     /** 获取知识文件的内容片段 */
     Result getKnowledgeContent(String kbId, String knowledgeId);
 

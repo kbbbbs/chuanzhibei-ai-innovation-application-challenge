@@ -7,6 +7,7 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.cupk.aiacademy.pojo.OperationLog;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,15 +23,26 @@ public class AgentActionExecutionService {
     private final OperationLogMapper operationLogMapper;
     private final ObjectMapper objectMapper;
     private final AgentPendingActionStore pendingActionStore;
+    private final AgentActionPreExecutionValidator preExecutionValidator;
+
+    @Autowired
+    public AgentActionExecutionService(List<AgentActionExecutor> executors,
+                                       OperationLogMapper operationLogMapper,
+                                       ObjectMapper objectMapper,
+                                       AgentPendingActionStore pendingActionStore,
+                                       AgentActionPreExecutionValidator preExecutionValidator) {
+        this.executorsByActionCode = registerExecutors(executors);
+        this.operationLogMapper = operationLogMapper;
+        this.objectMapper = objectMapper;
+        this.pendingActionStore = pendingActionStore;
+        this.preExecutionValidator = preExecutionValidator;
+    }
 
     public AgentActionExecutionService(List<AgentActionExecutor> executors,
                                        OperationLogMapper operationLogMapper,
                                        ObjectMapper objectMapper,
                                        AgentPendingActionStore pendingActionStore) {
-        this.executorsByActionCode = registerExecutors(executors);
-        this.operationLogMapper = operationLogMapper;
-        this.objectMapper = objectMapper;
-        this.pendingActionStore = pendingActionStore;
+        this(executors, operationLogMapper, objectMapper, pendingActionStore, null);
     }
 
     @Transactional
@@ -56,6 +68,9 @@ public class AgentActionExecutionService {
         AgentActionExecutor executor = executorsByActionCode.get(actionCode);
         if (executor == null) {
             throw new BusinessException("不支持的 Agent 操作：" + actionCode);
+        }
+        if (preExecutionValidator != null) {
+            parameters = preExecutionValidator.validateAndNormalize(actionCode, parameters);
         }
         requireHighRiskConfirmation(executor, request);
 

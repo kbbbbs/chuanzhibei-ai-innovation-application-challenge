@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ConfigurationProperties(prefix = "weknora")
 public class WeKnoraConfig {
-    private String baseUrl = "http://localhost:8081";
+    private String baseUrl = "http://localhost:8090";
     private String apiKey;
     private String storagePath = "uploads/knowledge";
 }

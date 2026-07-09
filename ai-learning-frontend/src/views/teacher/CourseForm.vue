@@ -32,22 +32,23 @@
           <el-input v-model="form.coverUrl" placeholder="请输入封面URL" />
         </el-form-item>
 
-        <el-form-item v-if="!isEdit" label="导入 PPT">
+        <el-form-item v-if="!isEdit" label="导入课件">
           <el-upload
             ref="uploadRef"
             :auto-upload="false"
-            :limit="1"
-            accept=".ppt,.pptx"
-            :on-change="handlePptChange"
-            :on-remove="handlePptRemove"
-            :on-exceed="handlePptExceed"
-            :show-file-list="true"
+            multiple
+            :limit="10"
+            accept=".ppt,.pptx,.pdf"
+            :on-change="handleFileChange"
+            :on-remove="handleFileRemove"
+            :on-exceed="handleFileExceed"
+            :file-list="fileList"
           >
             <template #trigger>
-              <el-button>选择 PPT</el-button>
+              <el-button>选择文件</el-button>
             </template>
             <template #tip>
-              <div class="el-upload__tip">可选，上传 PPT/PPTX 后将自动生成章节和课时。</div>
+              <div class="el-upload__tip">可选，上传 PPT/PPTX/PDF 文件，将根据标题自动生成章节和课时。支持多选。</div>
             </template>
           </el-upload>
         </el-form-item>
@@ -90,7 +91,8 @@ const editingId = computed(() => {
 const loading = ref(false)
 const submitLoading = ref(false)
 const categories = ref([])
-const selectedPptFile = ref(null)
+const selectedFiles = ref([])
+const fileList = ref([])
 
 const defaultForm = () => ({
   title: '',
@@ -148,15 +150,15 @@ const handleSubmit = async () => {
   try {
     if (isEdit.value && editingId.value) {
       res = await updateCourse(editingId.value, data)
-    } else if (selectedPptFile.value) {
-      res = await addCourseWithOutline(data, selectedPptFile.value)
+    } else if (selectedFiles.value.length) {
+      res = await addCourseWithOutline(data, selectedFiles.value)
     } else {
       res = await addCourse(data)
     }
 
     if (res.code === '200') {
       const result = res.data || {}
-      if (!isEdit.value && selectedPptFile.value) {
+      if (!isEdit.value && selectedFiles.value.length) {
         const chaptersCreated = result.chaptersCreated || 0
         const lessonsCreated = result.lessonsCreated || 0
         const warnings = Array.isArray(result.warnings) ? result.warnings.filter(Boolean) : []
@@ -181,22 +183,22 @@ const handleCancel = () => {
   router.back()
 }
 
-const handlePptChange = (uploadFile) => {
-  selectedPptFile.value = uploadFile?.raw || null
-}
-
-const handlePptRemove = () => {
-  selectedPptFile.value = null
-}
-
-const handlePptExceed = (files) => {
-  const nextFile = files?.[0]?.raw || files?.[0] || null
-  uploadRef.value?.clearFiles()
-  if (nextFile) {
-    uploadRef.value?.handleStart(nextFile)
-    selectedPptFile.value = nextFile
+const handleFileChange = (uploadFile) => {
+  const raw = uploadFile?.raw
+  if (raw) {
+    selectedFiles.value.push(raw)
+    fileList.value = [...selectedFiles.value].map((f, i) => ({ name: f.name, uid: i }))
   }
-  ElMessage.warning('每次只能选择一个 PPT 文件')
+}
+
+const handleFileRemove = (uploadFile) => {
+  const idx = selectedFiles.value.findIndex(f => f.name === (uploadFile?.name || ''))
+  if (idx >= 0) selectedFiles.value.splice(idx, 1)
+  fileList.value = [...selectedFiles.value].map((f, i) => ({ name: f.name, uid: i }))
+}
+
+const handleFileExceed = () => {
+  ElMessage.warning('最多上传 10 个文件')
 }
 
 onMounted(() => {
@@ -208,7 +210,8 @@ watch(
   async (id) => {
     formRef.value?.clearValidate?.()
     Object.assign(form, defaultForm())
-    selectedPptFile.value = null
+    selectedFiles.value = []
+    fileList.value = []
     uploadRef.value?.clearFiles?.()
     isEdit.value = !!id
 

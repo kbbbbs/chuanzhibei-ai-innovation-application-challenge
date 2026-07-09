@@ -501,6 +501,13 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     @Override
     public Result getKnowledgeGraph(String kbId) {
         try {
+            // 优先使用 WeKnora Wiki 链接图谱
+            Result wikiGraph = tryGetWikiGraph(kbId);
+            if (wikiGraph != null) {
+                return wikiGraph;
+            }
+
+            // 兜底：extract_config
             JSONObject resp = get("/api/v1/knowledge-bases/" + kbId);
             JSONObject knowledgeBase = extractKnowledgeBaseObject(resp, kbId);
 
@@ -518,6 +525,36 @@ public class WeKnoraServiceImpl implements WeKnoraService {
             log.error("getKnowledgeGraph failed", e);
             return Result.error("获取知识图谱失败: " + e.getMessage());
         }
+    }
+
+    @Override
+    public Result getWikiPage(String kbId, String slug) {
+        try {
+            JSONObject resp = get("/api/v1/knowledgebase/" + kbId + "/wiki/pages/" + slug);
+            if (resp == null) {
+                return Result.error("Wiki 页面不存在");
+            }
+            // wiki page API may return the page directly or wrapped
+            if (resp.containsKey("id") || resp.containsKey("slug")) {
+                return Result.success(normalizeWikiPage(resp));
+            }
+            return Result.error("Wiki 页面数据异常");
+        } catch (Exception e) {
+            log.error("getWikiPage failed", e);
+            return Result.error("获取Wiki页面失败: " + e.getMessage());
+        }
+    }
+
+    private Map<String, Object> normalizeWikiPage(JSONObject page) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("title", page.getString("title"));
+        result.put("slug", page.getString("slug"));
+        result.put("content", page.getString("content"));
+        result.put("summary", page.getString("summary"));
+        result.put("pageType", page.getString("page_type"));
+        result.put("inLinks", page.get("in_links"));
+        result.put("outLinks", page.get("out_links"));
+        return result;
     }
 
     @Override
@@ -658,6 +695,65 @@ public class WeKnoraServiceImpl implements WeKnoraService {
         graph.put("nodes", nodes);
         graph.put("relations", relations);
         return graph;
+    }
+
+    private Result tryGetWikiGraph(String kbId) {
+        try {
+            JSONObject resp = get("/api/v1/knowledgebase/" + kbId + "/wiki/graph?mode=overview&limit=20");
+            if (resp == null || !resp.containsKey("nodes")) {
+                return null;
+            }
+
+            JSONArray rawNodes = resp.getJSONArray("nodes");
+            JSONArray rawEdges = resp.getJSONArray("edges");
+            JSONObject meta = resp.getJSONObject("meta");
+
+            if (rawNodes == null || rawNodes.isEmpty()) {
+                return null;
+            }
+
+            List<Map<String, Object>> nodes = new ArrayList<>();
+            for (int i = 0; i < rawNodes.size(); i++) {
+                JSONObject n = rawNodes.getJSONObject(i);
+                Map<String, Object> node = new LinkedHashMap<>();
+                node.put("id", n.getString("slug"));
+                node.put("label", n.getString("title"));
+                node.put("pageType", n.getString("page_type"));
+                node.put("linkCount", n.getIntValue("link_count", 0));
+                nodes.add(node);
+            }
+
+            List<Map<String, Object>> relations = new ArrayList<>();
+            if (rawEdges != null) {
+                for (int i = 0; i < rawEdges.size(); i++) {
+                    JSONObject e = rawEdges.getJSONObject(i);
+                    Map<String, Object> rel = new LinkedHashMap<>();
+                    rel.put("source", e.getString("source"));
+                    rel.put("target", e.getString("target"));
+                    rel.put("label", "");
+                    relations.add(rel);
+                }
+            }
+
+            Map<String, Object> graph = new LinkedHashMap<>();
+            graph.put("knowledgeBaseId", kbId);
+            graph.put("enabled", true);
+            graph.put("source", "wiki");
+            graph.put("nodes", nodes);
+            graph.put("relations", relations);
+            if (meta != null) {
+                graph.put("meta", Map.of(
+                    "mode", meta.getOrDefault("mode", "overview"),
+                    "total", meta.getOrDefault("total", nodes.size()),
+                    "returned", meta.getOrDefault("returned", nodes.size()),
+                    "truncated", meta.getOrDefault("truncated", false)
+                ));
+            }
+            return Result.success(graph);
+        } catch (Exception e) {
+            log.warn("Wiki graph not available for kb {}: {}", kbId, e.getMessage());
+            return null;
+        }
     }
 
     private Object normalizeKnowledgeItems(Object source) {

@@ -1,5 +1,6 @@
 package com.cupk.aiacademy.agent.action;
 
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -9,6 +10,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
+@Primary
 @Component
 public class InMemoryAgentPendingActionStore implements AgentPendingActionStore {
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(10);

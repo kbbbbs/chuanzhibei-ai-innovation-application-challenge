@@ -26,8 +26,8 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
     private static final String ARXIV_NS = "http://arxiv.org/schemas/atom";
 
     private final OkHttpClient client = new OkHttpClient.Builder()
-        .connectTimeout(15, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
+        .connectTimeout(5, TimeUnit.SECONDS)
+        .readTimeout(8, TimeUnit.SECONDS)
         .followRedirects(true)
         .build();
 
