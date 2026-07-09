@@ -48,4 +48,18 @@ public class SpringAiChatModelClient implements ChatModelClient {
         }
         return "openai-compatible";
     }
+
+    private String providerFromBaseUrl(String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return "spring-ai-openai";
+        }
+        String normalized = baseUrl.toLowerCase();
+        if (normalized.contains("deepseek")) {
+            return "deepseek";
+        }
+        if (normalized.contains("openai")) {
+            return "openai";
+        }
+        return "openai-compatible";
+    }
 }

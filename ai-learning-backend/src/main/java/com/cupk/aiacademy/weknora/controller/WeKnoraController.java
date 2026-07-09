@@ -133,6 +133,12 @@ public class WeKnoraController {
         return weKnoraService.getKnowledgeGraph(kbId);
     }
 
+    @GetMapping("/knowledge-bases/{kbId}/wiki-page")
+    public Result getWikiPage(@PathVariable String kbId,
+                              @RequestParam String slug) {
+        return weKnoraService.getWikiPage(kbId, slug);
+    }
+
     @GetMapping("/knowledge-bases/{kbId}/knowledge/{knowledgeId}/content")
     public Result getKnowledgeContent(@PathVariable String kbId,
                                        @PathVariable String knowledgeId) {

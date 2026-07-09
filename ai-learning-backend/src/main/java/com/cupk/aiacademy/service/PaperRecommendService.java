@@ -8,22 +8,34 @@ import com.cupk.aiacademy.entity.PaperAuthor;
 import com.cupk.aiacademy.mapper.PaperAuthorMapper;
 import com.cupk.aiacademy.mapper.PaperMapper;
 import com.cupk.aiacademy.pojo.Course;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
+import jakarta.annotation.PreDestroy;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Service
 public class PaperRecommendService {
 
+    private static final Logger log = LoggerFactory.getLogger(PaperRecommendService.class);
+
     private final PaperMapper paperMapper;
     private final PaperAuthorMapper paperAuthorMapper;
     private final OpenAlexSearchService openAlexSearchService;
     private final ArxivSearchService arxivSearchService;
+    private final ExecutorService executor = Executors.newFixedThreadPool(8);
 
     public PaperRecommendService(PaperMapper paperMapper,
                                  PaperAuthorMapper paperAuthorMapper,
@@ -56,6 +68,9 @@ public class PaperRecommendService {
                 }
             }
         }
+
+        // batch-resolve authors for all local results in one pass
+        batchResolveAuthors(results);
 
         if (results.isEmpty()) {
             results.addAll(searchExternalRecommendations(courses, maxPerCourse, maxTotal));
@@ -104,24 +119,35 @@ public class PaperRecommendService {
 
     private List<PaperSearchResponse.Paper> searchExternalRecommendations(List<Course> courses, int maxPerCourse, int maxTotal) {
         List<PaperSearchResponse.Paper> results = new ArrayList<>();
-        Set<String> seenKeys = new HashSet<>();
+        Set<String> seenKeys = Collections.synchronizedSet(new HashSet<>());
+
+        List<CompletableFuture<Void>> futures = new ArrayList<>();
 
         for (Course course : courses) {
-            if (results.size() >= maxTotal) {
-                break;
-            }
-
             List<String> terms = extractKeywords(course);
             String keyword = buildExternalKeyword(course, terms);
             if (keyword == null || keyword.isBlank()) {
                 continue;
             }
 
-            appendExternalResults(results, seenKeys, openAlexSearchService.search(keyword, 1, maxPerCourse, "relevance"), maxTotal);
-            if (results.size() >= maxTotal) {
-                break;
-            }
-            appendExternalResults(results, seenKeys, arxivSearchService.search(keyword, 1, maxPerCourse, "relevance"), maxTotal);
+            // OpenAlex and arXiv in parallel per course
+            futures.add(CompletableFuture.runAsync(() -> {
+                appendExternalResults(results, seenKeys,
+                    openAlexSearchService.search(keyword, 1, maxPerCourse, "relevance"), maxTotal);
+            }, executor));
+
+            futures.add(CompletableFuture.runAsync(() -> {
+                appendExternalResults(results, seenKeys,
+                    arxivSearchService.search(keyword, 1, maxPerCourse, "relevance"), maxTotal);
+            }, executor));
+        }
+
+        // wait for all external calls with a 12s total timeout
+        try {
+            CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]))
+                .get(12, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.warn("External recommendation search timed out or failed: {}", e.getMessage());
         }
 
         return results;
@@ -154,9 +180,6 @@ public class PaperRecommendService {
     }
 
     private PaperSearchResponse.Paper toDto(Paper entity) {
-        List<PaperAuthor> authors = paperAuthorMapper.selectList(
-                new QueryWrapper<PaperAuthor>().eq("paper_id", entity.getId()).orderByAsc("sort_order"));
-
         PaperSearchResponse.Paper dto = new PaperSearchResponse.Paper();
         dto.setPaperId(entity.getArxivId());
         dto.setTitle(entity.getTitle());
@@ -174,31 +197,83 @@ public class PaperRecommendService {
             dto.setOpenAccessPdf(pdf);
         }
 
-        dto.setAuthors(authors.stream().map(a -> {
-            PaperSearchResponse.Author author = new PaperSearchResponse.Author();
-            author.setName(a.getName());
-            return author;
-        }).collect(Collectors.toList()));
-
+        // authors filled later by batchResolveAuthors
+        dto.setAuthors(Collections.emptyList());
         return dto;
+    }
+
+    private void batchResolveAuthors(List<PaperSearchResponse.Paper> results) {
+        if (results.isEmpty()) return;
+
+        List<String> arxivIds = results.stream()
+            .map(PaperSearchResponse.Paper::getPaperId)
+            .filter(id -> id != null && !id.isEmpty())
+            .distinct()
+            .collect(Collectors.toList());
+
+        if (arxivIds.isEmpty()) return;
+
+        List<Paper> papers = paperMapper.selectList(
+            new QueryWrapper<Paper>().in("arxiv_id", arxivIds));
+
+        Map<String, Integer> arxivToPaperId = new HashMap<>();
+        for (Paper p : papers) {
+            if (p.getArxivId() != null) {
+                arxivToPaperId.put(p.getArxivId(), p.getId());
+            }
+        }
+
+        if (arxivToPaperId.isEmpty()) return;
+
+        List<PaperAuthor> allAuthors = paperAuthorMapper.selectList(
+            new QueryWrapper<PaperAuthor>()
+                .in("paper_id", new ArrayList<>(arxivToPaperId.values()))
+                .orderByAsc("sort_order"));
+
+        Map<Integer, List<PaperSearchResponse.Author>> authorMap = new HashMap<>();
+        for (PaperAuthor a : allAuthors) {
+            authorMap.computeIfAbsent(a.getPaperId(), k -> new ArrayList<>())
+                .add(toAuthorDto(a));
+        }
+
+        for (PaperSearchResponse.Paper dto : results) {
+            String arxivId = dto.getPaperId();
+            if (arxivId != null) {
+                Integer paperId = arxivToPaperId.get(arxivId);
+                if (paperId != null) {
+                    List<PaperSearchResponse.Author> authors = authorMap.get(paperId);
+                    if (authors != null && !authors.isEmpty()) {
+                        dto.setAuthors(authors);
+                    }
+                }
+            }
+        }
+    }
+
+    private PaperSearchResponse.Author toAuthorDto(PaperAuthor a) {
+        PaperSearchResponse.Author author = new PaperSearchResponse.Author();
+        author.setName(a.getName());
+        return author;
     }
 
     private void appendExternalResults(List<PaperSearchResponse.Paper> results,
                                         Set<String> seenKeys,
                                         Result externalResult,
                                         int maxTotal) {
-        if (externalResult == null || results.size() >= maxTotal) return;
+        if (externalResult == null) return;
         if (!"200".equals(externalResult.getCode())) return;
         Object data = externalResult.getData();
         if (!(data instanceof PaperSearchResponse resp)) return;
         List<PaperSearchResponse.Paper> items = resp.getData();
         if (items == null) return;
 
-        for (PaperSearchResponse.Paper p : items) {
-            if (results.size() >= maxTotal) break;
-            String key = p.getSource() + ":" + p.getPaperId();
-            if (seenKeys.add(key)) {
-                results.add(p);
+        synchronized (results) {
+            for (PaperSearchResponse.Paper p : items) {
+                if (results.size() >= maxTotal) break;
+                String key = p.getSource() + ":" + p.getPaperId();
+                if (seenKeys.add(key)) {
+                    results.add(p);
+                }
             }
         }
     }
@@ -208,5 +283,10 @@ public class PaperRecommendService {
         r.setTotal(0);
         r.setData(Collections.emptyList());
         return r;
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        executor.shutdown();
     }
 }

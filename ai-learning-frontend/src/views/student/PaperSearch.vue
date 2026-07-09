@@ -608,7 +608,10 @@ const handleReset = () => {
 }
 
 onMounted(() => {
-  loadRecommend()
+  // defer recommendation load so the page renders first
+  requestAnimationFrame(() => {
+    setTimeout(() => loadRecommend(), 100)
+  })
 })
 </script>
 
