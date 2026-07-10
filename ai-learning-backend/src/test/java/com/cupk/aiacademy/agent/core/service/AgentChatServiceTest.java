@@ -1599,6 +1599,24 @@ class AgentChatServiceTest {
         assertEquals("current-question", captor.getValue().getInstructions().get(2).getContent());
     }
 
+    @Test
+    void studentChatSkipsAgentToolPlanning() {
+        AgentChatService service = newService(new AgentChatProperties(), schemaDrivenAgentPlanner, schemaDrivenReadToolPlanner);
+        loginAs(10, "student");
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"course_search\",\"course_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(messageMapper.selectList(any())).thenReturn(List.of());
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("plain chat"));
+
+        AgentChatResponse response = service.chat(1, chatRequest("解释一下递归"));
+
+        assertEquals("plain chat", response.getContent());
+        assertEquals("[]", agent.getEnabledTools());
+        verifyNoInteractions(schemaDrivenAgentPlanner, schemaDrivenReadToolPlanner);
+    }
+
     private AgentChatService newService() {
         return newService(new AgentChatProperties());
     }
@@ -1632,10 +1650,14 @@ class AgentChatServiceTest {
     }
 
     private void loginAs(Integer userId) {
+        loginAs(userId, "teacher");
+    }
+
+    private void loginAs(Integer userId, String roleCode) {
         AuthUtils.LoginUser user = new AuthUtils.LoginUser();
         user.setUserId(userId);
         user.setUsername("user" + userId);
-        user.setRoleCode("student");
+        user.setRoleCode(roleCode);
         UserContext.set(user);
     }
 

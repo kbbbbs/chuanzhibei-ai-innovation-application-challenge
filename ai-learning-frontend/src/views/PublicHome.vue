@@ -242,6 +242,7 @@ import {
   DataLine, Document, Edit, Lightning, Position, Reading, Search, Tickets, User
 } from '@element-plus/icons-vue'
 import { getMyRecommendations } from '@/api/recommendation'
+import { openAgentAssistant } from '@/utils/agentAssistant'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -423,7 +424,15 @@ const searchPaperTopic = (topic) => {
 
 const handleAgentPrompt = () => {
   const prompt = agentPrompt.value.trim()
-  router.push(prompt ? { path: '/agent-chat', query: { prompt } } : '/agent-chat')
+  if (userStore.isLoggedIn) {
+    openAgentAssistant({ prompt })
+    return
+  }
+  const target = router.resolve({
+    path: '/home',
+    query: { openAgent: '1', ...(prompt ? { prompt } : {}) },
+  }).fullPath
+  router.push({ path: '/login', query: { redirect: target } })
 }
 
 async function loadHomepageRecommendations() {

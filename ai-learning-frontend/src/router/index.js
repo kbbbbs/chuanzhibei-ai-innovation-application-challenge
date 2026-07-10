@@ -109,7 +109,10 @@ export const layoutChildren = [
   {
     path: 'agent-chat',
     name: 'AgentChat',
-    component: () => import('../views/AiChat.vue'),
+    redirect: to => ({
+      path: '/console',
+      query: { ...to.query, openAgent: '1' }
+    }),
     meta: { title: 'Agent 助手', icon: 'Cpu', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true, fullWidth: true }
   },
   {

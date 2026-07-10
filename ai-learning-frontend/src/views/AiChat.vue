@@ -1,5 +1,5 @@
 <template>
-  <div class="ai-chat-page">
+  <div class="ai-chat-page" :class="{ 'embedded-mode': props.embedded }">
     <div class="chat-sidebar">
       <div class="sidebar-header">
         <el-button type="primary" class="new-chat-btn" :loading="creatingSession" @click="handleNewSession">
@@ -68,22 +68,22 @@
 
         <div class="chat-actions">
           <el-tooltip content="刷新会话" placement="bottom">
-            <el-button circle @click="refreshChatData">
+            <el-button circle aria-label="刷新会话" @click="refreshChatData">
               <el-icon><Refresh /></el-icon>
             </el-button>
           </el-tooltip>
-          <el-tooltip content="单轮调试" placement="bottom">
-            <el-button circle @click="openChatOnceDialog">
+          <el-tooltip v-if="canUseOperations" content="单轮调试" placement="bottom">
+            <el-button circle aria-label="单轮调试" @click="openChatOnceDialog">
               <el-icon><ChatLineRound /></el-icon>
             </el-button>
           </el-tooltip>
-          <el-tooltip content="待确认动作" placement="bottom">
-            <el-button circle @click="openPendingActionDialog">
+          <el-tooltip v-if="canUseOperations" content="待确认动作" placement="bottom">
+            <el-button circle aria-label="待确认动作" @click="openPendingActionDialog">
               <el-icon><CircleCheck /></el-icon>
             </el-button>
           </el-tooltip>
-          <el-tooltip content="Agent 管理" placement="bottom">
-            <el-button circle @click="openAgentDrawer">
+          <el-tooltip v-if="canUseOperations" content="Agent 管理" placement="bottom">
+            <el-button circle aria-label="Agent 管理" @click="openAgentDrawer">
               <el-icon><Setting /></el-icon>
             </el-button>
           </el-tooltip>
@@ -109,7 +109,13 @@
             <el-icon :size="28"><Service /></el-icon>
           </div>
           <div class="message-bubble" :class="msg.role">
-            <div v-if="msg.role === 'user'">{{ msg.content }}</div>
+            <div v-if="msg.role === 'user'">
+              <div v-if="msg.contextText" class="user-context-quote">
+                <span>选中的课时原文</span>
+                <p>{{ msg.contextText }}</p>
+              </div>
+              <div>{{ msg.displayContent || msg.content }}</div>
+            </div>
             <template v-else>
               <div
                 v-if="displayMessageContent(msg)"
@@ -167,28 +173,44 @@
       </div>
 
       <div class="chat-input-area">
-        <el-input
-          v-model="inputMessage"
-          type="textarea"
-          :rows="3"
-          placeholder="输入你的问题，按 Enter 发送，Shift+Enter 换行"
-          :disabled="loading || messagesLoading"
-          @keydown.enter.exact="handleKeyDown"
-          resize="none"
-        />
-        <el-button
-          class="send-btn"
-          type="primary"
-          :disabled="!inputMessage.trim() || loading || messagesLoading"
-          :loading="loading"
-          @click="sendMessage"
-        >
-          发送
-        </el-button>
+        <div v-if="selectedContextText" class="selected-context-card">
+          <div class="selected-context-heading">
+            <div>
+              <el-icon><Document /></el-icon>
+              <strong>已加入课时选文</strong>
+              <span v-if="selectedContextLabel">{{ selectedContextLabel }}</span>
+            </div>
+            <el-button text size="small" @click="emit('context-consumed')">移除</el-button>
+          </div>
+          <p>{{ selectedContextText }}</p>
+          <small v-if="props.selectedContext?.truncated">选文较长，已截取前 1500 字作为上下文。</small>
+        </div>
+        <div class="chat-input-row">
+          <el-input
+            v-model="inputMessage"
+            type="textarea"
+            :rows="3"
+            :maxlength="inputMaxLength"
+            show-word-limit
+            placeholder="输入你的问题，按 Enter 发送，Shift+Enter 换行"
+            :disabled="loading || messagesLoading"
+            @keydown.enter.exact="handleKeyDown"
+            resize="none"
+          />
+          <el-button
+            class="send-btn"
+            type="primary"
+            :disabled="!inputMessage.trim() || loading || messagesLoading"
+            :loading="loading"
+            @click="sendMessage"
+          >
+            发送
+          </el-button>
+        </div>
       </div>
     </div>
 
-    <el-drawer v-model="agentDrawerVisible" title="Agent 管理" size="760px" class="agent-drawer">
+    <el-drawer v-if="canUseOperations" v-model="agentDrawerVisible" title="Agent 管理" size="760px" class="agent-drawer">
       <div class="agent-admin">
         <div class="admin-toolbar">
           <el-input
@@ -247,6 +269,7 @@
     </el-drawer>
 
     <el-dialog
+      v-if="canUseOperations"
       v-model="agentFormVisible"
       :title="agentFormMode === 'create' ? '新增 Agent' : '编辑 Agent'"
       width="720px"
@@ -290,7 +313,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="knowledgeDialogVisible" title="上传 Agent 知识文档" width="560px" destroy-on-close>
+    <el-dialog v-if="canUseOperations" v-model="knowledgeDialogVisible" title="上传 Agent 知识文档" width="560px" destroy-on-close>
       <el-form label-width="110px">
         <el-form-item label="Agent">
           <el-input v-model="knowledgeForm.agentName" disabled />
@@ -323,7 +346,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="chatOnceVisible" title="单轮 Agent 调试" width="620px" destroy-on-close>
+    <el-dialog v-if="canUseOperations" v-model="chatOnceVisible" title="单轮 Agent 调试" width="620px" destroy-on-close>
       <el-input
         v-model="chatOnceContent"
         type="textarea"
@@ -339,7 +362,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="pendingActionDialogVisible" title="待确认 Agent 动作" width="760px" destroy-on-close>
+    <el-dialog v-if="canUseOperations" v-model="pendingActionDialogVisible" title="待确认 Agent 动作" width="760px" destroy-on-close>
       <el-table
         v-loading="pendingActionsLoading"
         :data="pendingActions"
@@ -375,7 +398,7 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-model="actionDialogVisible" title="确认指令" width="520px" destroy-on-close>
+    <el-dialog v-if="canUseOperations" v-model="actionDialogVisible" title="确认指令" width="520px" destroy-on-close>
       <div class="action-summary-card">
         <div class="action-summary-row">
           <span>指令模式</span>
@@ -496,6 +519,7 @@ import {
   CircleCheck,
   CopyDocument,
   Delete,
+  Document,
   EditPen,
   Loading,
   Plus,
@@ -525,6 +549,27 @@ import {
 import { renderMarkdown } from '../utils/markdown'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
+import { buildAgentContextPrompt, parseAgentContextPrompt } from '@/utils/agentContext'
+
+const props = defineProps({
+  embedded: {
+    type: Boolean,
+    default: false,
+  },
+  selectedContext: {
+    type: Object,
+    default: null,
+  },
+  draftPrompt: {
+    type: String,
+    default: '',
+  },
+  draftVersion: {
+    type: Number,
+    default: 0,
+  },
+})
+const emit = defineEmits(['context-consumed'])
 
 const DEFAULT_AGENT = {
   id: 1,
@@ -609,10 +654,14 @@ const actionForm = reactive({
 const hasActionParameterSchema = computed(() => actionForm.parameterSchema.length > 0 || actionForm.missingRequiredFields.length > 0)
 const actionParameterCount = computed(() => Object.keys(actionForm.parameters || {}).length)
 
-const isAdmin = computed(() => {
-  const role = localStorage.getItem('roleCode') || localStorage.getItem('role') || ''
-  return ['admin', 'ROLE_ADMIN'].includes(role)
+const isAdmin = computed(() => userStore.isAdmin)
+const canUseOperations = computed(() => userStore.isAdmin || userStore.isTeacher)
+const selectedContextText = computed(() => String(props.selectedContext?.text || '').trim())
+const selectedContextLabel = computed(() => {
+  const labels = [props.selectedContext?.courseTitle, props.selectedContext?.lessonTitle].filter(Boolean)
+  return labels.join(' · ')
 })
+const inputMaxLength = computed(() => selectedContextText.value ? 2000 : 4000)
 
 const currentAgentDescription = computed(() => {
   const agent = agents.value.find(item => sameId(item.id, selectedAgentId.value))
@@ -693,12 +742,20 @@ function normalizeSession(session) {
   }
 }
 
+function composeContextualPrompt(question) {
+  return buildAgentContextPrompt(question, props.selectedContext)
+}
+
 function normalizeMessage(message) {
+  const content = message.content || message.message || message.reply || ''
+  const contextual = message.role === 'assistant' ? null : parseAgentContextPrompt(content)
   return {
     id: message.id,
     localId: message.localId || `local_${Date.now()}_${Math.random()}`,
     role: message.role === 'assistant' ? 'assistant' : 'user',
-    content: message.content || message.message || message.reply || '',
+    content,
+    contextText: contextual?.contextText || message.contextText || '',
+    displayContent: contextual?.displayContent || message.displayContent || '',
     pendingAction: message.pendingAction || message.pending_action || null,
     createdAt: message.createTime || message.createdAt
   }
@@ -781,6 +838,10 @@ async function loadSessions(activateFirst = false) {
         await switchSession(defaultAgentSession)
       }
     }
+  } catch (e) {
+    sessions.value = []
+    currentSessionId.value = null
+    messages.value = []
   } finally {
     sessionsLoading.value = false
   }
@@ -879,20 +940,22 @@ function deleteSession(sessionId) {
 }
 
 async function sendMessage() {
-  const content = inputMessage.value.trim()
-  if (!content || loading.value) return
+  const question = inputMessage.value.trim()
+  if (!question || loading.value) return
+  const content = composeContextualPrompt(question)
+  const contextText = selectedContextText.value
 
   loading.value = true
   let userMessageAdded = false
   let shouldRefreshHistory = false
   try {
     if (!currentSessionId.value) {
-      await createSession(content)
+      await createSession(question)
     }
 
     const activeSession = sessions.value.find(session => sameId(session.id, currentSessionId.value))
     if (activeSession && messages.value.length === 0) {
-      activeSession.title = trimTitle(content)
+      activeSession.title = trimTitle(question)
       activeSession.updatedAt = new Date().toISOString()
       sortSessions()
     }
@@ -901,6 +964,8 @@ async function sendMessage() {
       localId: `user_${Date.now()}`,
       role: 'user',
       content,
+      displayContent: question,
+      contextText,
       createdAt: new Date().toISOString()
     })
     userMessageAdded = true
@@ -909,6 +974,7 @@ async function sendMessage() {
     scrollToBottom()
 
     shouldRefreshHistory = await sendNormalMessage(content)
+    if (contextText) emit('context-consumed')
 
     if (activeSession) {
       activeSession.updatedAt = new Date().toISOString()
@@ -924,7 +990,7 @@ async function sendMessage() {
         role: 'assistant',
         content: '请求失败，请稍后重试。',
         failed: true,
-        retryContent: content,
+        retryContent: question,
         createdAt: new Date().toISOString()
       })
     }
@@ -1015,7 +1081,15 @@ function fillPromptFromRoute() {
   }
 }
 
+function fillPromptFromDraft() {
+  const prompt = String(props.draftPrompt || '').trim()
+  if (prompt) {
+    inputMessage.value = prompt.slice(0, inputMaxLength.value)
+  }
+}
+
 async function openAgentDrawer() {
+  if (!canUseOperations.value) return
   agentDrawerVisible.value = true
   await loadAgentDefinitions()
 }
@@ -1188,12 +1262,14 @@ async function submitKnowledgeUpload() {
 }
 
 function openChatOnceDialog() {
+  if (!canUseOperations.value) return
   chatOnceContent.value = ''
   chatOnceReply.value = ''
   chatOnceVisible.value = true
 }
 
 async function runChatOnce() {
+  if (!canUseOperations.value) return
   const content = chatOnceContent.value.trim()
   if (!content) {
     ElMessage.warning('请输入调试问题')
@@ -1222,6 +1298,7 @@ function hasPendingAction(message) {
 }
 
 function hasConfirmableAction(message) {
+  if (!canUseOperations.value) return false
   const pendingAction = pendingActionOf(message)
   if (pendingAction?.actionId || pendingAction?.actionCode) {
     return true
@@ -1374,11 +1451,13 @@ function applyPendingActionToForm(pendingAction) {
 }
 
 async function openPendingActionDialog() {
+  if (!canUseOperations.value) return
   pendingActionDialogVisible.value = true
   await loadPendingActions()
 }
 
 async function loadPendingActions() {
+  if (!canUseOperations.value) return
   pendingActionsLoading.value = true
   try {
     pendingActions.value = toArray(await getAgentPendingActions({ limit: 20 }))
@@ -1422,6 +1501,7 @@ function formatPendingTime(value) {
 }
 
 async function openActionDialog(message) {
+  if (!canUseOperations.value) return
   const pendingAction = pendingActionOf(message)
   actionForm.actionId = pendingAction?.actionId || ''
   actionForm.actionCode = pendingAction?.actionCode || ''
@@ -1527,6 +1607,7 @@ function showActionResult(success, message, resultData) {
 }
 
 async function submitActionConfirm() {
+  if (!canUseOperations.value) return
   let parameters
   try {
     if (hasActionParameterSchema.value) {
@@ -1573,11 +1654,13 @@ watch(selectedAgentId, (agentId) => {
 })
 
 watch(() => route.query.prompt, fillPromptFromRoute)
+watch(() => props.draftVersion, fillPromptFromDraft)
 
 onMounted(async () => {
   await loadAgents()
   await loadSessions(true)
   fillPromptFromRoute()
+  fillPromptFromDraft()
 })
 </script>
 
@@ -1591,6 +1674,19 @@ onMounted(async () => {
   border-radius: var(--radius-md);
   box-shadow: var(--card-shadow);
   overflow: hidden;
+}
+
+.ai-chat-page.embedded-mode {
+  height: 100%;
+  min-height: 0;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.embedded-mode .chat-sidebar {
+  width: 240px;
+  min-width: 240px;
 }
 
 .chat-sidebar {
@@ -1839,6 +1935,31 @@ onMounted(async () => {
   box-shadow: 0 10px 20px rgba(37, 99, 235, 0.16);
 }
 
+.user-context-quote {
+  margin-bottom: 10px;
+  padding: 9px 11px;
+  border: 1px solid rgba(255, 255, 255, .28);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, .12);
+}
+
+.user-context-quote span {
+  display: block;
+  margin-bottom: 4px;
+  color: rgba(255, 255, 255, .72);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.user-context-quote p {
+  display: -webkit-box;
+  margin: 0;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 5;
+  white-space: pre-wrap;
+}
+
 .message-bubble.assistant {
   background: #fff;
   color: var(--text-primary);
@@ -1943,11 +2064,18 @@ onMounted(async () => {
   background: #fff;
   border-top: 1px solid var(--border-color);
   display: flex;
+  flex-direction: column;
   gap: 12px;
-  align-items: flex-end;
 }
 
-.chat-input-area .el-textarea {
+.chat-input-row {
+  width: 100%;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.chat-input-row .el-textarea {
   flex: 1;
 }
 
@@ -1961,6 +2089,57 @@ onMounted(async () => {
   height: 40px;
   flex-shrink: 0;
   border-radius: var(--radius-md);
+}
+
+.selected-context-card {
+  padding: 10px 12px;
+  border: 1px solid #bfdbfe;
+  border-radius: var(--radius-md);
+  background: linear-gradient(135deg, #eff6ff, #f8fafc);
+}
+
+.selected-context-heading,
+.selected-context-heading > div {
+  display: flex;
+  align-items: center;
+}
+
+.selected-context-heading {
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.selected-context-heading > div {
+  min-width: 0;
+  gap: 6px;
+  color: #1d4ed8;
+}
+
+.selected-context-heading span {
+  min-width: 0;
+  overflow: hidden;
+  color: #64748b;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.selected-context-card p {
+  display: -webkit-box;
+  margin: 7px 0 0;
+  overflow: hidden;
+  color: #334155;
+  font-size: 12px;
+  line-height: 1.6;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  white-space: pre-wrap;
+}
+
+.selected-context-card small {
+  display: block;
+  margin-top: 5px;
+  color: #b45309;
 }
 
 .agent-admin {
@@ -2173,12 +2352,22 @@ onMounted(async () => {
     min-height: calc(100vh - 96px);
   }
 
+  .ai-chat-page.embedded-mode {
+    height: 100%;
+    min-height: 0;
+  }
+
   .chat-sidebar {
     width: 100%;
     min-width: 0;
     height: 220px;
     border-right: 0;
     border-bottom: 1px solid var(--border-color);
+  }
+
+  .embedded-mode .chat-sidebar {
+    width: 100%;
+    min-width: 0;
   }
 
   .chat-header {

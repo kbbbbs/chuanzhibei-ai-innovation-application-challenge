@@ -53,6 +53,7 @@ public class AgentChatService {
     private static final String SYSTEM_PROMPT = "你是一个智能教学管理平台助手";
     private static final int DEFAULT_AGENT_ID = 1;
     private static final String DEFAULT_AGENT_CODE = "learning_assistant";
+    private static final String NO_AGENT_TOOLS = "[]";
     private static final String DEFAULT_AGENT_ENABLED_TOOLS = "["
             + "\"course_search\","
             + "\"course_category_search\","
@@ -333,18 +334,20 @@ public class AgentChatService {
         Optional<AgentDirectActionReply> directReply = Optional.empty();
         String selectedToolContext = "";
         try {
-            if (unifiedAgentPlanner != null) {
-                AgentPlanningOutcome outcome = unifiedAgentPlanner.plan(agent, content);
-                directReply = Optional.ofNullable(outcome.getDirectReply());
-                selectedToolContext = outcome.getToolContext() == null ? "" : outcome.getToolContext();
-            } else {
-                directReply = schemaDrivenAgentPlanner == null
-                        ? Optional.empty()
-                        : schemaDrivenAgentPlanner.tryPlan(agent, content);
-                if (directReply.isEmpty()) {
-                    selectedToolContext = schemaDrivenReadToolPlanner == null
-                            ? ""
-                            : schemaDrivenReadToolPlanner.planToolContext(agent, content);
+            if (canUseAgentTools()) {
+                if (unifiedAgentPlanner != null) {
+                    AgentPlanningOutcome outcome = unifiedAgentPlanner.plan(agent, content);
+                    directReply = Optional.ofNullable(outcome.getDirectReply());
+                    selectedToolContext = outcome.getToolContext() == null ? "" : outcome.getToolContext();
+                } else {
+                    directReply = schemaDrivenAgentPlanner == null
+                            ? Optional.empty()
+                            : schemaDrivenAgentPlanner.tryPlan(agent, content);
+                    if (directReply.isEmpty()) {
+                        selectedToolContext = schemaDrivenReadToolPlanner == null
+                                ? ""
+                                : schemaDrivenReadToolPlanner.planToolContext(agent, content);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -526,6 +529,7 @@ public class AgentChatService {
             throw new BusinessException("Agent 不存在或已停用");
         }
         applyDefaultAgentTools(agent);
+        applyRoleCapabilities(agent);
         return agent;
     }
 
@@ -536,6 +540,19 @@ public class AgentChatService {
         if (isBlank(agent.getEnabledTools())) {
             agent.setEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
         }
+    }
+
+    private void applyRoleCapabilities(AgentDefinition agent) {
+        if (agent == null) {
+            return;
+        }
+        if ("student".equals(UserContext.getCurrentRoleCode())) {
+            agent.setEnabledTools(NO_AGENT_TOOLS);
+        }
+    }
+
+    private boolean canUseAgentTools() {
+        return !"student".equals(UserContext.getCurrentRoleCode());
     }
 
     private Duration remainingTimeout(long deadlineNanos) {

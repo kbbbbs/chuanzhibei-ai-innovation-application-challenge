@@ -1,9 +1,13 @@
 package com.cupk.aiacademy.agent.action;
 
 import com.cupk.aiacademy.agent.core.controller.AgentExceptionHandler;
+import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
+import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.mapper.OperationLogMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -19,6 +23,7 @@ import java.util.Map;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -38,6 +43,16 @@ class AgentActionControllerTest {
 
     @MockitoBean
     private OperationLogMapper operationLogMapper;
+
+    @BeforeEach
+    void loginAsTeacher() {
+        loginAs("teacher", 7);
+    }
+
+    @AfterEach
+    void clearUserContext() {
+        UserContext.clear();
+    }
 
     @Test
     void listPendingReturnsResultShape() throws Exception {
@@ -118,6 +133,30 @@ class AgentActionControllerTest {
                 .andExpect(jsonPath("$.success").doesNotExist());
     }
 
+    @Test
+    void studentCanOnlyUseAgentChat() throws Exception {
+        loginAs("student", 9);
+
+        mockMvc.perform(get("/api/agent/actions/pending"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("403"))
+                .andExpect(jsonPath("$.msg").value("学生账号仅开放 Agent 对话权限"));
+
+        mockMvc.perform(post("/api/agent/actions/confirm")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                {
+                                  "actionCode": "notice.create",
+                                  "confirmed": true,
+                                  "parameters": {"title": "测试", "content": "测试"}
+                                }
+                                """))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("403"));
+
+        verifyNoInteractions(pendingActionQueryService, actionExecutionService);
+    }
+
     private AgentPendingActionResponse pendingActionResponse() {
         return new AgentPendingActionResponse(
                 "action-1",
@@ -135,5 +174,13 @@ class AgentActionControllerTest {
                 LocalDateTime.now().plusMinutes(10),
                 false
         );
+    }
+
+    private void loginAs(String roleCode, Integer userId) {
+        AuthUtils.LoginUser user = new AuthUtils.LoginUser();
+        user.setUserId(userId);
+        user.setUsername(roleCode + userId);
+        user.setRoleCode(roleCode);
+        UserContext.set(user);
     }
 }

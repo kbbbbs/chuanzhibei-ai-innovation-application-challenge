@@ -26,7 +26,7 @@
           <el-icon><DataBoard /></el-icon>
           <span>控制台</span>
         </el-button>
-        <el-button class="agent-nav-btn" type="primary" link @click="router.push('/agent-chat')">
+        <el-button class="agent-nav-btn" type="primary" link @click="handleAgentEntry">
           <el-icon><Cpu /></el-icon>
           <span>Agent 助手</span>
         </el-button>
@@ -170,6 +170,7 @@
       </el-main>
     </el-container>
 
+    <AgentFloatingAssistant />
   </el-container>
 </template>
 
@@ -179,6 +180,8 @@ import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
+import AgentFloatingAssistant from '@/components/agent/AgentFloatingAssistant.vue'
+import { openAgentAssistant } from '@/utils/agentAssistant'
 import {
   DataBoard, Cpu, School, Tickets, Checked,
   DataLine, Reading, Edit, Document, SwitchButton, User, UserFilled, Menu, Collection, Bell, MapLocation,
@@ -212,6 +215,19 @@ let scrollFrame = null
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
   localStorage.setItem('layout-sidebar-collapsed', String(sidebarCollapsed.value))
+}
+
+function handleAgentEntry() {
+  if (userStore.isLoggedIn) {
+    openAgentAssistant()
+    return
+  }
+  const target = router.resolve({
+    path: route.path,
+    query: { ...route.query, openAgent: '1' },
+    hash: route.hash,
+  }).fullPath
+  router.push({ path: '/login', query: { redirect: target } })
 }
 
 async function scrollToHomeSection(id) {
