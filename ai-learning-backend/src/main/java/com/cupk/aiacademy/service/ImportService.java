@@ -568,6 +568,7 @@ public class ImportService {
                 parseRecordStatusFilter(params.get("status")),
                 parseOptionalLongParam(params.get("courseId"), "课程ID"),
                 parseOptionalLongParam(params.get("teacherId"), "教师ID"),
+                blankToNull(params.get("keyword")),
                 0,
                 exportSize(params)
         );
@@ -577,8 +578,9 @@ public class ImportService {
     private List<PaperImportRow> exportPapers(Map<String, String> params) {
         Long teacherId = parseOptionalLongParam(params.get("teacherId"), "教师ID");
         Long courseId = parseOptionalLongParam(params.get("courseId"), "课程ID");
+        String keyword = blankToNull(params.get("keyword"));
         PaperStatus status = parsePaperStatusFilter(params.get("status"));
-        return paperService.list(teacherId).stream()
+        return paperService.list(teacherId, keyword, courseId).stream()
                 .filter(paper -> courseId == null || Objects.equals(paper.getCourseId(), courseId))
                 .filter(paper -> status == null || paper.getStatus() == status)
                 .flatMap(paper -> toPaperImportRows(paper).stream())
@@ -589,8 +591,9 @@ public class ImportService {
         Long teacherId = parseOptionalLongParam(params.get("teacherId"), "教师ID");
         Long classId = parseOptionalLongParam(params.get("classId"), "教学班ID");
         Long paperId = parseOptionalLongParam(params.get("paperId"), "试卷ID");
+        String keyword = blankToNull(params.get("keyword"));
         ExamStatus status = parseExamStatusFilter(params.get("status"));
-        return examService.list(teacherId).stream()
+        return examService.list(teacherId, keyword, classId).stream()
                 .filter(exam -> classId == null || Objects.equals(exam.getClassId(), classId))
                 .filter(exam -> paperId == null || Objects.equals(exam.getPaperId(), paperId))
                 .filter(exam -> status == null || exam.getStatus() == status)

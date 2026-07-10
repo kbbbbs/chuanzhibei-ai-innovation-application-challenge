@@ -18,13 +18,17 @@
               <span>知识库列表</span>
               <span class="panel-sub">按课程整理你的教学资料</span>
             </div>
-            <el-tag size="small" effect="plain">{{ kbs.length }} 个</el-tag>
+            <el-tag size="small" effect="plain">{{ filteredKbs.length }} 个</el-tag>
+          </div>
+          <div class="kb-search">
+            <el-input v-model="kbSearch" placeholder="搜索知识库名称或描述" clearable />
+            <el-button @click="resetKbSearch">重置</el-button>
           </div>
           <div class="panel-body scroll-y" v-loading="kbLoading">
-            <el-empty v-if="kbs.length === 0 && !kbLoading" description="暂无知识库">
+            <el-empty v-if="filteredKbs.length === 0 && !kbLoading" :description="kbs.length === 0 ? '暂无知识库' : '未找到知识库'">
               <el-button type="primary" @click="openCreateDialog">新建知识库</el-button>
             </el-empty>
-            <div v-for="kb in kbs" :key="kb.id"
+            <div v-for="kb in filteredKbs" :key="kb.id"
               :class="['kb-item', { active: selectedKb?.id === kb.id }]"
               @click="selectKb(kb)">
               <div class="kb-item-left">
@@ -330,12 +334,20 @@ function unwrapList(data) {
 }
 
 const kbs = ref([]); const kbLoading = ref(false)
+const kbSearch = ref('')
 const selectedKb = ref(null)
 const router = useRouter()
 const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
 const graphRefreshKey = ref(0)
 const statusPollTimer = ref(null)
+
+const filteredKbs = computed(() => {
+  const keyword = kbSearch.value.trim().toLowerCase()
+  if (!keyword) return kbs.value
+  return kbs.value.filter(kb => [kb.name, kb.description]
+    .some(value => String(value || '').toLowerCase().includes(keyword)))
+})
 
 const createVisible = ref(false); const creating = ref(false)
 const createForm = reactive({ name: '', description: '' })
@@ -395,6 +407,10 @@ function scheduleStatusPolling() {
   statusPollTimer.value = setTimeout(async () => {
     await loadFiles()
   }, 3000)
+}
+
+function resetKbSearch() {
+  kbSearch.value = ''
 }
 
 function openGraph() {
@@ -776,6 +792,13 @@ onBeforeUnmount(stopStatusPolling)
   font-size: 12px;
   font-weight: 400;
   color: var(--text-muted);
+}
+
+.kb-search {
+  display: flex;
+  gap: 8px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .panel-body.scroll-y {

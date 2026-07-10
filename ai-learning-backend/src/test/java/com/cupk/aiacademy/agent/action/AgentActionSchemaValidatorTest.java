@@ -76,6 +76,41 @@ class AgentActionSchemaValidatorTest {
                 tooLong.issues().stream().map(AgentActionValidationIssue::code).toList());
     }
 
+    @Test
+    void homeworkCreateAcceptsCourseNameFromNaturalLanguagePlan() {
+        AgentActionSpec homeworkCreate = new AgentActionSpecRegistry()
+                .findByActionCode("homework.create")
+                .orElseThrow();
+
+        AgentActionParameterValidationResult result = validator.validate(homeworkCreate, Map.of(
+                "courseName", "Java 入门",
+                "title", "第一次练习",
+                "deadline", "2026-07-17 20:00:00"
+        ));
+
+        assertEquals("Java 入门", result.parameters().get("courseTitle"));
+        assertEquals("第一次练习", result.parameters().get("title"));
+        assertEquals("2026-07-17 20:00:00", result.parameters().get("deadline"));
+        assertEquals(List.of(), result.missingRequiredFields());
+        assertTrue(result.issues().isEmpty());
+    }
+
+    @Test
+    void homeworkCreateRejectsUnresolvedRelativeDeadline() {
+        AgentActionSpec homeworkCreate = new AgentActionSpecRegistry()
+                .findByActionCode("homework.create")
+                .orElseThrow();
+
+        AgentActionParameterValidationResult result = validator.validate(homeworkCreate, Map.of(
+                "courseTitle", "Java 入门",
+                "title", "第一次练习",
+                "deadline", "下周五晚上八点"
+        ));
+
+        assertEquals(List.of("pattern_mismatch"),
+                result.issues().stream().map(AgentActionValidationIssue::code).toList());
+    }
+
     private AgentActionSpec spec() {
         return new AgentActionSpec(
                 "course.create",

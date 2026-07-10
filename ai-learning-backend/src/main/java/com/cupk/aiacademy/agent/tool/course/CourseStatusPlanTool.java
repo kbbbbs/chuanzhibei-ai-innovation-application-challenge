@@ -61,8 +61,7 @@ public class CourseStatusPlanTool implements AgentTool {
 
     @Override
     public Set<String> aliases() {
-        return Set.of("course_publish_status_plan", "course_archive_plan",
-                "course_delete_plan", "course_remove_plan");
+        return Set.of("course_publish_status_plan", "course_archive_plan");
     }
 
     @Override

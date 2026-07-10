@@ -10,7 +10,7 @@
 
       <el-form :inline="true" :model="searchForm">
         <el-form-item label="岗位名称">
-          <el-input v-model="searchForm.jobName" placeholder="请输入岗位名称" clearable />
+          <el-input v-model="searchForm.jobName" placeholder="请输入岗位名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="searchForm.status" placeholder="请选择状态" clearable>
@@ -19,7 +19,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="loadData">查询</el-button>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -56,8 +56,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadData"
+        @size-change="handleSizeChange"
       />
     </el-card>
 
@@ -165,6 +167,16 @@ const loadData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadData()
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadData()
 }
 
 const handleCreate = () => {

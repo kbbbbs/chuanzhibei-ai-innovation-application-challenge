@@ -62,9 +62,10 @@ public class ApiQuestionController {
             @RequestParam(required = false) RecordStatus status,
             @RequestParam(required = false) Long courseId,
             @RequestParam(required = false) Long teacherId,
+            @RequestParam(required = false) String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
-        return ApiResponse.success(questionService.list(type, difficulty, status, courseId, teacherId, page, size));
+        return ApiResponse.success(questionService.list(type, difficulty, status, courseId, teacherId, keyword, page, size));
     }
 
     @DeleteMapping("/{id}")

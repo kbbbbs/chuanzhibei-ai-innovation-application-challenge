@@ -45,6 +45,7 @@ public class NoticeController {
     @GetMapping
     public Result pages(@RequestParam(required = false) Integer publisherId,
                         @RequestParam(required = false) Integer classId,
+                        @RequestParam(defaultValue = "") String title,
                         @RequestParam(defaultValue = "") String noticeType,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "10") Integer pageSize) {
@@ -74,6 +75,9 @@ public class NoticeController {
         }
         if (noticeType != null && !noticeType.trim().isEmpty()) {
             queryWrapper.eq("notice_type", noticeType.trim());
+        }
+        if (title != null && !title.trim().isEmpty()) {
+            queryWrapper.like("title", title.trim());
         }
         queryWrapper.orderByDesc("id");
         noticeMapper.selectPage(page, queryWrapper);

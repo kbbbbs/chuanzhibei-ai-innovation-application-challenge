@@ -14,6 +14,9 @@
       </template>
 
       <el-form :inline="true" :model="searchForm">
+        <el-form-item label="关键词">
+          <el-input v-model="searchForm.keyword" placeholder="请输入题目内容" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
         <el-form-item label="题目类型">
           <el-select v-model="searchForm.questionType" placeholder="请选择" clearable>
             <el-option label="单选题" value="single_choice" />
@@ -60,8 +63,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadQuestions"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -168,6 +173,7 @@ const questions = ref([])
 const courses = ref([])
 
 const searchForm = reactive({
+  keyword: '',
   questionType: '',
   courseId: null
 })
@@ -362,6 +368,9 @@ const loadQuestions = async () => {
     if (searchForm.courseId) {
       params.courseId = searchForm.courseId
     }
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
     const res = await request.get('/api/questions', { params })
     if (res.code === '200' && res.data) {
       const pageData = res.data
@@ -397,6 +406,11 @@ const handleSearch = () => {
   loadQuestions()
 }
 
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadQuestions()
+}
+
 const handleExport = async (format) => {
   exporting.value = true
   try {
@@ -406,6 +420,9 @@ const handleExport = async (format) => {
     }
     if (searchForm.courseId) {
       params.courseId = searchForm.courseId
+    }
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
     }
     const blob = await exportImportData('questions', params)
     downloadBlob(blob, `题库_${new Date().toISOString().slice(0, 10)}.${format}`)
@@ -548,6 +565,7 @@ const handleDelete = async (row) => {
 }
 
 const handleReset = () => {
+  searchForm.keyword = ''
   searchForm.questionType = ''
   searchForm.courseId = null
   pagination.pageNum = 1

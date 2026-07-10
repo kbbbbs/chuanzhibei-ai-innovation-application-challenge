@@ -13,6 +13,21 @@
         </div>
       </template>
 
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="作业标题">
+          <el-input v-model="searchForm.title" placeholder="请输入作业标题" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="教学班">
+          <el-select v-model="searchForm.classId" placeholder="请选择教学班" clearable>
+            <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
       <el-table :data="homeworkList" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="作业标题" />
@@ -50,8 +65,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadHomework"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -153,6 +170,11 @@ const attachmentName = ref('')
 const homeworkList = ref([])
 const classList = ref([])
 
+const searchForm = reactive({
+  title: '',
+  classId: null
+})
+
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -189,6 +211,12 @@ const loadHomework = async () => {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     })
+    if (searchForm.title && searchForm.title.trim()) {
+      params.title = searchForm.title.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
     const res = await request.get('/homeworks', { params })
     if (res.code === '200') {
       homeworkList.value = getRecords(res.data)
@@ -199,6 +227,23 @@ const loadHomework = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadHomework()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadHomework()
+}
+
+const handleReset = () => {
+  searchForm.title = ''
+  searchForm.classId = null
+  pagination.pageNum = 1
+  loadHomework()
 }
 
 const loadClasses = async () => {
@@ -215,7 +260,14 @@ const loadClasses = async () => {
 const handleExport = async (format) => {
   exporting.value = true
   try {
-    const blob = await exportImportData('homeworks', scopedTeacherParams(userStore, { format }))
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.title && searchForm.title.trim()) {
+      params.title = searchForm.title.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
+    const blob = await exportImportData('homeworks', params)
     downloadBlob(blob, `作业_${new Date().toISOString().slice(0, 10)}.${format}`)
     ElMessage.success('导出成功')
   } catch (e) {
@@ -379,6 +431,10 @@ onMounted(() => {
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 
 .attachment-uploader {

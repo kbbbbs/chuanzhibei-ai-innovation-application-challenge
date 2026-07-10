@@ -13,6 +13,21 @@
         </div>
       </template>
 
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="试卷名称">
+          <el-input v-model="searchForm.keyword" placeholder="请输入试卷名称" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="课程">
+          <el-select v-model="searchForm.courseId" placeholder="请选择课程" clearable>
+            <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
       <el-table :data="papers" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="试卷名称" />
@@ -40,8 +55,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadPapers"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -189,6 +206,11 @@ const courses = ref([])
 const questionBank = ref([])
 const questionTypeFilter = ref('')
 
+const searchForm = reactive({
+  keyword: '',
+  courseId: null
+})
+
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -280,6 +302,12 @@ const loadPapers = async () => {
   loading.value = true
   try {
     const params = scopedTeacherParams(userStore)
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.courseId) {
+      params.courseId = searchForm.courseId
+    }
     const res = await request.get('/api/papers', { params })
     if (res.code === '200' && res.data) {
       const records = getRecords(res.data).map(mapPaperForDisplay)
@@ -295,6 +323,23 @@ const loadPapers = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadPapers()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadPapers()
+}
+
+const handleReset = () => {
+  searchForm.keyword = ''
+  searchForm.courseId = null
+  pagination.pageNum = 1
+  loadPapers()
 }
 
 const loadCourses = async () => {
@@ -313,7 +358,14 @@ const loadCourses = async () => {
 const handleExport = async (format) => {
   exporting.value = true
   try {
-    const blob = await exportImportData('papers', scopedTeacherParams(userStore, { format }))
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.courseId) {
+      params.courseId = searchForm.courseId
+    }
+    const blob = await exportImportData('papers', params)
     downloadBlob(blob, `试卷_${new Date().toISOString().slice(0, 10)}.${format}`)
     ElMessage.success('导出成功')
   } catch (e) {
@@ -588,6 +640,10 @@ onMounted(() => {
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 
 .question-pool {

@@ -49,6 +49,17 @@
           <AppEmpty />
         </template>
       </el-table>
+
+      <el-pagination
+        class="pagination"
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="pagination.total"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="loadSubmissions"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- Grade Dialog -->
@@ -88,7 +99,7 @@ import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { currentUserId, formatLocalDateTime, getRecords } from '@/utils/apiHelpers'
+import { currentUserId, formatLocalDateTime, getRecords, getTotal } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const route = useRoute()
@@ -99,6 +110,11 @@ const loading = ref(false)
 const submitLoading = ref(false)
 const homework = ref({})
 const submissions = ref([])
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
 
 const gradeDialogVisible = ref(false)
 const currentSubmission = ref({})
@@ -129,15 +145,27 @@ const loadHomework = async () => {
 const loadSubmissions = async () => {
   loading.value = true
   try {
-    const res = await request.get(`/homeworks/${homeworkId.value}/submits`)
+    const res = await request.get('/homework-submits', {
+      params: {
+        homeworkId: homeworkId.value,
+        pageNum: pagination.pageNum,
+        pageSize: pagination.pageSize
+      }
+    })
     if (res.code === '200') {
       submissions.value = getRecords(res.data)
+      pagination.total = getTotal(res.data)
     }
   } catch (e) {
     // 全局已提示
   } finally {
     loading.value = false
   }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadSubmissions()
 }
 
 const handleGrade = (row) => {
@@ -177,6 +205,8 @@ const handleSubmitGrade = async () => {
 const loadPage = () => {
   homework.value = {}
   submissions.value = []
+  pagination.pageNum = 1
+  pagination.total = 0
   loadHomework()
   loadSubmissions()
 }
@@ -201,5 +231,10 @@ watch(
 
 .score-split {
   margin-left: 10px;
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: center;
 }
 </style>

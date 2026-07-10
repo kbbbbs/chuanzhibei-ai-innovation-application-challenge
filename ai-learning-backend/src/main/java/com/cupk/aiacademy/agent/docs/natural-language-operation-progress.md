@@ -2,9 +2,9 @@
 
 ## 当前结论
 
-当前 Agent 已完成模块化重构，并已经具备“自然语言识别明确写操作意图 -> 生成待确认计划 -> 用户确认 -> 执行业务动作 -> 写审计日志”的基础闭环。
+当前 Agent 已完成模块化重构，并具备“用户自然语言 -> LLM Planner -> action schema 后端校验 -> 错误反馈修复 -> pending action -> 用户确认 -> 权限和业务校验 -> 写数据库及审计日志”的基础闭环。
 
-当前执行逻辑不是完整 ReAct 或 plan-replan。现阶段采用的是受控直达路由：`AgentChatService` 先判断是否命中明确写操作计划工具，命中后直接返回待确认计划；未命中时再走普通 Prompt、知识库和只读工具上下文。这个策略适合当前目标：通过自然语言操作平台功能，同时避免模型绕过权限或直接猜测执行结果。
+当前执行逻辑已经采用受控的单工具 ReAct 形态：写操作由模型选择 action schema 并经过最多 3 轮校验修复；读操作由模型选择一个读工具，后端执行后把 observation 交给模型生成最终答复。权限、业务状态和数据库写入仍只由本地执行器负责。
 
 ## 已完成基础能力
 
@@ -21,26 +21,35 @@
 | 高风险确认文本 | 已完成 | `HIGH`/`CRITICAL` 操作必须匹配确认文本。 |
 | 执行审计 | 已完成 | 成功确认后写入 `t_operation_log`。 |
 | 权限再校验 | 已完成 | 执行器内重新校验角色、归属、参数范围和数据存在性。 |
-| 轻量意图路由 | 已完成 | 发布通知、作业、考试、成绩等明确写操作可直接返回计划。 |
+| 旧关键词意图路由 | 已隔离 | `AgentActionIntentRouter`、`AgentActionSelectionService`、`NaturalLanguageQueryService` 及其查询规则辅助类均不注册为 Spring Bean。 |
 
 ## 已完成只读工具
 
 | 模块 | 已实现工具 | 覆盖范围 |
 | --- | --- | --- |
 | 课程 | `course_search` | 查询当前用户可见课程。 |
+| 课程分类 | `course_category_search` | 查询全部分类或按分类名称查询。 |
+| 分类课程 | `course_by_category_search` | 按分类名称查询当前用户可见课程。 |
 | 章节 | `chapter_search` | 查询当前用户可见课程章节。 |
 | 课时 | `lesson_search` | 查询课时内容。 |
+| 课程结构 | `course_structure_search` | 按课程名称跨表查询章节和课时。 |
 | 课程资源 | `course_resource_search` | 查询课时/课程资源。 |
 | 教学班 | `teaching_class_search` | 查询教学班信息。 |
 | 作业 | `homework_search` | 查询作业信息。 |
+| 作业提交统计 | `homework_submission_stats` | 按作业或教学班统计应交、已交、未交和提交率。 |
 | 学习进度 | `learning_progress` | 查询学习进度。 |
 | 学习建议 | `learning_plan` | 基于进度生成学习建议。 |
 | 考试安排 | `exam_session_search` | 查询考试安排。 |
 | 考试记录 | `exam_record_search` | 查询考试记录。 |
+| 考试统计 | `exam_stats` | 统计考试记录数、平均分、最高分和最低分。 |
 | 试卷 | `exam_paper_search` | 查询试卷信息。 |
 | 成绩 | `grade_record_search` | 查询成绩记录。 |
 | 论文 | `paper_local_search` | 查询本地论文资料。 |
 | 通知 | `notice_search` | 查询通知。 |
+| 教师申请 | `teacher_application_search` | 管理员按关键词和审核状态查询申请。 |
+| 导入日志 | `import_log_search` | 管理员或教师按关键词和 HTTP 状态查询导入日志。 |
+| 课程统计 | `course_stats` | 按课程统计章节、课时、教学班和作业数量。 |
+| 题库 | `question_search` | 教师或管理员按关键词、课程、题型和状态查询题目。 |
 
 ## 已完成写操作闭环
 
@@ -49,6 +58,7 @@
 | 课程 | `course_create_plan` | `course.create` | 中 | 已完成创建课程；支持课程分类名称到 ID 解析（categoryName），名称不唯一时要求补充 categoryId。 |
 | 课程 | `course_update_plan` | `course.update` | 中 | 已完成修改课程基础信息，不允许修改教师归属、人数、浏览量和状态；支持按分类名称修改 categoryId。 |
 | 课程 | `course_status_plan` | `course.status` | 高 | 已完成课程状态变更，用于上下架、停用、恢复等场景；不物理删除课程记录；返回 impactPreview（受影响章节/课时/教学班/学生数）。 |
+| 课程 | `course_delete_plan` | `course.delete` | 高 | 已完成课程删除；删除类表达走 DELETE 语义，不再映射为下架状态。 |
 | 章节 | `chapter_create_plan` | `chapter.create` | 中 | 已完成创建章节。 |
 | 章节 | `chapter_update_plan` | `chapter.update` | 中 | 已完成修改章节，支持修改标题、描述、排序值和所属课程。 |
 | 章节 | `chapter_sort_plan` | `chapter.sort` | 中 | 已完成同一课程下章节排序调整。 |
@@ -94,11 +104,11 @@
 
 1. 计划工具只声明 `AgentActionSpec`，不再手写 `AgentActionPlan` 和 `pendingActionStore.create(...)`。
 2. 参数字段必须声明 type、必要 aliases、必要 enum 和 examples，让模型看到的是动作 schema，而不是整套数据库或 Java 代码。
-3. `AgentParameterExtractor` 用 schema 构造抽取提示；模型不可用或输出不合格时回退本地规则。
-4. `AgentActionSchemaValidator` 统一校验抽取结果，并把 `validationIssues` 放入 `parameterExtraction` 元数据。
-5. `AgentActionPlanFactory` 统一生成 `WRITE_PLAN`、`parameterSchema`、`jsonSchema`、`missingRequiredFields`、`actionId`、`expiresAt`。
-6. `AgentToolExecutor.buildToolContext(...)` 只运行读工具；写计划工具只通过明确意图路由或显式工具执行触发，避免普通聊天生成无关 pending action。
-7. 前端优先读取结构化 `pendingAction` 和 pending action 列表，旧文本解析只作为历史消息兜底。
+3. `LlmActionRepairLoop` 负责模型调用、JSON 解析和最多 3 轮结构化修复。
+4. `LlmActionDecisionValidator` 与 `AgentActionSchemaValidator` 统一校验 actionCode、字段白名单、类型、枚举、必填和二选一约束。
+5. 只有校验通过后，`LlmValidatedPlanFactory` 才生成 `pendingAction`；修复后仍失败则返回需要用户补充的信息。
+6. `SchemaDrivenReadToolPlanner` 根据每个工具的独立 arguments schema 选择并校验单个读工具；首次 CHAT 会二次模型复核，不再盲跑所有工具。
+7. 前端和历史消息读取结构化 `pendingAction`，执行前通过数据库接口重新校验 actionId。
 
 这条路线等价于在 Java/Spring 内实现 TypeChat 的核心模式：用强 schema 约束模型输出，再用本地校验和业务执行器兜底；不需要把 TypeChat 的 TypeScript runtime 直接引入到后端。
 
@@ -151,55 +161,28 @@
 
 1. 新增计划工具：放到对应 `agent/tool/{domain}` 包，优先声明 `AgentActionSpec` 并调用 `AgentActionPlanFactory.createWritePlan(...)`。
 2. 新增执行器：放到对应 `agent/action/{domain}` 包，实现 `AgentActionExecutor`。
-3. 补路由：在 `AgentChatService` 增加明确意图识别和工具别名。
+3. 补 schema：确保动作被 `AgentActionCatalog` 收集，并在 Planner 的 enabled specs 中可见；不要在 `AgentChatService` 添加关键词判断。
 4. 补权限：执行器内校验角色、数据归属、状态和参数范围。
 5. 补审计：确认执行成功后依赖 `AgentActionExecutionService` 统一写日志。
-6. 补测试：覆盖计划工具、确认执行、拒绝越权、拒绝非法参数、聊天直达路由。
+6. 补测试：覆盖 Planner 选择、JSON 修复、schema 校验、确认执行、拒绝越权和非法业务状态。
 7. 更新文档：同步本进度文档和 `natural-language-operations-plan.md`。
 
 ## 当前不建议优先做的内容
 
 - 暂不拆真实 MCP server。当前内部工具协议还在扩展，先保持 Spring Boot 单体内模块化。
-- 暂不优先实现完整 ReAct/plan-replan。先把工具协议、权限、确认、审计和业务动作覆盖做扎实。
+- 暂不扩展为无限轮自主执行；当前保持最多 3 轮规划修复、单个读工具 observation 和所有写操作人工确认。
 - 暂不让模型直接生成数据库写操作参数并执行。所有写操作仍必须走计划、确认和执行器校验。
 
-## 统一中间层（查询链路升级）
+## 结构化读工具链路
 
-当前已落地统一中间层，把查询从「盲跑所有读工具做关键词 LIKE」升级为「IntentParser→EntityResolver→TimeResolver→QuerySpec→Disambiguation→执行」。
+当前读链路是 `用户输入 -> LLM 选择 TOOL/CHAT -> 工具 arguments schema 校验 -> 错误反馈修复（最多 3 轮） -> 执行一个读工具 -> observation -> 最终模型回答`。
 
-### 已落地组件
+`AgentPromptAssembler` 不再调用 `NaturalLanguageQueryService`，也不会执行全部 enabled 工具。跨表查询由专用工具负责，例如课程结构、课程统计、作业提交统计和考试统计。每个专用工具只接收后端校验后的结构化字段，不再用关键词判断查询意图。
 
-| 组件 | 位置 | 职责 |
-| --- | --- | --- |
-| NaturalLanguageEntityResolver | agent/query | 人名/课程名/班级名→ID，模糊匹配+重名候选，跨表 studentClassIds/classIdsForCourses |
-| NaturalLanguageTimeParser | agent/query | 相对/周期/模糊时间→时间区间（今天/本周/下周五/最近N天/N天前等） |
-| NaturalLanguageTimeRange | agent/query | 解析后的时间区间，用于过滤查询 |
-| NaturalLanguageQueryService | agent/query | 统一查询执行：选意图→解析实体→解析时间→执行跨表链路→消歧→汇总 |
-| AgentPromptAssembler 接入 | agent/core/prompt | 模型回答前优先走 NaturalLanguageQueryService，拿到结构化结果再拼进 Prompt；无结果时回退读工具 |
+旧 `NaturalLanguageQueryService`、`NaturalLanguageEntityResolver`、`NaturalLanguageTimeParser` 和 `NaturalLanguageQueryTool` 仅保留为迁移参考与旧测试对象，均没有 Spring 组件注解；默认 Agent 也不再包含 `natural_language_query`。
 
-### 支持的跨表查询链路
+测试覆盖 `SchemaDrivenReadToolPlannerTest`、`AgentReadToolCatalogTest`、`LegacyReadRouterIsolationTest` 和各读工具测试；真实 HTTP 回归已验证分类、分类课程、课程结构、课程统计、作业提交统计、教师申请、导入日志、考试统计和题库的模型选工具日志。
 
-| 查询 | 链路 | 状态 |
-| --- | --- | --- |
-| 学生作业提交情况 | 学生→学生班级∩课程班级→作业→提交→已交/未交/提交率 | 已实现 |
-| 成绩查询 | 学生/课程/班级→成绩记录→统计 | 已实现 |
-| 学习进度 | 学生/课程→学习进度→统计 | 已实现 |
-| 课程结构 | 课程→章节→课时→资源 | 已实现 |
-| 考试 | 课程/班级→考试安排/答卷→统计 | 已实现 |
-| 课程统计 | 课程→章节/课时/教学班/学生计数 | 已实现 |
-
-### 消歧
-
-NaturalLanguageQueryService 在实体解析返回多个候选时返回结构化消歧提示，要求用户补充学号/手机号或更完整名称后重试，避免在重名场景下猜测执行。
-
-### 接入点
-
-AgentPromptAssembler.retrieveToolContext 现在先调用 NaturalLanguageQueryService.answer()，拿到非空结果就优先用结构化查询结果作为工具上下文；只有当统一查询无法识别意图时，才回退到原有「执行全部 enabled 读工具」的关键词 LIKE 流程。这保证既有的只读工具和行为不受影响，同时让「查张三在某门课里的作业提交情况」这类多跳查询能稳定命中。
-
-### 测试
-
-- NaturalLanguageQueryServiceTest：覆盖学生作业提交情况的跨表链路（课程→班级→作业→提交→提交率统计）和空查询兜底。
-- AgentToolExecutorTest / AgentChatServiceTest：回归验证接入后写操作链路和意图路由不受影响。
 ### 写操作实体定位回流
 
 写操作执行器已从硬编码按标题 `eq` 精确匹配升级为复用统一实体定位能力：
@@ -211,11 +194,9 @@ AgentPromptAssembler.retrieveToolContext 现在先调用 NaturalLanguageQuerySer
 | NoticeUpdateActionExecutor | QueryWrapper eq title + LIMIT 2 | AgentWriteEntityLocator.locateNotice，title 用 like，多匹配列出候选 |
 | NoticeStatusActionExecutor | 同上硬编码 | 同上 |
 
-AgentWriteEntityLocator（agent/query）是写操作专用定位层：与查询层 NaturalLanguageEntityResolver 的区别是强制唯一锁定，多候选时抛出带候选 ID+名称的 BusinessException 让用户补充 ID 消歧，而不是返回多结果。这样「把 Java 入门这门课改一下」这类自然定位不再要求标题完全一致，重名时也能直接看到候选 ID 选择。
+AgentWriteEntityLocator（agent/query）是当前写操作执行阶段的专用定位层：它强制唯一锁定，多候选时抛出带候选 ID+名称的 BusinessException 让用户补充 ID 消歧。旧查询层 `NaturalLanguageEntityResolver` 已退出生产路径。
 
 测试：AgentWriteEntityLocatorTest 覆盖按 ID/模糊标题定位、唯一命中、多候选消歧、无定位条件、未找到；CourseActionExecutorTest/NoticeActionExecutorTest 改用真实 locator + mock mapper 回归。
 ### 统计查询扩展
 
-新增考试统计聚合 `examStatsAnswer`：按学生/时间范围过滤考试记录后，计算记录数、平均分、最高分、最低分、低分学生数（低于平均分 60%），并列出低分学生姓名+分数。意图检测 `isExamStatsQuery` 命中「考试+平均分/最高分/最低分/低分/及格率/统计」，且排在 `isGradeQuery` 之前，避免被普通成绩查询截获。
-
-当前已支持的统计聚合：作业提交率/未交名单、成绩平均分、学习进度平均值、考试平均分+低分学生、课程结构计数（章节/课时/教学班/作业数）。测试：NaturalLanguageQueryServiceTest.examStatsComputesAverageAndLowScoreStudents。
+统计意图不再由 `isExamStatsQuery` 等关键词分支识别。模型根据工具 schema 选择 `exam_stats`、`homework_submission_stats` 或 `course_stats`，后端使用结构化字段查询并聚合；测试由 Planner、schema catalog、专用工具和真实 HTTP 回归共同覆盖。

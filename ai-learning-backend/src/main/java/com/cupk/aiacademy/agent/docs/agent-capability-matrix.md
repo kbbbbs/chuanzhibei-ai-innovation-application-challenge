@@ -1,6 +1,6 @@
 # Agent 能力矩阵
 
-更新日期：2026-07-09
+更新日期：2026-07-10
 
 本文档用于对齐“项目已有功能”和“Agent 已接入功能”。状态说明：
 
@@ -26,7 +26,7 @@
 | 作业提交 | 提交记录、提交率、批改 | 已接入 | 已接入 | 已接入 | 批量批改、退回、重置批改状态未接入。 |
 | 考试安排 | 考试创建、关闭、查询 | 已接入 | 已接入 | 已接入 | 考试时间表达和发布状态约束需增强。 |
 | 试卷 | 试卷创建、修改、删除、组题 | 已接入 | 已接入 | 已接入 | 试卷题目明细查询仍可增强。 |
-| 题库 | 题目创建、修改、删除 | 未接入 | 已接入 | 已接入 | 题库读查询、题型专用 schema 和导入能力待补。 |
+| 题库 | 题目创建、修改、删除 | 已接入 | 已接入 | 已接入 | 题目导入和更细的难度筛选 schema 待补。 |
 | 成绩 | 成绩查询、录入、修改、删除 | 已接入 | 已接入 | 已接入 | 批量导入、导入日志、回滚策略未接入。 |
 | 学习进度 | 学习记录、进度统计、学习计划 | 已接入 | 未接入 | 不适用 | 当前只读；不建议开放自然语言写进度。 |
 | 论文搜索 | 本地论文、外部论文搜索、收藏/标记 | 已接入 | 未接入 | 未接入 | 当前接入本地论文查询，外部检索和收藏/标记未进入统一链路。 |
@@ -36,7 +36,9 @@
 
 ## 已接入读查询
 
-统一入口在 `NaturalLanguageQueryService`，聊天时由 `AgentPromptAssembler` 自动调用。当前已支持：
+读查询主链路已经改为 `SchemaDrivenReadToolPlanner`：模型只负责从当前 Agent 已启用的读工具中选择一个工具并输出 `TOOL/CHAT` JSON。每个工具声明自己的 arguments schema，后端统一校验工具名、未知字段、字段类型、必填/二选一约束、数值范围和置信度；非法输出会把结构化错误反馈给模型并最多修复 3 轮。首次 `CHAT` 会再由模型复核一次，避免把平台查询误判成普通聊天。校验通过后只执行被选中的工具，再把 observation 交给聊天模型生成最终答复。
+
+当前专用读工具支持：
 
 - 课程分类：列出分类、按分类名称或“某某类/某某相关课程”查课程。
 - 课程：按课程名、简介、教师、难度查课程。
@@ -52,6 +54,9 @@
 - 教师申请：管理员按申请人、联系方式、原因、审核状态查教师申请。
 - 导入状态：管理员或教师按最近导入、成功/失败状态查询导入相关操作日志。
 - 课程统计：统计课程下章节数、课时数、教学班数、作业数。
+- 题库：教师或管理员按关键词、课程、题型和状态查询题目元数据。
+
+跨表与统计查询已经拆成 `course_category_search`、`course_by_category_search`、`course_structure_search`、`teacher_application_search`、`import_log_search`、`course_stats`、`homework_submission_stats`、`exam_stats` 和 `question_search` 等专用工具。`natural_language_query`、`NaturalLanguageQueryService` 及其规则解析辅助类均不再注册为 Spring Bean，也不在默认 Agent 工具清单中；数据库旧配置中的同名工具无法重新激活该路径。
 
 读查询结果会尽量返回“解析范围”和“查询范围”，用于说明本次查了哪些候选、时间条件、数据表和匹配字段。
 当分类、课程、教学班或学生候选不唯一，且当前问题需要明确对象时，Agent 会先返回候选列表要求补充信息。
@@ -60,12 +65,12 @@
 
 ## 已接入写操作
 
-写操作走“意图识别 -> schema 参数抽取 -> pending action -> 用户确认 -> 执行器校验 -> 审计日志”链路。
+写操作走“LLM Planner -> action schema 校验 -> 结构化错误修复循环 -> pending action -> 用户确认 -> 执行器权限/业务校验 -> 审计日志”链路。`AgentChatService` 已不再引用 `AgentActionIntentRouter`；校验失败不会创建 pending action，而是返回需要用户补充的字段。
 
 | 领域 | 动作 |
 | --- | --- |
 | 课程分类 | `course.category.create`、`course.category.update`、`course.category.delete` |
-| 课程 | `course.create`、`course.update`、`course.status` |
+| 课程 | `course.create`、`course.update`、`course.status`、`course.delete` |
 | 章节 | `chapter.create`、`chapter.update`、`chapter.delete`、`chapter.sort` |
 | 课时 | `lesson.create`、`lesson.update`、`lesson.status`、`lesson.sort` |
 | 课程资源 | `course.resource.attach`、`course.resource.remove` |
@@ -80,18 +85,26 @@
 | 成绩 | `grade.record.create`、`grade.record.update`、`grade.record.delete` |
 | 教师申请 | `teacher.application.review` |
 
-## 本轮 P0 完成
+## 历史 P0 里程碑
 
-- 已把通知、试卷、论文、教师申请纳入 `NaturalLanguageQueryService` 统一读查询路由。
+- 当时曾把通知、试卷、论文、教师申请纳入 `NaturalLanguageQueryService`；该规则路由现已由专用读工具替换并退出生产。
 - 已给课程分类补齐 `course.category.create`、`course.category.update`、`course.category.delete` 待确认写操作。
 - 已给新增读查询和课程/分类查询补充“查询范围”说明。
 
-## 本轮 P1 完成
+## 历史 P1 里程碑
 
 - 已强化课程分类、课程、教学班、学生候选的自然语言消歧；教师候选会随课程和教学班候选展示。
 - 已补教学班和导入状态统一自然语言读查询；通知、论文查询继续保留测试覆盖。
 - 已将自然语言读查询样例纳入单元测试，覆盖分类、课程、教学班、通知、试卷、论文、教师申请和导入状态。
 - 已新增教师申请审核待确认操作 `teacher.application.review`，支持管理员通过或拒绝申请。
+
+## Schema Planner / ReAct 迁移
+
+- 写操作只进入 `SchemaDrivenAgentPlanner`；旧 `AgentActionIntentRouter` 和旧动作选择器不再注册为 Spring Bean。
+- 模型输出非法 JSON、未知 actionCode、未知字段、错误类型、缺少必填字段或二选一约束不满足时，后端把结构化错误反馈给模型，最多修复 3 轮。
+- 只有完整通过校验的写计划才写入 `t_agent_pending_action`；待确认动作统一使用 MyBatis 持久化，不再以 JVM 内存存储作为生产主实现。
+- 助手消息会在 `tool_result` 中保存结构化 `pendingAction`，刷新历史后仍可恢复确认入口；执行前前端会重新查询数据库确认 actionId 仍有效。
+- 读操作由模型选择单个结构化工具，后端校验失败时反馈修复；限定轮次后仍失败会明确标记“未执行平台查询”并要求用户补充条件。
 
 ## 下一步建议
 

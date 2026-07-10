@@ -55,8 +55,11 @@ public class LlmValidatedPlanFactory {
         String content = "已根据模型规划生成待确认操作；"
                 + "操作=" + spec.actionName()
                 + "；actionCode=" + spec.actionCode()
-                + "；确认ID=" + pendingAction.actionId()
-                + "。请核对后确认执行。";
+                + "；确认ID=" + pendingAction.actionId();
+        if (validation.getMissingRequiredFields() != null && !validation.getMissingRequiredFields().isEmpty()) {
+            content += "；待补齐字段=" + String.join("、", validation.getMissingRequiredFields());
+        }
+        content += "。请核对后确认执行。";
 
         return new AgentDirectActionReply(content, AgentPendingActionResponse.fromToolData(data));
     }

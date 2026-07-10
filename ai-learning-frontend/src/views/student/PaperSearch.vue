@@ -157,10 +157,12 @@
       <el-pagination
         v-if="total > 0"
         v-model:current-page="searchForm.page"
-        :page-size="searchForm.size"
+        v-model:page-size="searchForm.size"
         :total="total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="handleSearch"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -244,6 +246,7 @@
 
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
@@ -261,6 +264,7 @@ import {
 } from '@/api/paper'
 
 const userStore = useUserStore()
+const route = useRoute()
 const advancedVisible = ref(false)
 
 const searchForm = reactive({
@@ -309,6 +313,11 @@ const loadRecommend = async () => {
 
 function resetPage() {
   searchForm.page = 1
+}
+
+function handleSizeChange() {
+  searchForm.page = 1
+  handleSearch()
 }
 
 function buildSearchParams() {
@@ -608,6 +617,13 @@ const handleReset = () => {
 }
 
 onMounted(() => {
+  const initialKeyword = typeof route.query.keyword === 'string' ? route.query.keyword.trim() : ''
+  if (initialKeyword) {
+    searchForm.keyword = initialKeyword
+    requestAnimationFrame(() => handleSearch())
+    return
+  }
+
   // defer recommendation load so the page renders first
   requestAnimationFrame(() => {
     setTimeout(() => loadRecommend(), 100)

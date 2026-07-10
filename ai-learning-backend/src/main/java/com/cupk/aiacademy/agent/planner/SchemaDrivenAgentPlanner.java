@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 
 @Component
@@ -39,10 +40,6 @@ public class SchemaDrivenAgentPlanner {
         return properties.isEnabled();
     }
 
-    public boolean isFallbackRouterEnabled() {
-        return properties.isFallbackRouterEnabled();
-    }
-
     public Optional<AgentDirectActionReply> tryPlan(AgentDefinition agent, String userText) {
         if (!properties.isEnabled() || agent == null || userText == null || userText.isBlank()) {
             return Optional.empty();
@@ -58,18 +55,45 @@ public class SchemaDrivenAgentPlanner {
         try {
             result = repairLoop.plan(userText.trim(), specs);
         } catch (Exception e) {
-            log.warn("Schema-driven agent planner failed, fallback to rule/model path: message={}", e.getMessage(), e);
+            log.warn("Schema-driven agent planner failed, continue without a write plan: message={}", e.getMessage(), e);
             return Optional.empty();
         }
 
-        if (result == null || result.getValidation() == null || !result.getValidation().isValid()) {
-            if (result != null && result.getValidation() != null) {
-                log.debug("Schema-driven agent planner did not produce a valid action: errors={}",
-                        result.getValidation().getErrors());
-            }
+        if (result == null || result.getValidation() == null) {
             return Optional.empty();
+        }
+
+        if (isChatDecision(result.getDecision())) {
+            return Optional.empty();
+        }
+
+        if (!result.getValidation().isValid()) {
+            log.debug("Schema-driven agent planner requires user input: errors={}",
+                    result.getValidation().getErrors());
+            return Optional.of(clarificationReply(result));
         }
 
         return Optional.of(planFactory.create(userText.trim(), result.getValidation()));
+    }
+
+    private boolean isChatDecision(LlmActionDecision decision) {
+        return decision != null
+                && decision.getDecision() != null
+                && "CHAT".equals(decision.getDecision().trim().toUpperCase(Locale.ROOT));
+    }
+
+    private AgentDirectActionReply clarificationReply(LlmActionPlanResult result) {
+        LlmActionDecision decision = result.getDecision();
+        LlmActionValidationResult validation = result.getValidation();
+        String message = decision == null ? null : decision.getUserMessage();
+        if (message == null || message.isBlank()) {
+            List<String> missing = validation.getMissingRequiredFields();
+            if (missing != null && !missing.isEmpty()) {
+                message = "还需要你补充以下信息：" + String.join("、", missing) + "。";
+            } else {
+                message = "暂时无法生成可靠的操作计划，请补充更明确的操作对象和参数。";
+            }
+        }
+        return new AgentDirectActionReply(message.trim(), null);
     }
 }

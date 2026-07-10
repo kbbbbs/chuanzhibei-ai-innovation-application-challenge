@@ -3,6 +3,7 @@ package com.cupk.aiacademy.agent.action.course;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionContext;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionResult;
 import com.cupk.aiacademy.agent.action.AgentActionRiskLevel;
+import com.cupk.aiacademy.agent.tool.course.CourseDeletePlanTool;
 import com.cupk.aiacademy.agent.tool.course.CourseResourceRemovePlanTool;
 import com.cupk.aiacademy.agent.tool.course.CourseStatusPlanTool;
 import com.cupk.aiacademy.agent.tool.course.LessonStatusPlanTool;
@@ -248,6 +249,45 @@ class CourseActionExecutorTest {
         ));
 
         assertEquals("课程状态只能是 0、1 或 2", exception.getMessage());
+        verify(courseMapper, never()).updateById(any(Course.class));
+    }
+
+    @Test
+    void courseDeleteCallsDeleteByIdForOwnerTeacher() {
+        when(courseMapper.selectById(11)).thenReturn(course(11, 7));
+        when(courseMapper.deleteById(11)).thenReturn(1);
+        CourseDeleteActionExecutor executor = new CourseDeleteActionExecutor(courseMapper, entityLocator);
+
+        AgentActionExecutionResult result = executor.execute(new AgentActionExecutionContext(
+                loginAs("teacher", 7),
+                Map.of("courseId", "11", "reason", "重复课程"),
+                ""
+        ));
+
+        assertTrue(result.success());
+        assertEquals("course.delete", result.actionCode());
+        assertEquals(AgentActionRiskLevel.HIGH, executor.riskLevel());
+        assertEquals(CourseDeletePlanTool.CONFIRMATION_TEXT, executor.confirmationText());
+        assertEquals(11, result.data().get("courseId"));
+        verify(courseMapper).deleteById(11);
+        verify(courseMapper, never()).updateById(any(Course.class));
+    }
+
+    @Test
+    void courseDeleteRejectsOtherTeacherCourse() {
+        when(courseMapper.selectById(11)).thenReturn(course(11, 8));
+        CourseDeleteActionExecutor executor = new CourseDeleteActionExecutor(courseMapper, entityLocator);
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> executor.execute(
+                new AgentActionExecutionContext(
+                        loginAs("teacher", 7),
+                        Map.of("courseId", 11),
+                        ""
+                )
+        ));
+
+        assertEquals("只能删除当前登录教师负责的课程", exception.getMessage());
+        verify(courseMapper, never()).deleteById(11);
         verify(courseMapper, never()).updateById(any(Course.class));
     }
 

@@ -409,6 +409,8 @@ public class AgentParameterExtractor {
                 putIfPresent(inferred, name, inferStatus(rawRequest));
             } else if ("courseid".equals(normalizedName)) {
                 putIfPresent(inferred, name, inferCourseId(rawRequest));
+            } else if ("coursetitle".equals(normalizedName) || "coursename".equals(normalizedName)) {
+                putIfPresent(inferred, name, inferCourseTitle(rawRequest));
             } else if ("categoryid".equals(normalizedName)) {
                 putIfPresent(inferred, name, inferInteger(rawRequest,
                         "(?:分类\\s*ID|分类id|分类编号|课程分类ID|课程分类id|课程分类|category\\s*Id|category_id|categoryId)\\s*(?:是|为|=|:|：)?\\s*(\\d+)"));
@@ -476,6 +478,36 @@ public class AgentParameterExtractor {
             return explicitId;
         }
         return inferInteger(rawRequest, "(\\d+)\\s*号\\s*(?:课程|课)(?!时)");
+    }
+
+    private String inferCourseTitle(String rawRequest) {
+        String value = matchText(rawRequest,
+                "(?:给|为|在|针对)\\s*([^，,。；;\\n]+?)\\s*(?:这门|该门)?(?:课程|课)\\s*(?:创建|新建|新增|添加|安排).*?(?:章节|课时|教学班|试卷|题目)");
+        if (!isBlank(value)) {
+            return normalizeCourseTitle(value);
+        }
+        value = matchText(rawRequest,
+                "(?:给|为|在|针对)\\s*([^，,。；;\\n]+?)\\s*(?:布置|发布|创建|新建|安排|留一份|留个).*?(?:作业|练习|任务)");
+        if (!isBlank(value)) {
+            return normalizeCourseTitle(value);
+        }
+        value = matchText(rawRequest,
+                "(?:课程名称|课程标题|课程名|课名)\\s*(?:是|为|叫|=|:|：)?\\s*([^，,。；;\\n]+)");
+        if (!isBlank(value)) {
+            return normalizeCourseTitle(value);
+        }
+        value = matchText(rawRequest,
+                "(?:叫|名叫|名字叫|名称叫)\\s*([^，,。；;？?\\n]+?)(?:的)?(?:课程|课|门课)(?:吗|么|呢)?\\s*$");
+        return normalizeCourseTitle(value);
+    }
+
+    private String normalizeCourseTitle(String value) {
+        if (value == null) {
+            return null;
+        }
+        return trimCourseSuffix(trimTrailingParameterLabels(value))
+                .replaceFirst("^(?:一门|一个|个|这门|该门|这|这个)\\s*", "")
+                .trim();
     }
 
     private Integer inferStatus(String rawRequest) {

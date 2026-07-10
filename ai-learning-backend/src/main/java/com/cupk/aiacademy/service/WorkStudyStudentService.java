@@ -12,11 +12,17 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 public interface WorkStudyStudentService extends IService<WorkStudyStudent> {
-    Page<WorkStudyStudent> pageList(Integer pageNum, Integer pageSize, Integer workStudyId, Integer studentId, String workMonth, Integer auditStatus);
+    default Page<WorkStudyStudent> pageList(Integer pageNum, Integer pageSize, Integer workStudyId, Integer studentId, String workMonth, Integer auditStatus) {
+        return pageList(pageNum, pageSize, workStudyId, studentId, workMonth, auditStatus, null);
+    }
+    Page<WorkStudyStudent> pageList(Integer pageNum, Integer pageSize, Integer workStudyId, Integer studentId, String workMonth, Integer auditStatus, String keyword);
     boolean saveWorkStudyStudent(WorkStudyStudentRequest request);
     boolean updateWorkStudyStudent(Integer id, WorkStudyStudentRequest request);
     boolean applyForPosition(WorkStudyApplicationRequest request);
     boolean auditApplication(WorkStudyAuditRequest request);
-    void exportExcel(Integer workStudyId, Integer studentId, String workMonth, String format, HttpServletResponse response) throws IOException;
+    default void exportExcel(Integer workStudyId, Integer studentId, String workMonth, String format, HttpServletResponse response) throws IOException {
+        exportExcel(workStudyId, studentId, workMonth, format, null, response);
+    }
+    void exportExcel(Integer workStudyId, Integer studentId, String workMonth, String format, String keyword, HttpServletResponse response) throws IOException;
     void importExcel(Integer workStudyId, MultipartFile file) throws IOException;
 }

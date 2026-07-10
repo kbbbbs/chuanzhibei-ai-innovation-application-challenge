@@ -10,8 +10,6 @@ import org.springframework.stereotype.Component;
 public class AgentPlannerProperties {
     private boolean enabled = false;
     private String mode = "shadow";
-    private int maxRepairRounds = 5;
+    private int maxRepairRounds = 3;
     private double minConfidence = 0.6;
-    private boolean fallbackRouterEnabled = true;
-
 }

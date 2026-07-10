@@ -37,31 +37,55 @@ public class LlmActionRepairLoop {
     }
 
     public LlmActionPlanResult plan(String userText, List<AgentActionSpec> specs) {
-        LlmActionDecision decision = callModel(promptBuilder.buildPlanPrompt(userText, specs));
-        LlmActionValidationResult validation = validator.validate(decision, specs);
-        if (!isActionDecision(decision)) {
-            return new LlmActionPlanResult(decision, validation);
-        }
+        LlmActionDecision decision = null;
+        LlmActionValidationResult validation = null;
+        String prompt = promptBuilder.buildPlanPrompt(userText, specs);
+        int maxAttempts = Math.max(1, properties.getMaxRepairRounds() + 1);
 
-        int round = 0;
-        while (!validation.isValid() && round < properties.getMaxRepairRounds()) {
-            String repairPrompt = promptBuilder.buildRepairPrompt(userText, specs, decision, validation.getErrors());
-            decision = callModel(repairPrompt);
-            validation = validator.validate(decision, specs);
-            if (!isActionDecision(decision)) {
+        for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            try {
+                decision = callModel(prompt);
+                validation = validator.validate(decision, specs);
+            } catch (Exception e) {
+                validation = LlmActionValidationResult.invalid(
+                        List.of("模型输出无法解析：" + safeMessage(e)));
+            }
+
+            if (validation.isValid()
+                    || (decision != null && !isActionDecision(decision))) {
                 break;
             }
-            round++;
+            if (attempt + 1 < maxAttempts) {
+                prompt = promptBuilder.buildRepairPrompt(
+                        userText,
+                        specs,
+                        decision,
+                        validation.getErrors()
+                );
+            }
         }
 
         return new LlmActionPlanResult(decision, validation);
+    }
+
+    private String safeMessage(Exception exception) {
+        if (exception == null || exception.getMessage() == null || exception.getMessage().isBlank()) {
+            return "未知格式错误";
+        }
+        return exception.getMessage().trim();
     }
 
     private boolean isActionDecision(LlmActionDecision decision) {
         if (decision == null || decision.getDecision() == null) {
             return false;
         }
-        return "ACTION".equals(decision.getDecision().trim().toUpperCase(Locale.ROOT));
+        String decisionType = decision.getDecision().trim().toUpperCase(Locale.ROOT);
+        if ("ACTION".equals(decisionType)) {
+            return true;
+        }
+        return "ASK_USER".equals(decisionType)
+                && decision.getActionCode() != null
+                && !decision.getActionCode().trim().isEmpty();
     }
 
 }

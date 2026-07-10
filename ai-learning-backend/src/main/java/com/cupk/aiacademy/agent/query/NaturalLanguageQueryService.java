@@ -40,7 +40,6 @@ import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.teacherapply.TeacherApplication;
 import com.cupk.aiacademy.teacherapply.TeacherApplicationMapper;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -53,10 +52,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-@Service
+@Deprecated(forRemoval = true)
 public class NaturalLanguageQueryService {
+    private static final int CATEGORY_LIST_LIMIT = 50;
+    private static final Pattern CATEGORY_COURSE_PATTERN = Pattern.compile(
+            "(?:查询|查一下|查看|显示|列出|找一下|找|请问|帮我)?\\s*"
+                    + "(.{2,80}?)(?:的)?(?:课程分类|分类|类别|方向|类)"
+                    + "(?:下|下面|里|里面|中|中的)?(?:有(?:哪些|什么)?|有哪些|都有什么|的)?(?:课程|课|门课)?\\s*$");
+
     private final NaturalLanguageEntityResolver entityResolver;
     private final NaturalLanguageTimeParser timeParser;
     private final AgentToolSupport support;
@@ -130,18 +137,21 @@ public class NaturalLanguageQueryService {
             return "自然语言查询内容为空。";
         }
         int limit = Math.max(1, Math.min(20, maxItems));
+        boolean categoryListQuery = isCategoryListQuery(query);
+        boolean categoryCourseQuery = isCategoryCourseQuery(query);
+        int contextLimit = categoryListQuery ? CATEGORY_LIST_LIMIT : limit;
         NaturalLanguageTimeRange timeRange = timeParser.parse(query);
-        QueryContext context = buildContext(query, timeRange, limit);
+        QueryContext context = buildContext(query, timeRange, contextLimit);
 
         String disambiguation = disambiguationMessage(query, context);
         if (!disambiguation.isBlank()) {
             return disambiguation;
         }
-        if (isCategoryCourseQuery(query)) {
+        if (categoryCourseQuery) {
             return categoryCoursesAnswer(context, limit);
         }
-        if (isCategoryListQuery(query)) {
-            return categoryListAnswer(context, limit);
+        if (categoryListQuery) {
+            return categoryListAnswer(context, CATEGORY_LIST_LIMIT);
         }
         if (isNoticeQuery(query)) {
             return noticeAnswer(context, limit);
@@ -703,11 +713,15 @@ public class NaturalLanguageQueryService {
     private String courseAnswer(QueryContext context, int limit) {
         List<Course> courses = context.courses();
         if (courses.isEmpty()) {
-            return "未查询到匹配课程。当前工具已解析关键词="
+            return withQueryScope(context, "课程查询", "t_course",
+                    "title/description/teacher/difficulty",
+                    "未查询到当前账号可见范围内的匹配课程。当前工具已解析关键词="
                     + entityResolver.extractTerms(context.query())
-                    + "；可尝试补充课程名、教师名、班级名或时间条件。";
+                    + "；可尝试补充课程名、教师名、班级名或时间条件。");
         }
-        return withScope(context, courseLines(courses.stream().limit(limit).toList()));
+        return withQueryScope(context, "课程查询", "t_course",
+                "title/description/teacher/difficulty",
+                courseLines(courses.stream().limit(limit).toList()));
     }
 
     private List<CourseCategory> resolveCategories(String query, int limit) {
@@ -1305,6 +1319,7 @@ public class NaturalLanguageQueryService {
             return List.of();
         }
         LinkedHashSet<String> terms = new LinkedHashSet<>();
+        addCategoryTerm(terms, extractCategoryCourseTerm(query));
         List<String> extractedTerms = entityResolver.extractTerms(query);
         if (extractedTerms != null) {
             for (String term : extractedTerms) {
@@ -1315,6 +1330,17 @@ public class NaturalLanguageQueryService {
             addCategoryTerm(terms, query);
         }
         return new ArrayList<>(terms);
+    }
+
+    private String extractCategoryCourseTerm(String query) {
+        if (!isCategoryCourseQuery(query)) {
+            return "";
+        }
+        Matcher matcher = CATEGORY_COURSE_PATTERN.matcher(query.trim());
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+        return "";
     }
 
     private void addCategoryTerm(Set<String> terms, String rawValue) {

@@ -143,8 +143,8 @@ node scripts/agent-course-crud-smoke-test.mjs --confirm --category-id 1
 
 如果你的课程分类 ID 不是 `1`，把 `--category-id` 改成实际存在的分类 ID。执行后可检查：
 
-- `t_course`：新增课程、课程标题被修改、课程状态被变更。
-- `t_operation_log`：新增 `agent.course.create`、`agent.course.update`、`agent.course.status` 操作日志。
+- `t_course`：新增课程、课程标题被修改、课程状态被变更；删除课程类动作应走 `course.delete` 并调用删除逻辑，不应改成下架状态。
+- `t_operation_log`：新增 `agent.course.create`、`agent.course.update`、`agent.course.status`、`agent.course.delete` 操作日志。
 - `t_agent_pending_action`：已执行的 pending action 会被删除。
 - pending action 详情：应包含 `parameterSchema`、`jsonSchema`、`missingRequiredFields` 和 `parameterExtraction`。如果模型返回非法参数，`parameterExtraction.validationIssues` 会显示类型或枚举错误。
 

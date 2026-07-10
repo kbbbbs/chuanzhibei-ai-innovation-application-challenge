@@ -209,7 +209,7 @@ public class AgentActionSpecRegistry {
                                 statusParam("status", "目标状态", true, "0 表示停用，1 表示启用"),
                                 text("reason", "变更原因", false, "状态变更原因", 255)
                         ),
-                        List.of(List.of("classId", "className")),
+                        List.of(List.of("classId", "className", "courseId", "courseTitle")),
                         List.of("会改变教学班可用状态"), Duration.ofMinutes(10)),
                 "teaching_class_status_plan", "class_status_plan", "teaching_class_archive_plan", "teaching_class_delete_plan", "class_delete_plan");
 
@@ -248,17 +248,20 @@ public class AgentActionSpecRegistry {
                         List.of(
                                 id("classId", "教学班ID", false, "优先使用教学班ID定位", "班级ID", "教学班编号"),
                                 text("className", "教学班名称", false, "没有 classId 时用于唯一定位教学班", 100, "班级名", "班级名称"),
+                                id("courseId", "课程ID", false, "按课程定位教学班时使用", "课程编号"),
+                                text("courseTitle", "课程名称", false, "没有 courseId 时用于定位课程，并尝试定位唯一教学班", 100,
+                                        "courseName", "课程名", "课程标题", "课名"),
                                 id("teacherId", "教师ID", false, "未填写时通常使用当前登录教师", "教师编号"),
                                 text("teacherName", "教师名称", false, "没有 teacherId 时用于定位教师", 50, "教师", "老师"),
                                 text("title", "作业标题", true, "要发布的作业标题", 100, "作业名", "标题"),
                                 text("content", "作业内容", false, "作业正文", null, "正文"),
                                 text("attachmentUrl", "附件地址", false, "作业附件地址", 255, "附件"),
                                 numberParam("fullScore", "满分", false, "作业满分", BigDecimal.ZERO, null, "总分"),
-                                text("startTime", "开始时间", false, "格式 yyyy-MM-dd HH:mm:ss", 30),
-                                text("deadline", "截止时间", false, "格式 yyyy-MM-dd HH:mm:ss", 30, "endTime"),
+                                dateTime("startTime", "开始时间", false),
+                                dateTime("deadline", "截止时间", false, "endTime"),
                                 statusParam("status", "作业状态", false, "0 表示停用，1 表示发布")
                         ),
-                        List.of(List.of("classId", "className")),
+                        List.of(List.of("classId", "className", "courseId", "courseTitle")),
                         List.of("会新增一条作业记录"), Duration.ofMinutes(10)),
                 "homework_create_plan", "homework_publish_plan", "assignment_create_plan");
 
@@ -279,6 +282,9 @@ public class AgentActionSpecRegistry {
                                 text("homeworkTitle", "作业标题", false, "没有 homeworkId 时用于唯一定位作业", 100, "作业名", "标题"),
                                 id("classId", "教学班ID", false, "按作业标题定位时可用于消歧", "班级ID"),
                                 text("className", "教学班名称", false, "按作业标题定位时可用于消歧", 100, "班级名"),
+                                id("courseId", "课程ID", false, "按作业标题定位时可用于消歧", "课程编号"),
+                                text("courseTitle", "课程名称", false, "按作业标题定位时可用于消歧", 100,
+                                        "courseName", "课程名", "课程标题", "课名"),
                                 text("reason", "删除原因", false, "删除原因", 255)
                         ),
                         List.of(List.of("homeworkId", "homeworkTitle")),
@@ -312,8 +318,8 @@ public class AgentActionSpecRegistry {
                                 text("teacherName", "教师名称", false, "没有 teacherId 时用于定位教师", 50, "教师", "老师"),
                                 text("name", "考试名称", true, "考试安排名称", 100, "标题", "考试标题"),
                                 text("description", "考试说明", false, "考试说明", 255),
-                                text("startTime", "开始时间", true, "格式 yyyy-MM-dd HH:mm:ss", 30),
-                                text("endTime", "结束时间", true, "格式 yyyy-MM-dd HH:mm:ss", 30),
+                                dateTime("startTime", "开始时间", true),
+                                dateTime("endTime", "结束时间", true),
                                 intParam("durationMinutes", "考试时长分钟", true, "考试时长，单位分钟", 1, null, "duration")
                         ),
                         List.of(List.of("classId", "className"), List.of("paperId", "paperTitle")),
@@ -530,12 +536,15 @@ public class AgentActionSpecRegistry {
                 text("homeworkTitle", "原作业标题", false, "没有 homeworkId 时用于唯一定位作业", 100, "作业名", "原标题"),
                 id("classId", "教学班ID", false, "按作业标题定位时可用于消歧", "班级ID"),
                 text("className", "教学班名称", false, "按作业标题定位时可用于消歧", 100, "班级名"),
+                id("courseId", "课程ID", false, "按作业标题定位时可用于消歧", "课程编号"),
+                text("courseTitle", "课程名称", false, "按作业标题定位时可用于消歧", 100,
+                        "courseName", "课程名", "课程标题", "课名"),
                 text("title", "新的作业标题", false, "修改后的作业标题", 100, "新标题", "标题"),
                 text("content", "作业内容", false, "作业正文", null, "正文"),
                 text("attachmentUrl", "附件地址", false, "作业附件地址", 255, "附件"),
                 numberParam("fullScore", "满分", false, "作业满分", BigDecimal.ZERO, null, "总分"),
-                text("startTime", "开始时间", false, "格式 yyyy-MM-dd HH:mm:ss", 30),
-                text("deadline", "截止时间", false, "格式 yyyy-MM-dd HH:mm:ss", 30, "endTime"),
+                dateTime("startTime", "开始时间", false),
+                dateTime("deadline", "截止时间", false, "endTime"),
                 statusParam("status", "作业状态", false, "0 表示停用，1 表示发布")
         );
     }
@@ -618,6 +627,22 @@ public class AgentActionSpecRegistry {
                                           String... aliases) {
         return new AgentActionParameterSpec(name, label, required, description,
                 AgentActionParameterType.STRING, List.of(), List.of(aliases), List.of(), maxLength, null, null, "");
+    }
+
+    private AgentActionParameterSpec dateTime(String name,
+                                              String label,
+                                              boolean required,
+                                              String... aliases) {
+        return new AgentActionParameterSpec(name, label, required,
+                "绝对时间，格式 yyyy-MM-dd HH:mm:ss",
+                AgentActionParameterType.STRING,
+                List.of(),
+                List.of(aliases),
+                List.of("2026-07-17 20:00:00"),
+                30,
+                null,
+                null,
+                "^\\d{4}-\\d{2}-\\d{2}[ T]\\d{2}:\\d{2}(?::\\d{2})?$");
     }
 
     private AgentActionParameterSpec intParam(String name,

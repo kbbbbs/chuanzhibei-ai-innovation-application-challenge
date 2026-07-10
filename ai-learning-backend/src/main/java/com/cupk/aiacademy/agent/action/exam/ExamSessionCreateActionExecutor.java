@@ -16,7 +16,9 @@ import com.cupk.aiacademy.service.ExamService;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -188,11 +190,23 @@ public class ExamSessionCreateActionExecutor implements AgentActionExecutor {
         if (value == null) {
             throw new BusinessException(keys[0] + " 不能为空");
         }
+        return parseDateTime(value, keys[0]);
+    }
+
+    private LocalDateTime parseDateTime(String value, String fieldName) {
         try {
             return LocalDateTime.parse(value);
-        } catch (RuntimeException e) {
-            throw new BusinessException(keys[0] + " 必须是 ISO 日期时间格式，例如 2026-07-05T18:00:00");
+        } catch (RuntimeException ignored) {
+            // Try common model output formats below.
         }
+        for (String pattern : List.of("yyyy-MM-dd HH:mm:ss", "yyyy-MM-dd HH:mm")) {
+            try {
+                return LocalDateTime.parse(value, DateTimeFormatter.ofPattern(pattern));
+            } catch (RuntimeException ignored) {
+                // Continue trying compatible formats.
+            }
+        }
+        throw new BusinessException(fieldName + " 必须是日期时间格式，例如 2026-07-05 18:00:00");
     }
 
     private ExamStatus optionalExamStatus(Map<String, Object> parameters, String key) {

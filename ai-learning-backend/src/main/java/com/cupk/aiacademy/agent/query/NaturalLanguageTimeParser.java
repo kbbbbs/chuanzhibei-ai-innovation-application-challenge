@@ -1,6 +1,5 @@
 package com.cupk.aiacademy.agent.query;
 
-import org.springframework.stereotype.Component;
 
 import java.time.DayOfWeek;
 import java.time.LocalDate;
@@ -12,7 +11,7 @@ import java.time.temporal.TemporalAdjusters;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@Component
+@Deprecated(forRemoval = true)
 public class NaturalLanguageTimeParser {
     private static final ZoneId DEFAULT_ZONE = ZoneId.of("Asia/Shanghai");
     private static final Pattern DAYS_PATTERN = Pattern.compile("(?:最近|近|过去)(\\d{1,3})天");

@@ -117,10 +117,11 @@ public class WorkStudyController {
                                   @RequestParam(required = false) Integer workStudyId,
                                   @RequestParam(required = false) Integer studentId,
                                   @RequestParam(required = false) String workMonth,
-                                  @RequestParam(required = false) Integer auditStatus) {
+                                  @RequestParam(required = false) Integer auditStatus,
+                                  @RequestParam(required = false) String keyword) {
         pageNum = pageNum == null || pageNum <= 0 ? 1 : pageNum;
         pageSize = pageSize == null || pageSize <= 0 ? 10 : pageSize;
-        return Result.success(workStudyStudentService.pageList(pageNum, pageSize, workStudyId, studentId, workMonth, auditStatus));
+        return Result.success(workStudyStudentService.pageList(pageNum, pageSize, workStudyId, studentId, workMonth, auditStatus, keyword));
     }
 
     @GetMapping("/students/{id}")
@@ -165,10 +166,11 @@ public class WorkStudyController {
                              @RequestParam(required = false) Integer studentId,
                              @RequestParam(required = false) String workMonth,
                              @RequestParam(defaultValue = "xlsx") String format,
+                             @RequestParam(required = false) String keyword,
                              HttpServletResponse response) {
         permissionService.requireTeacherOrAdmin();
         try {
-            workStudyStudentService.exportExcel(workStudyId, studentId, workMonth, format, response);
+            workStudyStudentService.exportExcel(workStudyId, studentId, workMonth, format, keyword, response);
         } catch (IOException e) {
             response.setStatus(500);
         }

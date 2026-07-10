@@ -591,7 +591,7 @@ const actionResult = reactive({
   visible: false,
   success: false,
   message: '',
-  link: '/home',
+  link: '/console',
   linkText: '控制台'
 })
 const actionForm = reactive({
@@ -1226,8 +1226,7 @@ function hasConfirmableAction(message) {
   if (pendingAction?.actionId || pendingAction?.actionCode) {
     return true
   }
-  const content = message?.content || ''
-  return !!extractActionId(content) || !!extractActionCode(content)
+  return false
 }
 
 function extractActionId(content) {
@@ -1402,7 +1401,7 @@ function resetActionResult() {
   actionResult.visible = false
   actionResult.success = false
   actionResult.message = ''
-  actionResult.link = '/home'
+  actionResult.link = '/console'
   actionResult.linkText = '控制台'
 }
 
@@ -1423,10 +1422,9 @@ function formatPendingTime(value) {
 }
 
 async function openActionDialog(message) {
-  const content = message?.content || ''
   const pendingAction = pendingActionOf(message)
-  actionForm.actionId = pendingAction?.actionId || extractActionId(content)
-  actionForm.actionCode = pendingAction?.actionCode || extractActionCode(content)
+  actionForm.actionId = pendingAction?.actionId || ''
+  actionForm.actionCode = pendingAction?.actionCode || ''
   actionForm.confirmationText = ''
   actionForm.parametersText = '{}'
   actionForm.parameters = {}
@@ -1438,17 +1436,16 @@ async function openActionDialog(message) {
   resetActionResult()
   applyPendingActionToForm(pendingAction)
   if (!actionForm.actionId.trim() && !actionForm.actionCode.trim()) {
-    ElMessage.warning('确认信息生成中，请稍后再试')
+    ElMessage.warning('这条消息没有结构化待确认操作，请重新发送任务生成新的待确认操作。')
     return
   }
-  if (!pendingAction && actionForm.actionId) {
+  if (actionForm.actionId) {
     try {
       applyPendingActionToForm(unwrapData(await getAgentPendingAction(actionForm.actionId)))
     } catch {
       actionForm.actionId = ''
       actionForm.actionCode = ''
-      showActionResult(false, '该待确认操作不存在或已过期，请重新发送任务生成新的待确认操作。')
-      ElMessage.warning(actionResult.message)
+      ElMessage.warning('该待确认操作不存在或已过期，请重新发送任务生成新的待确认操作。')
       return
     }
   }
@@ -1517,7 +1514,7 @@ function actionLinkFor(actionCode, resultData) {
   if (code.startsWith('grade.record.')) {
     return { link: '/my-grades', linkText: '成绩页面' }
   }
-  return { link: '/home', linkText: '控制台' }
+  return { link: '/console', linkText: '控制台' }
 }
 
 function showActionResult(success, message, resultData) {
@@ -1559,7 +1556,9 @@ async function submitActionConfirm() {
   } catch (e) {
     const message = extractRequestMessage(e, '动作执行失败')
     showActionResult(false, message, null)
-    ElMessage.error(message)
+    if (!/待确认操作不存在|待确认操作已过期/.test(message)) {
+      ElMessage.error(message)
+    }
   } finally {
     confirmingAction.value = false
   }

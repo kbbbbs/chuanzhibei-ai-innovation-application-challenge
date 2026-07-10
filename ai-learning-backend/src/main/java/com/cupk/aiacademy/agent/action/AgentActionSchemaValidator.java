@@ -15,10 +15,18 @@ public class AgentActionSchemaValidator {
         if (spec == null) {
             return new AgentActionParameterValidationResult(Map.of(), List.of(), List.of());
         }
+        return validate(spec.parameters(), spec.requiredAnyOf(), rawParameters);
+    }
+
+    public AgentActionParameterValidationResult validate(List<AgentActionParameterSpec> parameters,
+                                                         List<List<String>> requiredAnyOf,
+                                                         Map<String, Object> rawParameters) {
+        List<AgentActionParameterSpec> safeParameters = parameters == null ? List.of() : parameters;
+        List<List<String>> safeRequiredAnyOf = requiredAnyOf == null ? List.of() : requiredAnyOf;
 
         Map<String, Object> normalized = new LinkedHashMap<>();
         List<AgentActionValidationIssue> issues = new ArrayList<>();
-        Map<String, AgentActionParameterSpec> parametersByAcceptedName = parametersByAcceptedName(spec);
+        Map<String, AgentActionParameterSpec> parametersByAcceptedName = parametersByAcceptedName(safeParameters);
 
         if (rawParameters != null) {
             for (Map.Entry<String, Object> entry : rawParameters.entrySet()) {
@@ -46,13 +54,13 @@ public class AgentActionSchemaValidator {
             }
         }
 
-        List<String> missing = missingRequiredFields(spec, normalized);
+        List<String> missing = missingRequiredFields(safeParameters, safeRequiredAnyOf, normalized);
         return new AgentActionParameterValidationResult(normalized, missing, issues);
     }
 
-    private Map<String, AgentActionParameterSpec> parametersByAcceptedName(AgentActionSpec spec) {
+    private Map<String, AgentActionParameterSpec> parametersByAcceptedName(List<AgentActionParameterSpec> parameters) {
         Map<String, AgentActionParameterSpec> byName = new LinkedHashMap<>();
-        for (AgentActionParameterSpec parameter : spec.parameters()) {
+        for (AgentActionParameterSpec parameter : parameters) {
             for (String acceptedName : parameter.allNamesForExtraction()) {
                 String normalized = normalizeName(acceptedName);
                 if (!normalized.isEmpty()) {
@@ -202,17 +210,19 @@ public class AgentActionSchemaValidator {
         }
     }
 
-    private List<String> missingRequiredFields(AgentActionSpec spec, Map<String, Object> parameters) {
-        if (spec.parameters().isEmpty()) {
+    private List<String> missingRequiredFields(List<AgentActionParameterSpec> parameterSpecs,
+                                               List<List<String>> requiredAnyOf,
+                                               Map<String, Object> parameters) {
+        if (parameterSpecs.isEmpty() && requiredAnyOf.isEmpty()) {
             return List.of();
         }
         List<String> missing = new ArrayList<>();
-        for (AgentActionParameterSpec parameter : spec.parameters()) {
+        for (AgentActionParameterSpec parameter : parameterSpecs) {
             if (parameter.required() && missingValue(parameters.get(parameter.name()))) {
                 missing.add(parameter.name());
             }
         }
-        for (List<String> group : spec.requiredAnyOf()) {
+        for (List<String> group : requiredAnyOf) {
             boolean anyPresent = group.stream().anyMatch(fieldName -> !missingValue(parameters.get(fieldName)));
             if (!anyPresent) {
                 missing.add(String.join(" 或 ", group));

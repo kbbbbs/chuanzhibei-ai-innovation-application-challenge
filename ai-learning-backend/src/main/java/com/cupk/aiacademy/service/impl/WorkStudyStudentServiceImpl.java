@@ -32,9 +32,9 @@ import java.util.List;
 public class WorkStudyStudentServiceImpl extends ServiceImpl<WorkStudyStudentMapper, WorkStudyStudent> implements WorkStudyStudentService {
 
     @Override
-    public Page<WorkStudyStudent> pageList(Integer pageNum, Integer pageSize, Integer workStudyId, Integer studentId, String workMonth, Integer auditStatus) {
+    public Page<WorkStudyStudent> pageList(Integer pageNum, Integer pageSize, Integer workStudyId, Integer studentId, String workMonth, Integer auditStatus, String keyword) {
         Page<WorkStudyStudent> page = new Page<>(pageNum, pageSize);
-        return this.baseMapper.selectPageWithJoin(page, workStudyId, studentId, workMonth, auditStatus);
+        return this.baseMapper.selectPageWithJoin(page, workStudyId, studentId, workMonth, auditStatus, blankToNull(keyword));
     }
 
     @Override
@@ -103,8 +103,8 @@ public class WorkStudyStudentServiceImpl extends ServiceImpl<WorkStudyStudentMap
     }
 
     @Override
-    public void exportExcel(Integer workStudyId, Integer studentId, String workMonth, String format, HttpServletResponse response) throws IOException {
-        List<WorkStudyStudent> list = this.baseMapper.selectListForExport(workStudyId, studentId, workMonth);
+    public void exportExcel(Integer workStudyId, Integer studentId, String workMonth, String format, String keyword, HttpServletResponse response) throws IOException {
+        List<WorkStudyStudent> list = this.baseMapper.selectListForExport(workStudyId, studentId, workMonth, blankToNull(keyword));
         List<WorkStudyStudentExportRow> rows = list.stream().map(this::toExportRow).toList();
         ExportFile file = TabularFileSupport.exportFile("劳务费名单", format, WorkStudyStudentExportRow.class, rows);
         response.setContentType(file.contentType());
@@ -209,6 +209,13 @@ public class WorkStudyStudentServiceImpl extends ServiceImpl<WorkStudyStudentMap
             return null;
         }
         return value;
+    }
+
+    private String blankToNull(String raw) {
+        if (raw == null || raw.trim().isEmpty()) {
+            return null;
+        }
+        return raw.trim();
     }
 
     private String toText(Object value) {

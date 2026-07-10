@@ -38,7 +38,7 @@ class AgentActionPreExecutionValidatorTest {
                 Map.of("title", "第一次作业")
         ));
 
-        assertEquals("参数校验失败，缺少：classId 或 className", exception.getMessage());
+        assertEquals("参数校验失败，缺少：classId 或 className 或 courseId 或 courseTitle", exception.getMessage());
     }
 
     @Test

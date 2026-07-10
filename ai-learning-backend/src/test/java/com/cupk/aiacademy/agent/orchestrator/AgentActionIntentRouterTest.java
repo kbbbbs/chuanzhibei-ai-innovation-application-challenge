@@ -8,6 +8,8 @@ import com.cupk.aiacademy.agent.core.config.AgentConfigurationParser;
 import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.agent.tool.course.CourseCategoryCreatePlanTool;
 import com.cupk.aiacademy.agent.tool.course.CourseCreatePlanTool;
+import com.cupk.aiacademy.agent.tool.course.CourseDeletePlanTool;
+import com.cupk.aiacademy.agent.tool.course.CourseStatusPlanTool;
 import com.cupk.aiacademy.agent.tool.homework.HomeworkCreatePlanTool;
 import com.cupk.aiacademy.agent.tool.teacher.TeacherApplicationReviewPlanTool;
 import com.cupk.aiacademy.common.AuthUtils;
@@ -110,6 +112,37 @@ class AgentActionIntentRouterTest {
 
         assertNotNull(reply.pendingAction());
         assertEquals("course.create", reply.pendingAction().actionCode());
+    }
+
+    @Test
+    void routesCourseDeleteSeparatelyFromCourseStatus() {
+        loginAs(1);
+        InMemoryAgentPendingActionStore pendingActionStore = new InMemoryAgentPendingActionStore();
+        AgentActionPlanFactory planFactory = new AgentActionPlanFactory(pendingActionStore);
+        CourseDeletePlanTool deleteTool = new CourseDeletePlanTool(planFactory);
+        CourseStatusPlanTool statusTool = new CourseStatusPlanTool(planFactory);
+        AgentActionCatalog catalog = new AgentActionCatalog(List.of(deleteTool, statusTool), new AgentActionSpecRegistry());
+        AgentActionIntentRouter router = new AgentActionIntentRouter(
+                new AgentConfigurationParser(null),
+                new AgentToolExecutor(List.of(deleteTool, statusTool)),
+                null,
+                catalog,
+                planFactory
+        );
+        AgentDefinition agent = new AgentDefinition();
+        agent.setEnabledTools("[\"course_delete_plan\",\"course_status_plan\"]");
+
+        AgentDirectActionReply deleteReply = router.buildDirectActionReply(
+                agent,
+                "删除 Java 入门 这门课"
+        ).orElseThrow();
+        AgentDirectActionReply statusReply = router.buildDirectActionReply(
+                agent,
+                "下架 Java 入门 这门课"
+        ).orElseThrow();
+
+        assertEquals("course.delete", deleteReply.pendingAction().actionCode());
+        assertEquals("course.status", statusReply.pendingAction().actionCode());
     }
 
     @Test

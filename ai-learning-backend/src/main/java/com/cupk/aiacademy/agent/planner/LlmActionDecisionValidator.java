@@ -34,12 +34,13 @@ public class LlmActionDecisionValidator {
 
         List<String> errors = new ArrayList<>();
         String decisionType = upper(decision.getDecision());
+        String actionCode = normalizeActionCode(decision.getActionCode());
 
         if ("CHAT".equals(decisionType)) {
             return LlmActionValidationResult.invalid(List.of("模型判断为普通聊天，不生成系统操作"));
         }
 
-        if ("ASK_USER".equals(decisionType)) {
+        if ("ASK_USER".equals(decisionType) && actionCode.isBlank()) {
             String message = "模型判断信息不足";
             if (decision.getMissingRequiredFields() != null && !decision.getMissingRequiredFields().isEmpty()) {
                 message += "：" + decision.getMissingRequiredFields();
@@ -47,8 +48,14 @@ public class LlmActionDecisionValidator {
             return LlmActionValidationResult.invalid(List.of(message));
         }
 
-        if (!"ACTION".equals(decisionType)) {
+        if (!"ACTION".equals(decisionType) && !"ASK_USER".equals(decisionType)) {
             errors.add("decision 必须是 ACTION、ASK_USER 或 CHAT");
+        }
+        if ("ASK_USER".equals(decisionType)) {
+            String message = decision.getUserMessage();
+            errors.add(message == null || message.isBlank()
+                    ? "模型判断仍需用户补充信息"
+                    : "模型判断仍需用户补充信息：" + message.trim());
         }
 
         Double confidence = decision.getConfidence();
@@ -56,7 +63,6 @@ public class LlmActionDecisionValidator {
             errors.add("模型置信度不足，当前值=" + confidence + "，最低要求=" + properties.getMinConfidence());
         }
 
-        String actionCode = normalizeActionCode(decision.getActionCode());
         if (actionCode.isBlank()) {
             errors.add("actionCode 不能为空");
             return LlmActionValidationResult.invalid(errors);

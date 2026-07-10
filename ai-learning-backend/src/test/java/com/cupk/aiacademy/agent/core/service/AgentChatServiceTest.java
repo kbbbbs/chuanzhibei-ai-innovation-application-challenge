@@ -4,6 +4,9 @@ import com.cupk.aiacademy.agent.core.config.AgentChatProperties;
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
 import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
+import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
+import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
+import com.cupk.aiacademy.agent.planner.SchemaDrivenReadToolPlanner;
 import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
 import com.cupk.aiacademy.common.AuthUtils;
@@ -71,6 +74,12 @@ class AgentChatServiceTest {
     @Mock
     private AgentToolExecutor agentToolExecutor;
 
+    @Mock
+    private SchemaDrivenAgentPlanner schemaDrivenAgentPlanner;
+
+    @Mock
+    private SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner;
+
     @AfterEach
     void clearUserContext() {
         UserContext.clear();
@@ -100,6 +109,24 @@ class AgentChatServiceTest {
         assertEquals(1, messages.size());
         assertEquals("你好", messages.get(0).getContent());
         verify(messageMapper).selectList(any());
+    }
+
+    @Test
+    void listMessagesRestoresStructuredPendingAction() {
+        AgentChatService service = newService();
+        loginAs(10);
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10));
+        AgentMessage assistant = message(2, "assistant", "请确认发布作业");
+        assistant.setToolName("pending_action");
+        assistant.setToolResult("""
+                {"actionId":"action-1","actionCode":"homework.create","expired":false}
+                """);
+        when(messageMapper.selectList(any())).thenReturn(List.of(assistant));
+
+        List<com.cupk.aiacademy.dto.AgentMessageResponse> messages = service.listMessages(1);
+
+        assertEquals("action-1", messages.getFirst().getPendingAction().actionId());
+        assertEquals("homework.create", messages.getFirst().getPendingAction().actionCode());
     }
 
     @Test
@@ -214,20 +241,16 @@ class AgentChatServiceTest {
     }
 
     @Test
-    void chatAddsEnabledToolResultToPrompt() {
-        AgentChatService service = newService();
+    void chatAddsModelSelectedReadToolResultToPrompt() {
+        AgentChatService service = newService(new AgentChatProperties(), null, schemaDrivenReadToolPlanner);
         loginAs(10);
         AgentDefinition agent = agentDefinition(2);
         agent.setEnabledTools("[\"course_search\",\"learning_plan\"]");
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
         when(messageMapper.selectList(any())).thenReturn(List.of());
-        when(agentToolExecutor.buildToolContext(
-                org.mockito.ArgumentMatchers.eq(List.of("course_search", "learning_plan")),
-                org.mockito.ArgumentMatchers.eq("推荐一下 Java 学习计划"),
-                org.mockito.ArgumentMatchers.anyInt(),
-                org.mockito.ArgumentMatchers.anyInt()
-        )).thenReturn("[course_search]\n课程ID=1；名称=Java 基础\n[learning_plan]\n建议每天学习 30 分钟");
+        when(schemaDrivenReadToolPlanner.planToolContext(agent, "推荐一下 Java 学习计划"))
+                .thenReturn("[learning_plan]\n建议每天学习 30 分钟");
         when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("推荐一下 Java 学习计划"));
@@ -236,9 +259,38 @@ class AgentChatServiceTest {
         verify(chatModelClient).call(captor.capture());
         String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
         assertTrue(systemPrompt.contains("工具调用结果"));
-        assertTrue(systemPrompt.contains("课程ID=1；名称=Java 基础"));
         assertTrue(systemPrompt.contains("建议每天学习 30 分钟"));
+        verify(schemaDrivenReadToolPlanner).planToolContext(agent, "推荐一下 Java 学习计划");
     }
+
+    @Test
+    void chatUsesSchemaPlannerForWriteRequest() {
+        AgentChatService service = newService(new AgentChatProperties(), schemaDrivenAgentPlanner, null);
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        agent.setEnabledTools("[\"homework_create_plan\"]");
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(schemaDrivenAgentPlanner.tryPlan(agent, "给 Java 入门布置第一次练习"))
+                .thenReturn(java.util.Optional.of(new AgentDirectActionReply("请确认操作计划", null)));
+        AtomicInteger idSequence = new AtomicInteger(100);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            message.setCreateTime(LocalDateTime.now());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
+
+        AgentChatResponse response = service.chat(1, chatRequest("给 Java 入门布置第一次练习"));
+
+        assertEquals("请确认操作计划", response.getContent());
+        verify(schemaDrivenAgentPlanner).tryPlan(agent, "给 Java 入门布置第一次练习");
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @org.junit.jupiter.api.Nested
+    @org.junit.jupiter.api.Disabled("关键词规则路由已淘汰；由 Schema Planner 测试替代")
+    class LegacyRuleRouterTests {
 
     @Test
     void chatRoutesNoticeCreateRequestToWritePlanWithoutCallingModel() {
@@ -966,22 +1018,22 @@ class AgentChatServiceTest {
     }
 
     @Test
-    void chatRoutesCourseDeleteByTitleRequestToStatusPlanWithoutCallingModel() {
+    void chatRoutesCourseDeleteByTitleRequestToDeletePlanWithoutCallingModel() {
         AgentChatService service = newService();
         loginAs(10);
         AgentDefinition agent = agentDefinition(2);
-        agent.setEnabledTools("[\"course_status_plan\",\"course_update_plan\",\"course_create_plan\"]");
+        agent.setEnabledTools("[\"course_delete_plan\",\"course_status_plan\",\"course_update_plan\",\"course_create_plan\"]");
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
         when(agentToolExecutor.executeTools(
-                org.mockito.ArgumentMatchers.eq(List.of("course_status_plan")),
+                org.mockito.ArgumentMatchers.eq(List.of("course_delete_plan")),
                 org.mockito.ArgumentMatchers.eq("删除标题是我有点想吃肉的课，授课老师王老师，难度入门，分类ID是1"),
                 org.mockito.ArgumentMatchers.eq(1)
         )).thenReturn(List.of(AgentToolResult.writePlan(
-                "course_status_plan",
-                "操作计划=变更课程状态；风险等级=HIGH；二次确认文本=确认变更课程状态；确认ID=action-course-delete-1",
-                Map.of("actionCode", "course.status", "actionId", "action-course-delete-1",
-                        "confirmationText", "确认变更课程状态")
+                "course_delete_plan",
+                "操作计划=删除课程；风险等级=HIGH；二次确认文本=确认删除课程；确认ID=action-course-delete-1",
+                Map.of("actionCode", "course.delete", "actionId", "action-course-delete-1",
+                        "confirmationText", "确认删除课程")
         )));
         AtomicInteger idSequence = new AtomicInteger(100);
         doAnswer(invocation -> {
@@ -1466,6 +1518,8 @@ class AgentChatServiceTest {
         verifyNoInteractions(chatModelClient);
     }
 
+    }
+
 
     @Test
     void chatRecordsFailureMessageWhenModelCallFails() {
@@ -1558,7 +1612,15 @@ class AgentChatServiceTest {
 
     private AgentChatService newService(AgentChatProperties chatProperties) {
         return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
-                new ObjectMapper(), knowledgeContextProvider, agentToolExecutor, null);
+                new ObjectMapper(), knowledgeContextProvider,
+                (SchemaDrivenAgentPlanner) null, (SchemaDrivenReadToolPlanner) null);
+    }
+
+    private AgentChatService newService(AgentChatProperties chatProperties,
+                                        SchemaDrivenAgentPlanner writePlanner,
+                                        SchemaDrivenReadToolPlanner readPlanner) {
+        return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
+                new ObjectMapper(), knowledgeContextProvider, writePlanner, readPlanner);
     }
 
     private AgentChatProperties chatProperties(int historyMessageLimit, int historyMaxCharacters) {

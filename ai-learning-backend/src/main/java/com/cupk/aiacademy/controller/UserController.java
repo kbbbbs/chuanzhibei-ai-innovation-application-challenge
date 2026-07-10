@@ -6,6 +6,8 @@ import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.PasswordUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.UserDto;
+import com.cupk.aiacademy.dto.UserProfileDeleteRequest;
+import com.cupk.aiacademy.dto.UserProfileUpdateRequest;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.RoleMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
@@ -48,8 +50,69 @@ public class UserController {
     @Autowired
     private PermissionService permissionService;
 
+    @GetMapping("/me")
+    public Result currentProfile() {
+        AuthUtils.LoginUser loginUser = permissionService.currentUser();
+        User user = userMapper.selectById(loginUser.getUserId());
+        if (user == null) {
+            return Result.error("404", "用户不存在");
+        }
+        fillRole(user);
+        return Result.success(user);
+    }
+
+    @PutMapping("/me")
+    @Transactional(rollbackFor = Exception.class)
+    public Result updateCurrentProfile(@Valid @RequestBody UserProfileUpdateRequest request) {
+        AuthUtils.LoginUser loginUser = permissionService.currentUser();
+        User user = userMapper.selectById(loginUser.getUserId());
+        if (user == null) {
+            return Result.error("404", "用户不存在");
+        }
+
+        String newPassword = trimToNull(request.getNewPassword());
+        if (newPassword != null) {
+            if (!PasswordUtils.matches(request.getCurrentPassword(), user.getPassword())) {
+                return Result.error("400", "当前密码不正确");
+            }
+            user.setPassword(PasswordUtils.encode(newPassword));
+        }
+
+        String nickname = trimToNull(request.getNickname());
+        user.setNickname(nickname == null ? user.getUsername() : nickname);
+        user.setEmail(trimToNull(request.getEmail()));
+        user.setPhone(trimToNull(request.getPhone()));
+        user.setAvatar(trimToNull(request.getAvatar()));
+        user.setUpdateTime(LocalDateTime.now());
+        userMapper.updateById(user);
+        fillRole(user);
+        return Result.success(user, "个人信息已更新");
+    }
+
+    @DeleteMapping("/me")
+    @Transactional(rollbackFor = Exception.class)
+    public Result deactivateCurrentAccount(@Valid @RequestBody UserProfileDeleteRequest request) {
+        AuthUtils.LoginUser loginUser = permissionService.currentUser();
+        User user = userMapper.selectById(loginUser.getUserId());
+        if (user == null) {
+            return Result.error("404", "用户不存在");
+        }
+        if (!PasswordUtils.matches(request.getCurrentPassword(), user.getPassword())) {
+            return Result.error("400", "当前密码不正确");
+        }
+        if ("admin".equals(loginUser.getRoleCode()) && isLastActiveAdministrator()) {
+            return Result.error("409", "至少需要保留一个有效管理员账号");
+        }
+
+        user.setStatus(0);
+        user.setUpdateTime(LocalDateTime.now());
+        userMapper.updateById(user);
+        return Result.success(null, "账号已注销");
+    }
+
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String username,
+                        @RequestParam(defaultValue = "") String keyword,
                         @RequestParam(required = false) String roleCode,
                         @RequestParam(required = false) Integer status,
                         @RequestParam(defaultValue = "1") Integer pageNum,
@@ -57,7 +120,16 @@ public class UserController {
         Page<User> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize));
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         AuthUtils.LoginUser loginUser = permissionService.currentUser();
-        if (username != null && !username.trim().isEmpty()) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String term = keyword.trim();
+            queryWrapper.and(wrapper -> wrapper.like("username", term)
+                    .or()
+                    .like("nickname", term)
+                    .or()
+                    .like("email", term)
+                    .or()
+                    .like("phone", term));
+        } else if (username != null && !username.trim().isEmpty()) {
             queryWrapper.like("username", username.trim());
         }
         if (status != null) {
@@ -218,6 +290,17 @@ public class UserController {
         return role == null ? null : role.getId();
     }
 
+    private boolean isLastActiveAdministrator() {
+        Role adminRole = roleMapper.selectOne(new QueryWrapper<Role>().eq("role_code", "admin"));
+        if (adminRole == null) {
+            return true;
+        }
+        Long activeAdminCount = userMapper.selectCount(new QueryWrapper<User>()
+                .eq("status", 1)
+                .inSql("id", "select user_id from t_user_role where role_id = " + adminRole.getId()));
+        return activeAdminCount == null || activeAdminCount <= 1;
+    }
+
     private void applyRoleCode(User user, String roleCode) {
         if (user == null || roleCode == null || roleCode.trim().isEmpty() || user.getRoleId() != null) {
             return;
@@ -269,5 +352,12 @@ public class UserController {
 
     private int fixPageSize(Integer pageSize) {
         return pageSize == null || pageSize <= 0 ? 10 : pageSize;
+    }
+
+    private String trimToNull(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return null;
+        }
+        return value.trim();
     }
 }

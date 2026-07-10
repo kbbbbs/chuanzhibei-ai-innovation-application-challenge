@@ -93,7 +93,7 @@ public class AgentEntityResolutionService {
         resolveUsers(resolved);
 
         switch (action) {
-            case "course.update", "course.status" -> resolveCourse(resolved, "originalTitle", "courseTitle", "courseName", "title");
+            case "course.update", "course.status", "course.delete" -> resolveCourse(resolved, "originalTitle", "courseTitle", "courseName", "title");
             case "chapter.create", "chapter.sort" -> resolveCourse(resolved, "courseTitle", "courseName");
             case "chapter.update", "chapter.delete" -> {
                 resolveCourse(resolved, "courseTitle", "courseName");
@@ -117,9 +117,15 @@ public class AgentEntityResolutionService {
                 resolveTeachingClass(resolved, "className");
                 resolveClassStudent(resolved);
             }
-            case "homework.create" -> resolveTeachingClass(resolved, "className");
-            case "homework.update", "homework.delete" -> {
+            case "homework.create" -> {
+                resolveCourse(resolved, "courseTitle", "courseName");
                 resolveTeachingClass(resolved, "className");
+                resolveTeachingClassFromCourse(resolved);
+            }
+            case "homework.update", "homework.delete" -> {
+                resolveCourse(resolved, "courseTitle", "courseName");
+                resolveTeachingClass(resolved, "className");
+                resolveTeachingClassFromCourse(resolved);
                 resolveHomework(resolved, "homeworkTitle", "originalTitle");
             }
             case "notice.create" -> resolveTeachingClass(resolved, "className");
@@ -250,6 +256,37 @@ public class AgentEntityResolutionService {
                     }
                 });
         parameters.put("classId", id);
+    }
+
+    private void resolveTeachingClassFromCourse(Map<String, Object> parameters) {
+        if (hasPositiveInteger(parameters, "classId")) {
+            return;
+        }
+        Integer courseId = positiveInteger(parameters, "courseId");
+        if (courseId == null) {
+            return;
+        }
+        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
+        query.eq("course_id", courseId).last("limit 5");
+        List<TeachingClass> rows = teachingClassMapper.selectList(query);
+        if (rows == null || rows.isEmpty()) {
+            throw new BusinessException("未找到课程对应的教学班：courseId=" + courseId
+                    + "，请补充 classId 或 className");
+        }
+        if (rows.size() > 1) {
+            String candidates = rows.stream()
+                    .limit(5)
+                    .map(row -> row.getId() + "(" + safeTeachingClassName(row) + ")")
+                    .toList()
+                    .toString();
+            throw new BusinessException("课程下匹配到多个教学班：" + candidates
+                    + "，请补充 classId 或 className");
+        }
+        TeachingClass teachingClass = rows.get(0);
+        parameters.put("classId", teachingClass.getId());
+        if (isBlank(text(parameters, "className")) && !isBlank(teachingClass.getClassName())) {
+            parameters.put("className", teachingClass.getClassName());
+        }
     }
 
     private void resolveClassStudent(Map<String, Object> parameters) {
@@ -500,6 +537,13 @@ public class AgentEntityResolutionService {
             return user.getNickname();
         }
         return user.getUsername() == null ? "" : user.getUsername();
+    }
+
+    private String safeTeachingClassName(TeachingClass teachingClass) {
+        if (teachingClass == null || isBlank(teachingClass.getClassName())) {
+            return "";
+        }
+        return teachingClass.getClassName();
     }
 
     private boolean isBlank(String value) {

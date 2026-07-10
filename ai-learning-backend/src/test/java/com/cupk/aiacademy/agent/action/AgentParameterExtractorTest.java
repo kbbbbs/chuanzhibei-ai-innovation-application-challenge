@@ -187,6 +187,24 @@ class AgentParameterExtractorTest {
     }
 
     @Test
+    void extractInfersHomeworkCreateCourseTitleFromDailyWording() {
+        AgentParameterExtractor extractor = new AgentParameterExtractor(new ObjectMapper());
+        AgentActionSpec spec = new AgentActionSpecRegistry()
+                .findByActionCode("homework.create")
+                .orElseThrow();
+
+        AgentParameterExtractionResult result = extractor.extract(
+                spec,
+                "作业 给 Java 入门 布置一次作业，标题叫第一次练习，截止到下周五晚上八点"
+        );
+
+        assertEquals("Java 入门", result.parameters().get("courseTitle"));
+        assertEquals("第一次练习", result.parameters().get("title"));
+        assertEquals(List.of(), result.missingRequiredFields());
+        assertEquals("fallback", result.source());
+    }
+
+    @Test
     void extractRepairsInvalidModelOutputOnce() {
         ChatModelClient chatModelClient = mock(ChatModelClient.class);
         when(chatModelClient.call(any(Prompt.class)))

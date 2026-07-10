@@ -1,5 +1,6 @@
 package com.cupk.aiacademy.agent.query;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.agent.tool.support.AgentToolSupport;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.UserContext;
@@ -36,9 +37,11 @@ import com.cupk.aiacademy.teacherapply.TeacherApplicationMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -46,6 +49,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -168,6 +173,31 @@ class NaturalLanguageQueryServiceTest {
     }
 
     @Test
+    void categoryListQueryUsesExpandedLimit() {
+        when(categoryMapper.selectList(any())).thenReturn(List.of(
+                category(1, "计算机"),
+                category(2, "Java"),
+                category(3, "数据库"),
+                category(4, "人工智能"),
+                category(5, "软件工程"),
+                category(6, "计算机组成原理")
+        ));
+        when(support.value(any())).thenAnswer(invocation -> invocation.getArgument(0) == null
+                ? "无" : invocation.getArgument(0).toString());
+        when(support.summarize(any(), anyInt())).thenAnswer(invocation -> invocation.getArgument(0) == null
+                ? "无" : invocation.getArgument(0));
+
+        NaturalLanguageQueryService service = newService();
+        service.answer("查询现在有哪些课程分类", 5);
+
+        ArgumentCaptor<QueryWrapper<CourseCategory>> captor = ArgumentCaptor.forClass(QueryWrapper.class);
+        verify(categoryMapper, atLeastOnce()).selectList(captor.capture());
+        assertTrue(captor.getAllValues().stream()
+                .map(QueryWrapper::getCustomSqlSegment)
+                .anyMatch(segment -> segment != null && segment.contains("LIMIT 50")));
+    }
+
+    @Test
     void categoryCourseQueryFindsCoursesByCategoryName() {
         CourseCategory category = category(3, "计算机组成原理");
         when(entityResolver.extractTerms(any())).thenReturn(List.of("计算机组成原理"));
@@ -196,6 +226,35 @@ class NaturalLanguageQueryServiceTest {
         assertTrue(answer.contains("课程ID=21"));
         assertTrue(answer.contains("计算机组成原理实验"));
         assertTrue(answer.contains("分类=计算机组成原理#3"));
+    }
+
+    @Test
+    void categoryCourseQueryUnderCategoryPhraseFindsCategoryTerm() throws Exception {
+        CourseCategory category = category(3, "计算机组成原理");
+        when(entityResolver.extractTerms(any())).thenReturn(List.of("计算机组成原理分类下有"));
+        when(categoryMapper.selectList(any())).thenReturn(List.of(category));
+        when(categoryMapper.selectById(3)).thenReturn(category);
+        when(support.applyCourseVisibility(any())).thenReturn(true);
+        when(support.value(any())).thenAnswer(invocation -> invocation.getArgument(0) == null
+                ? "无" : invocation.getArgument(0).toString());
+        when(support.summarize(any(), anyInt())).thenAnswer(invocation -> invocation.getArgument(0) == null
+                ? "无" : invocation.getArgument(0));
+
+        Course course = new Course();
+        course.setId(21);
+        course.setTitle("计算机组成原理实验");
+        course.setCategoryId(3);
+        course.setStatus(1);
+        when(courseMapper.selectList(any())).thenReturn(List.of(course));
+
+        NaturalLanguageQueryService service = newService();
+        String query = "查询计算机组成原理分类下有哪些课";
+        List<String> terms = extractCategoryTerms(service, query);
+        String answer = service.answer(query, 10);
+
+        assertTrue(terms.contains("计算机组成原理"));
+        assertTrue(answer.contains("课程ID=21"));
+        assertTrue(answer.contains("计算机组成原理实验"));
     }
 
     @Test
@@ -417,5 +476,12 @@ class NaturalLanguageQueryServiceTest {
         category.setName(name);
         category.setDescription(name + "方向课程");
         return category;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<String> extractCategoryTerms(NaturalLanguageQueryService service, String query) throws Exception {
+        Method method = NaturalLanguageQueryService.class.getDeclaredMethod("extractCategoryTerms", String.class);
+        method.setAccessible(true);
+        return (List<String>) method.invoke(service, query);
     }
 }

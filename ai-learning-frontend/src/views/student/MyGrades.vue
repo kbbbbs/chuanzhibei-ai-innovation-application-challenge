@@ -44,22 +44,37 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        class="pagination"
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="allGrades.length"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+      />
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
+import { getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const grades = ref([])
+const allGrades = ref([])
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const grades = computed(() => paginateRecords(allGrades.value, pagination.pageNum, pagination.pageSize))
 const loading = ref(false)
 
 const loadGrades = async () => {
@@ -84,13 +99,25 @@ const loadGrades = async () => {
         }, 0),
       }))
 
-      grades.value = submissions.filter(sub => sub.status >= 1)
+      allGrades.value = submissions.filter(sub => sub.status >= 1)
+      normalizePage()
     }
   } catch (e) {
     // 全局异常已由 request.js 提示
   } finally {
     loading.value = false
   }
+}
+
+const normalizePage = () => {
+  const maxPage = Math.max(1, Math.ceil(allGrades.value.length / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
 }
 
 const handleView = (row) => {
@@ -110,5 +137,10 @@ onMounted(() => {
 
 .score-pending {
   color: #999;
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: center;
 }
 </style>

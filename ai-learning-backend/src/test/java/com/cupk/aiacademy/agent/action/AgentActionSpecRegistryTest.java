@@ -20,7 +20,7 @@ class AgentActionSpecRegistryTest {
         AgentActionSpec spec = catalog.findByToolName("homework_create_plan").orElseThrow();
 
         assertEquals("homework.create", spec.actionCode());
-        assertEquals(List.of("classId 或 className"), spec.requiredConstraintLabels().stream()
+        assertEquals(List.of("classId 或 className 或 courseId 或 courseTitle"), spec.requiredConstraintLabels().stream()
                 .filter(value -> value.contains("classId"))
                 .toList());
         assertTrue(catalog.enabledActionSummaries(List.of("homework_create_plan")).getFirst()

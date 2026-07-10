@@ -5,6 +5,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.ai.openai.OpenAiChatModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import reactor.core.publisher.Flux;
 
 @Component
 public class SpringAiChatModelClient implements ChatModelClient {
@@ -35,18 +36,9 @@ public class SpringAiChatModelClient implements ChatModelClient {
         return chatModel.call(prompt);
     }
 
-    private String providerFromBaseUrl(String baseUrl) {
-        if (baseUrl == null || baseUrl.isBlank()) {
-            return "spring-ai-openai";
-        }
-        String normalized = baseUrl.toLowerCase();
-        if (normalized.contains("deepseek")) {
-            return "deepseek";
-        }
-        if (normalized.contains("openai")) {
-            return "openai";
-        }
-        return "openai-compatible";
+    @Override
+    public Flux<ChatResponse> stream(Prompt prompt) {
+        return chatModel.stream(prompt);
     }
 
     private String providerFromBaseUrl(String baseUrl) {

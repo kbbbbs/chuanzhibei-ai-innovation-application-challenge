@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 public class AgentToolExecutor {
@@ -54,6 +55,45 @@ public class AgentToolExecutor {
         }
 
         return executeResolvedTools(tools, query, maxItems);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AgentToolResult> executeReadTool(String toolName, String query, int maxItems) {
+        return executeReadTool(toolName, Map.of("query", query, "maxItems", maxItems));
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<AgentToolResult> executeReadTool(String toolName, Map<String, Object> arguments) {
+        AgentTool tool = toolsByName.get(normalizeName(toolName));
+        if (tool == null || tool.declaredOperationType() != com.cupk.aiacademy.agent.tool.api.AgentToolOperationType.READ) {
+            return Optional.empty();
+        }
+        Map<String, Object> safeArguments = arguments == null ? Map.of() : new LinkedHashMap<>(arguments);
+        String query = textArgument(safeArguments, "query");
+        int maxItems = intArgument(safeArguments, "maxItems", 10);
+        AgentToolResult result = tool.execute(new AgentToolContext(
+                query,
+                Math.max(1, Math.min(50, maxItems)),
+                safeArguments
+        ));
+        return result == null ? Optional.empty() : Optional.of(result.withToolName(tool.name()));
+    }
+
+    private String textArgument(Map<String, Object> arguments, String name) {
+        Object value = arguments.get(name);
+        return value == null ? "" : String.valueOf(value).trim();
+    }
+
+    private int intArgument(Map<String, Object> arguments, String name, int fallback) {
+        Object value = arguments.get(name);
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            return value == null ? fallback : Integer.parseInt(String.valueOf(value).trim());
+        } catch (NumberFormatException ignored) {
+            return fallback;
+        }
     }
 
     private List<AgentToolResult> executeResolvedTools(List<AgentTool> tools, String query, int maxItems) {

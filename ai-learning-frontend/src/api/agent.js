@@ -29,6 +29,6 @@ export const sendAgentMessage = (sessionId, data) => unwrap(request.post(`/api/a
 
 export const agentChatOnce = (data) => unwrap(request.post('/api/agent/chat-once', data))
 export const getAgentPendingActions = (params) => unwrap(request.get('/api/agent/actions/pending', { params }))
-export const getAgentPendingAction = (actionId) => unwrap(request.get(`/api/agent/actions/pending/${actionId}`))
+export const getAgentPendingAction = (actionId) => unwrap(request.get(`/api/agent/actions/pending/${actionId}`, { silent: true }))
 
-export const confirmAgentAction = (data) => unwrap(request.post('/api/agent/actions/confirm', data))
+export const confirmAgentAction = (data) => unwrap(request.post('/api/agent/actions/confirm', data, { silent: true }))

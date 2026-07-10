@@ -8,14 +8,10 @@ import com.cupk.aiacademy.agent.core.llm.AgentModelDiagnostics;
 import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
 import com.cupk.aiacademy.agent.core.prompt.AgentPromptAssembler;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
-import com.cupk.aiacademy.agent.action.AgentActionCatalog;
-import com.cupk.aiacademy.agent.action.AgentActionPlanFactory;
-import com.cupk.aiacademy.agent.action.AgentActionSelectionService;
 import com.cupk.aiacademy.agent.action.AgentPendingActionResponse;
 import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
-import com.cupk.aiacademy.agent.orchestrator.AgentActionIntentRouter;
+import com.cupk.aiacademy.agent.planner.SchemaDrivenReadToolPlanner;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
-import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.AgentChatRequest;
@@ -54,9 +50,33 @@ public class AgentChatService {
     private static final int DEFAULT_AGENT_ID = 1;
     private static final String DEFAULT_AGENT_CODE = "learning_assistant";
     private static final String DEFAULT_AGENT_ENABLED_TOOLS = "["
+            + "\"course_search\","
+            + "\"course_category_search\","
+            + "\"course_by_category_search\","
+            + "\"chapter_search\","
+            + "\"lesson_search\","
+            + "\"course_structure_search\","
+            + "\"course_resource_search\","
+            + "\"teaching_class_search\","
+            + "\"homework_search\","
+            + "\"homework_submission_stats\","
+            + "\"exam_session_search\","
+            + "\"exam_record_search\","
+            + "\"exam_stats\","
+            + "\"exam_paper_search\","
+            + "\"question_search\","
+            + "\"notice_search\","
+            + "\"grade_record_search\","
+            + "\"learning_progress\","
+            + "\"learning_plan\","
+            + "\"paper_local_search\","
+            + "\"teacher_application_search\","
+            + "\"import_log_search\","
+            + "\"course_stats\","
             + "\"course_create_plan\","
             + "\"course_update_plan\","
             + "\"course_status_plan\","
+            + "\"course_delete_plan\","
             + "\"course_category_create_plan\","
             + "\"course_category_update_plan\","
             + "\"course_category_delete_plan\","
@@ -113,10 +133,9 @@ public class AgentChatService {
     private final AgentMessageMapper messageMapper;
     private final ObjectMapper objectMapper;
     private final KnowledgeContextProvider knowledgeContextProvider;
-    private final AgentToolExecutor agentToolExecutor;
     private final AgentPromptAssembler promptAssembler;
-    private final AgentActionIntentRouter actionIntentRouter;
     private final SchemaDrivenAgentPlanner schemaDrivenAgentPlanner;
+    private final SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner;
 
     /**
      * Spring 注入使用的构造方法。
@@ -129,12 +148,8 @@ public class AgentChatService {
                             AgentMessageMapper messageMapper,
                             ObjectMapper objectMapper,
                             KnowledgeContextProvider knowledgeContextProvider,
-                            AgentToolExecutor agentToolExecutor,
-                            com.cupk.aiacademy.agent.query.NaturalLanguageQueryService naturalLanguageQueryService,
-                            ObjectProvider<AgentActionSelectionService> actionSelectionServiceProvider,
-                            ObjectProvider<AgentActionCatalog> actionCatalogProvider,
-                            ObjectProvider<AgentActionPlanFactory> actionPlanFactoryProvider,
-                            ObjectProvider<SchemaDrivenAgentPlanner> schemaDrivenAgentPlannerProvider
+                            ObjectProvider<SchemaDrivenAgentPlanner> schemaDrivenAgentPlannerProvider,
+                            ObjectProvider<SchemaDrivenReadToolPlanner> schemaDrivenReadToolPlannerProvider
     ) {
         this(
                 chatModelClient,
@@ -144,12 +159,8 @@ public class AgentChatService {
                 messageMapper,
                 objectMapper,
                 knowledgeContextProvider,
-                agentToolExecutor,
-                naturalLanguageQueryService,
-                actionSelectionServiceProvider == null ? null : actionSelectionServiceProvider.getIfAvailable(),
-                actionCatalogProvider == null ? null : actionCatalogProvider.getIfAvailable(),
-                actionPlanFactoryProvider == null ? null : actionPlanFactoryProvider.getIfAvailable(),
-                schemaDrivenAgentPlannerProvider == null ? null : schemaDrivenAgentPlannerProvider.getIfAvailable()
+                schemaDrivenAgentPlannerProvider == null ? null : schemaDrivenAgentPlannerProvider.getIfAvailable(),
+                schemaDrivenReadToolPlannerProvider == null ? null : schemaDrivenReadToolPlannerProvider.getIfAvailable()
         );
     }
 
@@ -170,8 +181,8 @@ public class AgentChatService {
                 messageMapper,
                 new ObjectMapper(),
                 null,
-                null,
-                null
+                (SchemaDrivenAgentPlanner) null,
+                (SchemaDrivenReadToolPlanner) null
         );
     }
 
@@ -183,32 +194,10 @@ public class AgentChatService {
                      AgentDefinitionMapper agentDefinitionMapper,
                      AgentSessionMapper sessionMapper,
                      AgentMessageMapper messageMapper,
-                      ObjectMapper objectMapper,
-                      KnowledgeContextProvider knowledgeContextProvider,
-                      AgentToolExecutor agentToolExecutor,
-                      com.cupk.aiacademy.agent.query.NaturalLanguageQueryService naturalLanguageQueryService
-     ) {
-        this(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
-                objectMapper, knowledgeContextProvider, agentToolExecutor, naturalLanguageQueryService,
-                (AgentActionSelectionService) null,
-                (AgentActionCatalog) null,
-                (AgentActionPlanFactory) null,
-                (SchemaDrivenAgentPlanner) null);
-    }
-
-    AgentChatService(ChatModelClient chatModelClient,
-                     AgentChatProperties chatProperties,
-                     AgentDefinitionMapper agentDefinitionMapper,
-                     AgentSessionMapper sessionMapper,
-                     AgentMessageMapper messageMapper,
                      ObjectMapper objectMapper,
                      KnowledgeContextProvider knowledgeContextProvider,
-                     AgentToolExecutor agentToolExecutor,
-                     com.cupk.aiacademy.agent.query.NaturalLanguageQueryService naturalLanguageQueryService,
-                     AgentActionSelectionService actionSelectionService,
-                     AgentActionCatalog actionCatalog,
-                     AgentActionPlanFactory actionPlanFactory,
-                     SchemaDrivenAgentPlanner schemaDrivenAgentPlanner
+                     SchemaDrivenAgentPlanner schemaDrivenAgentPlanner,
+                     SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner
      ) {
         this.chatModelClient = chatModelClient;
         this.chatProperties = chatProperties == null ? new AgentChatProperties() : chatProperties;
@@ -217,16 +206,12 @@ public class AgentChatService {
         this.messageMapper = messageMapper;
         this.objectMapper = objectMapper == null ? new ObjectMapper() : objectMapper;
         this.knowledgeContextProvider = knowledgeContextProvider;
-        this.agentToolExecutor = agentToolExecutor;
         AgentConfigurationParser configurationParser = new AgentConfigurationParser(this.objectMapper);
         this.promptAssembler = new AgentPromptAssembler(this.chatProperties,
                 configurationParser,
-                this.knowledgeContextProvider,
-                this.agentToolExecutor,
-                naturalLanguageQueryService);
-        this.actionIntentRouter = new AgentActionIntentRouter(configurationParser, this.agentToolExecutor,
-                actionSelectionService, actionCatalog, actionPlanFactory);
+                this.knowledgeContextProvider);
         this.schemaDrivenAgentPlanner = schemaDrivenAgentPlanner;
+        this.schemaDrivenReadToolPlanner = schemaDrivenReadToolPlanner;
     }
 
     /**
@@ -305,12 +290,6 @@ public class AgentChatService {
                 .toList();
     }
 
-    private boolean plannerFallbackRouterEnabled() {
-        return schemaDrivenAgentPlanner == null
-                || !schemaDrivenAgentPlanner.isEnabled()
-                || schemaDrivenAgentPlanner.isFallbackRouterEnabled();
-    }
-
     /**
      * 普通非流式聊天入口：保存用户消息、调用模型、保存助手回复，并返回本轮问答的消息 ID 和内容。
      */
@@ -328,23 +307,23 @@ public class AgentChatService {
                 ? Optional.empty()
                 : schemaDrivenAgentPlanner.tryPlan(agent, content);
 
-        if (directReply.isEmpty() && plannerFallbackRouterEnabled()) {
-            directReply = actionIntentRouter.buildDirectActionReply(agent, content);
-        }
-
         if (directReply.isPresent()) {
             AgentDirectActionReply reply = directReply.get();
             AgentMessage userMessage = setMessage(sessionId, "user", content);
             ensureSessionTitle(session, content);
-            AgentMessage assistantMessage = setMessage(sessionId, "assistant", reply.content());
+            AgentMessage assistantMessage = setMessage(sessionId, "assistant", reply.content(), reply.pendingAction());
             touchSession(sessionId);
             return toChatResponse(sessionId, userMessage.getId(), assistantMessage, reply.pendingAction());
         }
 
         applyProviderModelCompatibility(agent);
 
+        String selectedToolContext = schemaDrivenReadToolPlanner == null
+                ? ""
+                : schemaDrivenReadToolPlanner.planToolContext(agent, content);
+
         // 构造包含系统提示词、知识库/工具上下文和历史消息的模型 Prompt，并先落库用户消息。
-        Prompt prompt = promptAssembler.buildPrompt(agent, loadMessages(sessionId), content);
+        Prompt prompt = promptAssembler.buildPrompt(agent, loadMessages(sessionId), content, selectedToolContext);
         AgentMessage userMessage = setMessage(sessionId, "user", content);
         ensureSessionTitle(session, content);
 
@@ -509,10 +488,41 @@ public class AgentChatService {
     }
 
     private void applyDefaultAgentTools(AgentDefinition agent) {
-        if (agent == null || !isDefaultAgent(agent) || !isBlank(agent.getEnabledTools())) {
+        if (agent == null || !isDefaultAgent(agent)) {
             return;
         }
-        agent.setEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
+        if (isBlank(agent.getEnabledTools())) {
+            agent.setEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
+            return;
+        }
+        mergeMissingDefaultAgentTools(agent);
+    }
+
+    private void mergeMissingDefaultAgentTools(AgentDefinition agent) {
+        try {
+            AgentConfigurationParser configurationParser = new AgentConfigurationParser(objectMapper);
+            List<String> currentTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
+            List<String> defaultTools = configurationParser.parseEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
+            Set<String> merged = new LinkedHashSet<>();
+            if (currentTools != null) {
+                for (String tool : currentTools) {
+                    if (!isBlank(tool)) {
+                        merged.add(tool.trim());
+                    }
+                }
+            }
+            boolean changed = false;
+            for (String tool : defaultTools) {
+                if (!isBlank(tool) && merged.add(tool.trim())) {
+                    changed = true;
+                }
+            }
+            if (changed) {
+                agent.setEnabledTools(objectMapper.writeValueAsString(new ArrayList<>(merged)));
+            }
+        } catch (Exception e) {
+            log.warn("Failed to merge default agent tools, fallback to configured tools: {}", e.getMessage());
+        }
     }
 
     private boolean isDefaultAgent(AgentDefinition agent) {
@@ -585,10 +595,26 @@ public class AgentChatService {
      * 创建并保存一条会话消息，可用于用户消息、助手回复和失败兜底消息。
      */
     private AgentMessage setMessage(Integer sessionId, String role, String content) {
+        return setMessage(sessionId, role, content, null);
+    }
+
+    private AgentMessage setMessage(Integer sessionId,
+                                    String role,
+                                    String content,
+                                    AgentPendingActionResponse pendingAction) {
         AgentMessage message = new AgentMessage();
         message.setSessionId(sessionId);
         message.setRole(role);
         message.setContent(content == null ? "" : content);
+        if (pendingAction != null) {
+            message.setToolName("pending_action");
+            try {
+                message.setToolResult(objectMapper.writeValueAsString(pendingAction));
+            } catch (Exception e) {
+                log.warn("Failed to serialize pending action for message history: actionId={}",
+                        pendingAction.actionId(), e);
+            }
+        }
         message.setCreateTime(LocalDateTime.now());
         messageMapper.insert(message);
         return message;
@@ -603,8 +629,23 @@ public class AgentChatService {
         response.setSessionId(message.getSessionId());
         response.setRole(message.getRole());
         response.setContent(message.getContent());
+        response.setPendingAction(readPendingAction(message));
         response.setCreateTime(message.getCreateTime());
         return response;
+    }
+
+    private AgentPendingActionResponse readPendingAction(AgentMessage message) {
+        if (message == null
+                || !"pending_action".equals(message.getToolName())
+                || isBlank(message.getToolResult())) {
+            return null;
+        }
+        try {
+            return objectMapper.readValue(message.getToolResult(), AgentPendingActionResponse.class);
+        } catch (Exception e) {
+            log.warn("Failed to read pending action from message history: messageId={}", message.getId(), e);
+            return null;
+        }
     }
 
     /**

@@ -227,8 +227,12 @@ public class AgentActionIntentRouter {
                 && looksLikeCourseCategoryUpdateRequest(currentUserContent)) {
             return Optional.of("course_category_update_plan");
         }
+        if (isEnabledTool(enabledTools, "course_delete_plan", "course_remove_plan")
+                && looksLikeCourseDeleteRequest(currentUserContent)) {
+            return Optional.of("course_delete_plan");
+        }
         if (isEnabledTool(enabledTools, "course_status_plan", "course_publish_status_plan",
-                "course_archive_plan", "course_delete_plan", "course_remove_plan")
+                "course_archive_plan")
                 && looksLikeCourseStatusRequest(currentUserContent)) {
             return Optional.of("course_status_plan");
         }
@@ -544,8 +548,16 @@ public class AgentActionIntentRouter {
             return false;
         }
         return looksLikeCourseTarget(value)
-                && containsAny(value, "上架", "下架", "停用", "启用", "恢复", "归档", "关闭",
-                "删除", "移除", "撤销", "作废", "删掉", "删去");
+                && containsAny(value, "上架", "下架", "停用", "启用", "恢复", "归档", "关闭");
+    }
+
+    private boolean looksLikeCourseDeleteRequest(String content) {
+        String value = content == null ? "" : content.trim();
+        if (looksLikeCourseCategoryObjectTarget(value)) {
+            return false;
+        }
+        return looksLikeCourseTarget(value)
+                && containsAny(value, "删除", "移除", "删掉", "删去", "去掉");
     }
 
     private boolean looksLikeCourseCategoryCreateRequest(String content) {

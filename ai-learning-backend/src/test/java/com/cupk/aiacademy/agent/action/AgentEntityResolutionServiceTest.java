@@ -15,6 +15,7 @@ import com.cupk.aiacademy.mapper.QuestionMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.pojo.TeachingClass;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -74,6 +75,40 @@ class AgentEntityResolutionServiceTest {
         assertEquals("课程匹配到多条记录：[1(Java 入门), 2(Java 入门)]，请补充ID", exception.getMessage());
     }
 
+    @Test
+    void homeworkCreateCanResolveSingleTeachingClassFromCourseTitle() {
+        when(courseMapper.selectList(any())).thenReturn(List.of(course(1, "Java 入门")));
+        when(teachingClassMapper.selectList(any())).thenReturn(List.of(teachingClass(11, 1, "Java 入门一班")));
+        AgentEntityResolutionService service = service();
+
+        Map<String, Object> resolved = service.resolve("homework.create", Map.of(
+                "courseTitle", "Java 入门",
+                "title", "第一次练习"
+        ));
+
+        assertEquals(1, resolved.get("courseId"));
+        assertEquals(11, resolved.get("classId"));
+        assertEquals("Java 入门一班", resolved.get("className"));
+    }
+
+    @Test
+    void homeworkCreateRequiresClassWhenCourseHasMultipleTeachingClasses() {
+        when(courseMapper.selectList(any())).thenReturn(List.of(course(1, "Java 入门")));
+        when(teachingClassMapper.selectList(any())).thenReturn(List.of(
+                teachingClass(11, 1, "Java 入门一班"),
+                teachingClass(12, 1, "Java 入门二班")
+        ));
+        AgentEntityResolutionService service = service();
+
+        BusinessException exception = assertThrows(BusinessException.class, () -> service.resolve(
+                "homework.create",
+                Map.of("courseTitle", "Java 入门")
+        ));
+
+        assertEquals("课程下匹配到多个教学班：[11(Java 入门一班), 12(Java 入门二班)]，请补充 classId 或 className",
+                exception.getMessage());
+    }
+
     private AgentEntityResolutionService service() {
         return new AgentEntityResolutionService(
                 courseCategoryMapper,
@@ -97,5 +132,13 @@ class AgentEntityResolutionServiceTest {
         course.setId(id);
         course.setTitle(title);
         return course;
+    }
+
+    private TeachingClass teachingClass(Integer id, Integer courseId, String className) {
+        TeachingClass teachingClass = new TeachingClass();
+        teachingClass.setId(id);
+        teachingClass.setCourseId(courseId);
+        teachingClass.setClassName(className);
+        return teachingClass;
     }
 }

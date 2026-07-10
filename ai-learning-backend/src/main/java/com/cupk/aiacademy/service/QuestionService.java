@@ -121,6 +121,19 @@ public class QuestionService {
             Long teacherId,
             int page,
             int size) {
+        return list(type, difficulty, status, courseId, teacherId, null, page, size);
+    }
+
+    @Transactional(readOnly = true)
+    public org.springframework.data.domain.Page<QuestionResponseDTO> list(
+            QuestionType type,
+            Difficulty difficulty,
+            RecordStatus status,
+            Long courseId,
+            Long teacherId,
+            String keyword,
+            int page,
+            int size) {
         int pageIndex = Math.max(page, 0);
         int pageSize = size <= 0 ? 10 : size;
         Page<Question> mpPage = new Page<>(pageIndex + 1L, pageSize);
@@ -168,6 +181,14 @@ public class QuestionService {
             if (courseId != null && courseId > 0) {
                 query.eq("course_id", courseId);
             }
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String term = keyword.trim();
+            query.and(wrapper -> wrapper.like("title", term)
+                    .or()
+                    .like("analysis", term)
+                    .or()
+                    .like("knowledge_point", term));
         }
         query.orderByDesc("id");
         questionMapper.selectPage(mpPage, query);

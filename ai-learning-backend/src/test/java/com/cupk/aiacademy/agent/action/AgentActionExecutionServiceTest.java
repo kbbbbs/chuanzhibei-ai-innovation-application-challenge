@@ -301,7 +301,7 @@ class AgentActionExecutionServiceTest {
                         "title", "第一章作业",
                         "content", "完成课后练习",
                         "fullScore", "100",
-                        "deadline", "2026-07-06T18:00:00"
+                        "deadline", "2026-07-06 18:00:00"
                 )
         ), "127.0.0.1");
 
@@ -317,6 +317,7 @@ class AgentActionExecutionServiceTest {
         assertEquals("第一章作业", homework.getTitle());
         assertEquals("完成课后练习", homework.getContent());
         assertEquals(0, homework.getFullScore().compareTo(new java.math.BigDecimal("100")));
+        assertEquals(LocalDateTime.of(2026, 7, 6, 18, 0), homework.getDeadline());
         assertEquals(1, homework.getStatus());
 
         ArgumentCaptor<OperationLog> logCaptor = ArgumentCaptor.forClass(OperationLog.class);

@@ -3,8 +3,6 @@ package com.cupk.aiacademy.agent.core.prompt;
 import com.cupk.aiacademy.agent.core.config.AgentChatProperties;
 import com.cupk.aiacademy.agent.core.config.AgentConfigurationParser;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
-import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
-import com.cupk.aiacademy.agent.query.NaturalLanguageQueryService;
 import com.cupk.aiacademy.pojo.AgentDefinition;
 import com.cupk.aiacademy.pojo.AgentMessage;
 import org.slf4j.Logger;
@@ -31,30 +29,30 @@ public class AgentPromptAssembler {
     private final AgentChatProperties chatProperties;
     private final AgentConfigurationParser configurationParser;
     private final KnowledgeContextProvider knowledgeContextProvider;
-    private final AgentToolExecutor agentToolExecutor;
-    private final NaturalLanguageQueryService naturalLanguageQueryService;
 
     public AgentPromptAssembler(AgentChatProperties chatProperties,
                                 AgentConfigurationParser configurationParser,
-                                KnowledgeContextProvider knowledgeContextProvider,
-                                AgentToolExecutor agentToolExecutor,
-                                NaturalLanguageQueryService naturalLanguageQueryService) {
+                                KnowledgeContextProvider knowledgeContextProvider) {
         this.chatProperties = chatProperties == null ? new AgentChatProperties() : chatProperties;
         this.configurationParser = configurationParser == null
                 ? new AgentConfigurationParser(null)
                 : configurationParser;
         this.knowledgeContextProvider = knowledgeContextProvider;
-        this.agentToolExecutor = agentToolExecutor;
-        this.naturalLanguageQueryService = naturalLanguageQueryService;
     }
 
     public Prompt buildPrompt(AgentDefinition agent,
                               List<AgentMessage> historyMessages,
                               String currentUserContent) {
+        return buildPrompt(agent, historyMessages, currentUserContent, "");
+    }
+
+    public Prompt buildPrompt(AgentDefinition agent,
+                              List<AgentMessage> historyMessages,
+                              String currentUserContent,
+                              String selectedToolContext) {
         String knowledgeContext = retrieveKnowledgeContext(agent, currentUserContent);
-        String toolContext = retrieveToolContext(agent, currentUserContent);
         List<Message> messages = buildPromptMessages(historyMessages,
-                systemPrompt(agent, knowledgeContext, toolContext),
+                systemPrompt(agent, knowledgeContext, selectedToolContext),
                 currentUserContent);
 
         OpenAiChatOptions options = chatOptions(agent);
@@ -145,45 +143,6 @@ public class AgentPromptAssembler {
             return knowledgeContextProvider.retrieve(agent, currentUserContent);
         } catch (Exception e) {
             log.warn("Agent knowledge search failed, continue without knowledge context", e);
-            return "";
-        }
-    }
-
-    private String retrieveToolContext(AgentDefinition agent, String currentUserContent) {
-        String nlqAnswer = retrieveNaturalLanguageQuery(currentUserContent);
-        if (!isBlank(nlqAnswer)) {
-            return nlqAnswer;
-        }
-        List<String> enabledTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
-        if (enabledTools.isEmpty()
-                || agentToolExecutor == null
-                || chatProperties.getToolContextMaxItems() <= 0
-                || chatProperties.getToolContextMaxCharacters() <= 0) {
-            return "";
-        }
-
-        try {
-            return agentToolExecutor.buildToolContext(enabledTools,
-                    currentUserContent.trim(),
-                    chatProperties.getToolContextMaxItems(),
-                    chatProperties.getToolContextMaxCharacters());
-        } catch (Exception e) {
-            log.warn("Agent tool execution failed, continue without tool context", e);
-            return "";
-        }
-    }
-
-    private String retrieveNaturalLanguageQuery(String currentUserContent) {
-        if (naturalLanguageQueryService == null || isBlank(currentUserContent)) {
-            return "";
-        }
-        try {
-            int maxItems = chatProperties.getToolContextMaxItems() <= 0
-                    ? 10 : chatProperties.getToolContextMaxItems();
-            String answer = naturalLanguageQueryService.answer(currentUserContent.trim(), maxItems);
-            return isBlank(answer) ? "" : "[自然语言查询结果]\n" + answer;
-        } catch (Exception e) {
-            log.warn("Natural language query failed, fallback to tool context", e);
             return "";
         }
     }

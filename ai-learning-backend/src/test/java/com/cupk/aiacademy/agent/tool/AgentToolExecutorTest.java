@@ -53,6 +53,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -338,7 +339,9 @@ class AgentToolExecutorTest {
         assertTrue(result.data().containsKey("parameterSchema"));
         assertTrue(result.data().containsKey("missingRequiredFields"));
         assertTrue(result.content().contains("操作计划=创建章节"));
-        assertTrue(result.content().contains("已识别参数=title(章节标题)=人工输入测试章节"));
+        Map<?, ?> parameters = (Map<?, ?>) result.data().get("parameters");
+        assertEquals("Java 入门", parameters.get("courseTitle"));
+        assertEquals("人工输入测试章节", parameters.get("title"));
         assertTrue(result.content().contains("可选字段="));
         assertTrue(result.content().contains("确认ID="));
     }

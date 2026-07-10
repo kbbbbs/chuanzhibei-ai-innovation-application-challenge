@@ -25,13 +25,16 @@
           </el-select>
         </el-form-item>
         <el-form-item label="学生编号">
-          <el-input v-model="searchForm.studentId" placeholder="请输入学生编号" clearable />
+          <el-input v-model="searchForm.studentId" placeholder="请输入学生编号" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="关键词">
+          <el-input v-model="searchForm.keyword" placeholder="学生姓名、用户名或岗位" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="工作月份">
-          <el-input v-model="searchForm.workMonth" placeholder="例如：2026-07" clearable />
+          <el-input v-model="searchForm.workMonth" placeholder="例如：2026-07" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="loadData">查询</el-button>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -69,8 +72,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadData"
+        @size-change="handleSizeChange"
       />
     </el-card>
 
@@ -177,6 +182,7 @@ const workStudyOptions = ref([])
 const searchForm = reactive({
   workStudyId: null,
   studentId: null,
+  keyword: '',
   workMonth: ''
 })
 
@@ -238,6 +244,16 @@ const loadData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadData()
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadData()
 }
 
 const onWorkStudyChange = (workStudyId) => {
@@ -310,6 +326,7 @@ const handleDelete = async (row) => {
 const handleReset = () => {
   searchForm.workStudyId = null
   searchForm.studentId = null
+  searchForm.keyword = ''
   searchForm.workMonth = ''
   pagination.pageNum = 1
   loadData()
@@ -367,6 +384,7 @@ const handleExport = async (format) => {
       workStudyId: searchForm.workStudyId,
       studentId: searchForm.studentId,
       workMonth: searchForm.workMonth,
+      keyword: searchForm.keyword,
       format
     })
     const contentType = format === 'csv' ? 'text/csv;charset=utf-8' : 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
