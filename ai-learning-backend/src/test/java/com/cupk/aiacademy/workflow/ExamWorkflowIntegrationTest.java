@@ -2,11 +2,13 @@ package com.cupk.aiacademy.workflow;
 
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.ExamStatus;
+import com.cupk.aiacademy.common.PaperPreflightWarningException;
 import com.cupk.aiacademy.common.PaperStatus;
 import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
 import com.cupk.aiacademy.common.SubmissionStatus;
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
 import com.cupk.aiacademy.dto.PaperRequestDTO;
@@ -26,10 +28,14 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @SpringBootTest
 class ExamWorkflowIntegrationTest {
@@ -100,6 +106,7 @@ class ExamWorkflowIntegrationTest {
         paperRequest.setDescription("期末考试");
         paperRequest.setDurationMinutes(120);
         paperRequest.setStatus(PaperStatus.PUBLISHED);
+        paperRequest.setIgnoreWarnings(true);
 
         PaperRequestDTO.PaperQuestionRequest singleItem = new PaperRequestDTO.PaperQuestionRequest();
         singleItem.setQuestionId(single.getId());
@@ -158,6 +165,11 @@ class ExamWorkflowIntegrationTest {
         gradeRequest.setGrades(List.of(gradeItem));
 
         loginAsTeacher();
+        var gradingView = submissionService.getGradingSubmissionById(submission.getId());
+        var ungradedShortAnswer = gradingView.getAnswers().get(1);
+        assertEquals(new BigDecimal("10.00"), ungradedShortAnswer.getMaxScore());
+        assertEquals(0, BigDecimal.ZERO.compareTo(ungradedShortAnswer.getScore()));
+
         SubmissionResponseDTO graded = submissionService.manualGrade(submission.getId(), gradeRequest);
         assertEquals(new BigDecimal("9.00"), graded.getSubjectiveScore());
         assertEquals(new BigDecimal("14.00"), graded.getTotalScore());
@@ -192,7 +204,126 @@ class ExamWorkflowIntegrationTest {
         assertThrows(RuntimeException.class, () -> submissionService.start(exam.getId(), "1001"));
     }
 
+    @Test
+    void paperPreflightRequiresExplicitWarningOverride() {
+        loginAsTeacher();
+        var question = questionService.create(buildSingleChoiceQuestion());
+        PaperRequestDTO request = new PaperRequestDTO();
+        request.setCourseId(COURSE_ID);
+        request.setName("预检试卷");
+        request.setDurationMinutes(60);
+        request.setStatus(PaperStatus.DRAFT);
+        PaperRequestDTO.PaperQuestionRequest item = new PaperRequestDTO.PaperQuestionRequest();
+        item.setQuestionId(question.getId());
+        item.setSortOrder(1);
+        item.setScore(new BigDecimal("5"));
+        item.setRequiredAnswer(true);
+        request.setQuestions(List.of(item));
+
+        var diagnostics = paperService.preflight(request);
+        assertTrue(diagnostics.getWarningCodes().contains("TOTAL_NOT_100"));
+        assertThrows(PaperPreflightWarningException.class, () -> paperService.create(request));
+
+        request.setIgnoreWarnings(true);
+        assertEquals(new BigDecimal("5"), paperService.create(request).getTotalScore());
+    }
+
+    @Test
+    void manualGradeMustRejectObjectiveAnswers() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        SubmissionRequestsDTO.SaveAnswerRequest answerRequest = new SubmissionRequestsDTO.SaveAnswerRequest();
+        SubmissionRequestsDTO.AnswerItem answer = new SubmissionRequestsDTO.AnswerItem();
+        answer.setPaperQuestionId(submission.getAnswers().get(0).getPaperQuestionId());
+        answer.setSelectedOptionKeys(List.of("A"));
+        answerRequest.setAnswers(List.of(answer));
+        submissionService.saveAnswers(submission.getId(), answerRequest);
+        SubmissionResponseDTO submitted = submissionService.submit(submission.getId());
+
+        loginAsTeacher();
+        SubmissionRequestsDTO.ManualGradeRequest gradeRequest = new SubmissionRequestsDTO.ManualGradeRequest();
+        SubmissionRequestsDTO.ManualGradeItem gradeItem = new SubmissionRequestsDTO.ManualGradeItem();
+        gradeItem.setSubmissionAnswerId(submitted.getAnswers().get(0).getId());
+        gradeItem.setScore(new BigDecimal("5.00"));
+        gradeRequest.setGrades(List.of(gradeItem));
+
+        assertThrows(RuntimeException.class, () -> submissionService.manualGrade(submission.getId(), gradeRequest));
+    }
+
+    @Test
+    void homeworkAssessmentUsesTheSameSessionWorkflowAndTypeFilter() {
+        loginAsTeacher();
+        var homework = createExam(ExamStatus.DRAFT, AssessmentType.HOMEWORK);
+
+        assertEquals(AssessmentType.HOMEWORK, homework.getAssessmentType());
+        assertEquals(List.of(homework.getId()), examService.list(null, null, null, AssessmentType.HOMEWORK)
+                .stream()
+                .map(item -> item.getId())
+                .toList());
+        assertEquals(List.of(), examService.list(null, null, null, AssessmentType.EXAM));
+    }
+
+    @Test
+    void answerUsesTheQuestionSnapshotAfterQuestionAndPaperAreChanged() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        var answer = submission.getAnswers().get(0);
+
+        String snapshot = jdbcTemplate.queryForObject(
+                "SELECT question_snapshot FROM t_exam_answer WHERE id = ?", String.class, answer.getId());
+        assertNotNull(snapshot);
+        assertTrue(snapshot.contains("Java 的编译结果是？"));
+        assertTrue(snapshot.contains("编译后生成字节码"));
+        assertTrue(snapshot.contains("\"A\""));
+
+        jdbcTemplate.update(
+                "UPDATE t_question SET title = ?, options = ?, answer = ?, analysis = ? WHERE id = ?",
+                "已变更的题干", "[\"已变更选项\"]", "[\"B\"]", "已变更解析", answer.getQuestionId());
+        jdbcTemplate.update(
+                "UPDATE t_exam_paper_question SET score = ? WHERE id = ?",
+                new BigDecimal("99.00"), answer.getPaperQuestionId());
+
+        var studentView = submissionService.getStudentSubmissionById(submission.getId());
+        var studentAnswer = studentView.getAnswers().get(0);
+        assertEquals("Java 的编译结果是？", studentAnswer.getQuestionContent());
+        assertEquals(new BigDecimal("5.00"), studentAnswer.getScore());
+        assertEquals(2, studentAnswer.getOptions().size());
+        assertFalse(Arrays.stream(studentAnswer.getClass().getDeclaredFields())
+                .anyMatch(field -> "referenceAnswer".equals(field.getName())));
+
+        loginAsTeacher();
+        var gradingView = submissionService.getGradingSubmissionById(submission.getId());
+        assertEquals("A", gradingView.getAnswers().get(0).getReferenceAnswer());
+
+        loginAsStudent();
+
+        SubmissionRequestsDTO.SaveAnswerRequest request = new SubmissionRequestsDTO.SaveAnswerRequest();
+        SubmissionRequestsDTO.AnswerItem item = new SubmissionRequestsDTO.AnswerItem();
+        item.setPaperQuestionId(answer.getPaperQuestionId());
+        item.setSelectedOptionKeys(List.of("A"));
+        request.setAnswers(List.of(item));
+        submissionService.saveAnswers(submission.getId(), request);
+
+        SubmissionResponseDTO submitted = submissionService.submit(submission.getId());
+        assertEquals(new BigDecimal("5.00"), submitted.getObjectiveScore());
+        assertTrue(submitted.getAnswers().get(0).getCorrect());
+        assertFalse(studentAnswer.getOptions().stream()
+                .anyMatch(option -> "已变更选项".equals(option.getOptionContent())));
+    }
+
     private com.cupk.aiacademy.dto.ExamResponseDTO createExam(ExamStatus status) {
+        return createExam(status, AssessmentType.EXAM);
+    }
+
+    private com.cupk.aiacademy.dto.ExamResponseDTO createExam(ExamStatus status, AssessmentType assessmentType) {
         var single = questionService.create(buildSingleChoiceQuestion());
 
         PaperRequestDTO paperRequest = new PaperRequestDTO();
@@ -201,6 +332,7 @@ class ExamWorkflowIntegrationTest {
         paperRequest.setDescription("状态规则测试");
         paperRequest.setDurationMinutes(60);
         paperRequest.setStatus(PaperStatus.PUBLISHED);
+        paperRequest.setIgnoreWarnings(true);
 
         PaperRequestDTO.PaperQuestionRequest item = new PaperRequestDTO.PaperQuestionRequest();
         item.setQuestionId(single.getId());
@@ -220,6 +352,7 @@ class ExamWorkflowIntegrationTest {
         examRequest.setEndTime(LocalDateTime.now().plusHours(2));
         examRequest.setDurationMinutes(60);
         examRequest.setStatus(status);
+        examRequest.setAssessmentType(assessmentType);
         return examService.create(examRequest);
     }
 
@@ -229,7 +362,6 @@ class ExamWorkflowIntegrationTest {
         request.setContent("Java 的编译结果是？");
         request.setType(QuestionType.SINGLE_CHOICE);
         request.setDifficulty(Difficulty.EASY);
-        request.setScore(new BigDecimal("5.00"));
         request.setKnowledgePoint("Java 基础");
         request.setAnalysis("编译后生成字节码");
         request.setStatus(RecordStatus.ACTIVE);
@@ -259,7 +391,6 @@ class ExamWorkflowIntegrationTest {
         request.setContent("简述 JVM 的作用");
         request.setType(QuestionType.SHORT_ANSWER);
         request.setDifficulty(Difficulty.MEDIUM);
-        request.setScore(new BigDecimal("10.00"));
         request.setKnowledgePoint("JVM");
         request.setAnalysis("开放题");
         request.setStatus(RecordStatus.ACTIVE);

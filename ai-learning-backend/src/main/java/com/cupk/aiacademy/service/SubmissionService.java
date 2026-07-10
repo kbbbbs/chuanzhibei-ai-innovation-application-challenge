@@ -2,6 +2,7 @@ package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.common.ExamStatus;
 import com.cupk.aiacademy.common.JudgeStatus;
 import com.cupk.aiacademy.common.QuestionType;
@@ -19,7 +20,9 @@ import com.cupk.aiacademy.pojo.ExamPaperQuestion;
 import com.cupk.aiacademy.pojo.ExamRecord;
 import com.cupk.aiacademy.pojo.ExamSession;
 import com.cupk.aiacademy.pojo.Question;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -40,6 +43,7 @@ public class SubmissionService {
     private final ExamAnswerMapper answerMapper;
     private final ExamPaperQuestionMapper paperQuestionMapper;
     private final PermissionService permissionService;
+    private final ObjectMapper objectMapper;
 
     public SubmissionService(ExamService examService,
                              QuestionService questionService,
@@ -47,7 +51,8 @@ public class SubmissionService {
                              ExamRecordMapper recordMapper,
                              ExamAnswerMapper answerMapper,
                              ExamPaperQuestionMapper paperQuestionMapper,
-                             PermissionService permissionService) {
+                             PermissionService permissionService,
+                             ObjectMapper objectMapper) {
         this.examService = examService;
         this.questionService = questionService;
         this.examSessionMapper = examSessionMapper;
@@ -55,6 +60,7 @@ public class SubmissionService {
         this.answerMapper = answerMapper;
         this.paperQuestionMapper = paperQuestionMapper;
         this.permissionService = permissionService;
+        this.objectMapper = objectMapper;
     }
 
     @Transactional
@@ -80,7 +86,7 @@ public class SubmissionService {
         if (exam.getStartTime() != null && now.isBefore(exam.getStartTime())) {
             throw new BusinessException("考试尚未开始，当前时间：" + now + "，开始时间：" + exam.getStartTime());
         }
-        if (exam.getEndTime() != null && now.isAfter(exam.getEndTime())) {
+        if (exam.getEndTime() != null && !now.isBefore(exam.getEndTime())) {
             throw new BusinessException("考试已结束，当前时间：" + now + "，结束时间：" + exam.getEndTime());
         }
         ExamRecord existing = findExistingRecord(exam.getId(), candidateId, studentId);
@@ -103,7 +109,15 @@ public class SubmissionService {
         record.setStatus(SubmissionStatus.IN_PROGRESS.getCode());
         record.setCreateTime(now);
         record.setUpdateTime(now);
-        recordMapper.insert(record);
+        try {
+            recordMapper.insert(record);
+        } catch (DuplicateKeyException duplicate) {
+            ExamRecord concurrentRecord = findExistingRecord(exam.getId(), candidateId, studentId);
+            if (concurrentRecord != null && SubmissionStatus.fromCode(concurrentRecord.getStatus()) == SubmissionStatus.IN_PROGRESS) {
+                return toResponse(concurrentRecord);
+            }
+            throw duplicate;
+        }
 
         for (ExamPaperQuestion paperQuestion : listPaperQuestions(exam.getPaperId())) {
             Question question = questionService.getEntityById(paperQuestion.getQuestionId().longValue());
@@ -112,6 +126,7 @@ public class SubmissionService {
             answer.setPaperQuestionId(paperQuestion.getId());
             answer.setQuestionId(paperQuestion.getQuestionId());
             answer.setCorrectAnswer(joinStandardAnswers(question));
+            answer.setQuestionSnapshot(snapshotOf(question, paperQuestion));
             answer.setScore(BigDecimal.ZERO);
             answer.setGradeStatus(JudgeStatus.NOT_ANSWERED.getCode());
             answerMapper.insert(answer);
@@ -152,9 +167,8 @@ public class SubmissionService {
         BigDecimal objectiveScore = BigDecimal.ZERO;
         boolean hasSubjective = false;
         for (ExamAnswer answer : listAnswers(record.getId())) {
-            Question question = questionService.getEntityById(answer.getQuestionId().longValue());
-            ExamPaperQuestion paperQuestion = paperQuestionMapper.selectById(answer.getPaperQuestionId());
-            QuestionType type = QuestionType.fromStorageValue(question.getQuestionType());
+            QuestionSnapshot snapshot = snapshotOf(answer);
+            QuestionType type = snapshot.questionType();
             if (type == QuestionType.SHORT_ANSWER || type == QuestionType.FILE_UPLOAD) {
                 answer.setGradeStatus(JudgeStatus.PENDING_MANUAL_REVIEW.getCode());
                 answer.setScore(BigDecimal.ZERO);
@@ -162,10 +176,10 @@ public class SubmissionService {
                 answerMapper.updateById(answer);
                 continue;
             }
-            boolean correct = judgeObjective(question, answer.getStudentAnswer());
+            boolean correct = judgeObjective(snapshot, answer.getStudentAnswer());
             answer.setIsCorrect(correct ? 1 : 0);
             if (correct) {
-                BigDecimal score = scoreOf(paperQuestion);
+                BigDecimal score = snapshot.maxScore();
                 answer.setScore(score);
                 objectiveScore = objectiveScore.add(score);
             } else {
@@ -200,8 +214,11 @@ public class SubmissionService {
             if (!Objects.equals(answer.getExamRecordId(), record.getId())) {
                 throw new BusinessException("答题记录不属于当前答卷");
             }
-            ExamPaperQuestion paperQuestion = paperQuestionMapper.selectById(answer.getPaperQuestionId());
-            BigDecimal maxScore = scoreOf(paperQuestion);
+            QuestionSnapshot snapshot = snapshotOf(answer);
+            if (!isManualQuestion(snapshot)) {
+                throw new BusinessException("只能批改简答题或文件上传题");
+            }
+            BigDecimal maxScore = snapshot.maxScore();
             if (item.getScore().compareTo(maxScore) > 0) {
                 throw new BusinessException("主观题得分不能超过题目分值。题目分值：" + maxScore + "，给定分数：" + item.getScore());
             }
@@ -213,13 +230,19 @@ public class SubmissionService {
             answer.setGradeTime(LocalDateTime.now());
             answerMapper.updateById(answer);
         }
-        BigDecimal subjectiveScore = listAnswers(record.getId()).stream()
-                .filter(answer -> isManualQuestion(answer.getQuestionId()))
+        List<ExamAnswer> answers = listAnswers(record.getId());
+        BigDecimal subjectiveScore = answers.stream()
+                .filter(answer -> isManualQuestion(snapshotOf(answer)))
                 .map(answer -> answer.getScore() == null ? BigDecimal.ZERO : answer.getScore())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
         record.setSubjectiveScore(subjectiveScore);
         record.setTotalScore((record.getObjectiveScore() == null ? BigDecimal.ZERO : record.getObjectiveScore()).add(subjectiveScore));
-        record.setStatus(SubmissionStatus.GRADED.getCode());
+        boolean hasPendingManualReview = answers.stream()
+                .filter(answer -> isManualQuestion(snapshotOf(answer)))
+                .anyMatch(answer -> JudgeStatus.fromCode(answer.getGradeStatus()) != JudgeStatus.MANUALLY_GRADED);
+        record.setStatus((hasPendingManualReview
+                ? SubmissionStatus.PENDING_MANUAL_REVIEW
+                : SubmissionStatus.GRADED).getCode());
         record.setUpdateTime(LocalDateTime.now());
         recordMapper.updateById(record);
         return toResponse(record);
@@ -230,6 +253,14 @@ public class SubmissionService {
         ExamRecord record = getEntityById(submissionId);
         requireReadableRecord(record);
         return toResponse(record);
+    }
+
+    @Transactional(readOnly = true)
+    public SubmissionResponseDTO getGradingSubmissionById(Long submissionId) {
+        ExamRecord record = getEntityById(submissionId);
+        ExamSession exam = examService.getEntityById(toLong(record.getExamSessionId()));
+        permissionService.requireExamTeacher(exam);
+        return toGradingResponse(record);
     }
 
     @Transactional(readOnly = true)
@@ -246,6 +277,11 @@ public class SubmissionService {
 
     @Transactional(readOnly = true)
     public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId) {
+        return list(examId, candidateId, studentId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId, AssessmentType assessmentType) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
         if (permissionService.isStudent(user)) {
@@ -270,6 +306,25 @@ public class SubmissionService {
         } else if (examId != null) {
             query.eq("exam_session_id", toInt(examId, "考试ID"));
         }
+        if (assessmentType != null) {
+            if (examId != null) {
+                ExamSession exam = examService.getEntityById(examId);
+                if (AssessmentType.fromStorageValue(exam.getAssessmentType()) != assessmentType) {
+                    throw new BusinessException("答卷不属于指定评测类型");
+                }
+            } else {
+                QueryWrapper<ExamSession> typeQuery = new QueryWrapper<>();
+                typeQuery.eq("assessment_type", assessmentType.name());
+                List<Integer> typedSessionIds = examSessionMapper.selectList(typeQuery).stream()
+                        .map(ExamSession::getId)
+                        .filter(Objects::nonNull)
+                        .toList();
+                if (typedSessionIds.isEmpty()) {
+                    return List.of();
+                }
+                query.in("exam_session_id", typedSessionIds);
+            }
+        }
         if (!permissionService.isStudent(user) && !isBlank(candidateId)) {
             query.eq("candidate_id", candidateId);
         }
@@ -289,6 +344,14 @@ public class SubmissionService {
     }
 
     public SubmissionResponseDTO toResponse(ExamRecord record) {
+        return toResponse(record, false);
+    }
+
+    private SubmissionResponseDTO toGradingResponse(ExamRecord record) {
+        return toResponse(record, true);
+    }
+
+    private SubmissionResponseDTO toResponse(ExamRecord record, boolean includeReferenceAnswer) {
         ExamSession exam = examSessionMapper.selectById(record.getExamSessionId());
         SubmissionResponseDTO response = new SubmissionResponseDTO();
         response.setId(toLong(record.getId()));
@@ -303,7 +366,7 @@ public class SubmissionService {
         response.setTotalScore(record.getTotalScore());
         response.setStatus(SubmissionStatus.fromCode(record.getStatus()));
         response.setAnswers(listAnswers(record.getId()).stream()
-                .map(this::toAnswerResponse)
+                .map(answer -> toAnswerResponse(answer, includeReferenceAnswer))
                 .toList());
         return response;
     }
@@ -328,15 +391,19 @@ public class SubmissionService {
         return response;
     }
 
-    private SubmissionResponseDTO.SubmissionAnswerResponse toAnswerResponse(ExamAnswer answer) {
-        Question question = questionService.getEntityById(answer.getQuestionId().longValue());
+    private SubmissionResponseDTO.SubmissionAnswerResponse toAnswerResponse(ExamAnswer answer, boolean includeReferenceAnswer) {
+        QuestionSnapshot snapshot = snapshotOf(answer);
         SubmissionResponseDTO.SubmissionAnswerResponse response = new SubmissionResponseDTO.SubmissionAnswerResponse();
         response.setId(toLong(answer.getId()));
         response.setPaperQuestionId(toLong(answer.getPaperQuestionId()));
         response.setQuestionId(toLong(answer.getQuestionId()));
-        response.setQuestionContent(question.getTitle());
-        response.setQuestionType(QuestionType.fromStorageValue(question.getQuestionType()));
+        response.setQuestionContent(snapshot.stem());
+        response.setQuestionType(snapshot.questionType());
         response.setAnswerContent(answer.getStudentAnswer());
+        response.setMaxScore(snapshot.maxScore());
+        if (includeReferenceAnswer) {
+            response.setReferenceAnswer(String.join(", ", snapshot.correctAnswers()));
+        }
         response.setCorrect(answer.getIsCorrect() == null ? null : answer.getIsCorrect() == 1);
         response.setScore(answer.getScore());
         response.setJudgeStatus(JudgeStatus.fromCode(answer.getGradeStatus()));
@@ -345,22 +412,21 @@ public class SubmissionService {
     }
 
     private StudentSubmissionResponseDTO.StudentAnswerResponse toStudentAnswerResponse(ExamAnswer answer) {
-        Question question = questionService.getEntityById(answer.getQuestionId().longValue());
-        ExamPaperQuestion paperQuestion = paperQuestionMapper.selectById(answer.getPaperQuestionId());
+        QuestionSnapshot snapshot = snapshotOf(answer);
         StudentSubmissionResponseDTO.StudentAnswerResponse response = new StudentSubmissionResponseDTO.StudentAnswerResponse();
         response.setId(toLong(answer.getId()));
         response.setPaperQuestionId(toLong(answer.getPaperQuestionId()));
         response.setQuestionId(toLong(answer.getQuestionId()));
-        response.setQuestionContent(question.getTitle());
-        response.setQuestionType(QuestionType.fromStorageValue(question.getQuestionType()));
-        response.setScore(paperQuestion == null ? BigDecimal.ZERO : paperQuestion.getScore());
-        response.setSortOrder(paperQuestion == null ? null : paperQuestion.getSortOrder());
-        response.setRequiredAnswer(paperQuestion == null || paperQuestion.getRequiredAnswer() == null || paperQuestion.getRequiredAnswer() == 1);
-        response.setOptions(questionService.parseOptions(question).stream().map(option -> {
+        response.setQuestionContent(snapshot.stem());
+        response.setQuestionType(snapshot.questionType());
+        response.setScore(snapshot.maxScore());
+        response.setSortOrder(snapshot.sortOrder());
+        response.setRequiredAnswer(snapshot.requiredAnswer());
+        response.setOptions(snapshot.options().stream().map(option -> {
             StudentSubmissionResponseDTO.OptionItem item = new StudentSubmissionResponseDTO.OptionItem();
-            item.setOptionKey(option.getOptionKey());
-            item.setOptionContent(option.getOptionContent());
-            item.setSortOrder(option.getSortOrder());
+            item.setOptionKey(option.optionKey());
+            item.setOptionContent(option.optionContent());
+            item.setSortOrder(option.sortOrder());
             return item;
         }).toList());
         response.setAnswerContent(answer.getStudentAnswer());
@@ -371,9 +437,43 @@ public class SubmissionService {
         return response;
     }
 
-    private boolean isManualQuestion(Integer questionId) {
-        QuestionType type = QuestionType.fromStorageValue(questionService.getEntityById(questionId.longValue()).getQuestionType());
-        return type == QuestionType.SHORT_ANSWER || type == QuestionType.FILE_UPLOAD;
+    private boolean isManualQuestion(QuestionSnapshot snapshot) {
+        return snapshot.questionType() == QuestionType.SHORT_ANSWER || snapshot.questionType() == QuestionType.FILE_UPLOAD;
+    }
+
+    private String snapshotOf(Question question, ExamPaperQuestion paperQuestion) {
+        QuestionSnapshot snapshot = new QuestionSnapshot(
+                QuestionType.fromStorageValue(question.getQuestionType()),
+                question.getTitle(),
+                questionService.parseOptions(question).stream()
+                        .sorted(Comparator.comparing(QuestionResponseDTO.OptionResponse::getSortOrder))
+                        .map(option -> new SnapshotOption(option.getOptionKey(), option.getOptionContent(), option.getSortOrder()))
+                        .toList(),
+                question.getAnalysis(),
+                scoreOf(paperQuestion),
+                questionService.parseAnswers(question).stream()
+                        .sorted(Comparator.comparing(QuestionResponseDTO.AnswerResponse::getSortOrder))
+                        .map(QuestionResponseDTO.AnswerResponse::getAnswerContent)
+                        .toList(),
+                paperQuestion.getSortOrder(),
+                paperQuestion.getRequiredAnswer() == null || paperQuestion.getRequiredAnswer() == 1
+        );
+        try {
+            return objectMapper.writeValueAsString(snapshot);
+        } catch (Exception exception) {
+            throw new BusinessException("无法创建题目快照: " + exception.getMessage());
+        }
+    }
+
+    private QuestionSnapshot snapshotOf(ExamAnswer answer) {
+        if (isBlank(answer.getQuestionSnapshot())) {
+            throw new BusinessException("答题记录缺少题目快照: " + answer.getId());
+        }
+        try {
+            return objectMapper.readValue(answer.getQuestionSnapshot(), QuestionSnapshot.class);
+        } catch (Exception exception) {
+            throw new BusinessException("答题记录的题目快照无效: " + answer.getId());
+        }
     }
 
     private ExamRecord findExistingRecord(Integer examId, String candidateId, Long studentId) {
@@ -424,18 +524,15 @@ public class SubmissionService {
         return item.getAnswerContent();
     }
 
-    private boolean judgeObjective(Question question, String submittedAnswer) {
+    private boolean judgeObjective(QuestionSnapshot snapshot, String submittedAnswer) {
         if (isBlank(submittedAnswer)) {
             return false;
         }
-        List<String> standardAnswers = questionService.parseAnswers(question).stream()
-                .sorted(Comparator.comparing(QuestionResponseDTO.AnswerResponse::getSortOrder))
-                .map(QuestionResponseDTO.AnswerResponse::getAnswerContent)
-                .toList();
+        List<String> standardAnswers = snapshot.correctAnswers();
         if (standardAnswers.isEmpty()) {
             return false;
         }
-        QuestionType type = QuestionType.fromStorageValue(question.getQuestionType());
+        QuestionType type = snapshot.questionType();
         return switch (type) {
             case SINGLE_CHOICE, TRUE_FALSE -> normalize(submittedAnswer).equals(normalize(standardAnswers.get(0)));
             case MULTIPLE_CHOICE -> normalizeMulti(submittedAnswer).equals(normalizeMulti(String.join(",", standardAnswers)));
@@ -457,10 +554,14 @@ public class SubmissionService {
             return false;
         }
         LocalDateTime now = LocalDateTime.now();
+        LocalDateTime durationCutoff = record.getStartTime().plusMinutes(exam.getDuration());
+        LocalDateTime cutoff = exam.getEndTime() == null || durationCutoff.isBefore(exam.getEndTime())
+                ? durationCutoff
+                : exam.getEndTime();
         Duration elapsed = Duration.between(record.getStartTime(), now);
-        boolean timeout = elapsed.toMinutes() > exam.getDuration();
+        boolean timeout = !now.isBefore(cutoff);
         if (timeout && rejectOnTimeout) {
-            throw new BusinessException("考试时间已超时，无法保存答案。用时：" + elapsed.toMinutes() + "分钟，限时：" + exam.getDuration() + "分钟");
+            throw new BusinessException("考试时间已截止，无法保存答案。截止时间：" + cutoff + "，当前时间：" + now);
         }
         return timeout;
     }
@@ -519,6 +620,21 @@ public class SubmissionService {
 
     private boolean isBlank(String value) {
         return value == null || value.trim().isEmpty();
+    }
+
+    private record QuestionSnapshot(
+            QuestionType questionType,
+            String stem,
+            List<SnapshotOption> options,
+            String analysis,
+            BigDecimal maxScore,
+            List<String> correctAnswers,
+            Integer sortOrder,
+            boolean requiredAnswer
+    ) {
+    }
+
+    private record SnapshotOption(String optionKey, String optionContent, Integer sortOrder) {
     }
 
     private Integer toNullableInt(Long value, String fieldName) {

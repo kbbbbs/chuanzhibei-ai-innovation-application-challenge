@@ -30,6 +30,10 @@ public class ExamAnswer {
     @TableField("correct_answer")
     private String correctAnswer;
 
+    /** Immutable question payload captured when the student starts the assessment. */
+    @TableField("question_snapshot")
+    private String questionSnapshot;
+
     private BigDecimal score;
 
     @TableField("is_correct")

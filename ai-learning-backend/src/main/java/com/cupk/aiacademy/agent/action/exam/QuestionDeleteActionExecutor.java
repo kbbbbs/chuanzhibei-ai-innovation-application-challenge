@@ -86,7 +86,6 @@ public class QuestionDeleteActionExecutor implements AgentActionExecutor {
         data.put("teacherId", question.getTeacherId());
         data.put("type", enumName(question.getType()));
         data.put("difficulty", enumName(question.getDifficulty()));
-        data.put("score", question.getScore());
         data.put("status", enumName(question.getStatus()));
         data.put("content", question.getContent());
         data.put("affectedPaperQuestionCount", affectedPaperQuestionCount);

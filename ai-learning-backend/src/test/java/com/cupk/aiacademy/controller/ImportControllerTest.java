@@ -17,6 +17,7 @@ import static org.mockito.ArgumentMatchers.anyMap;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -67,5 +68,15 @@ class ImportControllerTest {
                 .andExpect(header().string("Content-Disposition", containsString("questions-export.csv")))
                 .andExpect(content().contentType("text/csv;charset=UTF-8"))
                 .andExpect(content().bytes(file));
+    }
+
+    @Test
+    void legacyHomeworkImportConfirmationReturnsMigrationGuidance() throws Exception {
+        mockMvc.perform(post("/api/imports/homeworks/confirm")
+                        .contentType("application/json")
+                        .content("{}"))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.success").value(false))
+                .andExpect(jsonPath("$.message").value("旧作业写入接口已停用，请使用统一评测（HOMEWORK）流程。"));
     }
 }

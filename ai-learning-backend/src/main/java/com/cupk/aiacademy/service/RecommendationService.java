@@ -151,6 +151,9 @@ public class RecommendationService {
     }
 
     private RecommendationResponseDTO recommendForWorkspaceUser(AuthUtils.LoginUser user, String type, int maxItems) {
+        if (permissionService.isTeacher(user)) {
+            return recommendPopularCoursesForTeacher(maxItems);
+        }
         List<RecommendationItemDTO> items = new ArrayList<>();
         if (matches(type, TYPE_COURSE)) {
             items.add(workspaceItem(TYPE_COURSE, "建设课程内容", "课程与章节",
@@ -179,6 +182,35 @@ public class RecommendationService {
                 : "教师视角推荐优先展示课程建设、题库维护和资料研究入口。");
         response.setProfileTags(List.of(permissionService.isAdmin(user) ? "平台运营" : "教学建设", "内容质量", "推荐数据准备"));
         response.setItems(items.stream().limit(maxItems).toList());
+        return response;
+    }
+
+    private RecommendationResponseDTO recommendPopularCoursesForTeacher(int maxItems) {
+        QueryWrapper<Course> query = new QueryWrapper<>();
+        query.eq("status", 1)
+                .orderByDesc("view_count")
+                .orderByDesc("id")
+                .last("LIMIT " + Math.min(maxItems, 40));
+        List<Course> courses = courseMapper.selectList(query);
+        Map<Integer, String> categoryNames = categoryNames(courses.stream().map(Course::getCategoryId).toList());
+
+        List<RecommendationItemDTO> items = courses.stream()
+                .map(course -> {
+                    int viewCount = defaultInt(course.getViewCount());
+                    RecommendationItemDTO item = item(TYPE_COURSE, course.getId(), course.getTitle(),
+                            categoryNames.get(course.getCategoryId()), trim(course.getDescription(), 96),
+                            "平台浏览量较高，适合参考其课程内容与组织方式。",
+                            "/courses/" + course.getId(), "查看课程", viewCount);
+                    item.getMeta().put("viewCount", viewCount);
+                    item.getMeta().put("coverUrl", firstNonBlank(course.getCoverUrl(), course.getCover()));
+                    return item;
+                })
+                .toList();
+
+        RecommendationResponseDTO response = new RecommendationResponseDTO();
+        response.setSummary("按已发布课程的浏览量推荐，帮助你了解平台上的热门课程。");
+        response.setProfileTags(List.of("热门课程", "浏览量排序"));
+        response.setItems(items);
         return response;
     }
 

@@ -13,7 +13,7 @@ if ([string]::IsNullOrWhiteSpace($mysqlPassword)) {
 $databaseName = "ai_academy"
 $scriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 $backendDir = Split-Path -Parent $scriptDir
-$sqlFilePath = Join-Path $scriptDir "ai_academy.sql"
+$sqlFilePath = Join-Path (Split-Path -Parent $backendDir) "database\ai_academy_export.sql"
 
 # 颜色输出函数
 function Write-ColorOutput($ForegroundColor) {

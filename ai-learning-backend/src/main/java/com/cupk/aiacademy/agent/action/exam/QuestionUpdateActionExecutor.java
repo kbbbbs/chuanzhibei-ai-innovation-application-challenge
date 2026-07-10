@@ -87,8 +87,6 @@ public class QuestionUpdateActionExecutor implements AgentActionExecutor {
         data.put("newType", enumName(newQuestion.getType()));
         data.put("oldDifficulty", enumName(oldQuestion.getDifficulty()));
         data.put("newDifficulty", enumName(newQuestion.getDifficulty()));
-        data.put("oldScore", oldQuestion.getScore());
-        data.put("newScore", newQuestion.getScore());
         data.put("oldStatus", enumName(oldQuestion.getStatus()));
         data.put("newStatus", enumName(newQuestion.getStatus()));
         data.put("oldContent", oldQuestion.getContent());
@@ -122,9 +120,6 @@ public class QuestionUpdateActionExecutor implements AgentActionExecutor {
         request.setDifficulty(hasAnyKey(parameters, "difficulty", "level")
                 ? optionalDifficulty(parameters)
                 : oldQuestion.getDifficulty());
-        request.setScore(hasAnyKey(parameters, "score", "points")
-                ? optionalScore(parameters)
-                : oldQuestion.getScore());
         request.setKnowledgePoint(hasAnyKey(parameters, "knowledgePoint", "knowledge_point")
                 ? optionalString(parameters, 200, "knowledgePoint", "knowledge_point")
                 : oldQuestion.getKnowledgePoint());

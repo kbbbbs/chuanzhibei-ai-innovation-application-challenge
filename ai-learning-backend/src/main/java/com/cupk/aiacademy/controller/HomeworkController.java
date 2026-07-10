@@ -3,23 +3,20 @@ package com.cupk.aiacademy.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.common.LegacyHomeworkWritePolicy;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.common.UserContext;
-import com.cupk.aiacademy.dto.HomeworkDto;
 import com.cupk.aiacademy.mapper.HomeworkMapper;
 import com.cupk.aiacademy.mapper.HomeworkSubmitMapper;
 import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.HomeworkSubmit;
-import com.cupk.aiacademy.service.HomeworkService;
 import com.cupk.aiacademy.service.PermissionService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,9 +33,6 @@ public class HomeworkController {
 
     @Autowired
     private PermissionService permissionService;
-
-    @Autowired
-    private HomeworkService homeworkService;
 
     @GetMapping("/homeworks")
     public Result pages(@RequestParam(required = false) Integer classId,
@@ -109,26 +103,18 @@ public class HomeworkController {
     }
 
     @PostMapping("/homeworks")
-    public Result add(@Valid @RequestBody HomeworkDto request) {
-        return homeworkService.create(request);
+    public Result add() {
+        return LegacyHomeworkWritePolicy.rejectedResult();
     }
 
     @PutMapping("/homeworks/{id}")
-    public Result update(@PathVariable Integer id, @Valid @RequestBody HomeworkDto request) {
-        return homeworkService.update(id, request);
+    public Result update(@PathVariable Integer id) {
+        return LegacyHomeworkWritePolicy.rejectedResult();
     }
 
     @DeleteMapping("/homeworks/{id}")
     public Result delete(@PathVariable Integer id) {
-        Homework homework = homeworkMapper.selectById(id);
-        if (homework == null) {
-            return Result.error("404", "作业不存在");
-        }
-
-        permissionService.requireHomeworkTeacher(homework);
-
-        int row = homeworkMapper.deleteById(id);
-        return row > 0 ? Result.success() : Result.error();
+        return LegacyHomeworkWritePolicy.rejectedResult();
     }
 
     private int fixPageNum(Integer pageNum) {

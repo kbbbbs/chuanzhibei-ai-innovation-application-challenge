@@ -47,7 +47,6 @@
           </template>
         </el-table-column>
         <el-table-column prop="difficulty" label="难度" width="100" />
-        <el-table-column prop="score" label="分值" width="80" />
         <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
@@ -130,9 +129,6 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="分值" prop="score">
-          <el-input-number v-model="form.score" :min="1" />
-        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -198,16 +194,14 @@ const form = reactive({
   correctAnswers: [],
   referenceAnswer: '',
   explanation: '',
-  difficulty: 'medium',
-  score: 5
+  difficulty: 'medium'
 })
 
 const rules = {
   courseId: [{ required: true, message: '请选择课程', trigger: 'change' }],
   questionType: [{ required: true, message: '请选择题目类型', trigger: 'change' }],
   questionText: [{ required: true, message: '请输入题目内容', trigger: 'blur' }],
-  difficulty: [{ required: true, message: '请选择难度', trigger: 'change' }],
-  score: [{ required: true, message: '请输入分值', trigger: 'blur' }]
+  difficulty: [{ required: true, message: '请选择难度', trigger: 'change' }]
 }
 
 // ---- 类型/难度 映射 ----
@@ -249,8 +243,7 @@ const mapQuestionForDisplay = (q) => ({
   id: q.id,
   questionText: q.content || q.title || '',
   questionType: ENUM_TO_TYPE[enumName(q.type)] || 'short_answer',
-  difficulty: ENUM_TO_DIFFICULTY[enumName(q.difficulty)] || 'medium',
-  score: q.score
+  difficulty: ENUM_TO_DIFFICULTY[enumName(q.difficulty)] || 'medium'
 })
 
 // ---- 响应适配：将后端 QuestionResponseDTO 映射为前端表单数据 ----
@@ -269,8 +262,7 @@ const parseResponseToForm = (data) => {
     correctAnswers: [],
     referenceAnswer: '',
     explanation: data.analysis || '',
-    difficulty: difficulty,
-    score: data.score
+    difficulty: difficulty
   }
 
   // 解析选项
@@ -308,7 +300,6 @@ const buildRequestDTO = () => {
     type: TYPE_TO_ENUM[type],
     content: form.questionText,
     difficulty: DIFFICULTY_TO_ENUM[form.difficulty],
-    score: form.score,
     analysis: form.explanation || '',
     knowledgePoint: '',
     status: 'ACTIVE'
@@ -464,8 +455,7 @@ const handleCreate = async () => {
     correctAnswers: [],
     referenceAnswer: '',
     explanation: '',
-    difficulty: 'medium',
-    score: 5
+    difficulty: 'medium'
   })
   dialogVisible.value = true
 }

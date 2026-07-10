@@ -13,7 +13,7 @@ backend-api.md          后端接口简表
 
 ## 数据库
 
-先在 MySQL 中执行 `database/ai_academy.sql`。后端默认连接本机 `ai_academy` 数据库，也可以通过环境变量调整：
+仅执行 `database/ai_academy_export.sql` 重建 MySQL 数据库。后端默认连接本机 `ai_academy` 数据库，也可以通过环境变量调整：
 
 ```bash
 DB_URL=jdbc:mysql://localhost:3306/ai_academy?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai

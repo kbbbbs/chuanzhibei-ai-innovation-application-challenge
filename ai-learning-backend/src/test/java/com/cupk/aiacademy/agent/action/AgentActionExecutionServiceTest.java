@@ -1205,7 +1205,6 @@ class AgentActionExecutionServiceTest {
         assertEquals(QuestionType.SINGLE_CHOICE, request.getType());
         assertEquals(Difficulty.EASY, request.getDifficulty());
         assertEquals(RecordStatus.ACTIVE, request.getStatus());
-        assertEquals(new BigDecimal("5"), request.getScore());
         assertEquals(2, request.getOptions().size());
         assertEquals(1, request.getAnswers().size());
 
@@ -1288,7 +1287,6 @@ class AgentActionExecutionServiceTest {
         assertEquals(7L, request.getTeacherId());
         assertEquals(QuestionType.SINGLE_CHOICE, request.getType());
         assertEquals(Difficulty.EASY, request.getDifficulty());
-        assertEquals(new BigDecimal("5"), request.getScore());
         assertEquals("Java 中 int 类型默认值是什么？", request.getContent());
         assertEquals("int 是基本数据类型，默认值为 0。", request.getAnalysis());
         assertEquals(2, request.getOptions().size());
@@ -1577,7 +1575,6 @@ class AgentActionExecutionServiceTest {
         response.setContent("Java 中 int 类型默认值是多少？");
         response.setType(QuestionType.SINGLE_CHOICE);
         response.setDifficulty(Difficulty.EASY);
-        response.setScore(new BigDecimal("5"));
         response.setKnowledgePoint("Java基础");
         response.setStatus(RecordStatus.ACTIVE);
         QuestionResponseDTO.OptionResponse optionA = new QuestionResponseDTO.OptionResponse();

@@ -79,14 +79,14 @@ export const layoutChildren = [
   {
     path: 'homeworks',
     name: 'HomeworkList',
-    component: () => import('../views/teacher/HomeworkList.vue'),
-    meta: { title: '作业管理', icon: 'Tickets', roles: ['admin', 'teacher'], requiresAuth: true }
+    component: () => import('../views/teacher/ExamList.vue'),
+    meta: { title: '作业管理', icon: 'Tickets', roles: ['admin', 'teacher'], requiresAuth: true, assessmentType: 'HOMEWORK' }
   },
   {
     path: 'homework/:id/submissions',
     name: 'HomeworkSubmissions',
-    component: () => import('../views/teacher/HomeworkSubmissions.vue'),
-    meta: { title: '作业批改', hidden: true, roles: ['admin', 'teacher'], requiresAuth: true }
+    component: () => import('../views/teacher/ExamGrading.vue'),
+    meta: { title: '作业批改', hidden: true, roles: ['admin', 'teacher'], requiresAuth: true, assessmentType: 'HOMEWORK' }
   },
   {
     path: 'exams/:id/grading',
@@ -153,8 +153,8 @@ export const layoutChildren = [
   {
     path: 'my-homeworks',
     name: 'MyHomeworkList',
-    component: () => import('../views/student/MyHomeworkList.vue'),
-    meta: { title: '我的作业', icon: 'Tickets', roles: ['admin', 'student'], requiresAuth: true }
+    component: () => import('../views/student/MyExamList.vue'),
+    meta: { title: '我的作业', icon: 'Tickets', roles: ['admin', 'student'], requiresAuth: true, assessmentType: 'HOMEWORK' }
   },
   {
     path: 'my-exams',

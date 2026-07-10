@@ -3,8 +3,12 @@ package com.cupk.aiacademy.service;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.PaperStatus;
+import com.cupk.aiacademy.common.PaperPreflightWarningException;
+import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.dto.PaperRequestDTO;
+import com.cupk.aiacademy.dto.PaperPreflightResponse;
 import com.cupk.aiacademy.dto.PaperResponseDTO;
+import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.mapper.ExamAnswerMapper;
 import com.cupk.aiacademy.mapper.ExamPaperMapper;
 import com.cupk.aiacademy.mapper.ExamPaperQuestionMapper;
@@ -18,6 +22,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -45,7 +52,8 @@ public class PaperService {
 
     @Transactional
     public PaperResponseDTO create(PaperRequestDTO request) {
-        validateRequest(request);
+        requireWarningsAccepted(prepareAndPreflight(request), request);
+        resolveInlineQuestions(request);
         ExamPaper paper = new ExamPaper();
         fillPaper(paper, request);
         LocalDateTime now = LocalDateTime.now();
@@ -60,17 +68,23 @@ public class PaperService {
     public PaperResponseDTO update(Long id, PaperRequestDTO request) {
         ExamPaper paper = getEntityById(id);
         permissionService.requirePaperTeacher(paper);
-        validateRequest(request);
+        requireWarningsAccepted(prepareAndPreflight(request), request);
         PaperStatus status = PaperStatus.fromCode(paper.getStatus());
         if (status == PaperStatus.PUBLISHED || status == PaperStatus.ARCHIVED) {
             throw new BusinessException("已发布或已归档的试卷不允许修改");
         }
+        resolveInlineQuestions(request);
         fillPaper(paper, request);
         paper.setUpdateTime(LocalDateTime.now());
         paperMapper.updateById(paper);
         deletePaperQuestions(paper.getId());
         insertPaperQuestions(paper, request.getQuestions());
         return toResponse(paper);
+    }
+
+    @Transactional(readOnly = true)
+    public PaperPreflightResponse preflight(PaperRequestDTO request) {
+        return prepareAndPreflight(request);
     }
 
     @Transactional(readOnly = true)
@@ -180,7 +194,7 @@ public class PaperService {
         return response;
     }
 
-    private void validateRequest(PaperRequestDTO request) {
+    private PaperPreflightResponse prepareAndPreflight(PaperRequestDTO request) {
         if (request == null) {
             throw new BusinessException("试卷信息不能为空");
         }
@@ -190,24 +204,88 @@ public class PaperService {
         }
         Set<Long> questionIds = new HashSet<>();
         Set<Integer> sortOrders = new HashSet<>();
+        Set<QuestionType> presentTypes = EnumSet.noneOf(QuestionType.class);
+        BigDecimal totalScore = BigDecimal.ZERO;
         for (PaperRequestDTO.PaperQuestionRequest item : request.getQuestions()) {
-            if (item.getQuestionId() == null) {
+            if (item == null) {
                 throw new BusinessException("试卷题目不能为空");
             }
-            if (!questionIds.add(item.getQuestionId())) {
-                throw new BusinessException("试卷中不能重复添加同一道题，题目ID：" + item.getQuestionId());
+            boolean hasQuestionId = item.getQuestionId() != null;
+            boolean hasInlineQuestion = item.getInlineQuestion() != null;
+            if (hasQuestionId == hasInlineQuestion) {
+                throw new BusinessException("每道试卷题目必须且只能选择题库题目或自定义题目");
             }
-            if (item.getSortOrder() == null || !sortOrders.add(item.getSortOrder())) {
+            if (item.getScore() == null || item.getScore().compareTo(BigDecimal.ZERO) <= 0) {
+                throw new BusinessException("试卷题目分值必须大于 0");
+            }
+            totalScore = totalScore.add(item.getScore());
+            if (item.getSortOrder() == null || item.getSortOrder() <= 0 || !sortOrders.add(item.getSortOrder())) {
                 throw new BusinessException("试卷中题目序号不能重复，序号：" + item.getSortOrder());
             }
-            Question question = questionService.getEntityById(item.getQuestionId());
-            if (!Objects.equals(request.getCourseId().intValue(), question.getCourseId())) {
-                throw new BusinessException("题目不属于当前试卷课程，题目ID：" + item.getQuestionId());
+            if (hasQuestionId && !questionIds.add(item.getQuestionId())) {
+                throw new BusinessException("试卷中不能重复添加同一道题，题目ID：" + item.getQuestionId());
             }
-            if (!Objects.equals(request.getTeacherId().intValue(), question.getTeacherId())) {
-                throw new BusinessException("题目不属于当前试卷教师，题目ID：" + item.getQuestionId());
+            if (hasQuestionId) {
+                Question question = questionService.getEntityById(item.getQuestionId());
+                if (!Objects.equals(request.getCourseId().intValue(), question.getCourseId())) {
+                    throw new BusinessException("题目不属于当前试卷课程，题目ID：" + item.getQuestionId());
+                }
+                if (!Objects.equals(request.getTeacherId().intValue(), question.getTeacherId())) {
+                    throw new BusinessException("题目不属于当前试卷教师，题目ID：" + item.getQuestionId());
+                }
+                presentTypes.add(QuestionType.fromStorageValue(question.getQuestionType()));
+            } else {
+                QuestionRequestDTO inlineQuestion = item.getInlineQuestion();
+                assignInlineQuestionOwnership(inlineQuestion, request);
+                questionService.validateForPaperComposition(inlineQuestion);
+                presentTypes.add(inlineQuestion.getType());
             }
         }
+        return diagnostics(totalScore, presentTypes);
+    }
+
+    private PaperPreflightResponse diagnostics(BigDecimal totalScore, Set<QuestionType> presentTypes) {
+        List<QuestionType> expectedTypes = Arrays.asList(QuestionType.values());
+        List<QuestionType> missingTypes = expectedTypes.stream().filter(type -> !presentTypes.contains(type)).toList();
+        List<String> warningCodes = new ArrayList<>();
+        if (totalScore.compareTo(new BigDecimal("100")) != 0) {
+            warningCodes.add("TOTAL_NOT_100");
+        }
+        if (!missingTypes.isEmpty()) {
+            warningCodes.add("MISSING_TYPES");
+        }
+        PaperPreflightResponse response = new PaperPreflightResponse();
+        response.setTotalScore(totalScore);
+        response.setExpectedTypes(expectedTypes);
+        response.setPresentTypes(expectedTypes.stream().filter(presentTypes::contains).toList());
+        response.setMissingTypes(missingTypes);
+        response.setWarningCodes(warningCodes);
+        return response;
+    }
+
+    private void requireWarningsAccepted(PaperPreflightResponse diagnostics, PaperRequestDTO request) {
+        if (diagnostics.hasWarnings() && !Boolean.TRUE.equals(request.getIgnoreWarnings())) {
+            throw new PaperPreflightWarningException(diagnostics);
+        }
+    }
+
+    private void resolveInlineQuestions(PaperRequestDTO request) {
+        for (PaperRequestDTO.PaperQuestionRequest item : request.getQuestions()) {
+            if (item.getInlineQuestion() == null) {
+                continue;
+            }
+            Question existingQuestion = questionService.findEquivalentQuestion(item.getInlineQuestion());
+            item.setQuestionId(existingQuestion == null
+                    ? questionService.create(item.getInlineQuestion()).getId()
+                    : existingQuestion.getId().longValue());
+            item.setInlineQuestion(null);
+        }
+    }
+
+    private void assignInlineQuestionOwnership(QuestionRequestDTO inlineQuestion, PaperRequestDTO paper) {
+        inlineQuestion.setCourseId(paper.getCourseId());
+        inlineQuestion.setTeacherId(paper.getTeacherId());
+        inlineQuestion.setStatus(com.cupk.aiacademy.common.RecordStatus.ACTIVE);
     }
 
     private void prepareForWrite(PaperRequestDTO request) {

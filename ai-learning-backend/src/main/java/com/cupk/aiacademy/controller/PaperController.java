@@ -2,6 +2,7 @@ package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
 import com.cupk.aiacademy.dto.PaperRequestDTO;
+import com.cupk.aiacademy.dto.PaperPreflightResponse;
 import com.cupk.aiacademy.dto.PaperResponseDTO;
 import com.cupk.aiacademy.service.PaperService;
 import jakarta.validation.Valid;
@@ -29,6 +30,11 @@ public class PaperController {
     @PostMapping
     public ApiResponse<PaperResponseDTO> create(@Valid @RequestBody PaperRequestDTO request) {
         return ApiResponse.success(paperService.create(request));
+    }
+
+    @PostMapping("/preflight")
+    public ApiResponse<PaperPreflightResponse> preflight(@Valid @RequestBody PaperRequestDTO request) {
+        return ApiResponse.success(paperService.preflight(request));
     }
 
     @PutMapping("/{id}")

@@ -48,6 +48,18 @@ public class GlobalExceptionHandler {
         return badRequest(e.getMessage(), request);
     }
 
+    @ExceptionHandler(LegacyHomeworkWriteException.class)
+    public ResponseEntity<Object> handleLegacyHomeworkWrite(LegacyHomeworkWriteException e, HttpServletRequest request) {
+        return ResponseEntity.status(HttpStatus.GONE).body(body("410", e.getMessage(), request));
+    }
+
+    @ExceptionHandler(PaperPreflightWarningException.class)
+    public ResponseEntity<ApiResponse<com.cupk.aiacademy.dto.PaperPreflightResponse>> handlePaperPreflightWarning(
+            PaperPreflightWarningException e) {
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY)
+                .body(new ApiResponse<>(false, e.getDiagnostics(), e.getMessage()));
+    }
+
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<Object> handleForbidden(ForbiddenException e, HttpServletRequest request) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body("403", e.getMessage(), request));

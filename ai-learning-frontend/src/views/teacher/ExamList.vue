@@ -3,19 +3,19 @@
     <el-card>
       <template #header>
         <div class="card-header">
-          <span>考试管理</span>
+            <span>{{ assessmentLabel }}管理</span>
           <div class="header-actions">
             <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
             <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
             <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
-            <el-button type="primary" @click="handleCreate">发布考试</el-button>
+            <el-button type="primary" @click="handleCreate">发布{{ assessmentLabel }}</el-button>
           </div>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
-        <el-form-item label="考试名称">
-          <el-input v-model="searchForm.keyword" placeholder="请输入考试名称" clearable @keyup.enter="handleSearch" />
+        <el-form-item :label="`${assessmentLabel}名称`">
+          <el-input v-model="searchForm.keyword" :placeholder="`请输入${assessmentLabel}名称`" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="教学班">
           <el-select v-model="searchForm.classId" placeholder="请选择教学班" clearable>
@@ -30,7 +30,7 @@
 
       <el-table :data="exams" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="title" label="考试名称" />
+        <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
         <el-table-column label="开始时间" width="180">
           <template #default="{ row }">
             {{ row.startTime ? new Date(row.startTime).toLocaleString() : '-' }}
@@ -74,7 +74,7 @@
     </el-card>
 
     <!-- Form Dialog -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑考试' : '发布考试'" width="760px">
+    <el-dialog v-model="dialogVisible" :title="form.id ? `编辑${assessmentLabel}` : `发布${assessmentLabel}`" width="760px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <div class="wizard-dialog">
           <div class="wizard-steps">
@@ -157,7 +157,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
@@ -169,6 +169,7 @@ import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStat
 import request from '@/utils/request'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 const { confirmDelete } = useConfirm()
 const formRef = ref(null)
@@ -208,6 +209,9 @@ const form = reactive({
   durationMinutes: 60,
   status: 0
 })
+
+const assessmentType = computed(() => route.meta.assessmentType || 'EXAM')
+const assessmentLabel = computed(() => assessmentType.value === 'HOMEWORK' ? '作业' : '考试')
 
 const rules = {
   title: [{ required: true, message: '请输入考试名称', trigger: 'blur' }],
@@ -274,6 +278,7 @@ const loadExams = async () => {
   loading.value = true
   try {
     const params = scopedTeacherParams(userStore)
+    params.assessmentType = assessmentType.value
     if (searchForm.keyword && searchForm.keyword.trim()) {
       params.keyword = searchForm.keyword.trim()
     }
@@ -483,7 +488,8 @@ const buildRequestDTO = () => {
     startTime: formatLocalDateTime(form.startTime),
     endTime: formatLocalDateTime(form.endTime),
     durationMinutes: form.durationMinutes || 60,
-    status: STATUS_TO_ENUM[form.status] || 'DRAFT'
+    status: STATUS_TO_ENUM[form.status] || 'DRAFT',
+    assessmentType: assessmentType.value
   }
 }
 
@@ -543,7 +549,9 @@ const handleDelete = async (row) => {
 }
 
 const handleGrading = (row) => {
-  router.push(`/exams/${row.id}/grading`)
+  router.push(assessmentType.value === 'HOMEWORK'
+    ? `/homework/${row.id}/submissions`
+    : `/exams/${row.id}/grading`)
 }
 
 const handleEnd = async (row) => {

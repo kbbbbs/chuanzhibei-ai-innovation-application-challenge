@@ -6,7 +6,6 @@ import com.cupk.aiacademy.common.RecordStatus;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -19,7 +18,6 @@ public class QuestionResponseDTO {
     private String content;
     private QuestionType type;
     private Difficulty difficulty;
-    private BigDecimal score;
     private String knowledgePoint;
     private String analysis;
     private RecordStatus status;

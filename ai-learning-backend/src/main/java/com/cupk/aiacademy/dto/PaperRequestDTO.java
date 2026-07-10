@@ -32,13 +32,16 @@ public class PaperRequestDTO {
     @Valid
     @NotEmpty
     private List<PaperQuestionRequest> questions;
+    private Boolean ignoreWarnings;
 
     @Getter
     @Setter
     public static class PaperQuestionRequest {
-        @NotNull
         private Long questionId;
+        @Valid
+        private QuestionRequestDTO inlineQuestion;
         @NotNull
+        @Positive
         private Integer sortOrder;
         @NotNull
         @DecimalMin("0.01")

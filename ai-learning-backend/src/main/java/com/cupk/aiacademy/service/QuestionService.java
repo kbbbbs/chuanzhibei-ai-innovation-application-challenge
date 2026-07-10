@@ -478,7 +478,6 @@ public class QuestionService {
                     if (q.getTeacherId() == null) q.setTeacherId(teacherId);
                     if (q.getStatus() == null) q.setStatus(RecordStatus.ACTIVE);
                     if (q.getDifficulty() == null) q.setDifficulty(Difficulty.MEDIUM);
-                    if (q.getScore() == null) q.setScore(BigDecimal.valueOf(5));
                 }
             }
             return questions != null ? questions : List.of();
@@ -533,6 +532,26 @@ public class QuestionService {
         return questionMapper.selectOne(query);
     }
 
+    public Question findEquivalentQuestion(QuestionRequestDTO request) {
+        if (request == null || request.getCourseId() == null || request.getTeacherId() == null
+                || request.getType() == null || request.getContent() == null || request.getContent().isBlank()) {
+            return null;
+        }
+        QueryWrapper<Question> query = new QueryWrapper<>();
+        query.eq("course_id", toInt(request.getCourseId(), "课程ID"))
+                .eq("teacher_id", toInt(request.getTeacherId(), "教师ID"))
+                .eq("question_type", request.getType().getStorageValue());
+        String fingerprint = questionFingerprint(request);
+        return questionMapper.selectList(query).stream()
+                .filter(question -> fingerprint.equals(questionFingerprint(question)))
+                .findFirst()
+                .orElse(null);
+    }
+
+    public void validateForPaperComposition(QuestionRequestDTO request) {
+        validateQuestionRules(request);
+    }
+
     public QuestionResponseDTO toResponse(Question question) {
         return toResponse(question, true);
     }
@@ -545,7 +564,6 @@ public class QuestionService {
         response.setContent(question.getTitle());
         response.setType(QuestionType.fromStorageValue(question.getQuestionType()));
         response.setDifficulty(Difficulty.fromCode(question.getDifficulty()));
-        response.setScore(question.getScore());
         response.setKnowledgePoint(question.getKnowledgePoint());
         response.setAnalysis(question.getAnalysis());
         response.setStatus(RecordStatus.fromCode(question.getStatus()));
@@ -727,7 +745,8 @@ public class QuestionService {
         question.setTitle(request.getContent());
         question.setQuestionType(request.getType().getStorageValue());
         question.setDifficulty(request.getDifficulty().getCode());
-        question.setScore(request.getScore() == null ? BigDecimal.ZERO : request.getScore());
+        // t_question.score is retained only for legacy import compatibility; paper links own scores.
+        question.setScore(BigDecimal.ZERO);
         question.setKnowledgePoint(request.getKnowledgePoint());
         question.setAnalysis(request.getAnalysis());
         question.setStatus(request.getStatus() == null ? RecordStatus.ACTIVE.getCode() : request.getStatus().getCode());
@@ -744,6 +763,34 @@ public class QuestionService {
         } catch (JsonProcessingException e) {
             throw new BusinessException("题目选项或答案序列化失败");
         }
+    }
+
+    private String questionFingerprint(QuestionRequestDTO request) {
+        String options = request.getOptions() == null ? "" : request.getOptions().stream()
+                .sorted(Comparator.comparing(QuestionRequestDTO.QuestionOptionRequest::getSortOrder))
+                .map(option -> normalize(option.getOptionKey()) + "=" + normalize(option.getOptionContent()))
+                .collect(Collectors.joining("|"));
+        String answers = request.getAnswers() == null ? "" : request.getAnswers().stream()
+                .sorted(Comparator.comparing(QuestionRequestDTO.QuestionAnswerRequest::getSortOrder))
+                .map(answer -> normalize(answer.getAnswerContent()))
+                .collect(Collectors.joining("|"));
+        return request.getType() + "#" + normalize(request.getContent()) + "#" + options + "#" + answers;
+    }
+
+    private String questionFingerprint(Question question) {
+        String options = parseOptions(question).stream()
+                .sorted(Comparator.comparing(QuestionResponseDTO.OptionResponse::getSortOrder))
+                .map(option -> normalize(option.getOptionKey()) + "=" + normalize(option.getOptionContent()))
+                .collect(Collectors.joining("|"));
+        String answers = parseAnswers(question).stream()
+                .sorted(Comparator.comparing(QuestionResponseDTO.AnswerResponse::getSortOrder))
+                .map(answer -> normalize(answer.getAnswerContent()))
+                .collect(Collectors.joining("|"));
+        return QuestionType.fromStorageValue(question.getQuestionType()) + "#" + normalize(question.getTitle()) + "#" + options + "#" + answers;
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().replaceAll("\\s+", " ").toLowerCase(Locale.ROOT);
     }
 
     private QuestionResponseDTO.OptionResponse toOptionResponse(Question question, QuestionRequestDTO.QuestionOptionRequest item) {

@@ -37,6 +37,7 @@ import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
 import com.cupk.aiacademy.service.CourseResourceService;
 import com.cupk.aiacademy.service.CourseImportService;
+import com.cupk.aiacademy.service.HomeworkService;
 import com.cupk.aiacademy.service.PermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -64,6 +65,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
         OperationLogController.class,
         ClassStudentController.class,
         LearningProgressController.class,
+        HomeworkController.class,
         HomeworkSubmitController.class,
         GradeImportLogController.class,
         RoleController.class,
@@ -120,6 +122,9 @@ class ApiRepairRegressionTest {
 
     @MockitoBean
     private HomeworkMapper homeworkMapper;
+
+    @MockitoBean
+    private HomeworkService homeworkService;
 
     @MockitoBean
     private ExamPaperQuestionMapper paperQuestionMapper;
@@ -229,7 +234,7 @@ class ApiRepairRegressionTest {
     }
 
     @Test
-    void emptyObjectApisReturnBadRequestBeforeLookup() throws Exception {
+    void emptyObjectApisReturnBadRequestBeforeLookupExceptRetiredHomeworkWrites() throws Exception {
         mockMvc.perform(authed(post("/class-students").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
@@ -239,8 +244,8 @@ class ApiRepairRegressionTest {
                 .andExpect(jsonPath("$.code").value("400"));
 
         mockMvc.perform(authed(post("/homework-submits").contentType(MediaType.APPLICATION_JSON).content("{}")))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("400"));
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"));
 
         mockMvc.perform(authed(post("/grade-import-logs").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isOk())
@@ -252,13 +257,44 @@ class ApiRepairRegressionTest {
     }
 
     @Test
-    void emptyHomeworkSubmitContentAndAttachmentReturnBadRequest() throws Exception {
+    void legacyHomeworkSubmitRejectsPayloadValidationRequests() throws Exception {
         mockMvc.perform(authed(post("/homework-submits")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"homeworkId\":1,\"submitContent\":\"  \",\"attachmentUrl\":\"\"}")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"))
+                .andExpect(jsonPath("$.msg").value("旧作业写入接口已停用，请使用统一评测（HOMEWORK）流程。"));
+    }
+
+    @Test
+    void legacyHomeworkWritesReturnMigrationGuidanceWhileReadsRemainAvailable() throws Exception {
+        mockMvc.perform(authed(get("/homeworks")))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.code").value("400"))
-                .andExpect(jsonPath("$.msg").value("请填写作业内容或上传附件"));
+                .andExpect(jsonPath("$.code").value("200"));
+
+        mockMvc.perform(authed(get("/homework-submits")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"));
+
+        mockMvc.perform(authed(post("/homeworks").contentType(MediaType.APPLICATION_JSON).content("{}")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"))
+                .andExpect(jsonPath("$.msg").value("旧作业写入接口已停用，请使用统一评测（HOMEWORK）流程。"));
+        mockMvc.perform(authed(put("/homeworks/1").contentType(MediaType.APPLICATION_JSON).content("{}")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"));
+        mockMvc.perform(authed(delete("/homeworks/1")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"));
+        mockMvc.perform(authed(post("/homework-submits").contentType(MediaType.APPLICATION_JSON).content("{}")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"));
+        mockMvc.perform(authed(put("/homework-submits/1").contentType(MediaType.APPLICATION_JSON).content("{}")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"));
+        mockMvc.perform(authed(delete("/homework-submits/1")))
+                .andExpect(status().isGone())
+                .andExpect(jsonPath("$.code").value("410"));
     }
 
     @Test

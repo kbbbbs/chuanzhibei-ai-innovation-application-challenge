@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
 import com.cupk.aiacademy.dto.ExamResponseDTO;
 import com.cupk.aiacademy.service.ExamService;
@@ -44,8 +45,9 @@ public class ExamController {
     @GetMapping
     public ApiResponse<List<ExamResponseDTO>> list(@RequestParam(required = false) Long teacherId,
                                                    @RequestParam(required = false) String keyword,
-                                                   @RequestParam(required = false) Long classId) {
-        return ApiResponse.success(examService.list(teacherId, keyword, classId));
+                                                   @RequestParam(required = false) Long classId,
+                                                   @RequestParam(required = false) AssessmentType assessmentType) {
+        return ApiResponse.success(examService.list(teacherId, keyword, classId, assessmentType));
     }
 
     @PostMapping("/{id}/publish")

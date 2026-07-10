@@ -76,7 +76,12 @@
 
         <div v-for="(answer, idx) in subjectiveAnswers" :key="idx" class="answer-card">
           <div class="answer-title">{{ idx + 1 }}. {{ answer.questionText }}</div>
-          <div class="answer-student">学生答案：{{ answer.studentAnswer || '未作答' }}</div>
+          <div class="answer-student">
+            <template v-if="answer.questionType === 'FILE_UPLOAD' && answer.studentAnswer">
+              学生答案：<el-link :href="resolveResourceUrl(answer.studentAnswer)" target="_blank" type="primary">查看上传文件</el-link>
+            </template>
+            <template v-else>学生答案：{{ answer.studentAnswer || '未作答' }}</template>
+          </div>
           <div class="answer-reference">参考答案：{{ answer.referenceAnswer || '无' }}</div>
 
           <el-form :inline="true" :model="answer" :rules="answerRules" ref="answerFormRef">
@@ -153,7 +158,14 @@ const mapSubmission = (submission) => ({
   }, 0),
 })
 
-const isSubjective = (answer) => enumName(answer.questionType) === 'SHORT_ANSWER'
+const isManualGradable = (answer) => ['SHORT_ANSWER', 'FILE_UPLOAD'].includes(enumName(answer.questionType))
+
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
+
+const resolveResourceUrl = (url) => {
+  if (!url || /^(https?:)?\/\//i.test(url)) return url || ''
+  return url.startsWith('/') ? `${apiBaseUrl}${url}` : url
+}
 
 const loadExam = async () => {
   try {
@@ -200,20 +212,21 @@ const handleGrade = async (row) => {
 
   // Load submission details
   try {
-    const res = await request.get(`/api/submissions/${row.id}/student`)
+    const res = await request.get(`/api/submissions/${row.id}/grading`)
     if (res.code === '200') {
       const detail = res.data
 
       // Extract subjective questions
       subjectiveAnswers.value = (detail.answers || [])
-        .filter(isSubjective)
+        .filter(isManualGradable)
         .map(a => ({
           submissionAnswerId: a.id,
           questionId: a.questionId,
           questionText: a.questionContent,
           questionType: a.questionType,
           studentAnswer: a.answerContent,
-          maxScore: Number(a.score || 0),
+          referenceAnswer: a.referenceAnswer || '',
+          maxScore: Number(a.maxScore || 0),
           score: Number(a.obtainedScore || 0),
           comment: a.comment || ''
         }))

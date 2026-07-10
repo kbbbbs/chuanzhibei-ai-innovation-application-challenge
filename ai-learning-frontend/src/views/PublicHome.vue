@@ -77,13 +77,17 @@
           <div>
             <span class="module-kicker">智能推荐</span>
             <h2>沿着当前进度，找到下一项值得学习的内容</h2>
-            <p>结合课程方向、学习进度与薄弱知识点，组织课程、课时、练习和论文资料。</p>
+            <p>{{ recommendationDescription }}</p>
           </div>
-          <el-button size="large" @click="openPath('/recommendation')">查看全部推荐</el-button>
+<!--          <el-button size="large" @click="openPath('/recommendation')">查看全部推荐</el-button>-->
         </div>
 
-        <div class="featured-grid">
-          <article class="feature-card" v-for="course in featuredCourses" :key="course.title">
+        <div v-loading="recommendationLoading" class="featured-grid">
+          <el-empty
+            v-if="usesLiveRecommendations && !recommendationLoading && featuredCourses.length === 0"
+            description="暂无可展示的推荐内容"
+          />
+          <article v-for="course in featuredCourses" :key="course.id" class="feature-card">
             <div class="card-visual" :class="course.visualClass">
               <el-icon><component :is="course.icon" /></el-icon>
             </div>
@@ -96,7 +100,7 @@
               <p class="card-author">{{ course.teacher }}</p>
               <div class="card-footer">
                 <div class="stats">
-                  <el-icon><User /></el-icon> {{ course.learners }} 在学
+                  <el-icon><User /></el-icon> {{ course.learners }} {{ course.statLabel }}
                 </div>
                 <el-button type="primary" link @click="openPath(course.path)">查看详情</el-button>
               </div>
@@ -112,7 +116,7 @@
           <div>
             <span class="module-kicker">资源生成</span>
             <h2>从一个知识主题，生成可继续编辑的教学资产</h2>
-            <p>复用教师工作台中的资源生成能力，覆盖大纲、讲义、练习题库与项目实战案例。</p>
+            <p>复用教师工作台中的资源生成能力，覆盖大纲、讲义与练习题库。</p>
           </div>
           <el-button type="primary" size="large" @click="openPath('/resource-gen')">
             <el-icon><Lightning /></el-icon>
@@ -237,6 +241,7 @@ import {
   ArrowLeft, ArrowRight, Checked, Collection, Connection, Cpu,
   DataLine, Document, Edit, Lightning, Position, Reading, Search, Tickets, User
 } from '@element-plus/icons-vue'
+import { getMyRecommendations } from '@/api/recommendation'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -244,6 +249,8 @@ const agentPrompt = ref('')
 const paperKeyword = ref('')
 const activeShowcaseIndex = ref(0)
 let showcaseTimer = null
+const recommendationLoading = ref(false)
+const recommendedItems = ref([])
 
 const showcaseScenes = [
   {
@@ -284,48 +291,69 @@ const nextShowcaseIndex = computed(() => (
   activeShowcaseIndex.value === lastShowcaseIndex.value ? 0 : activeShowcaseIndex.value + 1
 ))
 
-const featuredCourses = [
+const staticFeaturedCourses = [
   {
+    id: 'static-ai',
     title: '大模型应用基础与提示工程',
     teacher: '主讲教师：张教授',
     category: 'AI 应用',
     badge: '智能推荐',
     learners: '1,240+',
+    statLabel: '在学',
     icon: Cpu,
     visualClass: 'visual-ai',
     path: '/recommendation'
   },
   {
+    id: 'static-data',
     title: '数据结构核心考点精讲',
     teacher: '主讲教师：李老师',
     category: '计算机基础',
     badge: '薄弱补强',
     learners: '980+',
+    statLabel: '在学',
     icon: DataLine,
     visualClass: 'visual-data',
     path: '/recommendation'
   },
   {
+    id: 'static-kb',
     title: '数据库系统与知识图谱实践',
     teacher: '主讲教师：王教授',
     category: '数据库',
     badge: '项目实践',
     learners: '860+',
+    statLabel: '在学',
     icon: Collection,
     visualClass: 'visual-kb',
     path: '/recommendation'
   },
   {
+    id: 'static-resource',
     title: '教学资源生成与试卷设计',
     teacher: '主讲教师：陈老师',
     category: '智能教学',
     badge: '教师精选',
     learners: '720+',
+    statLabel: '在学',
     icon: Document,
     visualClass: 'visual-doc',
     path: '/resource-gen'
   }
 ]
+
+const usesLiveRecommendations = computed(() => (
+  userStore.isLoggedIn && (userStore.isStudent || userStore.isTeacher)
+))
+
+const recommendationDescription = computed(() => {
+  if (userStore.isTeacher) return '按课程浏览量优先展示当前最受关注的课程。'
+  return '结合课程方向、学习进度与薄弱知识点，组织课程、课时、练习和论文资料。'
+})
+
+const featuredCourses = computed(() => (
+  usesLiveRecommendations.value ? recommendedItems.value : staticFeaturedCourses
+))
 
 const resourceTypes = [
   {
@@ -348,13 +376,6 @@ const resourceTypes = [
     details: ['基础巩固', '综合应用', '答案解析'],
     icon: Edit,
     tone: 'tone-amber'
-  },
-  {
-    title: '项目实战案例',
-    description: '从真实场景生成任务与交付标准。',
-    details: ['项目背景', '实施步骤', '验收标准'],
-    icon: Lightning,
-    tone: 'tone-cyan'
   }
 ]
 
@@ -405,6 +426,57 @@ const handleAgentPrompt = () => {
   router.push(prompt ? { path: '/agent-chat', query: { prompt } } : '/agent-chat')
 }
 
+async function loadHomepageRecommendations() {
+  if (!usesLiveRecommendations.value) return
+
+  recommendationLoading.value = true
+  try {
+    const response = await getMyRecommendations({ type: 'all', limit: 12 })
+    const items = response.code === '200' && Array.isArray(response.data?.items)
+      ? response.data.items
+      : []
+    recommendedItems.value = selectHomepageRecommendations(items)
+  } catch {
+    recommendedItems.value = []
+  } finally {
+    recommendationLoading.value = false
+  }
+}
+
+function selectHomepageRecommendations(items) {
+  const rankedItems = userStore.isTeacher
+    ? [...items].sort((left, right) => Number(right.meta?.viewCount || 0) - Number(left.meta?.viewCount || 0))
+    : items
+
+  return rankedItems.slice(0, 4).map((item, index) => toFeaturedCourse(item, index))
+}
+
+function toFeaturedCourse(item, index) {
+  const meta = item.meta || {}
+  const type = item.type || 'course'
+  const visualByType = {
+    course: { icon: Reading, visualClass: 'visual-ai' },
+    lesson: { icon: Collection, visualClass: 'visual-data' },
+    exercise: { icon: Edit, visualClass: 'visual-kb' },
+    paper: { icon: Document, visualClass: 'visual-doc' }
+  }
+  const visual = visualByType[type] || visualByType.course
+  const metric = userStore.isTeacher ? Number(meta.viewCount || 0) : Number(meta.studentCount || 0)
+
+  return {
+    id: item.id || `${type}-${item.itemId || index}`,
+    title: item.title || '未命名推荐',
+    teacher: item.subtitle || (userStore.isTeacher ? '热门课程' : '智能推荐'),
+    category: type === 'course' ? '课程' : type === 'lesson' ? '课时' : type === 'exercise' ? '练习' : '论文',
+    badge: userStore.isTeacher ? '热门推荐' : '智能推荐',
+    learners: metric.toLocaleString(),
+    statLabel: userStore.isTeacher ? '浏览' : '在学',
+    icon: visual.icon,
+    visualClass: visual.visualClass,
+    path: item.targetUrl || (item.itemId ? `/courses/${item.itemId}` : '/courses')
+  }
+}
+
 function setShowcaseScene(index) {
   activeShowcaseIndex.value = index
 }
@@ -435,7 +507,10 @@ function stopShowcaseAutoplay() {
   showcaseTimer = null
 }
 
-onMounted(startShowcaseAutoplay)
+onMounted(() => {
+  startShowcaseAutoplay()
+  loadHomepageRecommendations()
+})
 onBeforeUnmount(stopShowcaseAutoplay)
 </script>
 

@@ -21,7 +21,6 @@
                 <el-option label="课程教学大纲" value="syllabus" />
                 <el-option label="课堂讲义骨架" value="lecture" />
                 <el-option label="课后练习题库" value="quiz" />
-                <el-option label="项目实战案例" value="project" />
               </el-select>
             </el-form-item>
 

@@ -64,7 +64,8 @@
       </div>
 
       <div class="submit-action">
-        <el-button type="primary" size="large" :loading="loading" @click="handleSubmit()">提交试卷</el-button>
+        <el-button size="large" :loading="saveLoading" :disabled="loading" @click="handleSaveDraft">暂存答案</el-button>
+        <el-button type="primary" size="large" :loading="loading" :disabled="saveLoading" @click="handleSubmit()">提交试卷</el-button>
       </div>
     </el-card>
   </div>
@@ -87,6 +88,7 @@ const userStore = useUserStore()
 const { confirmSubmit } = useConfirm()
 
 const examId = computed(() => Number(route.params.examId))
+const isHomework = computed(() => route.query.assessmentType === 'HOMEWORK')
 
 const exam = ref({ title: '' })
 const submission = ref(null)
@@ -94,6 +96,7 @@ const questions = ref([])
 const answers = reactive({})
 const remainingTime = ref(0)
 const loading = ref(false)
+const saveLoading = ref(false)
 const uploadingQuestionId = ref(null)
 let timer = null
 
@@ -248,6 +251,27 @@ const buildAnswerPayload = () => ({
   })
 })
 
+const handleSaveDraft = async ({ notify = true } = {}) => {
+  if (!submission.value?.id) {
+    ElMessage.error('答卷尚未初始化，请刷新后重试')
+    return false
+  }
+
+  saveLoading.value = true
+  try {
+    const res = await request.post(`/api/submissions/${submission.value.id}/answers`, buildAnswerPayload())
+    if (res.code === '200' && notify) {
+      ElMessage.success('答案已暂存')
+    }
+    return res.code === '200'
+  } catch (e) {
+    // 全局异常已由 request.js 提示
+    return false
+  } finally {
+    saveLoading.value = false
+  }
+}
+
 const handleSubmit = async (skipConfirm = false) => {
   if (skipConfirm !== true) {
     const confirmed = await confirmSubmit('确认提交试卷？提交后不可修改')
@@ -256,19 +280,13 @@ const handleSubmit = async (skipConfirm = false) => {
 
   loading.value = true
   try {
-    if (!submission.value?.id) {
-      ElMessage.error('答卷尚未初始化，请刷新后重试')
-      return
-    }
-
-    const saveRes = await request.post(`/api/submissions/${submission.value.id}/answers`, buildAnswerPayload())
-    if (saveRes.code !== '200') return
+    if (!await handleSaveDraft({ notify: false })) return
 
     const res = await request.post(`/api/submissions/${submission.value.id}/submit`)
     if (res.code === '200') {
       ElMessage.success('提交成功')
       clearInterval(timer)
-      router.push({ name: 'MyExamList' })
+      router.push({ name: isHomework.value ? 'MyHomeworkList' : 'MyExamList' })
     }
   } catch (e) {
     // 全局异常已由 request.js 提示

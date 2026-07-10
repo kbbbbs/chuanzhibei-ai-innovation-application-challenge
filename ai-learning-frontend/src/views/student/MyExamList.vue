@@ -2,14 +2,14 @@
   <div class="my-exams">
     <el-card v-loading="loading">
       <template #header>
-        <span>我的考试</span>
+        <span>我的{{ assessmentLabel }}</span>
       </template>
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="待参加" name="upcoming">
           <el-table :data="upcomingExams" border stripe>
             <template #empty><AppEmpty /></template>
-            <el-table-column prop="title" label="考试名称" />
+            <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
             <el-table-column label="开始时间" width="180">
               <template #default="{ row }">
                 {{ row.startTime ? new Date(row.startTime).toLocaleString() : '-' }}
@@ -28,7 +28,7 @@
             <el-table-column label="操作" width="150">
               <template #default="{ row }">
                 <el-button size="small" type="primary" @click="handleStartExam(row)" :disabled="!canStartExam(row)">
-                  {{ canStartExam(row) ? '开始考试' : '未到时间' }}
+                  {{ canStartExam(row) ? `开始${assessmentLabel}` : '未到时间' }}
                 </el-button>
               </template>
             </el-table-column>
@@ -47,7 +47,7 @@
         <el-tab-pane label="已完成" name="completed">
           <el-table :data="completedExams" border stripe>
             <template #empty><AppEmpty /></template>
-            <el-table-column prop="title" label="考试名称" />
+            <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
             <el-table-column label="提交时间" width="180">
               <template #default="{ row }">
                 {{ row.submitTime ? new Date(row.submitTime).toLocaleString() : '-' }}
@@ -87,7 +87,7 @@
 
 <script setup>
 import { computed, reactive, ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
@@ -95,6 +95,7 @@ import { getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers
 import request from '@/utils/request'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const activeTab = ref('upcoming')
@@ -111,6 +112,8 @@ const completedPagination = reactive({
 const upcomingExams = computed(() => paginateRecords(allUpcomingExams.value, upcomingPagination.pageNum, upcomingPagination.pageSize))
 const completedExams = computed(() => paginateRecords(allCompletedExams.value, completedPagination.pageNum, completedPagination.pageSize))
 const loading = ref(false)
+const assessmentType = computed(() => route.meta.assessmentType || 'EXAM')
+const assessmentLabel = computed(() => assessmentType.value === 'HOMEWORK' ? '作业' : '考试')
 
 const canStartExam = (exam) => {
   const now = new Date()
@@ -154,13 +157,15 @@ const loadExams = async () => {
       const classIds = getRecords(classRes.data).map(c => c.classId)
 
       // Get all exams for these classes
-      const examRes = await request.get('/api/exams', { params: { pageSize: 100 } })
+      const examRes = await request.get('/api/exams', {
+        params: { pageSize: 100, assessmentType: assessmentType.value }
+      })
       if (examRes.code === '200') {
         const allExams = getRecords(examRes.data).map(mapExam).filter(e => classIds.includes(e.classId))
 
         // Get my submissions
         const subRes = await request.get('/api/submissions', {
-          params: { studentId: userStore.userId, pageSize: 100 }
+          params: { studentId: userStore.userId, pageSize: 100, assessmentType: assessmentType.value }
         })
         const mySubmissions = subRes.code === '200' ? getRecords(subRes.data) : []
         const mappedSubmissions = mySubmissions.map(sub => {
@@ -216,7 +221,11 @@ const handleStartExam = (exam) => {
     return
   }
 
-  router.push({ name: 'ExamTaking', params: { examId: exam.id } })
+  router.push({
+    name: 'ExamTaking',
+    params: { examId: exam.id },
+    query: assessmentType.value === 'HOMEWORK' ? { assessmentType: 'HOMEWORK' } : undefined
+  })
 }
 
 const handleViewResult = (submission) => {

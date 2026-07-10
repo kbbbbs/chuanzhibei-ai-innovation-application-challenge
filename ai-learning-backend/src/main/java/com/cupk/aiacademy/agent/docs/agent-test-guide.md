@@ -17,7 +17,7 @@
 如果是重新导入数据库，请使用已经包含 `t_agent_pending_action` 的脚本：
 
 ```powershell
-D:\ai-learning\database\ai_academy.sql
+D:\ai-learning\database\ai_academy_export.sql
 ```
 
 或：

@@ -35,7 +35,6 @@ async function createQuestionFixture() {
       type: 'SINGLE_CHOICE',
       content: `分步流程题目_${suffix}`,
       difficulty: 'EASY',
-      score: 5,
       knowledgePoint: 'wizard',
       analysis: 'wizard flow answer',
       status: 'ACTIVE',
@@ -85,7 +84,7 @@ test.beforeAll(setupFixtures)
 test.afterAll(cleanupFixtures)
 
 test('老师用分步弹窗创建试卷并发布考试', async ({ page }) => {
-  await loginByUi(page, 'teacher', '123456', { clearStorage: true })
+  await loginByUi(page, 'teacher', '123456', { clearStorage: true, expectHomeHeading: false })
 
   const paperName = `分步流程试卷_${suffix}`
   await page.goto('/papers')
@@ -102,11 +101,14 @@ test('老师用分步弹窗创建试卷并发布考试', async ({ page }) => {
 
   await page.locator('.el-dialog:visible .el-table__body-wrapper tr').filter({ hasText: created.question.content }).first().click()
   await expect(page.locator('.el-dialog:visible')).toContainText('已选题目 (1)')
+  await page.locator('.el-dialog:visible .el-input-number input').last().fill('5')
   await page.locator('.el-dialog:visible').getByRole('button', { name: '下一步' }).click()
   await expect(page.locator('.el-dialog:visible')).toContainText(paperName)
   await expect(page.locator('.el-dialog:visible')).toContainText(created.course.title)
 
   await page.locator('.el-dialog:visible').getByRole('button', { name: '保存' }).click()
+  await expect(page.locator('.el-dialog:visible').filter({ hasText: '组卷检查' })).toBeVisible()
+  await page.locator('.el-dialog:visible').getByRole('button', { name: '忽略问题并保存' }).click()
   await expectMessage(page, 'success', '保存成功')
   await expect(page.locator('.el-dialog:visible')).toHaveCount(0)
   created.paper = records((await apiCall('/api/papers')).data).find(item => item.name === paperName)

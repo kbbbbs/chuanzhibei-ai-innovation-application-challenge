@@ -2,6 +2,7 @@ package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.common.ExamStatus;
 import com.cupk.aiacademy.common.PaperStatus;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
@@ -77,6 +78,11 @@ public class ExamService {
 
     @Transactional(readOnly = true)
     public List<ExamResponseDTO> list(Long teacherId, String keyword, Long classId) {
+        return list(teacherId, keyword, classId, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExamResponseDTO> list(Long teacherId, String keyword, Long classId, AssessmentType assessmentType) {
         QueryWrapper<ExamSession> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
         if (permissionService.isTeacher(user)) {
@@ -103,6 +109,9 @@ public class ExamService {
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.like("title", keyword.trim());
+        }
+        if (assessmentType != null) {
+            query.eq("assessment_type", assessmentType.name());
         }
         query.orderByDesc("id");
         return examSessionMapper.selectList(query).stream().map(this::toResponse).toList();
@@ -174,6 +183,7 @@ public class ExamService {
         response.setEndTime(exam.getEndTime());
         response.setDurationMinutes(exam.getDuration());
         response.setStatus(ExamStatus.fromCode(exam.getStatus()));
+        response.setAssessmentType(AssessmentType.fromStorageValue(exam.getAssessmentType()));
         response.setCreatedAt(exam.getCreateTime());
         response.setUpdatedAt(exam.getUpdateTime());
         return response;
@@ -259,6 +269,7 @@ public class ExamService {
         exam.setEndTime(request.getEndTime());
         exam.setDuration(request.getDurationMinutes());
         exam.setStatus(request.getStatus().getCode());
+        exam.setAssessmentType((request.getAssessmentType() == null ? AssessmentType.EXAM : request.getAssessmentType()).name());
     }
 
     private Integer toNullableInt(Long value, String fieldName) {

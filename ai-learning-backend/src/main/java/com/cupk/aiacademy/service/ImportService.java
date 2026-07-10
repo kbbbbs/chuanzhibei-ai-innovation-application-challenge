@@ -311,7 +311,6 @@ public class ImportService {
         request.setType(parseQuestionType(source.type(), errors));
         request.setContent(requiredText(firstNonBlank(source.content(), source.stem()), "题面", errors));
         request.setDifficulty(parseDifficulty(source.difficulty(), errors));
-        request.setScore(score == null ? BigDecimal.valueOf(5) : score);
         request.setKnowledgePoint(blankToNull(source.knowledgePoint()));
         request.setAnalysis(blankToNull(source.analysis()));
         request.setStatus(RecordStatus.ACTIVE);
@@ -617,7 +616,6 @@ public class ImportService {
         row.setType(questionTypeLabel(question.getType()));
         row.setContent(question.getContent());
         row.setDifficulty(difficultyLabel(question.getDifficulty()));
-        row.setScore(toText(question.getScore()));
         row.setKnowledgePoint(question.getKnowledgePoint());
         row.setAnalysis(question.getAnalysis());
         fillOptionColumns(row, question.getOptions());
@@ -1337,6 +1335,7 @@ public class ImportService {
             request.setTeacherId(firstRow.getTeacherId());
             request.setDurationMinutes(firstRow.getDurationMinutes());
             request.setStatus(firstRow.getStatus());
+            request.setIgnoreWarnings(true);
             request.setQuestions(rows.stream().map(row -> {
                 PaperRequestDTO.PaperQuestionRequest question = new PaperRequestDTO.PaperQuestionRequest();
                 question.setQuestionId(questionIdResolver.resolve(row));
@@ -1418,6 +1417,7 @@ public class ImportService {
             paper.setTeacherId(firstRow.getTeacherId());
             paper.setDurationMinutes(firstRow.getDurationMinutes());
             paper.setStatus(PaperStatus.PUBLISHED);
+            paper.setIgnoreWarnings(true);
             paper.setQuestions(rows.stream().map(row -> {
                 PaperRequestDTO.PaperQuestionRequest question = new PaperRequestDTO.PaperQuestionRequest();
                 question.setQuestionId(questionIdResolver.resolve(row));

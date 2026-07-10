@@ -17,6 +17,7 @@ import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -74,7 +75,7 @@ class TeacherApplicationControllerTest {
         Page<TeacherApplication> page = new Page<>(1, 100);
         page.setRecords(List.of(app));
         page.setTotal(1);
-        when(service.list(eq(0), eq(1), eq(100))).thenReturn(page);
+        when(service.list(eq(0), isNull(), eq(1), eq(100))).thenReturn(page);
 
         mockMvc.perform(get("/teacher-applications")
                         .header("Authorization", "Bearer admin-token")

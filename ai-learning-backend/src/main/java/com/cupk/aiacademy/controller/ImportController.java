@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
+import com.cupk.aiacademy.common.LegacyHomeworkWritePolicy;
 import com.cupk.aiacademy.dto.imports.ImportConfirmRequest;
 import com.cupk.aiacademy.dto.imports.ImportConfirmResponse;
 import com.cupk.aiacademy.dto.imports.ImportPreviewResponse;
@@ -64,6 +65,9 @@ public class ImportController {
 
     @PostMapping("/{type}/confirm")
     public ApiResponse<ImportConfirmResponse> confirm(@PathVariable String type, @RequestBody ImportConfirmRequest request) {
+        if ("homeworks".equalsIgnoreCase(type)) {
+            LegacyHomeworkWritePolicy.rejectApiRequest();
+        }
         return ApiResponse.success(importService.confirm(type, request));
     }
 

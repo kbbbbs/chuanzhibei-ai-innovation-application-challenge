@@ -87,7 +87,6 @@ public class QuestionCreateActionExecutor implements AgentActionExecutor {
         data.put("teacherId", response.getTeacherId());
         data.put("type", response.getType() == null ? null : response.getType().name());
         data.put("difficulty", response.getDifficulty() == null ? null : response.getDifficulty().name());
-        data.put("score", response.getScore());
         data.put("status", response.getStatus() == null ? null : response.getStatus().name());
         data.put("content", response.getContent());
         data.put("answerCount", response.getAnswers() == null ? 0 : response.getAnswers().size());
@@ -110,7 +109,6 @@ public class QuestionCreateActionExecutor implements AgentActionExecutor {
         QuestionType type = requiredQuestionType(parameters);
         request.setType(type);
         request.setDifficulty(optionalDifficulty(parameters));
-        request.setScore(optionalScore(parameters));
         request.setKnowledgePoint(optionalString(parameters, 200, "knowledgePoint", "knowledge_point"));
         request.setAnalysis(optionalString(parameters, 1000, "analysis", "explanation"));
         request.setStatus(optionalStatus(parameters));

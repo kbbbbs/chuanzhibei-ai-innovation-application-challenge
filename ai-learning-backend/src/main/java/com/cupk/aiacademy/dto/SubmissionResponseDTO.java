@@ -35,6 +35,8 @@ public class SubmissionResponseDTO {
         private String questionContent;
         private QuestionType questionType;
         private String answerContent;
+        private String referenceAnswer;
+        private BigDecimal maxScore;
         private Boolean correct;
         private BigDecimal score;
         private JudgeStatus judgeStatus;

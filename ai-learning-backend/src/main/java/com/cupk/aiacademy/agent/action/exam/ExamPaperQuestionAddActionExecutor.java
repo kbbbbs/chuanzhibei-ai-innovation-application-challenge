@@ -73,7 +73,7 @@ public class ExamPaperQuestionAddActionExecutor implements AgentActionExecutor {
         ensureSortOrderNotExists(existingQuestions, sortOrder);
         BigDecimal score = hasAnyKey(parameters, "score", "questionScore", "question_score")
                 ? requiredScore(parameters, "score", "questionScore", "question_score")
-                : defaultQuestionScore(question);
+                : requiredScore(parameters, "score", "questionScore", "question_score");
         Integer requiredAnswer = optionalRequiredAnswer(parameters);
 
         ExamPaperQuestion paperQuestion = new ExamPaperQuestion();
@@ -203,14 +203,6 @@ public class ExamPaperQuestionAddActionExecutor implements AgentActionExecutor {
                 .map(ExamPaperQuestion::getScore)
                 .map(this::defaultScore)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-    }
-
-    private BigDecimal defaultQuestionScore(QuestionResponseDTO question) {
-        BigDecimal score = defaultScore(question.getScore());
-        if (score.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new BusinessException("题目分值必须大于 0");
-        }
-        return score;
     }
 
     private BigDecimal defaultScore(BigDecimal score) {
