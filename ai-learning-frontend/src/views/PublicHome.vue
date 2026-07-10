@@ -447,7 +447,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .hero-section {
   min-height: calc(100vh - 64px);
-  padding: 34px 24px 64px;
+  padding: 28px 24px 56px;
   display: flex;
   align-items: flex-start;
   justify-content: center;
@@ -491,10 +491,10 @@ onBeforeUnmount(stopShowcaseAutoplay)
 }
 
 .hero-title {
-  font-size: clamp(4.8rem, 10vw, 8.2rem);
+  font-size: clamp(2.75rem, 5.2vw, 4.75rem);
   font-weight: 800;
-  line-height: 1.02;
-  margin: 0 0 18px;
+  line-height: 1.08;
+  margin: 0 0 14px;
   color: var(--text-primary);
   letter-spacing: 0;
 }
@@ -508,10 +508,10 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .hero-subtitle {
   max-width: 820px;
-  font-size: 1.32rem;
-  line-height: 1.6;
+  font-size: 1.05rem;
+  line-height: 1.55;
   color: var(--text-secondary);
-  margin: 0 auto 34px;
+  margin: 0 auto 26px;
 }
 
 .hero-actions {
@@ -526,11 +526,11 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .btn-primary {
   min-width: 238px;
-  height: 72px;
-  min-height: 72px;
-  padding: 0 12px;
-  font-size: 2.68rem;
-  line-height: 1.08;
+  height: 58px;
+  min-height: 58px;
+  padding: 0 18px;
+  font-size: 1.08rem;
+  line-height: 1.2;
   border-radius: var(--radius-md);
   background-color: var(--primary-color);
   border: none;
@@ -541,7 +541,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .action-divider {
   color: var(--text-muted);
-  font-size: 2.4rem;
+  font-size: 0.95rem;
   line-height: 1;
   font-weight: 700;
   flex-shrink: 0;
@@ -573,7 +573,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
 }
 
 .agent-prompt-input :deep(.el-input__wrapper) {
-  min-height: 72px;
+  min-height: 58px;
   background: rgba(255, 255, 255, 0.78);
   border-radius: var(--radius-md) 0 0 var(--radius-md);
   box-shadow: 0 16px 40px rgba(15, 23, 42, 0.08), 0 0 0 1px var(--border-color) inset;
@@ -588,8 +588,8 @@ onBeforeUnmount(stopShowcaseAutoplay)
 }
 
 .agent-prompt-input :deep(.el-input__inner) {
-  font-size: 2.48rem;
-  line-height: 1.08;
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 .agent-prompt-input :deep(.el-input-group__append) {
@@ -598,7 +598,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
   background: rgba(37, 99, 235, 0.86);
   color: white;
   box-shadow: 0 16px 40px rgba(37, 99, 235, 0.18);
-  padding: 0 32px;
+  padding: 0 24px;
   transition: background 0.22s ease;
 }
 
@@ -609,12 +609,12 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .agent-prompt-input :deep(.el-input-group__append .el-button) {
   color: white;
-  font-size: 34px;
+  font-size: 21px;
 }
 
 .scene-showcase {
   width: min(1180px, 100%);
-  margin: 42px auto 0;
+  margin: 34px auto 0;
   perspective: 1400px;
 }
 
@@ -624,7 +624,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .showcase-track {
   position: relative;
-  height: clamp(560px, 58vh, 680px);
+  height: clamp(500px, 56vh, 620px);
   overflow: hidden;
   border-radius: var(--radius-md);
 }
@@ -760,16 +760,16 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 .showcase-copy {
   position: absolute;
-  left: 48px;
-  right: 48px;
-  top: 36px;
+  left: 42px;
+  right: 42px;
+  top: 30px;
   z-index: 5;
   display: grid;
   grid-template-columns: 1fr;
-  row-gap: 10px;
+  row-gap: 8px;
   align-items: baseline;
   width: auto;
-  min-height: 168px;
+  min-height: 130px;
   padding: 0;
   border: none;
   border-radius: 0;
@@ -792,8 +792,8 @@ onBeforeUnmount(stopShowcaseAutoplay)
   border-radius: 0;
   background: transparent;
   color: var(--primary-color);
-  font-size: 1.68rem;
-  line-height: 1.45;
+  font-size: 0.92rem;
+  line-height: 1.35;
   font-weight: 700;
   letter-spacing: 0.08em;
 }
@@ -802,28 +802,28 @@ onBeforeUnmount(stopShowcaseAutoplay)
   grid-column: 1;
   margin: 0;
   color: var(--text-primary);
-  font-size: 2rem;
-  line-height: 1.2;
+  font-size: 1.45rem;
+  line-height: 1.25;
   letter-spacing: 0;
 }
 
 .showcase-copy p {
   grid-column: 1;
-  max-width: 880px;
+  max-width: 760px;
   margin: 2px 0 0;
   color: var(--text-secondary);
-  font-size: 1.68rem;
-  line-height: 1.45;
+  font-size: 0.98rem;
+  line-height: 1.55;
 }
 
 .showcase-visual {
   position: absolute;
   left: 50%;
-  bottom: 42px;
+  bottom: 36px;
   z-index: 3;
   min-width: 0;
   width: min(860px, 78%);
-  height: min(390px, 58%);
+  height: min(360px, 62%, calc(100% - 210px));
   border: 1px solid rgba(226, 232, 240, 0.88);
   border-radius: var(--radius-md);
   background: rgba(255, 255, 255, 0.72);
@@ -1308,11 +1308,11 @@ onBeforeUnmount(stopShowcaseAutoplay)
 @media (max-width: 1024px) {
   .hero-section {
     min-height: auto;
-    padding: 56px 24px 64px;
+    padding: 46px 24px 56px;
   }
 
   .hero-title {
-    font-size: 4.4rem;
+    font-size: 3rem;
   }
 
   .hero-actions {
@@ -1325,11 +1325,11 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
   .scene-showcase {
     width: 100%;
-    margin-top: 42px;
+    margin-top: 34px;
   }
 
   .showcase-track {
-    height: 520px;
+    height: 500px;
   }
 
   .showcase-slide {
@@ -1339,26 +1339,26 @@ onBeforeUnmount(stopShowcaseAutoplay)
   .showcase-copy {
     left: 28px;
     right: 28px;
-    top: 28px;
+    top: 26px;
     width: auto;
-    min-height: 168px;
+    min-height: 126px;
     padding: 0;
   }
 
   .showcase-visual {
     width: 82%;
-    height: 48%;
-    bottom: 34px;
+    height: min(56%, calc(100% - 190px));
+    bottom: 32px;
   }
 
   .showcase-copy h2 {
-    font-size: 1.82rem;
+    font-size: 1.32rem;
   }
 
   .showcase-copy p,
   .showcase-kicker {
-    font-size: 1.45rem;
-    line-height: 1.42;
+    font-size: 0.92rem;
+    line-height: 1.45;
   }
 
   .features-grid {
@@ -1404,15 +1404,22 @@ onBeforeUnmount(stopShowcaseAutoplay)
 
 @media (max-width: 640px) {
   .hero-section {
-    padding: 52px 16px 56px;
+    padding: 38px 16px 48px;
   }
 
   .hero-title {
-    font-size: 3.45rem;
+    font-size: 2.18rem;
   }
 
   .hero-subtitle {
-    font-size: 1.12rem;
+    font-size: 0.94rem;
+    line-height: 1.55;
+  }
+
+  .btn-primary,
+  .agent-prompt-input :deep(.el-input__wrapper) {
+    min-height: 52px;
+    height: 52px;
   }
 
   .btn-primary {
@@ -1431,7 +1438,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
   }
 
   .showcase-track {
-    height: 520px;
+    height: 500px;
   }
 
   .showcase-slide {
@@ -1454,7 +1461,7 @@ onBeforeUnmount(stopShowcaseAutoplay)
     top: 16px;
     grid-template-columns: 1fr;
     width: auto;
-    min-height: 168px;
+    min-height: 128px;
     padding: 0;
   }
 
@@ -1464,20 +1471,20 @@ onBeforeUnmount(stopShowcaseAutoplay)
   }
 
   .showcase-copy h2 {
-    font-size: 1.48rem;
+    font-size: 1.16rem;
   }
 
   .showcase-copy p,
   .showcase-kicker {
-    font-size: 1.12rem;
-    line-height: 1.42;
+    font-size: 0.86rem;
+    line-height: 1.45;
   }
 
   .showcase-visual,
   .showcase-slide:not(.is-active) .showcase-visual {
-    width: 82%;
-    height: 38%;
-    bottom: 34px;
+    width: 86%;
+    height: min(52%, calc(100% - 178px));
+    bottom: 30px;
   }
 
   .showcase-arrow {

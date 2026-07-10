@@ -31,26 +31,25 @@
             </div>
             <p>{{ domain.description }}</p>
           </div>
-        </header>
-
-        <div class="domain-actions" :class="{ 'two-columns': domain.actions.length > 3 }">
-          <button
-            v-for="action in domain.actions"
-            :key="action.path"
-            type="button"
-            class="domain-action"
-            :disabled="action.disabled"
-            @click="!action.disabled && go(action.path)"
-          >
-            <span class="action-icon"><el-icon><component :is="action.icon" /></el-icon></span>
-            <span class="action-copy">
-              <strong>{{ action.label }}</strong>
-              <small>{{ action.description }}</small>
-            </span>
-            <span class="action-state">{{ action.disabled ? '无权限' : '进入' }}</span>
-          </button>
-        </div>
-      </article>
+          <div class="domain-actions" :class="{ 'two-columns': domain.actions.length > 3 }">
+            <button
+              v-for="action in domain.actions"
+              :key="action.path"
+              type="button"
+              class="domain-action"
+              :disabled="action.disabled"
+              @click="!action.disabled && go(action.path)"
+            >
+              <span class="action-icon"><el-icon><component :is="action.icon" /></el-icon></span>
+              <span class="action-copy">
+                <strong>{{ action.label }}</strong>
+                <small>{{ action.description }}</small>
+              </span>
+              <span class="action-state">{{ action.disabled ? '无权限' : '进入' }}</span>
+            </button>
+          </div>
+        </section>
+      </div>
     </section>
   </main>
 
