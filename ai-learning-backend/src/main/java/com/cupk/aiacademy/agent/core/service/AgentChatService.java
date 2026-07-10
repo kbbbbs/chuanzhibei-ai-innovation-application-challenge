@@ -6,12 +6,15 @@ import com.cupk.aiacademy.agent.core.config.AgentConfigurationParser;
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
 import com.cupk.aiacademy.agent.core.llm.AgentModelDiagnostics;
 import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
+import com.cupk.aiacademy.agent.core.llm.ChatModelTimeoutException;
 import com.cupk.aiacademy.agent.core.prompt.AgentPromptAssembler;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
 import com.cupk.aiacademy.agent.action.AgentPendingActionResponse;
 import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenReadToolPlanner;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
+import com.cupk.aiacademy.agent.planner.AgentPlanningOutcome;
+import com.cupk.aiacademy.agent.planner.UnifiedAgentPlanner;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.AgentChatRequest;
@@ -36,6 +39,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -136,6 +140,7 @@ public class AgentChatService {
     private final AgentPromptAssembler promptAssembler;
     private final SchemaDrivenAgentPlanner schemaDrivenAgentPlanner;
     private final SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner;
+    private final UnifiedAgentPlanner unifiedAgentPlanner;
 
     /**
      * Spring 注入使用的构造方法。
@@ -149,7 +154,8 @@ public class AgentChatService {
                             ObjectMapper objectMapper,
                             KnowledgeContextProvider knowledgeContextProvider,
                             ObjectProvider<SchemaDrivenAgentPlanner> schemaDrivenAgentPlannerProvider,
-                            ObjectProvider<SchemaDrivenReadToolPlanner> schemaDrivenReadToolPlannerProvider
+                            ObjectProvider<SchemaDrivenReadToolPlanner> schemaDrivenReadToolPlannerProvider,
+                            ObjectProvider<UnifiedAgentPlanner> unifiedAgentPlannerProvider
     ) {
         this(
                 chatModelClient,
@@ -160,7 +166,8 @@ public class AgentChatService {
                 objectMapper,
                 knowledgeContextProvider,
                 schemaDrivenAgentPlannerProvider == null ? null : schemaDrivenAgentPlannerProvider.getIfAvailable(),
-                schemaDrivenReadToolPlannerProvider == null ? null : schemaDrivenReadToolPlannerProvider.getIfAvailable()
+                schemaDrivenReadToolPlannerProvider == null ? null : schemaDrivenReadToolPlannerProvider.getIfAvailable(),
+                unifiedAgentPlannerProvider == null ? null : unifiedAgentPlannerProvider.getIfAvailable()
         );
     }
 
@@ -182,7 +189,8 @@ public class AgentChatService {
                 new ObjectMapper(),
                 null,
                 (SchemaDrivenAgentPlanner) null,
-                (SchemaDrivenReadToolPlanner) null
+                (SchemaDrivenReadToolPlanner) null,
+                (UnifiedAgentPlanner) null
         );
     }
 
@@ -198,7 +206,23 @@ public class AgentChatService {
                      KnowledgeContextProvider knowledgeContextProvider,
                      SchemaDrivenAgentPlanner schemaDrivenAgentPlanner,
                      SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner
-     ) {
+    ) {
+        this(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
+                objectMapper, knowledgeContextProvider, schemaDrivenAgentPlanner,
+                schemaDrivenReadToolPlanner, null);
+    }
+
+    AgentChatService(ChatModelClient chatModelClient,
+                     AgentChatProperties chatProperties,
+                     AgentDefinitionMapper agentDefinitionMapper,
+                     AgentSessionMapper sessionMapper,
+                     AgentMessageMapper messageMapper,
+                     ObjectMapper objectMapper,
+                     KnowledgeContextProvider knowledgeContextProvider,
+                     SchemaDrivenAgentPlanner schemaDrivenAgentPlanner,
+                     SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner,
+                     UnifiedAgentPlanner unifiedAgentPlanner
+    ) {
         this.chatModelClient = chatModelClient;
         this.chatProperties = chatProperties == null ? new AgentChatProperties() : chatProperties;
         this.agentDefinitionMapper = agentDefinitionMapper;
@@ -212,6 +236,7 @@ public class AgentChatService {
                 this.knowledgeContextProvider);
         this.schemaDrivenAgentPlanner = schemaDrivenAgentPlanner;
         this.schemaDrivenReadToolPlanner = schemaDrivenReadToolPlanner;
+        this.unifiedAgentPlanner = unifiedAgentPlanner;
     }
 
     /**
@@ -302,10 +327,31 @@ public class AgentChatService {
         AgentSession session = ensureSession(sessionId);
         AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
         String content = request.getContent().trim();
+        long deadlineNanos = System.nanoTime()
+                + Duration.ofSeconds(chatProperties.getRequestTimeoutSeconds()).toNanos();
 
-        Optional<AgentDirectActionReply> directReply = schemaDrivenAgentPlanner == null
-                ? Optional.empty()
-                : schemaDrivenAgentPlanner.tryPlan(agent, content);
+        Optional<AgentDirectActionReply> directReply = Optional.empty();
+        String selectedToolContext = "";
+        try {
+            if (unifiedAgentPlanner != null) {
+                AgentPlanningOutcome outcome = unifiedAgentPlanner.plan(agent, content);
+                directReply = Optional.ofNullable(outcome.getDirectReply());
+                selectedToolContext = outcome.getToolContext() == null ? "" : outcome.getToolContext();
+            } else {
+                directReply = schemaDrivenAgentPlanner == null
+                        ? Optional.empty()
+                        : schemaDrivenAgentPlanner.tryPlan(agent, content);
+                if (directReply.isEmpty()) {
+                    selectedToolContext = schemaDrivenReadToolPlanner == null
+                            ? ""
+                            : schemaDrivenReadToolPlanner.planToolContext(agent, content);
+                }
+            }
+        } catch (Exception e) {
+            AgentMessage userMessage = setMessage(sessionId, "user", content);
+            ensureSessionTitle(session, content);
+            throw recordModelFailure(sessionId, userMessage.getId(), e);
+        }
 
         if (directReply.isPresent()) {
             AgentDirectActionReply reply = directReply.get();
@@ -318,10 +364,6 @@ public class AgentChatService {
 
         applyProviderModelCompatibility(agent);
 
-        String selectedToolContext = schemaDrivenReadToolPlanner == null
-                ? ""
-                : schemaDrivenReadToolPlanner.planToolContext(agent, content);
-
         // 构造包含系统提示词、知识库/工具上下文和历史消息的模型 Prompt，并先落库用户消息。
         Prompt prompt = promptAssembler.buildPrompt(agent, loadMessages(sessionId), content, selectedToolContext);
         AgentMessage userMessage = setMessage(sessionId, "user", content);
@@ -330,7 +372,7 @@ public class AgentChatService {
         // 调用模型失败时记录一条兜底助手消息，便于前端和历史记录展示失败轨迹。
         ChatResponse chatResponse;
         try {
-            chatResponse = chatModelClient.call(prompt);
+            chatResponse = chatModelClient.call(prompt, remainingTimeout(deadlineNanos));
         } catch (Exception e) {
             throw recordModelFailure(sessionId, userMessage.getId(), e);
         }
@@ -493,36 +535,15 @@ public class AgentChatService {
         }
         if (isBlank(agent.getEnabledTools())) {
             agent.setEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
-            return;
         }
-        mergeMissingDefaultAgentTools(agent);
     }
 
-    private void mergeMissingDefaultAgentTools(AgentDefinition agent) {
-        try {
-            AgentConfigurationParser configurationParser = new AgentConfigurationParser(objectMapper);
-            List<String> currentTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
-            List<String> defaultTools = configurationParser.parseEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
-            Set<String> merged = new LinkedHashSet<>();
-            if (currentTools != null) {
-                for (String tool : currentTools) {
-                    if (!isBlank(tool)) {
-                        merged.add(tool.trim());
-                    }
-                }
-            }
-            boolean changed = false;
-            for (String tool : defaultTools) {
-                if (!isBlank(tool) && merged.add(tool.trim())) {
-                    changed = true;
-                }
-            }
-            if (changed) {
-                agent.setEnabledTools(objectMapper.writeValueAsString(new ArrayList<>(merged)));
-            }
-        } catch (Exception e) {
-            log.warn("Failed to merge default agent tools, fallback to configured tools: {}", e.getMessage());
+    private Duration remainingTimeout(long deadlineNanos) {
+        long remainingNanos = deadlineNanos - System.nanoTime();
+        if (remainingNanos <= 0) {
+            throw new ChatModelTimeoutException("Agent 请求已超过总时间预算", null);
         }
+        return Duration.ofNanos(remainingNanos);
     }
 
     private boolean isDefaultAgent(AgentDefinition agent) {

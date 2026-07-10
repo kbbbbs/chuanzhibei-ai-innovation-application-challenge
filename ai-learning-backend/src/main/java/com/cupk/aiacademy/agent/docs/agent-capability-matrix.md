@@ -36,7 +36,7 @@
 
 ## 已接入读查询
 
-读查询主链路已经改为 `SchemaDrivenReadToolPlanner`：模型只负责从当前 Agent 已启用的读工具中选择一个工具并输出 `TOOL/CHAT` JSON。每个工具声明自己的 arguments schema，后端统一校验工具名、未知字段、字段类型、必填/二选一约束、数值范围和置信度；非法输出会把结构化错误反馈给模型并最多修复 3 轮。首次 `CHAT` 会再由模型复核一次，避免把平台查询误判成普通聊天。校验通过后只执行被选中的工具，再把 observation 交给聊天模型生成最终答复。
+读查询主链路已经改为 `LlmIntentSelector -> SchemaDrivenReadToolPlanner`：统一选择器只读取工具摘要并选择一个读工具，读 Planner 随后只接收该工具的 arguments schema。后端统一校验工具名、未知字段、字段类型、必填/二选一约束、数值范围和置信度；非法输出会把结构化错误反馈给模型并默认最多修复 1 轮。校验通过后只执行被选中的工具，再把 observation 交给聊天模型生成最终答复。
 
 当前专用读工具支持：
 
@@ -65,7 +65,7 @@
 
 ## 已接入写操作
 
-写操作走“LLM Planner -> action schema 校验 -> 结构化错误修复循环 -> pending action -> 用户确认 -> 执行器权限/业务校验 -> 审计日志”链路。`AgentChatService` 已不再引用 `AgentActionIntentRouter`；校验失败不会创建 pending action，而是返回需要用户补充的字段。
+写操作走“轻量统一意图选择 -> 单 action schema 参数规划 -> 结构化错误修复循环 -> pending action -> 用户确认 -> 执行器权限/业务校验 -> 审计日志”链路。`AgentChatService` 已不再引用 `AgentActionIntentRouter`；校验失败不会创建 pending action，而是返回需要用户补充的字段。
 
 | 领域 | 动作 |
 | --- | --- |
@@ -100,8 +100,9 @@
 
 ## Schema Planner / ReAct 迁移
 
-- 写操作只进入 `SchemaDrivenAgentPlanner`；旧 `AgentActionIntentRouter` 和旧动作选择器不再注册为 Spring Bean。
-- 模型输出非法 JSON、未知 actionCode、未知字段、错误类型、缺少必填字段或二选一约束不满足时，后端把结构化错误反馈给模型，最多修复 3 轮。
+- `LlmIntentSelector` 先使用代码和摘要选择 `CHAT/READ/WRITE`；写操作再进入 `SchemaDrivenAgentPlanner`，旧 `AgentActionIntentRouter` 和旧动作选择器不再注册为 Spring Bean。
+- 模型输出非法 JSON、未知 actionCode、未知字段、错误类型、缺少必填字段或二选一约束不满足时，后端把结构化错误反馈给模型，默认最多修复 1 轮。
+- Planner 使用独立模型配置，摘要选择默认 5 秒、单 Schema 参数规划默认 10 秒、低温度和 600 输出 token；会话最终模型默认 15 秒，完整请求默认 25 秒。
 - 只有完整通过校验的写计划才写入 `t_agent_pending_action`；待确认动作统一使用 MyBatis 持久化，不再以 JVM 内存存储作为生产主实现。
 - 助手消息会在 `tool_result` 中保存结构化 `pendingAction`，刷新历史后仍可恢复确认入口；执行前前端会重新查询数据库确认 actionId 仍有效。
 - 读操作由模型选择单个结构化工具，后端校验失败时反馈修复；限定轮次后仍失败会明确标记“未执行平台查询”并要求用户补充条件。

@@ -1,10 +1,8 @@
 package com.cupk.aiacademy.agent.planner;
 
 import com.cupk.aiacademy.agent.action.AgentActionSpec;
-import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -12,18 +10,20 @@ import java.util.Locale;
 
 @Component
 public class LlmActionRepairLoop {
-    private final ChatModelClient chatModelClient;
+    private static final Logger log = LoggerFactory.getLogger(LlmActionRepairLoop.class);
+
+    private final PlannerModelClient plannerModelClient;
     private final ActionSchemaPromptBuilder promptBuilder;
     private final LlmActionDecisionParser parser;
     private final LlmActionDecisionValidator validator;
     private final AgentPlannerProperties properties;
 
-    public LlmActionRepairLoop(ChatModelClient chatModelClient,
+    public LlmActionRepairLoop(PlannerModelClient plannerModelClient,
                                ActionSchemaPromptBuilder promptBuilder,
                                LlmActionDecisionParser parser,
                                LlmActionDecisionValidator validator,
                                AgentPlannerProperties properties) {
-        this.chatModelClient = chatModelClient;
+        this.plannerModelClient = plannerModelClient;
         this.promptBuilder = promptBuilder;
         this.parser = parser;
         this.validator = validator;
@@ -31,9 +31,7 @@ public class LlmActionRepairLoop {
     }
 
     private LlmActionDecision callModel(String promptText) {
-        ChatResponse response = chatModelClient.call(new Prompt(List.of(new UserMessage(promptText))));
-        String content = response.getResult().getOutput().getContent();
-        return parser.parse(content);
+        return parser.parse(plannerModelClient.call(promptText, properties.getParameterTimeoutSeconds()));
     }
 
     public LlmActionPlanResult plan(String userText, List<AgentActionSpec> specs) {
@@ -44,8 +42,13 @@ public class LlmActionRepairLoop {
 
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
             try {
+                long startedNanos = System.nanoTime();
                 decision = callModel(prompt);
+                log.info("Agent planner stage completed: stage=write_parameters, model={}, attempt={}, promptChars={}, elapsedMs={}",
+                        properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
                 validation = validator.validate(decision, specs);
+            } catch (AgentPlanningException e) {
+                throw e;
             } catch (Exception e) {
                 validation = LlmActionValidationResult.invalid(
                         List.of("模型输出无法解析：" + safeMessage(e)));
@@ -66,6 +69,10 @@ public class LlmActionRepairLoop {
         }
 
         return new LlmActionPlanResult(decision, validation);
+    }
+
+    private long elapsedMillis(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000L;
     }
 
     private String safeMessage(Exception exception) {

@@ -51,10 +51,35 @@ public class SchemaDrivenAgentPlanner {
             return Optional.empty();
         }
 
+        return plan(userText.trim(), specs, false);
+    }
+
+    public Optional<AgentDirectActionReply> tryPlanSelected(AgentDefinition agent,
+                                                            String userText,
+                                                            String actionCode) {
+        if (!properties.isEnabled() || agent == null || userText == null || userText.isBlank()) {
+            return Optional.empty();
+        }
+        List<String> enabledTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
+        AgentActionSpec selected = actionCatalog.enabledSpecs(enabledTools).stream()
+                .filter(spec -> normalize(spec.actionCode()).equals(normalize(actionCode)))
+                .findFirst()
+                .orElseThrow(() -> new AgentPlanningException("写操作不存在或未启用：" + actionCode));
+        return plan(userText.trim(), List.of(selected), true);
+    }
+
+    private Optional<AgentDirectActionReply> plan(String userText,
+                                                  List<AgentActionSpec> specs,
+                                                  boolean selectedIntent) {
         LlmActionPlanResult result;
         try {
-            result = repairLoop.plan(userText.trim(), specs);
+            result = repairLoop.plan(userText, specs);
+        } catch (AgentPlanningException e) {
+            throw e;
         } catch (Exception e) {
+            if (selectedIntent) {
+                throw new AgentPlanningException("写操作参数规划失败", e);
+            }
             log.warn("Schema-driven agent planner failed, continue without a write plan: message={}", e.getMessage(), e);
             return Optional.empty();
         }
@@ -64,6 +89,7 @@ public class SchemaDrivenAgentPlanner {
         }
 
         if (isChatDecision(result.getDecision())) {
+            log.info("Scoped write planner vetoed selected action and returned CHAT");
             return Optional.empty();
         }
 
@@ -73,7 +99,11 @@ public class SchemaDrivenAgentPlanner {
             return Optional.of(clarificationReply(result));
         }
 
-        return Optional.of(planFactory.create(userText.trim(), result.getValidation()));
+        return Optional.of(planFactory.create(userText, result.getValidation()));
+    }
+
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(Locale.ROOT);
     }
 
     private boolean isChatDecision(LlmActionDecision decision) {

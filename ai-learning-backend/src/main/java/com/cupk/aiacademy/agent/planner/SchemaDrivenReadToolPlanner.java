@@ -1,16 +1,12 @@
 package com.cupk.aiacademy.agent.planner;
 
 import com.cupk.aiacademy.agent.core.config.AgentConfigurationParser;
-import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
 import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
 import com.cupk.aiacademy.pojo.AgentDefinition;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ai.chat.messages.UserMessage;
-import org.springframework.ai.chat.model.ChatResponse;
-import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -20,7 +16,7 @@ import java.util.Optional;
 public class SchemaDrivenReadToolPlanner {
     private static final Logger log = LoggerFactory.getLogger(SchemaDrivenReadToolPlanner.class);
 
-    private final ChatModelClient chatModelClient;
+    private final PlannerModelClient plannerModelClient;
     private final ObjectMapper objectMapper;
     private final AgentConfigurationParser configurationParser;
     private final AgentReadToolCatalog readToolCatalog;
@@ -29,14 +25,14 @@ public class SchemaDrivenReadToolPlanner {
     private final AgentToolExecutor toolExecutor;
     private final AgentPlannerProperties properties;
 
-    public SchemaDrivenReadToolPlanner(ChatModelClient chatModelClient,
+    public SchemaDrivenReadToolPlanner(PlannerModelClient plannerModelClient,
                                        ObjectMapper objectMapper,
                                        AgentReadToolCatalog readToolCatalog,
                                        LlmReadToolDecisionParser parser,
                                        LlmReadToolDecisionValidator validator,
                                        AgentToolExecutor toolExecutor,
                                        AgentPlannerProperties properties) {
-        this.chatModelClient = chatModelClient;
+        this.plannerModelClient = plannerModelClient;
         this.objectMapper = objectMapper;
         this.configurationParser = new AgentConfigurationParser(objectMapper);
         this.readToolCatalog = readToolCatalog;
@@ -56,34 +52,49 @@ public class SchemaDrivenReadToolPlanner {
             return "";
         }
 
+        return planAndExecute(userText.trim(), specs, false);
+    }
+
+    public String planSelectedToolContext(AgentDefinition agent,
+                                          String userText,
+                                          String toolName) {
+        if (!properties.isEnabled() || agent == null || userText == null || userText.isBlank()) {
+            return "";
+        }
+        List<String> enabledTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
+        AgentReadToolSpec selected = readToolCatalog.enabledSpecs(enabledTools).stream()
+                .filter(spec -> normalize(spec.getToolName()).equals(normalize(toolName)))
+                .findFirst()
+                .orElseThrow(() -> new AgentPlanningException("读工具不存在或未启用：" + toolName));
+        return planAndExecute(userText.trim(), List.of(selected), true);
+    }
+
+    private String planAndExecute(String userText,
+                                  List<AgentReadToolSpec> specs,
+                                  boolean selectedIntent) {
         LlmReadToolDecision decision = null;
         LlmReadToolValidationResult validation = null;
-        String prompt = buildPlanPrompt(userText.trim(), specs);
-        int maxAttempts = Math.max(2, properties.getMaxRepairRounds() + 1);
-        int chatConfirmations = 0;
+        String prompt = buildPlanPrompt(userText, specs, selectedIntent);
+        int maxAttempts = Math.max(1, properties.getMaxRepairRounds() + 1);
 
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
             try {
+                long startedNanos = System.nanoTime();
                 decision = callModel(prompt);
+                log.info("Agent planner stage completed: stage=read_parameters, model={}, attempt={}, promptChars={}, elapsedMs={}",
+                        properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
                 validation = validator.validate(decision, specs);
+            } catch (AgentPlanningException e) {
+                throw e;
             } catch (Exception e) {
                 validation = LlmReadToolValidationResult.invalid(
                         List.of("模型输出无法解析：" + safeMessage(e)));
             }
             if (validation.isValid()) {
-                if (!validation.isChat()) {
-                    break;
-                }
-                chatConfirmations++;
-                if (chatConfirmations >= 2 || attempt + 1 >= maxAttempts) {
-                    break;
-                }
-                prompt = buildChatVerificationPrompt(userText.trim(), specs, decision);
-                continue;
+                break;
             }
-            chatConfirmations = 0;
             if (attempt + 1 < maxAttempts) {
-                prompt = buildRepairPrompt(userText.trim(), specs, decision, validation.getErrors());
+                prompt = buildRepairPrompt(userText, specs, decision, validation.getErrors(), selectedIntent);
             }
         }
 
@@ -119,16 +130,14 @@ public class SchemaDrivenReadToolPlanner {
     }
 
     private LlmReadToolDecision callModel(String promptText) {
-        ChatResponse response = chatModelClient.call(new Prompt(List.of(new UserMessage(promptText))));
-        if (response == null || response.getResult() == null || response.getResult().getOutput() == null) {
-            throw new IllegalArgumentException("模型未返回读工具决策");
-        }
-        return parser.parse(response.getResult().getOutput().getContent());
+        return parser.parse(plannerModelClient.call(promptText, properties.getParameterTimeoutSeconds()));
     }
 
-    private String buildPlanPrompt(String userText, List<AgentReadToolSpec> specs) {
+    private String buildPlanPrompt(String userText,
+                                   List<AgentReadToolSpec> specs,
+                                   boolean selectedIntent) {
         return """
-                你是教学管理平台的读工具规划器。根据用户输入决定是否需要读取平台数据。
+                你是教学管理平台的读工具参数规划器。%s
 
                 严格要求：
                 1. 只返回一个 JSON 对象，不要解释或 markdown。
@@ -148,39 +157,38 @@ public class SchemaDrivenReadToolPlanner {
 
                 readTools：
                 %s
-                """.formatted(userText, toJson(specs.stream().map(AgentReadToolSpec::toData).toList()));
+                """.formatted(
+                selectedIntent
+                        ? "上一步提供了唯一候选读工具；相关时返回 TOOL 并提取参数，不相关时返回 CHAT 进行安全否决。"
+                        : "判断是否读取平台数据。",
+                userText,
+                toJson(specs.stream().map(AgentReadToolSpec::toData).toList()));
     }
 
     private String buildRepairPrompt(String userText,
                                      List<AgentReadToolSpec> specs,
                                      LlmReadToolDecision previous,
-                                     List<String> errors) {
+                                     List<String> errors,
+                                     boolean selectedIntent) {
         return """
                 你上一次返回的读工具 JSON 未通过后端校验，请根据错误修正。
                 只能返回修正后的 JSON；toolName 必须来自 readTools；arguments 必须严格匹配所选工具的 schema。
+                %s
 
                 用户输入：%s
                 上一次输出：%s
                 校验错误：%s
                 readTools：%s
-                """.formatted(userText, toJson(previous), toJson(errors),
+                """.formatted(
+                selectedIntent ? "候选工具确实相关时返回 TOOL，不相关时可以返回 CHAT。" : "",
+                userText, toJson(previous), toJson(errors),
                 toJson(specs.stream().map(AgentReadToolSpec::toData).toList()));
     }
 
-    private String buildChatVerificationPrompt(String userText,
-                                               List<AgentReadToolSpec> specs,
-                                               LlmReadToolDecision previous) {
-        return """
-                你上一次将请求判断为 CHAT。请在最终确认前重新逐项检查 readTools。
-                查询平台当前数据、列表、状态、数量、统计、记录或业务实体时必须返回 TOOL；
-                只有普通聊天、通用知识问答或写操作才返回 CHAT。
-                只返回一个 JSON 对象；TOOL 的 arguments 必须严格匹配所选工具 schema。
-
-                用户输入：%s
-                上一次输出：%s
-                readTools：%s
-                """.formatted(userText, toJson(previous),
-                toJson(specs.stream().map(AgentReadToolSpec::toData).toList()));
+    private String normalize(String value) {
+        return value == null ? "" : value.trim().toLowerCase(java.util.Locale.ROOT)
+                .replace('-', '_')
+                .replace(' ', '_');
     }
 
     private String toJson(Object value) {
@@ -196,5 +204,9 @@ public class SchemaDrivenReadToolPlanner {
             return "未知错误";
         }
         return exception.getMessage().trim();
+    }
+
+    private long elapsedMillis(long startedNanos) {
+        return (System.nanoTime() - startedNanos) / 1_000_000L;
     }
 }

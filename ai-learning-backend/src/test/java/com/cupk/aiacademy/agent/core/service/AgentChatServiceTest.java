@@ -177,14 +177,14 @@ class AgentChatServiceTest {
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
         when(messageMapper.selectList(any())).thenReturn(List.of(message(1, "user", "讲一下递归")));
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(new ChatResponse(List.of(
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(new ChatResponse(List.of(
                 new Generation(new AssistantMessage("递归是一种函数调用自身的方式。"))
         )));
 
         service.chat(1, chatRequest("讲一下递归"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture());
+        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
         Prompt prompt = captor.getValue();
         assertEquals("你是 Java 课程助教。", prompt.getInstructions().get(0).getContent());
         OpenAiChatOptions options = (OpenAiChatOptions) prompt.getOptions();
@@ -203,12 +203,12 @@ class AgentChatServiceTest {
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
         when(messageMapper.selectList(any())).thenReturn(List.of());
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("讲一下递归"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture());
+        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
         OpenAiChatOptions options = (OpenAiChatOptions) captor.getValue().getOptions();
         assertNull(options.getModel());
         assertEquals(0.3, options.getTemperature());
@@ -225,13 +225,13 @@ class AgentChatServiceTest {
         when(messageMapper.selectList(any())).thenReturn(List.of());
         when(knowledgeContextProvider.retrieve(agent, "什么是递归"))
                 .thenReturn("[1] 递归是函数调用自身的方式。\n[2] 递归必须设置终止条件。");
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("什么是递归"));
 
         verify(knowledgeContextProvider).retrieve(agent, "什么是递归");
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture());
+        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
         String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
         assertTrue(systemPrompt.contains("知识库参考资料"));
         assertTrue(systemPrompt.contains("递归是函数调用自身的方式。"));
@@ -251,12 +251,12 @@ class AgentChatServiceTest {
         when(messageMapper.selectList(any())).thenReturn(List.of());
         when(schemaDrivenReadToolPlanner.planToolContext(agent, "推荐一下 Java 学习计划"))
                 .thenReturn("[learning_plan]\n建议每天学习 30 分钟");
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("推荐一下 Java 学习计划"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture());
+        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
         String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
         assertTrue(systemPrompt.contains("工具调用结果"));
         assertTrue(systemPrompt.contains("建议每天学习 30 分钟"));
@@ -1528,7 +1528,8 @@ class AgentChatServiceTest {
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
         when(messageMapper.selectList(any())).thenReturn(List.of(message(1, "user", "讲一下递归")));
-        when(chatModelClient.call(any(Prompt.class))).thenThrow(new RuntimeException("timeout"));
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class)))
+                .thenThrow(new RuntimeException("timeout"));
         AtomicInteger idSequence = new AtomicInteger(100);
         doAnswer(invocation -> {
             AgentMessage message = invocation.getArgument(0);
@@ -1561,12 +1562,12 @@ class AgentChatServiceTest {
                 message(3, "user", "recent-user"),
                 message(4, "assistant", "recent-assistant")
         ));
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("current-question"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture());
+        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
         List<?> instructions = captor.getValue().getInstructions();
         assertEquals(4, instructions.size());
         assertEquals("你是 Java 课程助教。", captor.getValue().getInstructions().get(0).getContent());
@@ -1586,12 +1587,12 @@ class AgentChatServiceTest {
                 message(2, "assistant", "too-long"),
                 message(3, "user", "xy")
         ));
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("current-question"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture());
+        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
         assertEquals(3, captor.getValue().getInstructions().size());
         assertEquals("你是 Java 课程助教。", captor.getValue().getInstructions().get(0).getContent());
         assertEquals("xy", captor.getValue().getInstructions().get(1).getContent());
