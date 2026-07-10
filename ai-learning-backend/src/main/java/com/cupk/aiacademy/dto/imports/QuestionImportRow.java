@@ -14,26 +14,14 @@ public class QuestionImportRow {
     @ExcelProperty("题干")
     private String content;
 
-    @ExcelProperty("题面")
-    private String stem;
-
     @ExcelProperty("难度")
     private String difficulty;
-
-    @ExcelProperty("分值")
-    private String score;
 
     @ExcelProperty("知识点")
     private String knowledgePoint;
 
     @ExcelProperty("解析")
     private String analysis;
-
-    @ExcelProperty("选项")
-    private String options;
-
-    @ExcelProperty("选项（单选题）")
-    private String singleChoiceOptions;
 
     @ExcelProperty("选项A")
     private String optionA;
@@ -53,12 +41,6 @@ public class QuestionImportRow {
     @ExcelProperty("选项F")
     private String optionF;
 
-    @ExcelProperty("答案")
-    private String answers;
-
     @ExcelProperty("正确答案")
-    private String correctAnswers;
-
-    @ExcelProperty("正确答案（单选题）")
-    private String singleChoiceAnswer;
+    private String answers;
 }

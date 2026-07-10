@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.annotation.ExcelProperty;
 import com.cupk.aiacademy.common.BusinessException;
 import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
 import org.apache.poi.ss.usermodel.DataFormatter;
 import org.apache.poi.ss.usermodel.DateUtil;
 import org.apache.poi.ss.usermodel.FormulaEvaluator;
@@ -104,8 +105,12 @@ public final class TabularFileSupport {
     }
 
     public static <T> List<TabularRow<T>> read(MultipartFile file, Class<T> rowType) {
+        return read(file, rowType, null);
+    }
+
+    public static <T> List<TabularRow<T>> read(MultipartFile file, Class<T> rowType, String sheetName) {
         Format format = importFormat(file);
-        return format == Format.CSV ? readCsv(file, rowType) : readExcel(file, rowType);
+        return format == Format.CSV ? readCsv(file, rowType) : readExcel(file, rowType, sheetName);
     }
 
     public static <T> byte[] write(String format, Class<T> rowType, List<T> rows) {
@@ -120,12 +125,17 @@ public final class TabularFileSupport {
         return new ExportFile(bytes, baseName + "." + resolvedFormat.extension(), resolvedFormat.contentType());
     }
 
-    private static <T> List<TabularRow<T>> readExcel(MultipartFile file, Class<T> rowType) {
+    private static <T> List<TabularRow<T>> readExcel(MultipartFile file, Class<T> rowType, String sheetName) {
         try (InputStream input = file.getInputStream(); Workbook workbook = WorkbookFactory.create(input)) {
             if (workbook.getNumberOfSheets() == 0) {
                 throw new BusinessException("Excel内容不能为空");
             }
-            Sheet sheet = workbook.getSheetAt(0);
+            Sheet sheet = sheetName == null || sheetName.isBlank()
+                    ? workbook.getSheetAt(0)
+                    : workbook.getSheet(sheetName);
+            if (sheet == null) {
+                throw new BusinessException("找不到“" + sheetName + "”工作表，请使用下载模板");
+            }
             int headerIndex = firstNonEmptyRow(sheet);
             if (headerIndex < 0) {
                 throw new BusinessException("Excel内容不能为空");
@@ -296,7 +306,8 @@ public final class TabularFileSupport {
         if (cell == null) {
             return "";
         }
-        if (DateUtil.isCellDateFormatted(cell)) {
+        if ((cell.getCellType() == CellType.NUMERIC || cell.getCellType() == CellType.FORMULA)
+                && DateUtil.isCellDateFormatted(cell)) {
             try {
                 return cell.getLocalDateTimeCellValue().format(DATE_TIME_FORMATTER);
             } catch (RuntimeException ignored) {

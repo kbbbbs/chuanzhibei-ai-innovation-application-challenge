@@ -263,7 +263,7 @@ class ApiRepairRegressionTest {
                         .content("{\"homeworkId\":1,\"submitContent\":\"  \",\"attachmentUrl\":\"\"}")))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.code").value("410"))
-                .andExpect(jsonPath("$.msg").value("旧作业写入接口已停用，请使用统一评测（HOMEWORK）流程。"));
+                .andExpect(jsonPath("$.msg").value("旧作业写入接口已停用，请使用新的作业评测流程。"));
     }
 
     @Test
@@ -279,7 +279,7 @@ class ApiRepairRegressionTest {
         mockMvc.perform(authed(post("/homeworks").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.code").value("410"))
-                .andExpect(jsonPath("$.msg").value("旧作业写入接口已停用，请使用统一评测（HOMEWORK）流程。"));
+                .andExpect(jsonPath("$.msg").value("旧作业写入接口已停用，请使用新的作业评测流程。"));
         mockMvc.perform(authed(put("/homeworks/1").contentType(MediaType.APPLICATION_JSON).content("{}")))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.code").value("410"));
@@ -355,6 +355,21 @@ class ApiRepairRegressionTest {
                         .content("{\"studentId\":3,\"classId\":1,\"courseId\":1,\"teacherId\":2,\"gradeName\":\"期末\",\"sourceType\":\"bad_source\"}")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.code").value("400"));
+    }
+
+    @Test
+    void courseEnableMakesOwnedCourseAvailableToStudents() throws Exception {
+        Course course = new Course();
+        course.setId(1);
+        course.setStatus(0);
+        when(courseMapper.selectById(1)).thenReturn(course);
+        when(courseMapper.updateById(course)).thenReturn(1);
+
+        mockMvc.perform(authed(put("/courses/1/enable")))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code").value("200"));
+
+        org.junit.jupiter.api.Assertions.assertEquals(1, course.getStatus());
     }
 
     @Test

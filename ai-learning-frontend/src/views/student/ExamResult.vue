@@ -71,6 +71,8 @@ import { enumName, normalizeStatus } from '@/utils/apiHelpers'
 
 const route = useRoute()
 const submissionId = computed(() => Number(route.params.submissionId))
+const isHomework = computed(() => route.query.assessmentType === 'HOMEWORK')
+const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
 const loading = ref(false)
 const submission = ref({
@@ -140,11 +142,14 @@ const formatCorrectAnswer = (answer) => {
 const loadSubmission = async () => {
   loading.value = true
   try {
-    const res = await request.get(`/api/submissions/${submissionId.value}/student`)
+    const res = await request.get(`${submissionApi.value}/${submissionId.value}/student`)
     if (res.code === '200') {
       submission.value = mapSubmission(res.data)
 
-      exam.value = { title: submission.value.examName || `考试${submission.value.examId}` }
+      exam.value = {
+        title: submission.value.homeworkName || submission.value.examName ||
+          `${isHomework.value ? '作业' : '考试'}${submission.value.homeworkId ?? submission.value.examId}`
+      }
     }
   } catch (e) {
     // 全局异常已由 request.js 提示

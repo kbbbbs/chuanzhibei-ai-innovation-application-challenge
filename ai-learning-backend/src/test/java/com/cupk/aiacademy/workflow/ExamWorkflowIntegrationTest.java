@@ -8,7 +8,6 @@ import com.cupk.aiacademy.common.QuestionType;
 import com.cupk.aiacademy.common.RecordStatus;
 import com.cupk.aiacademy.common.SubmissionStatus;
 import com.cupk.aiacademy.common.AuthUtils;
-import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
 import com.cupk.aiacademy.dto.PaperRequestDTO;
@@ -16,6 +15,11 @@ import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.SubmissionRequestsDTO;
 import com.cupk.aiacademy.dto.SubmissionResponseDTO;
 import com.cupk.aiacademy.service.ExamService;
+import com.cupk.aiacademy.service.ExamLifecycleScheduler;
+import com.cupk.aiacademy.service.ExamResultService;
+import com.cupk.aiacademy.service.HomeworkAssessmentService;
+import com.cupk.aiacademy.service.HomeworkPaperService;
+import com.cupk.aiacademy.service.HomeworkSubmissionService;
 import com.cupk.aiacademy.service.PaperService;
 import com.cupk.aiacademy.service.QuestionService;
 import com.cupk.aiacademy.service.SubmissionService;
@@ -57,11 +61,31 @@ class ExamWorkflowIntegrationTest {
     private SubmissionService submissionService;
 
     @Autowired
+    private HomeworkPaperService homeworkPaperService;
+
+    @Autowired
+    private HomeworkAssessmentService homeworkAssessmentService;
+
+    @Autowired
+    private HomeworkSubmissionService homeworkSubmissionService;
+
+    @Autowired
+    private ExamLifecycleScheduler examLifecycleScheduler;
+
+    @Autowired
+    private ExamResultService examResultService;
+
+    @Autowired
     private JdbcTemplate jdbcTemplate;
 
     @BeforeEach
     void seedData() {
         UserContext.clear();
+        jdbcTemplate.update("DELETE FROM t_homework_answer");
+        jdbcTemplate.update("DELETE FROM t_homework_record");
+        jdbcTemplate.update("DELETE FROM t_homework_session");
+        jdbcTemplate.update("DELETE FROM t_homework_paper_question");
+        jdbcTemplate.update("DELETE FROM t_homework_paper");
         jdbcTemplate.update("DELETE FROM t_exam_answer");
         jdbcTemplate.update("DELETE FROM t_exam_record");
         jdbcTemplate.update("DELETE FROM t_exam_session");
@@ -192,6 +216,82 @@ class ExamWorkflowIntegrationTest {
     }
 
     @Test
+    void createsEndTimeFromStartTimeAndDurationAndRejectsExpiredSubmission() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        assertEquals(exam.getStartTime().plusMinutes(exam.getDurationMinutes()), exam.getEndTime());
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        jdbcTemplate.update("UPDATE t_exam_session SET end_time = ? WHERE id = ?", LocalDateTime.now().minusSeconds(1), exam.getId());
+
+        assertThrows(RuntimeException.class, () -> submissionService.submit(submission.getId()));
+    }
+
+    @Test
+    void closingExamPreventsAnInProgressSubmissionFromBeingSubmitted() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+
+        loginAsTeacher();
+        examService.close(exam.getId());
+
+        loginAsStudent();
+        assertThrows(RuntimeException.class, () -> submissionService.submit(submission.getId()));
+    }
+
+    @Test
+    void submitsCompletedExamResultsWithClassScoresAndStatistics() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        SubmissionRequestsDTO.AnswerItem answer = new SubmissionRequestsDTO.AnswerItem();
+        answer.setPaperQuestionId(submission.getAnswers().getFirst().getPaperQuestionId());
+        answer.setSelectedOptionKeys(List.of("A"));
+        SubmissionRequestsDTO.SaveAnswerRequest saveRequest = new SubmissionRequestsDTO.SaveAnswerRequest();
+        saveRequest.setAnswers(List.of(answer));
+        submissionService.saveAnswers(submission.getId(), saveRequest);
+        submissionService.submit(submission.getId());
+
+        loginAsTeacher();
+        jdbcTemplate.update("UPDATE t_exam_session SET end_time = ? WHERE id = ?", LocalDateTime.now().minusSeconds(1), exam.getId());
+        var results = examResultService.submit(exam.getId());
+
+        assertEquals(ExamStatus.RESULTS_SUBMITTED, results.getStatus());
+        assertEquals(1, results.getStudentScores().size());
+        assertEquals(new BigDecimal("5.00"), results.getAverageScore());
+        assertEquals(new BigDecimal("100.00"), results.getPassRate());
+        assertEquals(submission.getId(), results.getStudentScores().getFirst().getSubmissionId());
+    }
+
+    @Test
+    void scheduledLifecycleStartsDueAssessmentsAndClosesExpiredAssessments() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        LocalDateTime now = LocalDateTime.now();
+
+        jdbcTemplate.update(
+                "UPDATE t_exam_session SET start_time = ?, end_time = ?, status = ? WHERE id = ?",
+                now.minusSeconds(1), now.plusMinutes(30), ExamStatus.DRAFT.getCode(), exam.getId());
+        examService.synchronizeScheduledStatuses(now);
+        assertEquals(ExamStatus.PUBLISHED.getCode(), examService.getEntityById(exam.getId()).getStatus());
+
+        jdbcTemplate.update(
+                "UPDATE t_exam_session SET end_time = ? WHERE id = ?",
+                now.minusSeconds(1), exam.getId());
+        examService.synchronizeScheduledStatuses(now);
+        assertEquals(ExamStatus.CLOSED.getCode(), examService.getEntityById(exam.getId()).getStatus());
+    }
+
+    @Test
     void startShouldPreventDuplicateByCandidateOrStudentIdentity() {
         loginAsTeacher();
         var exam = createExam(ExamStatus.DRAFT);
@@ -225,7 +325,9 @@ class ExamWorkflowIntegrationTest {
         assertThrows(PaperPreflightWarningException.class, () -> paperService.create(request));
 
         request.setIgnoreWarnings(true);
-        assertEquals(new BigDecimal("5"), paperService.create(request).getTotalScore());
+        var draft = paperService.create(request);
+        assertEquals(new BigDecimal("5"), draft.getTotalScore());
+        assertEquals(PaperStatus.PUBLISHED, paperService.publish(draft.getId()).getStatus());
     }
 
     @Test
@@ -255,16 +357,66 @@ class ExamWorkflowIntegrationTest {
     }
 
     @Test
-    void homeworkAssessmentUsesTheSameSessionWorkflowAndTypeFilter() {
+    void homeworkAssessmentUsesDedicatedTablesAndNeverWritesExamTables() {
         loginAsTeacher();
-        var homework = createExam(ExamStatus.DRAFT, AssessmentType.HOMEWORK);
+        var homework = createHomework(ExamStatus.DRAFT);
 
-        assertEquals(AssessmentType.HOMEWORK, homework.getAssessmentType());
-        assertEquals(List.of(homework.getId()), examService.list(null, null, null, AssessmentType.HOMEWORK)
-                .stream()
-                .map(item -> item.getId())
-                .toList());
-        assertEquals(List.of(), examService.list(null, null, null, AssessmentType.EXAM));
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_homework_paper", Integer.class));
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_homework_session", Integer.class));
+        assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_exam_paper", Integer.class));
+        assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_exam_session", Integer.class));
+
+        homeworkAssessmentService.publish(homework.getId());
+        loginAsStudent();
+        homeworkSubmissionService.start(homework.getId(), "student-001");
+
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_homework_record", Integer.class));
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_homework_answer", Integer.class));
+        assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_exam_record", Integer.class));
+        assertEquals(0, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_exam_answer", Integer.class));
+    }
+
+    @Test
+    void scheduledLifecycleStartsAndClosesHomeworkSessions() {
+        loginAsTeacher();
+        var homework = createHomework(ExamStatus.DRAFT);
+        var now = LocalDateTime.now();
+
+        jdbcTemplate.update(
+                "UPDATE t_homework_session SET start_time = ?, end_time = ?, status = ? WHERE id = ?",
+                now.minusSeconds(1), now.plusMinutes(30), ExamStatus.DRAFT.getCode(), homework.getId());
+        examLifecycleScheduler.synchronizeScheduledStatuses();
+        assertEquals(ExamStatus.PUBLISHED.getCode(), homeworkAssessmentService.getEntityById(homework.getId()).getStatus());
+
+        jdbcTemplate.update(
+                "UPDATE t_homework_session SET end_time = ? WHERE id = ?",
+                now.minusSeconds(1), homework.getId());
+        examLifecycleScheduler.synchronizeScheduledStatuses();
+        assertEquals(ExamStatus.CLOSED.getCode(), homeworkAssessmentService.getEntityById(homework.getId()).getStatus());
+    }
+
+    @Test
+    void shouldReadLegacySubmissionWithoutQuestionSnapshot() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        jdbcTemplate.update("UPDATE t_exam_answer SET question_snapshot = NULL WHERE exam_record_id = ?", submission.getId());
+
+        var submissions = submissionService.list(null, null, (long) STUDENT_ID);
+
+        assertEquals(1, submissions.size());
+        assertEquals("Java 的编译结果是？", submissions.get(0).getAnswers().get(0).getQuestionContent());
+        assertEquals(QuestionType.SINGLE_CHOICE, submissions.get(0).getAnswers().get(0).getQuestionType());
+
+        var studentView = submissionService.getStudentSubmissionById(submission.getId());
+        assertEquals(2, studentView.getAnswers().get(0).getOptions().size());
+
+        loginAsTeacher();
+        var gradingView = submissionService.getGradingSubmissionById(submission.getId());
+        assertEquals("A", gradingView.getAnswers().get(0).getReferenceAnswer());
     }
 
     @Test
@@ -320,12 +472,20 @@ class ExamWorkflowIntegrationTest {
     }
 
     private com.cupk.aiacademy.dto.ExamResponseDTO createExam(ExamStatus status) {
-        return createExam(status, AssessmentType.EXAM);
-    }
-
-    private com.cupk.aiacademy.dto.ExamResponseDTO createExam(ExamStatus status, AssessmentType assessmentType) {
         var single = questionService.create(buildSingleChoiceQuestion());
 
+        PaperRequestDTO paperRequest = buildPaperRequest(single.getId());
+        var paper = paperService.create(paperRequest);
+        return createAssessment(examService, status, paper.getId());
+    }
+
+    private com.cupk.aiacademy.dto.ExamResponseDTO createHomework(ExamStatus status) {
+        var single = questionService.create(buildSingleChoiceQuestion());
+        var paper = homeworkPaperService.create(buildPaperRequest(single.getId()));
+        return createAssessment(homeworkAssessmentService, status, paper.getId());
+    }
+
+    private PaperRequestDTO buildPaperRequest(Long questionId) {
         PaperRequestDTO paperRequest = new PaperRequestDTO();
         paperRequest.setCourseId(COURSE_ID);
         paperRequest.setName("Java 单选试卷");
@@ -335,25 +495,35 @@ class ExamWorkflowIntegrationTest {
         paperRequest.setIgnoreWarnings(true);
 
         PaperRequestDTO.PaperQuestionRequest item = new PaperRequestDTO.PaperQuestionRequest();
-        item.setQuestionId(single.getId());
+        item.setQuestionId(questionId);
         item.setSortOrder(1);
         item.setScore(new BigDecimal("5.00"));
         item.setRequiredAnswer(true);
         paperRequest.setQuestions(List.of(item));
 
-        var paper = paperService.create(paperRequest);
+        return paperRequest;
+    }
 
+    private com.cupk.aiacademy.dto.ExamResponseDTO createAssessment(ExamService service, ExamStatus status, Long paperId) {
+        return createAssessmentInternal(status, paperId, service::create);
+    }
+
+    private com.cupk.aiacademy.dto.ExamResponseDTO createAssessment(HomeworkAssessmentService service, ExamStatus status, Long paperId) {
+        return createAssessmentInternal(status, paperId, service::create);
+    }
+
+    private com.cupk.aiacademy.dto.ExamResponseDTO createAssessmentInternal(ExamStatus status, Long paperId,
+                                                                              java.util.function.Function<ExamRequestDTO, com.cupk.aiacademy.dto.ExamResponseDTO> create) {
         ExamRequestDTO examRequest = new ExamRequestDTO();
         examRequest.setClassId(CLASS_ID);
         examRequest.setName("Java 状态规则考试");
-        examRequest.setPaperId(paper.getId());
+        examRequest.setPaperId(paperId);
         examRequest.setDescription("状态规则测试");
         examRequest.setStartTime(LocalDateTime.now().minusMinutes(10));
         examRequest.setEndTime(LocalDateTime.now().plusHours(2));
         examRequest.setDurationMinutes(60);
         examRequest.setStatus(status);
-        examRequest.setAssessmentType(assessmentType);
-        return examService.create(examRequest);
+        return create.apply(examRequest);
     }
 
     private QuestionRequestDTO buildSingleChoiceQuestion() {

@@ -1,16 +1,17 @@
 import request from '@/utils/request'
 
-export const previewImport = (type, file) => {
+export const previewImport = (type, file, params = {}) => {
   const formData = new FormData()
   formData.append('file', file)
   return request.post(`/api/imports/${type}/preview`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
+    params,
     silentError: true
   })
 }
 
-export const confirmImport = (type, items) => {
-  return request.post(`/api/imports/${type}/confirm`, { items }, { silentError: true })
+export const confirmImport = (type, payload) => {
+  return request.post(`/api/imports/${type}/confirm`, payload, { silentError: true })
 }
 
 export const downloadImportTemplate = (type) => {

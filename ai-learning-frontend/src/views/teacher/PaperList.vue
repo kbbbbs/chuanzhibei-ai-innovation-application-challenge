@@ -39,9 +39,10 @@
             <el-tag v-else type="info">草稿</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" width="270" fixed="right">
           <template #default="{ row }">
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.status === 0" size="small" type="success" @click="handleEnable(row)">启用</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
             <el-button size="small" type="success" @click="handleCopy(row)">拷贝</el-button>
           </template>
@@ -201,17 +202,20 @@
           </div>
           <el-button size="small" @click="addCustomQuestionOption">添加选项</el-button>
         </el-form-item>
-        <el-form-item v-if="['single_choice', 'true_false'].includes(customQuestion.questionType)" label="正确答案" prop="correctAnswer">
+        <el-form-item v-if="['single_choice', 'true_false'].includes(customQuestion.questionType)" label="正确答案" prop="correctAnswer" required>
           <el-select v-model="customQuestion.correctAnswer" placeholder="请选择正确答案">
             <el-option v-for="(option, index) in customQuestion.options" :key="index" :label="option.text" :value="index" />
           </el-select>
         </el-form-item>
-        <el-form-item v-if="customQuestion.questionType === 'multiple_choice'" label="正确答案" prop="correctAnswers">
+        <el-form-item v-if="customQuestion.questionType === 'multiple_choice'" label="正确答案" prop="correctAnswers" required>
           <el-checkbox-group v-model="customQuestion.correctAnswers">
             <el-checkbox v-for="(option, index) in customQuestion.options" :key="index" :label="index">{{ option.text }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
-        <el-form-item v-if="['fill_blank', 'short_answer'].includes(customQuestion.questionType)" label="参考答案">
+        <el-form-item v-if="customQuestion.questionType === 'fill_blank'" label="正确答案" prop="referenceAnswer" required>
+          <el-input v-model="customQuestion.referenceAnswer" type="textarea" :rows="2" />
+        </el-form-item>
+        <el-form-item v-if="customQuestion.questionType === 'short_answer'" label="参考答案">
           <el-input v-model="customQuestion.referenceAnswer" type="textarea" :rows="2" />
         </el-form-item>
         <el-form-item label="知识点">
@@ -252,13 +256,15 @@
       v-model="importDialogVisible"
       type="papers"
       title="试卷导入"
+      :courses="courses"
       @imported="loadPapers"
     />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
@@ -270,6 +276,7 @@ import { currentUserId, enumName, getRecords, getTotal, normalizeStatus, paginat
 import request from '@/utils/request'
 
 const userStore = useUserStore()
+const route = useRoute()
 const { confirmDelete } = useConfirm()
 const formRef = ref(null)
 const customQuestionFormRef = ref(null)
@@ -302,6 +309,9 @@ const warningDialogVisible = ref(false)
 const preflightWarnings = ref([])
 const preflightSummary = ref(null)
 let customQuestionSequence = 0
+
+const isHomeworkPaper = computed(() => route.meta.assessmentType === 'HOMEWORK')
+const paperApi = computed(() => isHomeworkPaper.value ? '/api/homework-papers' : '/api/papers')
 
 const form = reactive({
   id: null,
@@ -352,6 +362,12 @@ const TYPE_TO_ENUM = {
 const ENUM_TO_TYPE = Object.fromEntries(
   Object.entries(TYPE_TO_ENUM).map(([k, v]) => [v, k])
 )
+
+const DIFFICULTY_TO_ENUM = {
+  easy: 'EASY',
+  medium: 'MEDIUM',
+  hard: 'HARD'
+}
 
 // ---- 状态映射 ----
 const STATUS_TO_ENUM = { 0: 'DRAFT', 1: 'PUBLISHED' }
@@ -413,7 +429,7 @@ const loadPapers = async () => {
     if (searchForm.courseId) {
       params.courseId = searchForm.courseId
     }
-    const res = await request.get('/api/papers', { params })
+    const res = await request.get(paperApi.value, { params })
     if (res.code === '200' && res.data) {
       const records = getRecords(res.data).map(mapPaperForDisplay)
       papers.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
@@ -610,6 +626,14 @@ const buildInlineQuestion = () => {
       answerContent: String.fromCharCode(65 + index),
       sortOrder: answerIndex + 1
     }))
+  } else if (type === 'fill_blank') {
+    if (!customQuestion.referenceAnswer.trim()) {
+      return null
+    }
+    answers = [{
+      answerContent: customQuestion.referenceAnswer.trim(),
+      sortOrder: 1
+    }]
   } else {
     answers = [{
       answerContent: customQuestion.referenceAnswer.trim() || '暂无参考答案',
@@ -687,7 +711,7 @@ const handleEdit = async (row) => {
     return
   }
   try {
-    const res = await request.get(`/api/papers/${row.id}`)
+    const res = await request.get(`${paperApi.value}/${row.id}`)
     if (res.code === '200' && res.data) {
       const data = res.data
       Object.assign(form, {
@@ -826,7 +850,7 @@ const errorMessage = (error, fallback) => {
 }
 
 const runPreflight = async () => {
-  const response = await request.post('/api/papers/preflight', buildRequestDTO(), { silent: true })
+  const response = await request.post(`${paperApi.value}/preflight`, buildRequestDTO(), { silent: true })
   if (response?.code !== '200') {
     throw new Error(response?.msg || '组卷检查失败')
   }
@@ -867,9 +891,9 @@ const savePaper = async (ignoreWarnings) => {
   try {
     let res
     if (form.id) {
-      res = await request.put(`/api/papers/${form.id}`, data, { silent: true })
+      res = await request.put(`${paperApi.value}/${form.id}`, data, { silent: true })
     } else {
-      res = await request.post('/api/papers', data, { silent: true })
+      res = await request.post(paperApi.value, data, { silent: true })
     }
 
     if (res.code === '200') {
@@ -897,7 +921,7 @@ const handleDelete = async (row) => {
     const confirmed = await confirmDelete('确认删除此试卷？')
     if (!confirmed) return
     deleteLoading.value = true
-    const res = await request.delete(`/api/papers/${row.id}`)
+    const res = await request.delete(`${paperApi.value}/${row.id}`)
     if (res.code === '200') {
       ElMessage.success('删除成功')
       loadPapers()
@@ -909,9 +933,21 @@ const handleDelete = async (row) => {
   }
 }
 
+const handleEnable = async (row) => {
+  try {
+    const res = await request.post(`${paperApi.value}/${row.id}/publish`)
+    if (res.code === '200') {
+      ElMessage.success('试卷已启用')
+      loadPapers()
+    }
+  } catch (e) {
+    // 全局已提示
+  }
+}
+
 const handleCopy = async (row) => {
   try {
-    const res = await request.get(`/api/papers/${row.id}`)
+    const res = await request.get(`${paperApi.value}/${row.id}`)
     if (res.code === '200' && res.data) {
       const data = res.data
       // 填充表单（标题加副本后缀，状态设为草稿）
@@ -949,6 +985,14 @@ onMounted(() => {
   loadCourses()
   loadPapers()
 })
+
+watch(
+  () => route.name,
+  () => {
+    pagination.pageNum = 1
+    loadPapers()
+  }
+)
 </script>
 
 <style scoped>

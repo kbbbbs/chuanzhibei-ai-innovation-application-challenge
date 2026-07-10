@@ -1,7 +1,6 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.ApiResponse;
-import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.dto.StudentSubmissionResponseDTO;
 import com.cupk.aiacademy.dto.SubmissionRequestsDTO;
 import com.cupk.aiacademy.dto.SubmissionResponseDTO;
@@ -62,9 +61,8 @@ public class SubmissionController {
     public ApiResponse<List<SubmissionResponseDTO>> list(
             @RequestParam(required = false) Long examId,
             @RequestParam(required = false) String candidateId,
-            @RequestParam(required = false) Long studentId,
-            @RequestParam(required = false) AssessmentType assessmentType) {
-        return ApiResponse.success(submissionService.list(examId, candidateId, studentId, assessmentType));
+            @RequestParam(required = false) Long studentId) {
+        return ApiResponse.success(submissionService.list(examId, candidateId, studentId));
     }
 
     @PostMapping("/api/submissions/{id}/grade-subjective")

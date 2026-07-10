@@ -76,11 +76,13 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
+import ScoreTrendChart from '@/components/charts/ScoreTrendChart.vue'
+import GradeDistributionChart from '@/components/charts/GradeDistributionChart.vue'
+import { getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
@@ -123,15 +125,20 @@ const distData = computed(() => {
 const loadGrades = async () => {
   loading.value = true
   try {
-    // Get all my submissions
-    const subRes = await request.get('/api/submissions', {
-      params: { studentId: userStore.userId, pageSize: 100 }
-    })
-
-    if (subRes.code === '200') {
-      const submissions = getRecords(subRes.data).map(sub => ({
+    const params = { studentId: userStore.userId, pageSize: 100 }
+    const [examRes, homeworkRes] = await Promise.all([
+      request.get('/api/submissions', { params }),
+      request.get('/api/homework-submissions', { params })
+    ])
+    const responses = [
+      { response: examRes, assessmentType: 'EXAM' },
+      { response: homeworkRes, assessmentType: 'HOMEWORK' }
+    ].filter(({ response }) => response.code === '200')
+    const submissions = responses.flatMap(({ response, assessmentType }) =>
+      getRecords(response.data).map(sub => ({
         ...sub,
-        examTitle: sub.examName || `考试${sub.examId}`,
+        assessmentType,
+        examTitle: sub.examName || `${assessmentType === 'HOMEWORK' ? '作业' : '考试'}${sub.examId}`,
         courseTitle: '-',
         submitTime: sub.submittedAt,
         status: normalizeStatus(sub.status, {
@@ -141,10 +148,10 @@ const loadGrades = async () => {
           GRADED: 2,
         }, 0),
       }))
+    )
 
-      allGrades.value = submissions.filter(sub => sub.status >= 1)
-      normalizePage()
-    }
+    allGrades.value = submissions.filter(sub => sub.status >= 1)
+    normalizePage()
   } catch (e) {
     // 全局异常已由 request.js 提示
   } finally {
@@ -164,7 +171,11 @@ const handleSizeChange = () => {
 }
 
 const handleView = (row) => {
-  router.push({ name: 'ExamResult', params: { submissionId: row.id } })
+  router.push({
+    name: 'ExamResult',
+    params: { submissionId: row.id },
+    query: row.assessmentType === 'HOMEWORK' ? { assessmentType: 'HOMEWORK' } : undefined
+  })
 }
 
 onMounted(() => {

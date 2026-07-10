@@ -1,7 +1,6 @@
 package com.cupk.aiacademy.dto;
 
 import com.cupk.aiacademy.common.ExamStatus;
-import com.cupk.aiacademy.common.AssessmentType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -21,7 +20,6 @@ public class ExamResponseDTO {
     private LocalDateTime endTime;
     private Integer durationMinutes;
     private ExamStatus status;
-    private AssessmentType assessmentType;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

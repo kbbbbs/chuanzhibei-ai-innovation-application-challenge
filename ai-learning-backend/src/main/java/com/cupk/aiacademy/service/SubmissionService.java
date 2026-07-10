@@ -2,7 +2,6 @@ package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.BusinessException;
-import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.common.ExamStatus;
 import com.cupk.aiacademy.common.JudgeStatus;
 import com.cupk.aiacademy.common.QuestionType;
@@ -163,7 +162,7 @@ public class SubmissionService {
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷状态不允许交卷");
         }
-        boolean timeout = checkDuration(record, false);
+        checkDuration(record, true);
         BigDecimal objectiveScore = BigDecimal.ZERO;
         boolean hasSubjective = false;
         for (ExamAnswer answer : listAnswers(record.getId())) {
@@ -193,7 +192,7 @@ public class SubmissionService {
         record.setSubmitTime(now);
         record.setTotalScore(objectiveScore.add(record.getSubjectiveScore() == null ? BigDecimal.ZERO : record.getSubjectiveScore()));
         record.setStatus(hasSubjective ? SubmissionStatus.PENDING_MANUAL_REVIEW.getCode() : SubmissionStatus.GRADED.getCode());
-        record.setComment(timeout ? timeoutComment(record, now) : record.getComment());
+        record.setComment(record.getComment());
         record.setUpdateTime(now);
         recordMapper.updateById(record);
         return toResponse(record);
@@ -277,11 +276,6 @@ public class SubmissionService {
 
     @Transactional(readOnly = true)
     public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId) {
-        return list(examId, candidateId, studentId, null);
-    }
-
-    @Transactional(readOnly = true)
-    public List<SubmissionResponseDTO> list(Long examId, String candidateId, Long studentId, AssessmentType assessmentType) {
         QueryWrapper<ExamRecord> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
         if (permissionService.isStudent(user)) {
@@ -305,25 +299,6 @@ public class SubmissionService {
             }
         } else if (examId != null) {
             query.eq("exam_session_id", toInt(examId, "考试ID"));
-        }
-        if (assessmentType != null) {
-            if (examId != null) {
-                ExamSession exam = examService.getEntityById(examId);
-                if (AssessmentType.fromStorageValue(exam.getAssessmentType()) != assessmentType) {
-                    throw new BusinessException("答卷不属于指定评测类型");
-                }
-            } else {
-                QueryWrapper<ExamSession> typeQuery = new QueryWrapper<>();
-                typeQuery.eq("assessment_type", assessmentType.name());
-                List<Integer> typedSessionIds = examSessionMapper.selectList(typeQuery).stream()
-                        .map(ExamSession::getId)
-                        .filter(Objects::nonNull)
-                        .toList();
-                if (typedSessionIds.isEmpty()) {
-                    return List.of();
-                }
-                query.in("exam_session_id", typedSessionIds);
-            }
         }
         if (!permissionService.isStudent(user) && !isBlank(candidateId)) {
             query.eq("candidate_id", candidateId);
@@ -467,13 +442,42 @@ public class SubmissionService {
 
     private QuestionSnapshot snapshotOf(ExamAnswer answer) {
         if (isBlank(answer.getQuestionSnapshot())) {
-            throw new BusinessException("答题记录缺少题目快照: " + answer.getId());
+            return legacySnapshotOf(answer);
         }
         try {
             return objectMapper.readValue(answer.getQuestionSnapshot(), QuestionSnapshot.class);
         } catch (Exception exception) {
             throw new BusinessException("答题记录的题目快照无效: " + answer.getId());
         }
+    }
+
+    /**
+     * Historical answer rows predate immutable question snapshots. Build a read-only
+     * compatibility view from the remaining question and paper-question records.
+     */
+    private QuestionSnapshot legacySnapshotOf(ExamAnswer answer) {
+        Question question = questionService.getEntityById(toLong(answer.getQuestionId()));
+        ExamPaperQuestion paperQuestion = answer.getPaperQuestionId() == null
+                ? null
+                : paperQuestionMapper.selectById(answer.getPaperQuestionId());
+        return new QuestionSnapshot(
+                QuestionType.fromStorageValue(question.getQuestionType()),
+                question.getTitle(),
+                questionService.parseOptions(question).stream()
+                        .sorted(Comparator.comparing(QuestionResponseDTO.OptionResponse::getSortOrder))
+                        .map(option -> new SnapshotOption(option.getOptionKey(), option.getOptionContent(), option.getSortOrder()))
+                        .toList(),
+                question.getAnalysis(),
+                paperQuestion == null
+                        ? (question.getScore() == null ? BigDecimal.ZERO : question.getScore())
+                        : scoreOf(paperQuestion),
+                questionService.parseAnswers(question).stream()
+                        .sorted(Comparator.comparing(QuestionResponseDTO.AnswerResponse::getSortOrder))
+                        .map(QuestionResponseDTO.AnswerResponse::getAnswerContent)
+                        .toList(),
+                paperQuestion == null ? null : paperQuestion.getSortOrder(),
+                paperQuestion == null || paperQuestion.getRequiredAnswer() == null || paperQuestion.getRequiredAnswer() == 1
+        );
     }
 
     private ExamRecord findExistingRecord(Integer examId, String candidateId, Long studentId) {
@@ -552,6 +556,12 @@ public class SubmissionService {
         ExamSession exam = examSessionMapper.selectById(record.getExamSessionId());
         if (record.getStartTime() == null || exam == null || exam.getDuration() == null || exam.getDuration() <= 0) {
             return false;
+        }
+        if (ExamStatus.fromCode(exam.getStatus()) != ExamStatus.PUBLISHED) {
+            if (rejectOnTimeout) {
+                throw new BusinessException("考试已结束，无法继续作答或交卷");
+            }
+            return true;
         }
         LocalDateTime now = LocalDateTime.now();
         LocalDateTime durationCutoff = record.getStartTime().plusMinutes(exam.getDuration());

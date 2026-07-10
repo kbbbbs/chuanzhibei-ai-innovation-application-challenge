@@ -2,7 +2,6 @@ package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.BusinessException;
-import com.cupk.aiacademy.common.AssessmentType;
 import com.cupk.aiacademy.common.ExamStatus;
 import com.cupk.aiacademy.common.PaperStatus;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
@@ -78,11 +77,6 @@ public class ExamService {
 
     @Transactional(readOnly = true)
     public List<ExamResponseDTO> list(Long teacherId, String keyword, Long classId) {
-        return list(teacherId, keyword, classId, null);
-    }
-
-    @Transactional(readOnly = true)
-    public List<ExamResponseDTO> list(Long teacherId, String keyword, Long classId, AssessmentType assessmentType) {
         QueryWrapper<ExamSession> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
         if (permissionService.isTeacher(user)) {
@@ -109,9 +103,6 @@ public class ExamService {
         }
         if (keyword != null && !keyword.trim().isEmpty()) {
             query.like("title", keyword.trim());
-        }
-        if (assessmentType != null) {
-            query.eq("assessment_type", assessmentType.name());
         }
         query.orderByDesc("id");
         return examSessionMapper.selectList(query).stream().map(this::toResponse).toList();
@@ -156,12 +147,35 @@ public class ExamService {
         return toResponse(exam);
     }
 
+    @Transactional
+    public void synchronizeScheduledStatuses() {
+        synchronizeScheduledStatuses(LocalDateTime.now());
+    }
+
+    @Transactional
+    public void synchronizeScheduledStatuses(LocalDateTime now) {
+        QueryWrapper<ExamSession> expiredQuery = new QueryWrapper<>();
+        expiredQuery.notIn("status", ExamStatus.CLOSED.getCode(), ExamStatus.RESULTS_SUBMITTED.getCode())
+                .le("end_time", now);
+        transitionStatuses(expiredQuery, ExamStatus.CLOSED, now);
+
+        QueryWrapper<ExamSession> dueQuery = new QueryWrapper<>();
+        dueQuery.eq("status", ExamStatus.DRAFT.getCode())
+                .le("start_time", now)
+                .gt("end_time", now);
+        transitionStatuses(dueQuery, ExamStatus.PUBLISHED, now);
+    }
+
     public ExamSession getEntityById(Long id) {
         ExamSession exam = examSessionMapper.selectById(toInt(id, "考试ID"));
         if (exam == null) {
             throw new BusinessException("考试不存在: " + id);
         }
         return exam;
+    }
+
+    void updateResultStatus(ExamSession exam) {
+        examSessionMapper.updateById(exam);
     }
 
     public ExamResponseDTO toResponse(ExamSession exam) {
@@ -183,7 +197,6 @@ public class ExamService {
         response.setEndTime(exam.getEndTime());
         response.setDurationMinutes(exam.getDuration());
         response.setStatus(ExamStatus.fromCode(exam.getStatus()));
-        response.setAssessmentType(AssessmentType.fromStorageValue(exam.getAssessmentType()));
         response.setCreatedAt(exam.getCreateTime());
         response.setUpdatedAt(exam.getUpdateTime());
         return response;
@@ -195,12 +208,6 @@ public class ExamService {
         }
         if (request.getStartTime() == null) {
             throw new BusinessException("考试开始时间不能为空");
-        }
-        if (request.getEndTime() == null) {
-            throw new BusinessException("考试结束时间不能为空");
-        }
-        if (request.getEndTime().isBefore(request.getStartTime())) {
-            throw new BusinessException("考试结束时间不能早于开始时间");
         }
         if (request.getDurationMinutes() == null || request.getDurationMinutes() <= 0) {
             throw new BusinessException("考试时长必须大于0");
@@ -266,10 +273,17 @@ public class ExamService {
         exam.setTitle(request.getName());
         exam.setDescription(request.getDescription());
         exam.setStartTime(request.getStartTime());
-        exam.setEndTime(request.getEndTime());
+        exam.setEndTime(request.getStartTime().plusMinutes(request.getDurationMinutes()));
         exam.setDuration(request.getDurationMinutes());
         exam.setStatus(request.getStatus().getCode());
-        exam.setAssessmentType((request.getAssessmentType() == null ? AssessmentType.EXAM : request.getAssessmentType()).name());
+    }
+
+    private void transitionStatuses(QueryWrapper<ExamSession> query, ExamStatus targetStatus, LocalDateTime now) {
+        for (ExamSession exam : examSessionMapper.selectList(query)) {
+            exam.setStatus(targetStatus.getCode());
+            exam.setUpdateTime(now);
+            examSessionMapper.updateById(exam);
+        }
     }
 
     private Integer toNullableInt(Long value, String fieldName) {

@@ -5,7 +5,6 @@
         <div class="card-header">
             <span>{{ assessmentLabel }}管理</span>
           <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
             <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
             <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">发布{{ assessmentLabel }}</el-button>
@@ -43,8 +42,9 @@
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag v-if="row.status === 1" type="success">进行中</el-tag>
-            <el-tag v-else-if="row.status === 2" type="info">已结束</el-tag>
+            <el-tag v-if="row.status === 3" type="success">成绩已提交</el-tag>
+            <el-tag v-else-if="isExamEnded(row)" type="info">已结束</el-tag>
+            <el-tag v-else-if="isExamStarted(row)" type="success">进行中</el-tag>
             <el-tag v-else type="warning">未开始</el-tag>
           </template>
         </el-table-column>
@@ -52,7 +52,9 @@
           <template #default="{ row }">
             <el-button size="small" @click="handleGrading(row)">批改</el-button>
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-if="row.status === 1" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
+            <el-button v-if="row.status === 1 && isExamStarted(row) && !isExamEnded(row)" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
+            <el-button v-if="!isHomework && isExamEnded(row) && row.status !== 3" size="small" type="primary" @click="handleSubmitResults(row)">提交</el-button>
+            <el-button v-if="!isHomework && row.status === 3" size="small" type="primary" @click="handleResultDetails(row)">详情</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -109,17 +111,11 @@
               <el-form-item label="开始时间" prop="startTime">
                 <el-date-picker v-model="form.startTime" type="datetime" placeholder="选择开始时间" />
               </el-form-item>
-              <el-form-item label="结束时间" prop="endTime">
-                <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择结束时间" />
-              </el-form-item>
               <el-form-item label="考试说明">
                 <el-input v-model="form.description" type="textarea" :rows="3" />
               </el-form-item>
               <el-form-item label="状态">
-                <el-radio-group v-model="form.status">
-                  <el-radio :label="0">未开始</el-radio>
-                  <el-radio :label="1">进行中</el-radio>
-                </el-radio-group>
+                <el-text>到达开始时间后自动开始</el-text>
               </el-form-item>
             </template>
 
@@ -130,8 +126,8 @@
                 <el-descriptions-item label="教学班">{{ selectedClassName }}</el-descriptions-item>
                 <el-descriptions-item label="时长">{{ form.durationMinutes }} 分钟</el-descriptions-item>
                 <el-descriptions-item label="开始时间">{{ form.startTime ? new Date(form.startTime).toLocaleString() : '-' }}</el-descriptions-item>
-                <el-descriptions-item label="结束时间">{{ form.endTime ? new Date(form.endTime).toLocaleString() : '-' }}</el-descriptions-item>
-                <el-descriptions-item label="状态">{{ form.status === 1 ? '进行中' : '未开始' }}</el-descriptions-item>
+                <el-descriptions-item label="结束时间">{{ formEndTime ? formEndTime.toLocaleString() : '-' }}</el-descriptions-item>
+                <el-descriptions-item label="状态">到达开始时间后自动开始</el-descriptions-item>
                 <el-descriptions-item label="考试说明">{{ form.description || '-' }}</el-descriptions-item>
               </el-descriptions>
             </template>
@@ -146,23 +142,16 @@
       </template>
     </el-dialog>
 
-    <ImportDialog
-      v-model="importDialogVisible"
-      type="exams"
-      title="考试导入"
-      @imported="loadExams"
-    />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
-import ImportDialog from '@/components/ImportDialog.vue'
 import { exportImportData } from '@/api/imports'
 import { getTeachingClasses } from '@/api/teachingClass'
 import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
@@ -194,8 +183,8 @@ const pagination = reactive({
 })
 
 const dialogVisible = ref(false)
-const importDialogVisible = ref(false)
 const examStep = ref(0)
+let lifecycleRefreshTimer = null
 
 const form = reactive({
   id: null,
@@ -205,28 +194,29 @@ const form = reactive({
   title: '',
   description: '',
   startTime: null,
-  endTime: null,
   durationMinutes: 60,
-  status: 0
+  status: 1
 })
 
 const assessmentType = computed(() => route.meta.assessmentType || 'EXAM')
 const assessmentLabel = computed(() => assessmentType.value === 'HOMEWORK' ? '作业' : '考试')
+const isHomework = computed(() => assessmentType.value === 'HOMEWORK')
+const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
+const paperApi = computed(() => isHomework.value ? '/api/homework-papers' : '/api/papers')
 
 const rules = {
   title: [{ required: true, message: '请输入考试名称', trigger: 'blur' }],
   paperId: [{ required: true, message: '请选择试卷', trigger: 'change' }],
   classId: [{ required: true, message: '请选择教学班', trigger: 'change' }],
   durationMinutes: [{ required: true, message: '请输入考试时长', trigger: 'blur' }],
-  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }],
-  endTime: [{ required: true, message: '请选择结束时间', trigger: 'change' }]
+  startTime: [{ required: true, message: '请选择开始时间', trigger: 'change' }]
 }
 
 // ---- 状态映射 ----
 // 前端: 0=未开始, 1=进行中, 2=已结束
 // 后端: DRAFT(0), PUBLISHED(1), CLOSED(3)
-const STATUS_TO_ENUM = { 0: 'DRAFT', 1: 'PUBLISHED', 2: 'CLOSED' }
-const ENUM_TO_STATUS = { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }
+const STATUS_TO_ENUM = { 0: 'DRAFT', 1: 'PUBLISHED', 2: 'CLOSED', 3: 'RESULTS_SUBMITTED' }
+const ENUM_TO_STATUS = { DRAFT: 0, PUBLISHED: 1, CLOSED: 2, RESULTS_SUBMITTED: 3 }
 
 // ---- 响应适配：将后端 ExamResponseDTO 映射为前端表格行 ----
 const mapExamForDisplay = (e) => ({
@@ -238,8 +228,16 @@ const mapExamForDisplay = (e) => ({
   durationMinutes: e.durationMinutes,
   startTime: e.startTime,
   endTime: e.endTime,
-  status: normalizeStatus(e.status, ENUM_TO_STATUS, 0) === 3 ? 2 : normalizeStatus(e.status, ENUM_TO_STATUS, 0)
+  status: normalizeStatus(e.status, ENUM_TO_STATUS, 0)
 })
+
+const formEndTime = computed(() => {
+  if (!form.startTime || !form.durationMinutes) return null
+  return new Date(new Date(form.startTime).getTime() + Number(form.durationMinutes) * 60 * 1000)
+})
+
+const isExamStarted = (exam) => exam.status !== 0 && new Date() >= new Date(exam.startTime)
+const isExamEnded = (exam) => exam.status === 2 || exam.status === 3 || new Date() >= new Date(exam.endTime)
 
 // ---- 响应适配：将后端 PaperResponseDTO 映射为前端下拉选项 ----
 const mapPaperForOption = (p) => ({
@@ -278,14 +276,13 @@ const loadExams = async () => {
   loading.value = true
   try {
     const params = scopedTeacherParams(userStore)
-    params.assessmentType = assessmentType.value
     if (searchForm.keyword && searchForm.keyword.trim()) {
       params.keyword = searchForm.keyword.trim()
     }
     if (searchForm.classId) {
       params.classId = searchForm.classId
     }
-    const res = await request.get('/api/exams', { params })
+    const res = await request.get(assessmentApi.value, { params })
     if (res.code === '200' && res.data) {
       const records = getRecords(res.data).map(mapExamForDisplay)
       exams.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
@@ -305,7 +302,7 @@ const loadExams = async () => {
 const loadPapers = async () => {
   try {
     const params = scopedTeacherParams(userStore)
-    const res = await request.get('/api/papers', { params })
+    const res = await request.get(paperApi.value, { params })
     if (res.code === '200' && res.data) {
       const data = res.data
       papers.value = getRecords(data).map(mapPaperForOption).filter(paper => paper.status === 1)
@@ -378,9 +375,8 @@ const handleCreate = () => {
     title: '',
     description: '',
     startTime: null,
-    endTime: null,
     durationMinutes: 60,
-    status: 0
+    status: 1
   })
   examStep.value = 0
   dialogVisible.value = true
@@ -392,7 +388,7 @@ const handleEdit = async (row) => {
     return
   }
   try {
-    const res = await request.get(`/api/exams/${row.id}`)
+    const res = await request.get(`${assessmentApi.value}/${row.id}`)
     if (res.code === '200' && res.data) {
       const data = res.data
       Object.assign(form, {
@@ -403,7 +399,6 @@ const handleEdit = async (row) => {
         title: data.name || '',
         description: data.description || '',
         startTime: data.startTime ? new Date(data.startTime) : null,
-        endTime: data.endTime ? new Date(data.endTime) : null,
         durationMinutes: data.durationMinutes ?? 60,
         status: normalizeStatus(data.status, ENUM_TO_STATUS, 0)
       })
@@ -440,14 +435,6 @@ const validateExamSchedule = () => {
     ElMessage.warning('请选择开始时间')
     return false
   }
-  if (!form.endTime) {
-    ElMessage.warning('请选择结束时间')
-    return false
-  }
-  if (form.endTime <= form.startTime) {
-    ElMessage.warning('结束时间必须晚于开始时间')
-    return false
-  }
   if (!form.id && form.startTime < new Date()) {
     ElMessage.warning('考试开始时间不能早于当前时间')
     return false
@@ -467,7 +454,7 @@ const nextExamStep = async () => {
   }
 
   try {
-    await formRef.value.validateField(['durationMinutes', 'startTime', 'endTime'])
+    await formRef.value.validateField(['durationMinutes', 'startTime'])
   } catch (e) {
     return
   }
@@ -486,10 +473,8 @@ const buildRequestDTO = () => {
     paperId: form.paperId ? Number(form.paperId) : null,
     description: form.description || '',
     startTime: formatLocalDateTime(form.startTime),
-    endTime: formatLocalDateTime(form.endTime),
     durationMinutes: form.durationMinutes || 60,
     status: STATUS_TO_ENUM[form.status] || 'DRAFT',
-    assessmentType: assessmentType.value
   }
 }
 
@@ -504,9 +489,9 @@ const handleSubmit = async () => {
   try {
     let res
     if (form.id) {
-      res = await request.put(`/api/exams/${form.id}`, data)
+      res = await request.put(`${assessmentApi.value}/${form.id}`, data)
     } else {
-      res = await request.post('/api/exams', data)
+      res = await request.post(assessmentApi.value, data)
     }
 
     if (res.code === '200') {
@@ -536,7 +521,7 @@ const handleDelete = async (row) => {
     const confirmed = await confirmDelete('确认删除此考试？')
     if (!confirmed) return
     deleteLoading.value = true
-    const res = await request.delete(`/api/exams/${row.id}`)
+    const res = await request.delete(`${assessmentApi.value}/${row.id}`)
     if (res.code === '200') {
       ElMessage.success('删除成功')
       loadExams()
@@ -554,13 +539,31 @@ const handleGrading = (row) => {
     : `/exams/${row.id}/grading`)
 }
 
+const handleSubmitResults = async (row) => {
+  try {
+    const confirmed = await confirmDelete('确认提交本次考试成绩？提交后可查看详情和导出成绩表')
+    if (!confirmed) return
+    const res = await request.post(`/api/exams/${row.id}/results/submit`)
+    if (res.code === '200') {
+      ElMessage.success('成绩已提交')
+      loadExams()
+    }
+  } catch (e) {
+    // 全局已提示
+  }
+}
+
+const handleResultDetails = (row) => {
+  router.push(`/exams/${row.id}/results`)
+}
+
 const handleEnd = async (row) => {
   try {
     const confirmed = await confirmDelete('确认结束此考试？结束后将无法恢复')
     if (!confirmed) return
     
     // 调用专用的 close 接口
-    const res = await request.post(`/api/exams/${row.id}/close`)
+    const res = await request.post(`${assessmentApi.value}/${row.id}/close`)
     if (res.code === '200') {
       ElMessage.success('考试已结束')
       loadExams()
@@ -574,6 +577,20 @@ onMounted(() => {
   loadPapers()
   loadClasses()
   loadExams()
+  lifecycleRefreshTimer = setInterval(loadExams, 15000)
+})
+
+watch(
+  () => route.name,
+  () => {
+    pagination.pageNum = 1
+    loadPapers()
+    loadExams()
+  }
+)
+
+onUnmounted(() => {
+  clearInterval(lifecycleRefreshTimer)
 })
 </script>
 

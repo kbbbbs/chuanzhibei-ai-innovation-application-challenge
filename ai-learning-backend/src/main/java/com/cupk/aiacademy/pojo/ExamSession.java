@@ -35,9 +35,6 @@ public class ExamSession {
     private Integer duration;
     private Integer status;
 
-    @TableField("assessment_type")
-    private String assessmentType;
-
     @TableField("create_time")
     private LocalDateTime createTime;
 

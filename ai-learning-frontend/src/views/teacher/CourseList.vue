@@ -36,10 +36,11 @@
             <el-tag v-else type="danger">下架</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column label="操作" width="320" fixed="right">
           <template #default="{ row }">
             <el-button size="small" @click="handleDetail(row)">详情</el-button>
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.status !== 1" size="small" type="success" @click="handleEnable(row)">启用</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
         </el-table-column>
@@ -68,7 +69,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getCourses, deleteCourse } from '@/utils/course'
+import { enableCourse, getCourses, deleteCourse } from '@/utils/course'
 import { getCategories } from '@/utils/course'
 import { getRecords, getTotal } from '@/utils/apiHelpers'
 
@@ -142,6 +143,18 @@ const handleDetail = (row) => {
 
 const handleEdit = (row) => {
   router.push({ name: 'CourseCreate', query: { id: row.id } })
+}
+
+const handleEnable = async (row) => {
+  try {
+    const res = await enableCourse(row.id)
+    if (res.code === '200') {
+      ElMessage.success('课程已启用')
+      loadCourses()
+    }
+  } catch (e) {
+    // 全局已提示
+  }
 }
 
 const handleDelete = async (row) => {

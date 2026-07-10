@@ -20,12 +20,13 @@
 
 <script setup>
 import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import request from '@/utils/request.js'
 
 const router = useRouter()
+const route = useRoute()
 const userStore = useUserStore()
 
 const formRef = ref(null)
@@ -55,7 +56,10 @@ const login = async () => {
     if (res.code === '200') {
       userStore.setUser(res.data)
       ElMessage.success('登录成功')
-      router.push('/home')
+      const redirect = typeof route.query.redirect === 'string' && /^\/(?!\/)/.test(route.query.redirect)
+        ? route.query.redirect
+        : '/console'
+      router.push(redirect)
     }
   } catch {} finally {
     loading.value = false

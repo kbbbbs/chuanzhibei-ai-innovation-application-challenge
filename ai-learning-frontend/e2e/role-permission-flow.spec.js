@@ -54,6 +54,7 @@ async function setupFixtures() {
   await addClassStudentFixture(apiCall, { classId: created.class.id, studentId: student.id })
 
   created.homework = await createHomeworkFixture(apiCall, {
+    courseId: created.course.id,
     classId: created.class.id,
     teacherId: teacher.id,
     title: `角色权限作业_${suffix}`,
@@ -63,7 +64,9 @@ async function setupFixtures() {
 
 async function cleanupFixtures() {
   if (!api) return
-  if (created.homework?.id) await apiCall(`/homeworks/${created.homework.id}`, { method: 'DELETE', allowFail: true })
+  if (created.homework?.id) await apiCall(`/api/homeworks/${created.homework.id}`, { method: 'DELETE', allowFail: true })
+  if (created.homework?.fixturePaperId) await apiCall(`/api/homework-papers/${created.homework.fixturePaperId}`, { method: 'DELETE', allowFail: true })
+  if (created.homework?.fixtureQuestionId) await apiCall(`/api/questions/${created.homework.fixtureQuestionId}`, { method: 'DELETE', allowFail: true })
   if (created.class?.id) await apiCall(`/teaching-classes/${created.class.id}`, { method: 'DELETE', allowFail: true })
   if (created.course?.id) await apiCall(`/courses/${created.course.id}`, { method: 'DELETE', allowFail: true })
   await api.dispose()
@@ -74,7 +77,7 @@ test.afterAll(cleanupFixtures)
 
 test('老师和学生权限隔离、越权提示、学生提交与老师批改', async ({ page }) => {
   await loginByUi(page, 'teacher', '123456', { clearStorage: true })
-  await expect(page.getByRole('heading', { name: /教师工作台/ })).toBeVisible()
+  await expect(page.getByRole('heading', { name: '管理控制台' })).toBeVisible()
   await expect(page.getByText('不展示学生端“我的考试”')).toHaveCount(0)
   await expect(page.getByText('教师权限约束')).toHaveCount(0)
   await expect(page.locator('.layout-aside').getByText('课程管理')).toBeVisible()
@@ -85,11 +88,11 @@ test('老师和学生权限隔离、越权提示、学生提交与老师批改',
 
   await page.goto('/users')
   await expectMessage(page, 'error', '无权限访问此页面')
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/console/)
 
   await page.goto('/my-classes')
   await expectMessage(page, 'error', '无权限访问此页面')
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/console/)
 
   await logout(page)
 
@@ -103,18 +106,20 @@ test('老师和学生权限隔离、越权提示、学生提交与老师批改',
 
   await page.goto('/questions')
   await expectMessage(page, 'error', '无权限访问此页面')
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/console/)
 
   await page.goto(`/homework/${created.homework.id}/submissions`)
   await expectMessage(page, 'error', '无权限访问此页面')
-  await expect(page).toHaveURL(/\/$/)
+  await expect(page).toHaveURL(/\/console/)
 
   await page.goto('/my-homeworks')
-  await clickRowButton(page, `角色权限作业_${suffix}`, '提交作业')
-  await fillFormInput(page, '作业内容', `学生角色权限提交_${suffix}`)
-  await page.locator('.el-dialog:visible').getByRole('button', { name: '提交' }).click()
+  await clickRowButton(page, `角色权限作业_${suffix}`, '开始作业')
+  await expect(page).toHaveURL(/\/exam-taking\//)
+  await page.getByPlaceholder('请输入答案').fill(`学生角色权限提交_${suffix}`)
+  await page.getByRole('button', { name: '提交试卷' }).click()
   await page.locator('.el-message-box:visible').getByRole('button', { name: '确定' }).click()
   await expectMessage(page, 'success', '提交成功')
+  await expect(page).toHaveURL(/\/my-homeworks/)
   await page.getByRole('tab', { name: '已提交' }).click()
   await expect(page.locator('.el-table__body-wrapper tr:visible').filter({ hasText: `角色权限作业_${suffix}` }).first()).toBeVisible()
 

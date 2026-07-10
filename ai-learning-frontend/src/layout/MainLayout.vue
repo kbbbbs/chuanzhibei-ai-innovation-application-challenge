@@ -287,6 +287,7 @@ const managementMenuEntries = computed(() => {
     'teaching-classes',
     'questions',
     'papers',
+    'homework-papers',
     'exams',
     'homeworks',
     'resource-gen',
@@ -306,13 +307,6 @@ const managementMenuEntries = computed(() => {
       title: '教学管理',
       icon: Reading,
       children: teachingChildren,
-    },
-    {
-      index: 'student-management',
-      title: '学生管理',
-      icon: School,
-      path: '/administrative-classes',
-      disabled: userStore.roleCode !== 'admin',
     },
     {
       index: 'work-study-management',
@@ -342,6 +336,12 @@ const managementMenuEntries = computed(() => {
 
   if (userStore.roleCode === 'admin') {
     entries.push(
+      {
+        index: 'student-management',
+        title: '学生管理',
+        icon: School,
+        path: '/administrative-classes',
+      },
       {
         index: 'user-management',
         title: '用户管理',
@@ -416,11 +416,11 @@ const getRoleTagType = (role) => {
   return map[role] || 'info'
 }
 
-const handleCommand = (command) => {
+const handleCommand = async (command) => {
   if (command === 'logout') {
     userStore.logout()
+    await router.replace({ name: 'LoginLanding' })
     ElMessage.success('已安全退出登录')
-    router.push('/')
   } else {
     router.push(command.startsWith('/') ? command : `/${command}`)
   }

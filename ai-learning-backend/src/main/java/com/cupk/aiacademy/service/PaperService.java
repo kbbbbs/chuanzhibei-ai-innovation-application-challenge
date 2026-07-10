@@ -145,6 +145,19 @@ public class PaperService {
     }
 
     @Transactional
+    public PaperResponseDTO publish(Long id) {
+        ExamPaper paper = getEntityById(id);
+        permissionService.requirePaperTeacher(paper);
+        if (PaperStatus.fromCode(paper.getStatus()) != PaperStatus.DRAFT) {
+            throw new BusinessException("只有草稿状态的试卷才能启用");
+        }
+        paper.setStatus(PaperStatus.PUBLISHED.getCode());
+        paper.setUpdateTime(LocalDateTime.now());
+        paperMapper.updateById(paper);
+        return toResponse(paper);
+    }
+
+    @Transactional
     public void removePaperQuestion(Long paperId, Long paperQuestionId) {
         ExamPaper paper = getEntityById(paperId);
         permissionService.requirePaperTeacher(paper);

@@ -1,7 +1,7 @@
 package com.cupk.aiacademy.common;
 
 public final class LegacyHomeworkWritePolicy {
-    public static final String RETIRED_MESSAGE = "旧作业写入接口已停用，请使用统一评测（HOMEWORK）流程。";
+    public static final String RETIRED_MESSAGE = "旧作业写入接口已停用，请使用新的作业评测流程。";
 
     private LegacyHomeworkWritePolicy() {
     }

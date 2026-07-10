@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.service;
 
 import com.cupk.aiacademy.common.BusinessException;
+import org.apache.poi.ss.usermodel.WorkbookFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,5 +48,26 @@ class ImportServiceTest {
         assertThatThrownBy(() -> importService.template("bad"))
                 .isInstanceOf(BusinessException.class)
                 .hasMessageContaining("不支持的导入类型");
+    }
+
+    @Test
+    void questionTemplateContainsGuideAndQuestionSheets() throws Exception {
+        ImportService importService = new ImportService(
+                mock(QuestionService.class),
+                mock(PaperService.class),
+                mock(ExamService.class),
+                mock(HomeworkService.class),
+                mock(PermissionService.class),
+                new ObjectMapper()
+        );
+
+        byte[] file = importService.template("questions");
+
+        try (var workbook = WorkbookFactory.create(new java.io.ByteArrayInputStream(file))) {
+            assertThat(workbook.getSheet("填写说明")).isNotNull();
+            assertThat(workbook.getSheet("题目列表")).isNotNull();
+            assertThat(workbook.getSheet("题目列表").getRow(0).getCell(0).getStringCellValue()).isEqualTo("课程ID");
+            assertThat(workbook.getSheet("题目列表").getRow(0).getCell(9).getStringCellValue()).isEqualTo("正确答案");
+        }
     }
 }

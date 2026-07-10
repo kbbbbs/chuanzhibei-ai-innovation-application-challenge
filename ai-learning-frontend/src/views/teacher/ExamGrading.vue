@@ -120,6 +120,9 @@ import request from '@/utils/request'
 const route = useRoute()
 const userStore = useUserStore()
 const examId = computed(() => Number(route.params.id))
+const isHomework = computed(() => route.meta.assessmentType === 'HOMEWORK')
+const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
+const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
 const loading = ref(false)
 const submitLoading = ref(false)
@@ -169,7 +172,7 @@ const resolveResourceUrl = (url) => {
 
 const loadExam = async () => {
   try {
-    const res = await request.get(`/api/exams/${examId.value}`)
+    const res = await request.get(`${assessmentApi.value}/${examId.value}`)
     if (res.code === '200') {
       exam.value = {
         ...res.data,
@@ -184,7 +187,8 @@ const loadExam = async () => {
 const loadSubmissions = async () => {
   loading.value = true
   try {
-    const res = await request.get('/api/submissions', { params: { examId: examId.value } })
+    const submissionKey = isHomework.value ? 'homeworkId' : 'examId'
+    const res = await request.get(submissionApi.value, { params: { [submissionKey]: examId.value } })
     if (res.code === '200') {
       allSubmissions.value = getRecords(res.data).map(mapSubmission)
       normalizePage()
@@ -212,7 +216,7 @@ const handleGrade = async (row) => {
 
   // Load submission details
   try {
-    const res = await request.get(`/api/submissions/${row.id}/grading`)
+    const res = await request.get(`${submissionApi.value}/${row.id}/grading`)
     if (res.code === '200') {
       const detail = res.data
 
@@ -255,7 +259,7 @@ const handleSubmitGrade = async () => {
 
   submitLoading.value = true
   try {
-    const res = await request.post(`/api/submissions/${currentSubmission.value.id}/grade-subjective`, data)
+    const res = await request.post(`${submissionApi.value}/${currentSubmission.value.id}/grade-subjective`, data)
     if (res.code === '200') {
       ElMessage.success('批改成功')
       gradingDialogVisible.value = false
@@ -280,7 +284,7 @@ const loadPage = () => {
 }
 
 watch(
-  () => route.params.id,
+  () => route.fullPath,
   loadPage,
   { immediate: true }
 )
