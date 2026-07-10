@@ -5,21 +5,50 @@
 Agent 聊天不是只把用户问题直接发给大模型。当前实现会先读取 Agent 定义，再按配置补充知识库资料和平台工具数据，最后一起进入模型 Prompt。
 
 ```text
-用户请求 /api/agent/sessions/{sessionId}/chat 或 /stream
+用户请求 /api/agent/sessions/{sessionId}/chat
   -> AgentChatService.ensureSession()
   -> AgentChatService.ensureAgentDefinition()
-  -> AgentChatService.buildPrompt()
-      -> retrieveKnowledgeContext()
-      -> retrieveToolContext()
-      -> systemPrompt(agent, knowledgeContext, toolContext)
-  -> ChatModelClient.call() 或 ChatModelClient.stream()
+  -> AgentActionIntentRouter.buildDirectActionReply()
+      -> 清晰写操作先生成待确认计划
+  -> AgentPromptAssembler.buildPrompt()
+      -> KnowledgeContextProvider.retrieve()
+      -> AgentToolExecutor.buildToolContext()
+  -> ChatModelClient.call()
+      -> AgentModelDiagnostics 记录失败类别
 ```
 
-作用：说明普通聊天和流式聊天都会走同一套上下文构造流程。
+作用：说明普通非流式聊天会走完整的上下文构造流程。
 
 代码含义：`knowledgeBaseIds` 控制是否检索知识库，`enabledTools` 控制是否读取课程、作业、学习进度和学习计划数据。
 
-## 2. Agent 配置字段
+## 2. 模型配置和健康检查
+
+模型配置不要硬编码 Key，使用环境变量注入：
+
+```powershell
+$env:AI_OPENAI_BASE_URL="https://api.deepseek.com"
+$env:AI_OPENAI_API_KEY="[REDACTED]"
+$env:AI_OPENAI_MODEL="deepseek-v4-flash"
+```
+
+应用启动后先调用健康检查接口：
+
+```http
+GET /api/agent/model/health
+Authorization: Bearer <token>
+```
+
+成功时 `data.healthy=true`，失败时 `data.diagnostics` 会返回：
+
+- `provider`：当前模型供应商，例如 `deepseek`。
+- `model`：当前配置模型。
+- `category`：失败类别，例如 `AUTHENTICATION`、`INVALID_REQUEST`、`RATE_LIMIT`、`TIMEOUT`、`NETWORK`、`PROVIDER_ERROR`。
+- `rootMessage`：脱敏后的底层错误信息。
+- `retryable`：是否适合重试。
+
+聊天接口仍然会给用户返回安全文案 `AI 回复失败，请稍后重试。`，但接口 `data.diagnostics` 和后端日志会保留可排查信息。
+
+## 3. Agent 配置字段
 
 `knowledgeBaseIds` 和 `enabledTools` 都必须传 JSON 数组字符串，后端会在创建和修改 Agent 时校验并规范化保存。
 
@@ -36,7 +65,7 @@ Agent 聊天不是只把用户问题直接发给大模型。当前实现会先�
 
 - `knowledgeBaseIds` 是字符串字段，但字符串内容必须是 JSON 数组。
 - `enabledTools` 也是字符串字段，数组里的每一项是工具名。
-- 保存后聊天时再由 `AgentChatService` 解析成 `List<String>`。
+- 保存后聊天时再由 `AgentConfigurationParser` 解析成 `List<String>`。
 
 非法示例：
 
@@ -52,7 +81,7 @@ Agent 聊天不是只把用户问题直接发给大模型。当前实现会先�
 - `knowledgeBaseIds 必须是 JSON 数组`
 - `enabledTools 必须是 JSON 数组`
 
-## 3. Agent 定义接口
+## 4. Agent 定义接口
 
 ### 3.1 创建 Agent
 
@@ -121,7 +150,7 @@ Authorization: Bearer <admin token>
 
 代码含义：`status=0` 停用，`status=1` 启用。
 
-## 4. 知识库检索
+## 5. 知识库检索
 
 ### 4.1 Agent 聊天里的知识库入口
 
@@ -303,7 +332,7 @@ prompt.append("\n\n知识库参考资料（优先基于资料回答；资料不�
 
 代码含义：只要返回 JSON 中出现这些字段名，后端就会尝试把对应文本收集进 Prompt。
 
-## 5. 工具调用总览
+## 6. 工具调用总览
 
 工具不是单独的 HTTP 调用入口，而是 Agent 聊天内部根据 `enabledTools` 自动执行。真正触发工具的是下面两个聊天接口。
 
@@ -318,21 +347,6 @@ Content-Type: application/json
 ```json
 {
   "content": "我有哪些 Java 作业还没提交？帮我安排学习计划。"
-}
-```
-
-流式聊天：
-
-```http
-POST /api/agent/sessions/{sessionId}/stream
-Authorization: Bearer <student token>
-Content-Type: application/json
-Accept: text/event-stream
-```
-
-```json
-{
-  "content": "查询我的课程进度，并给我学习建议。"
 }
 ```
 
@@ -360,7 +374,7 @@ return agentToolExecutor.buildToolContext(
 - `toolContextMaxItems` 控制每个工具最多返回多少条。
 - `toolContextMaxCharacters` 控制工具上下文最多占多少字符。
 
-## 6. 工具一：course_search
+## 7. 工具一：course_search
 
 ### 6.1 启用配置
 
@@ -441,7 +455,7 @@ Authorization: Bearer <student token>
 
 作用：查看当前学生自己的课程，用来验证 `course_search` 对学生的可见范围。
 
-## 7. 工具二：homework_search
+## 8. 工具二：homework_search
 
 ### 7.1 启用配置
 
@@ -545,7 +559,7 @@ Authorization: Bearer <token>
 
 作用：按作业和学生查询提交记录，用来验证 Agent 输出的提交状态。
 
-## 8. 工具三：learning_progress
+## 9. 工具三：learning_progress
 
 ### 8.1 启用配置
 
@@ -621,7 +635,7 @@ Authorization: Bearer <token>
 
 代码含义：`studentId=4` 是默认测试数据里的 `student` 用户 ID，实际以数据库为准。
 
-## 9. 工具四：learning_plan
+## 10. 工具四：learning_plan
 
 ### 9.1 启用配置
 
@@ -698,7 +712,7 @@ Authorization: Bearer <token>
 
 作用：学习计划工具没有单独 HTTP 接口，可以通过学习进度接口验证它的数据来源。
 
-## 10. 创建会话并触发知识库和工具
+## 11. 创建会话并触发知识库和工具
 
 ### 10.1 创建会话
 
@@ -741,30 +755,7 @@ Content-Type: application/json
 
 代码含义：如果 Agent 配置了知识库和工具，这个问题会同时触发 `knowledgeBaseIds` 检索、`course_search`、`homework_search`、`learning_progress` 和 `learning_plan`。
 
-### 10.3 流式聊天
-
-```http
-POST /api/agent/sessions/{sessionId}/stream
-Authorization: Bearer <student token>
-Content-Type: application/json
-Accept: text/event-stream
-```
-
-```json
-{
-  "content": "按我现在的学习进度，今天应该先学什么？"
-}
-```
-
-作用：和普通聊天一样构造 Prompt，但用 SSE 流式返回模型结果。
-
-代码含义：
-
-- `message` 事件返回模型增量文本。
-- `complete` 事件返回完整回复和消息 ID。
-- `error` 事件返回模型失败信息。
-
-## 11. 上下文规模配置
+## 12. 上下文规模配置
 
 ```yaml
 agent:
@@ -784,7 +775,7 @@ agent:
 - `tool-context-max-items`：每个工具最多查询多少条数据。
 - `tool-context-max-characters`：工具上下文最多多少字符。
 
-## 12. 推荐 Apifox 验证顺序
+## 13. 推荐 Apifox 验证顺序
 
 1. 管理员登录，获取 `admin token`。
 2. 调用 `GET /api/weknora/knowledge-bases`，确认知识库 ID。
@@ -794,6 +785,5 @@ agent:
 6. 用管理员 token 调用 `POST /api/agent/definitions`，创建带 `knowledgeBaseIds` 和 `enabledTools` 的 Agent。
 7. 学生登录，获取 `student token`。
 8. 用学生 token 调用 `POST /api/agent/sessions` 创建会话。
-9. 调用 `POST /api/agent/sessions/{sessionId}/chat` 测普通聊天。
-10. 调用 `POST /api/agent/sessions/{sessionId}/stream` 测流式聊天。
-11. 如工具结果不符合预期，分别用 `/courses`、`/homeworks`、`/homework-submits`、`/learning-progress` 检查源数据。
+9. 调用 `POST /api/agent/sessions/{sessionId}/chat` 测普通非流式聊天。
+10. 如工具结果不符合预期，分别用 `/courses`、`/homeworks`、`/homework-submits`、`/learning-progress` 检查源数据。

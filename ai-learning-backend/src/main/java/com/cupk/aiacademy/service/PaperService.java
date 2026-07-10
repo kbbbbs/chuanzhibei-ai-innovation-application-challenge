@@ -82,6 +82,11 @@ public class PaperService {
 
     @Transactional(readOnly = true)
     public List<PaperResponseDTO> list(Long teacherId) {
+        return list(teacherId, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<PaperResponseDTO> list(Long teacherId, String keyword, Long courseId) {
         QueryWrapper<ExamPaper> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
         if (permissionService.isTeacher(user)) {
@@ -91,9 +96,23 @@ public class PaperService {
             if (courseIds.isEmpty()) {
                 return List.of();
             }
-            query.in("course_id", courseIds).eq("status", PaperStatus.PUBLISHED.getCode());
+            if (courseId != null && courseId > 0) {
+                if (!courseIds.contains(courseId.intValue())) {
+                    return List.of();
+                }
+                query.eq("course_id", courseId);
+            } else {
+                query.in("course_id", courseIds);
+            }
+            query.eq("status", PaperStatus.PUBLISHED.getCode());
         } else if (teacherId != null && teacherId > 0) {
             query.eq("teacher_id", teacherId);
+        }
+        if (courseId != null && courseId > 0 && !permissionService.isStudent(user)) {
+            query.eq("course_id", courseId);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.like("title", keyword.trim());
         }
         query.orderByDesc("id");
         return paperMapper.selectList(query).stream().map(this::toResponse).toList();

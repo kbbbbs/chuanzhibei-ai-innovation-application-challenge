@@ -29,6 +29,16 @@
         </article>
       </div>
 
+      <el-pagination
+        class="pagination"
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="allClassList.length"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+      />
+
 <!--      <el-table :data="classList" border stripe>-->
 <!--        <template #empty><AppEmpty /></template>-->
 <!--        <el-table-column prop="className" label="班级名称" min-width="140" />-->
@@ -80,18 +90,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords } from '@/utils/apiHelpers'
+import { getRecords, paginateRecords } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
 
-const classList = ref([])
+const allClassList = ref([])
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const classList = computed(() => paginateRecords(allClassList.value, pagination.pageNum, pagination.pageSize))
 const loading = ref(false)
 
 const loadClasses = async () => {
@@ -127,7 +142,8 @@ const loadClasses = async () => {
           yearRange: ''
         })
       }
-      classList.value = rows
+      allClassList.value = rows
+      normalizePage()
       // 加载每门课程的论文方向
       rows.forEach(row => { loadPaperDirections(row) })
     }
@@ -136,6 +152,17 @@ const loadClasses = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const normalizePage = () => {
+  const maxPage = Math.max(1, Math.ceil(allClassList.value.length / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
 }
 
 const loadPaperDirections = async (row) => {
@@ -316,6 +343,9 @@ onMounted(() => {
   color: #c0c4cc;
   font-size: 13px;
 }
+
+.pagination {
+  margin-top: 16px;
+  justify-content: center;
+}
 </style>
-
-

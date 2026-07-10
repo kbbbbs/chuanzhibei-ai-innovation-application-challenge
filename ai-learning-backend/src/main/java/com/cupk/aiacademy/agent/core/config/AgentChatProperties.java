@@ -6,9 +6,11 @@ import org.springframework.stereotype.Component;
 /**
  * Agent 聊天运行时配置。
  * <p>
- * 目前主要控制进入模型 Prompt 的历史、知识库和工具上下文规模，避免长会话把过多消息发送给模型。
+ * 目前主要控制进入模型 Prompt 的历史上下文、知识库检索上下文和工具上下文规模，避免过多内容发送给模型。
  * 如需覆盖默认值，可在本地配置中使用 agent.chat.history-message-limit
- * 和 agent.chat.history-max-characters。
+ * 、agent.chat.history-max-characters、agent.chat.knowledge-context-max-snippets
+ * 、agent.chat.knowledge-context-max-characters、agent.chat.tool-context-max-items
+ * 和 agent.chat.tool-context-max-characters。
  */
 @Component
 @ConfigurationProperties(prefix = "agent.chat")

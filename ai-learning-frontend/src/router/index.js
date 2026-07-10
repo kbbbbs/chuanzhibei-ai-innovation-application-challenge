@@ -3,17 +3,25 @@ import { useUserStore } from '@/store/user'
 import { ElMessage } from 'element-plus'
 
 export const layoutChildren = [
-  // Public route inside layout
+  // Login gateway shown at the site root
   {
     path: '',
+    name: 'LoginLanding',
+    component: () => import('../views/LoginLanding.vue'),
+    meta: { title: '登录', noAuth: true, hideChrome: true }
+  },
+
+  // Public homepage
+  {
+    path: 'home',
     name: 'PublicHome',
     component: () => import('../views/PublicHome.vue'),
-    meta: { title: '首页', icon: 'House', noAuth: true }
+    meta: { title: '首页', icon: 'House', noAuth: true, publicHome: true }
   },
 
   // Internal Dashboard (Teacher/Admin default)
   {
-    path: 'home',
+    path: 'console',
     name: 'Home',
     component: () => import('../views/Home.vue'),
     meta: { title: '控制台', icon: 'House', requiresAuth: true }
@@ -43,6 +51,12 @@ export const layoutChildren = [
     name: 'TeachingClassList',
     component: () => import('../views/teacher/TeachingClassList.vue'),
     meta: { title: '教学班管理', icon: 'School', roles: ['admin', 'teacher'], requiresAuth: true }
+  },
+  {
+    path: 'notices',
+    name: 'NoticeList',
+    component: () => import('../views/teacher/NoticeList.vue'),
+    meta: { title: '通知管理', icon: 'Bell', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'questions',
@@ -97,6 +111,18 @@ export const layoutChildren = [
     name: 'AgentChat',
     component: () => import('../views/AiChat.vue'),
     meta: { title: 'Agent 助手', icon: 'Cpu', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true, fullWidth: true }
+  },
+  {
+    path: 'profile',
+    name: 'ProfileSettings',
+    component: () => import('../views/common/ProfileSettings.vue'),
+    meta: { title: '个人设置', icon: 'Setting', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true }
+  },
+  {
+    path: 'operation-logs',
+    name: 'OperationLogList',
+    component: () => import('../views/common/OperationLogList.vue'),
+    meta: { title: '操作日志', icon: 'Document', roles: ['admin', 'teacher'], requiresAuth: true }
   },
 
   // Student routes
@@ -211,6 +237,12 @@ export const layoutChildren = [
     meta: { title: '分类管理', icon: 'Menu', roles: ['admin'], requiresAuth: true }
   },
   {
+    path: 'administrative-classes',
+    name: 'AdministrativeClassManage',
+    component: () => import('../views/admin/AdministrativeClassManage.vue'),
+    meta: { title: '行政班管理', icon: 'School', roles: ['admin'], requiresAuth: true }
+  },
+  {
     path: 'work-studies',
     name: 'WorkStudyManage',
     component: () => import('../views/admin/WorkStudyManage.vue'),
@@ -241,6 +273,12 @@ const routes = [
     path: '/',
     component: () => import('../layout/MainLayout.vue'),
     children: layoutChildren
+  },
+  {
+    path: '/:pathMatch(.*)*',
+    name: 'NotFound',
+    component: () => import('../views/NotFound.vue'),
+    meta: { title: '页面未找到', noAuth: true }
   }
 ]
 
@@ -277,6 +315,3 @@ router.beforeEach((to, from, next) => {
 })
 
 export default router
-
-
-

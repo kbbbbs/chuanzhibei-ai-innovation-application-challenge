@@ -1,28 +1,27 @@
 package com.cupk.aiacademy.agent.core.controller;
 
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
+import com.cupk.aiacademy.agent.core.llm.AgentModelDiagnostics;
 import com.cupk.aiacademy.agent.core.service.AgentChatService;
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
 import com.cupk.aiacademy.dto.AgentChatRequest;
+import com.cupk.aiacademy.dto.AgentChatResponse;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import static org.hamcrest.Matchers.containsString;
+import java.time.LocalDateTime;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 /**
@@ -37,6 +36,9 @@ class ChatControllerTest {
 
     @MockitoBean
     private AgentChatService agentChatService;
+
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @Test
     void chatOnceReturnsResultShape() throws Exception {
@@ -55,7 +57,14 @@ class ChatControllerTest {
     @Test
     void chatOnceModelFailureReturnsResultShape() throws Exception {
         when(agentChatService.chatOnce("你好"))
-                .thenThrow(new AgentModelCallException("AI 回复失败，请稍后重试。", null, null, null));
+                .thenThrow(new AgentModelCallException("AI 回复失败，请稍后重试。",
+                        null,
+                        null,
+                        null,
+                        AgentModelDiagnostics.from("deepseek",
+                                "deepseek-v4-flash",
+                                new RuntimeException("401 invalid api key [REDACTED]")),
+                        null));
 
         mockMvc.perform(post("/api/agent/chat-once")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -63,27 +72,30 @@ class ChatControllerTest {
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value("500"))
                 .andExpect(jsonPath("$.msg").value("AI 回复失败，请稍后重试。"))
+                .andExpect(jsonPath("$.data.diagnostics.provider").value("deepseek"))
+                .andExpect(jsonPath("$.data.diagnostics.model").value("deepseek-v4-flash"))
+                .andExpect(jsonPath("$.data.diagnostics.category").value("AUTHENTICATION"))
                 .andExpect(jsonPath("$.success").doesNotExist());
     }
 
     @Test
-    void streamChatReturnsTextEventStream() throws Exception {
-        SseEmitter emitter = new SseEmitter();
-        when(agentChatService.streamChat(eq(1), any(AgentChatRequest.class))).thenReturn(emitter);
+    void sessionChatReturnsResultShape() throws Exception {
+        AgentChatResponse response = new AgentChatResponse();
+        response.setSessionId(1);
+        response.setUserMessageId(10);
+        response.setAssistantMessageId(11);
+        response.setContent("你好，我是学习助教。");
+        response.setCreateTime(LocalDateTime.now());
+        when(agentChatService.chat(eq(1), any(AgentChatRequest.class))).thenReturn(response);
 
-        MvcResult mvcResult = mockMvc.perform(post("/api/agent/sessions/1/stream")
+        mockMvc.perform(post("/api/agent/sessions/1/chat")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"content\":\"你好\"}"))
-                .andExpect(request().asyncStarted())
-                .andReturn();
-
-        emitter.send(SseEmitter.event().name("message").data("ok"));
-        emitter.complete();
-
-        mockMvc.perform(asyncDispatch(mvcResult))
                 .andExpect(status().isOk())
-                .andExpect(content().contentTypeCompatibleWith(MediaType.TEXT_EVENT_STREAM))
-                .andExpect(content().string(containsString("event:message")))
-                .andExpect(content().string(containsString("data:ok")));
+                .andExpect(jsonPath("$.code").value("200"))
+                .andExpect(jsonPath("$.data.sessionId").value(1))
+                .andExpect(jsonPath("$.data.userMessageId").value(10))
+                .andExpect(jsonPath("$.data.assistantMessageId").value(11))
+                .andExpect(jsonPath("$.data.content").value("你好，我是学习助教。"));
     }
 }

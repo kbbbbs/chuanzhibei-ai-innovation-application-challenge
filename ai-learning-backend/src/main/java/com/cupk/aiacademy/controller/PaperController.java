@@ -42,8 +42,10 @@ public class PaperController {
     }
 
     @GetMapping
-    public ApiResponse<List<PaperResponseDTO>> list(@RequestParam(required = false) Long teacherId) {
-        return ApiResponse.success(paperService.list(teacherId));
+    public ApiResponse<List<PaperResponseDTO>> list(@RequestParam(required = false) Long teacherId,
+                                                    @RequestParam(required = false) String keyword,
+                                                    @RequestParam(required = false) Long courseId) {
+        return ApiResponse.success(paperService.list(teacherId, keyword, courseId));
     }
 
     @DeleteMapping("/{id}")

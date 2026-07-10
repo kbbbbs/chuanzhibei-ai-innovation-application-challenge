@@ -36,6 +36,7 @@ import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import com.cupk.aiacademy.pojo.UserRole;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.service.CourseImportService;
 import com.cupk.aiacademy.service.PermissionService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -146,6 +147,9 @@ class ApiRepairRegressionTest {
 
     @MockitoBean
     private CourseResourceService courseResourceService;
+
+    @MockitoBean
+    private CourseImportService courseImportService;
 
     @MockitoBean
     private PermissionService permissionService;

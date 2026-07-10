@@ -7,6 +7,7 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.GlobalExceptionHandler;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.AgentCreateRequest;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.cupk.aiacademy.pojo.AgentDefinition;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -44,6 +45,9 @@ class AgentDefinitionControllerTest {
 
     @MockitoBean
     private AgentDefinitionService agentDefinitionService;
+
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @AfterEach
     void clearUserContext() {

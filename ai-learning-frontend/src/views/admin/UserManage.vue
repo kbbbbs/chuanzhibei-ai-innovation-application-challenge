@@ -9,8 +9,8 @@
       </template>
 
       <el-form :inline="true" :model="searchForm">
-        <el-form-item label="用户名">
-          <el-input v-model="searchForm.username" placeholder="请输入用户名" clearable />
+        <el-form-item label="关键词">
+          <el-input v-model="searchForm.keyword" placeholder="请输入用户名、昵称、邮箱或电话" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="角色">
           <el-select v-model="searchForm.roleCode" placeholder="请选择角色" clearable>
@@ -20,7 +20,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="loadUsers">查询</el-button>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -57,8 +57,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadUsers"
+        @size-change="handleSizeChange"
       />
     </el-card>
 
@@ -115,7 +117,7 @@ const users = ref([])
 const loading = ref(false)
 
 const searchForm = reactive({
-  username: '',
+  keyword: '',
   roleCode: ''
 })
 
@@ -162,6 +164,16 @@ const loadUsers = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadUsers()
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadUsers()
 }
 
 const handleCreate = () => {
@@ -225,7 +237,7 @@ const handleDelete = async (row) => {
 }
 
 const handleReset = () => {
-  searchForm.username = ''
+  searchForm.keyword = ''
   searchForm.roleCode = ''
   pagination.pageNum = 1
   loadUsers()

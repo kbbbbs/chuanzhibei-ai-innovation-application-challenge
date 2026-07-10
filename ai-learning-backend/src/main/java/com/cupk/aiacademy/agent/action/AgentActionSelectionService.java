@@ -11,13 +11,12 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-@Component
+@Deprecated(forRemoval = true)
 public class AgentActionSelectionService {
     private static final Logger log = LoggerFactory.getLogger(AgentActionSelectionService.class);
     private static final double MIN_CONFIDENCE = 0.60;

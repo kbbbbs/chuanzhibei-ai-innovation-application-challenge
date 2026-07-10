@@ -42,8 +42,10 @@ public class ExamController {
     }
 
     @GetMapping
-    public ApiResponse<List<ExamResponseDTO>> list(@RequestParam(required = false) Long teacherId) {
-        return ApiResponse.success(examService.list(teacherId));
+    public ApiResponse<List<ExamResponseDTO>> list(@RequestParam(required = false) Long teacherId,
+                                                   @RequestParam(required = false) String keyword,
+                                                   @RequestParam(required = false) Long classId) {
+        return ApiResponse.success(examService.list(teacherId, keyword, classId));
     }
 
     @PostMapping("/{id}/publish")

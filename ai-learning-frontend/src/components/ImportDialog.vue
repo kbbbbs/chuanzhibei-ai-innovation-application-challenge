@@ -11,14 +11,14 @@
         ref="uploadRef"
         :auto-upload="false"
         :limit="1"
-        accept=".xlsx"
+        accept=".xlsx,.xls,.csv"
         drag
         :on-change="handleFileChange"
         :on-remove="handleFileRemove"
       >
-        <div class="upload-text">拖拽 Excel 文件到此处或点击上传</div>
+        <div class="upload-text">拖拽 Excel/CSV 文件到此处或点击上传</div>
         <template #tip>
-          <div class="el-upload__tip">仅支持 .xlsx 模板文件，上传前可先下载当前功能的标准模板</div>
+          <div class="el-upload__tip">支持 .xlsx、.xls、.csv；多余列会忽略，缺失列按空值校验</div>
         </template>
       </el-upload>
 
@@ -99,7 +99,7 @@ const props = defineProps({
   },
   title: {
     type: String,
-    default: 'Excel 导入'
+    default: '表格导入'
   }
 })
 
@@ -169,8 +169,8 @@ const canConfirm = computed(() => {
 
 const handleFileChange = (file) => {
   const fileName = file.name || file.raw?.name || ''
-  if (!fileName.toLowerCase().endsWith('.xlsx')) {
-    ElMessage.error('请选择 .xlsx 格式的 Excel 文件')
+  if (!/\.(xlsx|xls|csv)$/i.test(fileName)) {
+    ElMessage.error('请选择 .xlsx、.xls 或 .csv 格式的文件')
     uploadRef.value?.clearFiles()
     selectedFile.value = null
     return

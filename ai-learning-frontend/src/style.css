@@ -105,6 +105,12 @@ select {
   letter-spacing: 0;
 }
 
+.pagination,
+.pagination-bar {
+  display: flex;
+  justify-content: center;
+}
+
 /* Auth Pages Styling */
 .auth-page {
   display: flex;

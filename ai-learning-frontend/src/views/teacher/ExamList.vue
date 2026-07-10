@@ -5,11 +5,28 @@
         <div class="card-header">
           <span>考试管理</span>
           <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
+            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">发布考试</el-button>
           </div>
         </div>
       </template>
+
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="考试名称">
+          <el-input v-model="searchForm.keyword" placeholder="请输入考试名称" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="教学班">
+          <el-select v-model="searchForm.classId" placeholder="请选择教学班" clearable>
+            <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
 
       <el-table :data="exams" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
@@ -48,8 +65,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadExams"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -130,7 +149,7 @@
     <ImportDialog
       v-model="importDialogVisible"
       type="exams"
-      title="考试 Excel 导入"
+      title="考试导入"
       @imported="loadExams"
     />
   </div>
@@ -144,6 +163,7 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import ImportDialog from '@/components/ImportDialog.vue'
+import { exportImportData } from '@/api/imports'
 import { getTeachingClasses } from '@/api/teachingClass'
 import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
@@ -156,9 +176,15 @@ const formRef = ref(null)
 const loading = ref(false)
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
+const exporting = ref(false)
 const exams = ref([])
 const papers = ref([])
 const classList = ref([])
+
+const searchForm = reactive({
+  keyword: '',
+  classId: null
+})
 
 const pagination = reactive({
   pageNum: 1,
@@ -227,10 +253,33 @@ const selectedClassName = computed(() => {
   return classList.value.find(cls => cls.id === form.classId)?.className || '-'
 })
 
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadExams()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadExams()
+}
+
+const handleReset = () => {
+  searchForm.keyword = ''
+  searchForm.classId = null
+  pagination.pageNum = 1
+  loadExams()
+}
+
 const loadExams = async () => {
   loading.value = true
   try {
     const params = scopedTeacherParams(userStore)
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
     const res = await request.get('/api/exams', { params })
     if (res.code === '200' && res.data) {
       const records = getRecords(res.data).map(mapExamForDisplay)
@@ -274,6 +323,37 @@ const loadClasses = async () => {
   } catch (e) {
     classList.value = []
   }
+}
+
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
+    const blob = await exportImportData('exams', params)
+    downloadBlob(blob, `考试_${new Date().toISOString().slice(0, 10)}.${format}`)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+const downloadBlob = (blob, fileName) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 const handleCreate = () => {
@@ -504,6 +584,10 @@ onMounted(() => {
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 
 .wizard-dialog {

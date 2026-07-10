@@ -1,8 +1,6 @@
 package com.cupk.aiacademy.service;
 
 import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.context.AnalysisContext;
-import com.alibaba.excel.read.listener.ReadListener;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Difficulty;
 import com.cupk.aiacademy.common.ExamStatus;
@@ -26,10 +24,15 @@ import com.cupk.aiacademy.dto.imports.ImportPreviewItem;
 import com.cupk.aiacademy.dto.imports.ImportPreviewResponse;
 import com.cupk.aiacademy.dto.imports.PaperImportRow;
 import com.cupk.aiacademy.dto.imports.QuestionImportRow;
+import com.cupk.aiacademy.pojo.Homework;
 import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.Question;
 import com.cupk.aiacademy.pojo.TeachingClass;
+import com.cupk.aiacademy.service.imports.TabularFileSupport;
+import com.cupk.aiacademy.service.imports.TabularFileSupport.ExportFile;
+import com.cupk.aiacademy.service.imports.TabularFileSupport.TabularRow;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -52,6 +55,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Service
 public class ImportService {
@@ -92,18 +96,17 @@ public class ImportService {
 
     public ImportPreviewResponse preview(String type, MultipartFile file) {
         permissionService.requireTeacherOrAdmin();
-        requireXlsx(file);
         return switch (normalType(type)) {
-            case "questions" -> new ImportPreviewResponse(readRows(file, QuestionImportRow.class).stream()
+            case "questions" -> new ImportPreviewResponse(TabularFileSupport.read(file, QuestionImportRow.class).stream()
                     .map(this::previewQuestion)
                     .toList());
-            case "papers" -> new ImportPreviewResponse(readRows(file, PaperImportRow.class).stream()
+            case "papers" -> new ImportPreviewResponse(TabularFileSupport.read(file, PaperImportRow.class).stream()
                     .map(this::previewPaper)
                     .toList());
-            case "exams" -> new ImportPreviewResponse(readRows(file, ExamImportRow.class).stream()
+            case "exams" -> new ImportPreviewResponse(TabularFileSupport.read(file, ExamImportRow.class).stream()
                     .map(this::previewExam)
                     .toList());
-            case "homeworks" -> new ImportPreviewResponse(readRows(file, HomeworkImportRow.class).stream()
+            case "homeworks" -> new ImportPreviewResponse(TabularFileSupport.read(file, HomeworkImportRow.class).stream()
                     .map(this::previewHomework)
                     .toList());
             default -> throw new BusinessException("不支持的导入类型: " + type);
@@ -129,6 +132,9 @@ public class ImportService {
         if (request == null || request.getItems() == null || request.getItems().isEmpty()) {
             throw new BusinessException("导入数据不能为空");
         }
+        if (request.getItems().stream().anyMatch(item -> !Boolean.TRUE.equals(item.getValid()))) {
+            throw new BusinessException("存在校验未通过的导入行，请先修正后再导入");
+        }
         List<ImportPreviewItem> validItems = request.getItems().stream()
                 .filter(item -> Boolean.TRUE.equals(item.getValid()))
                 .toList();
@@ -138,6 +144,18 @@ public class ImportService {
             case "exams" -> confirmExams(validItems);
             case "homeworks" -> confirmHomeworks(validItems);
             default -> throw new BusinessException("不支持的导入类型: " + type);
+        };
+    }
+
+    public ExportFile exportData(String type, String format, Map<String, String> params) {
+        permissionService.requireTeacherOrAdmin();
+        Map<String, String> safeParams = params == null ? Map.of() : params;
+        return switch (normalType(type)) {
+            case "questions" -> TabularFileSupport.exportFile("questions-export", format, QuestionImportRow.class, exportQuestions(safeParams));
+            case "papers" -> TabularFileSupport.exportFile("papers-export", format, PaperImportRow.class, exportPapers(safeParams));
+            case "exams" -> TabularFileSupport.exportFile("exams-export", format, ExamImportRow.class, exportExams(safeParams));
+            case "homeworks" -> TabularFileSupport.exportFile("homeworks-export", format, HomeworkImportRow.class, exportHomeworks(safeParams));
+            default -> throw new BusinessException("不支持的导出类型: " + type);
         };
     }
 
@@ -217,7 +235,7 @@ public class ImportService {
         return new ImportConfirmResponse(results);
     }
 
-    private ImportPreviewItem previewQuestion(ExcelRow<QuestionImportRow> row) {
+    private ImportPreviewItem previewQuestion(TabularRow<QuestionImportRow> row) {
         List<String> errors = new ArrayList<>();
         QuestionImportRow source = row.data();
         QuestionRequestDTO request = new QuestionRequestDTO();
@@ -226,7 +244,7 @@ public class ImportService {
         return item(row.rowNumber(), errors, request);
     }
 
-    private ImportPreviewItem previewPaper(ExcelRow<PaperImportRow> row) {
+    private ImportPreviewItem previewPaper(TabularRow<PaperImportRow> row) {
         List<String> errors = new ArrayList<>();
         PaperImportRow source = row.data();
         PaperRowData data = new PaperRowData();
@@ -245,7 +263,7 @@ public class ImportService {
         return item(row.rowNumber(), errors, data);
     }
 
-    private ImportPreviewItem previewExam(ExcelRow<ExamImportRow> row) {
+    private ImportPreviewItem previewExam(TabularRow<ExamImportRow> row) {
         List<String> errors = new ArrayList<>();
         ExamImportRow source = row.data();
         ExamRowData data = new ExamRowData();
@@ -267,7 +285,7 @@ public class ImportService {
         return item(row.rowNumber(), errors, data);
     }
 
-    private ImportPreviewItem previewHomework(ExcelRow<HomeworkImportRow> row) {
+    private ImportPreviewItem previewHomework(TabularRow<HomeworkImportRow> row) {
         List<String> errors = new ArrayList<>();
         HomeworkImportRow source = row.data();
         HomeworkRowData request = new HomeworkRowData();
@@ -543,38 +561,161 @@ public class ImportService {
                 : ImportPreviewItem.invalid(rowNumber, errors, normalizedData);
     }
 
-    private <T> List<ExcelRow<T>> readRows(MultipartFile file, Class<T> rowType) {
-        List<ExcelRow<T>> rows = new ArrayList<>();
-        try {
-            EasyExcel.read(file.getInputStream(), rowType, new ReadListener<T>() {
-                @Override
-                public void invoke(T data, AnalysisContext context) {
-                    rows.add(new ExcelRow<>(context.readRowHolder().getRowIndex() + 1, data));
-                }
+    private List<QuestionImportRow> exportQuestions(Map<String, String> params) {
+        Page<QuestionResponseDTO> page = questionService.list(
+                parseQuestionTypeFilter(firstParam(params, "type", "questionType")),
+                parseDifficultyFilter(params.get("difficulty")),
+                parseRecordStatusFilter(params.get("status")),
+                parseOptionalLongParam(params.get("courseId"), "课程ID"),
+                parseOptionalLongParam(params.get("teacherId"), "教师ID"),
+                blankToNull(params.get("keyword")),
+                0,
+                exportSize(params)
+        );
+        return page.getContent().stream().map(this::toQuestionImportRow).toList();
+    }
 
-                @Override
-                public void doAfterAllAnalysed(AnalysisContext context) {
-                }
-            }).sheet().doRead();
-        } catch (IOException e) {
-            throw new BusinessException("读取Excel失败: " + e.getMessage());
-        } catch (RuntimeException e) {
-            throw new BusinessException("解析Excel失败，请确认文件模板正确");
+    private List<PaperImportRow> exportPapers(Map<String, String> params) {
+        Long teacherId = parseOptionalLongParam(params.get("teacherId"), "教师ID");
+        Long courseId = parseOptionalLongParam(params.get("courseId"), "课程ID");
+        String keyword = blankToNull(params.get("keyword"));
+        PaperStatus status = parsePaperStatusFilter(params.get("status"));
+        return paperService.list(teacherId, keyword, courseId).stream()
+                .filter(paper -> courseId == null || Objects.equals(paper.getCourseId(), courseId))
+                .filter(paper -> status == null || paper.getStatus() == status)
+                .flatMap(paper -> toPaperImportRows(paper).stream())
+                .toList();
+    }
+
+    private List<ExamImportRow> exportExams(Map<String, String> params) {
+        Long teacherId = parseOptionalLongParam(params.get("teacherId"), "教师ID");
+        Long classId = parseOptionalLongParam(params.get("classId"), "教学班ID");
+        Long paperId = parseOptionalLongParam(params.get("paperId"), "试卷ID");
+        String keyword = blankToNull(params.get("keyword"));
+        ExamStatus status = parseExamStatusFilter(params.get("status"));
+        return examService.list(teacherId, keyword, classId).stream()
+                .filter(exam -> classId == null || Objects.equals(exam.getClassId(), classId))
+                .filter(exam -> paperId == null || Objects.equals(exam.getPaperId(), paperId))
+                .filter(exam -> status == null || exam.getStatus() == status)
+                .map(this::toExamImportRow)
+                .toList();
+    }
+
+    private List<HomeworkImportRow> exportHomeworks(Map<String, String> params) {
+        Integer classId = parseOptionalIntegerParam(params.get("classId"), "教学班ID");
+        Integer teacherId = parseOptionalIntegerParam(params.get("teacherId"), "教师ID");
+        String title = blankToNull(params.get("title"));
+        Integer status = parseHomeworkStatusFilter(params.get("status"));
+        return homeworkService.listForExport(classId, teacherId, title, status).stream()
+                .map(this::toHomeworkImportRow)
+                .toList();
+    }
+
+    private QuestionImportRow toQuestionImportRow(QuestionResponseDTO question) {
+        QuestionImportRow row = new QuestionImportRow();
+        row.setCourseId(toText(question.getCourseId()));
+        row.setType(questionTypeLabel(question.getType()));
+        row.setContent(question.getContent());
+        row.setDifficulty(difficultyLabel(question.getDifficulty()));
+        row.setScore(toText(question.getScore()));
+        row.setKnowledgePoint(question.getKnowledgePoint());
+        row.setAnalysis(question.getAnalysis());
+        fillOptionColumns(row, question.getOptions());
+        row.setAnswers(joinAnswers(question.getAnswers()));
+        return row;
+    }
+
+    private List<PaperImportRow> toPaperImportRows(PaperResponseDTO paper) {
+        List<PaperResponseDTO.PaperQuestionResponse> paperQuestions = paper.getPaperQuestions() == null
+                ? List.of()
+                : paper.getPaperQuestions();
+        if (paperQuestions.isEmpty()) {
+            PaperImportRow row = new PaperImportRow();
+            fillPaperBaseColumns(row, paper);
+            return List.of(row);
         }
-        if (rows.isEmpty()) {
-            throw new BusinessException("Excel内容不能为空");
+        List<PaperImportRow> rows = new ArrayList<>();
+        for (PaperResponseDTO.PaperQuestionResponse question : paperQuestions) {
+            PaperImportRow row = new PaperImportRow();
+            fillPaperBaseColumns(row, paper);
+            row.setQuestionId(toText(question.getQuestionId()));
+            row.setQuestionNumber(toText(question.getSortOrder()));
+            row.setContent(question.getQuestionContent());
+            row.setScore(toText(question.getScore()));
+            row.setSortOrder(toText(question.getSortOrder()));
+            rows.add(row);
         }
         return rows;
     }
 
-    private void requireXlsx(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new BusinessException("上传文件不能为空");
+    private void fillPaperBaseColumns(PaperImportRow row, PaperResponseDTO paper) {
+        row.setName(paper.getName());
+        row.setCourseId(toText(paper.getCourseId()));
+        row.setDurationMinutes(toText(paper.getDurationMinutes()));
+        row.setStatus(paperStatusLabel(paper.getStatus()));
+    }
+
+    private ExamImportRow toExamImportRow(ExamResponseDTO exam) {
+        ExamImportRow row = new ExamImportRow();
+        row.setName(exam.getName());
+        row.setClassId(toText(exam.getClassId()));
+        row.setPaperId(toText(exam.getPaperId()));
+        row.setPaperName(exam.getPaperName());
+        row.setStartTime(formatDateTime(exam.getStartTime()));
+        row.setEndTime(formatDateTime(exam.getEndTime()));
+        row.setDurationMinutes(toText(exam.getDurationMinutes()));
+        row.setStatus(examStatusLabel(exam.getStatus()));
+        row.setDescription(exam.getDescription());
+        return row;
+    }
+
+    private HomeworkImportRow toHomeworkImportRow(Homework homework) {
+        HomeworkImportRow row = new HomeworkImportRow();
+        row.setClassId(toText(homework.getClassId()));
+        row.setTitle(homework.getTitle());
+        row.setContent(homework.getContent());
+        row.setAttachmentUrl(homework.getAttachmentUrl());
+        row.setStartTime(formatDateTime(homework.getStartTime()));
+        row.setDeadline(formatDateTime(homework.getDeadline()));
+        row.setFullScore(toText(homework.getFullScore()));
+        row.setStatus(homeworkStatusLabel(homework.getStatus()));
+        return row;
+    }
+
+    private void fillOptionColumns(QuestionImportRow row, List<QuestionResponseDTO.OptionResponse> options) {
+        if (options == null || options.isEmpty()) {
+            return;
         }
-        String originalName = file.getOriginalFilename();
-        if (originalName == null || !originalName.toLowerCase(Locale.ROOT).endsWith(".xlsx")) {
-            throw new BusinessException("仅支持.xlsx文件");
+        List<QuestionResponseDTO.OptionResponse> sorted = options.stream()
+                .sorted(Comparator.comparing(option -> option.getSortOrder() == null ? Integer.MAX_VALUE : option.getSortOrder()))
+                .toList();
+        row.setOptions(sorted.stream()
+                .map(option -> option.getOptionKey() + ". " + option.getOptionContent())
+                .collect(Collectors.joining("; ")));
+        for (QuestionResponseDTO.OptionResponse option : sorted) {
+            String key = value(option.getOptionKey()).toUpperCase(Locale.ROOT);
+            switch (key) {
+                case "A" -> row.setOptionA(option.getOptionContent());
+                case "B" -> row.setOptionB(option.getOptionContent());
+                case "C" -> row.setOptionC(option.getOptionContent());
+                case "D" -> row.setOptionD(option.getOptionContent());
+                case "E" -> row.setOptionE(option.getOptionContent());
+                case "F" -> row.setOptionF(option.getOptionContent());
+                default -> {
+                }
+            }
         }
+    }
+
+    private String joinAnswers(List<QuestionResponseDTO.AnswerResponse> answers) {
+        if (answers == null || answers.isEmpty()) {
+            return null;
+        }
+        return answers.stream()
+                .sorted(Comparator.comparing(answer -> answer.getSortOrder() == null ? Integer.MAX_VALUE : answer.getSortOrder()))
+                .map(QuestionResponseDTO.AnswerResponse::getAnswerContent)
+                .filter(Objects::nonNull)
+                .collect(Collectors.joining("; "));
     }
 
     private Class<?> importRowType(String type) {
@@ -591,6 +732,126 @@ public class ImportService {
         return value(type).toLowerCase(Locale.ROOT);
     }
 
+    private int exportSize(Map<String, String> params) {
+        Integer size = parseOptionalIntegerParam(params.get("size"), "导出条数");
+        if (size == null || size <= 0) {
+            return 10000;
+        }
+        return Math.min(size, 50000);
+    }
+
+    private String firstParam(Map<String, String> params, String... names) {
+        for (String name : names) {
+            String value = params.get(name);
+            if (value != null && !value.isBlank()) {
+                return value;
+            }
+        }
+        return null;
+    }
+
+    private Long parseOptionalLongParam(String raw, String fieldName) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(value).longValueExact();
+        } catch (ArithmeticException | NumberFormatException e) {
+            throw new BusinessException(fieldName + "必须是整数");
+        }
+    }
+
+    private Integer parseOptionalIntegerParam(String raw, String fieldName) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        try {
+            return new BigDecimal(value).intValueExact();
+        } catch (ArithmeticException | NumberFormatException e) {
+            throw new BusinessException(fieldName + "必须是整数");
+        }
+    }
+
+    private QuestionType parseQuestionTypeFilter(String raw) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        List<String> errors = new ArrayList<>();
+        QuestionType type = parseQuestionType(value, errors);
+        if (!errors.isEmpty()) {
+            throw new BusinessException(errors.get(0));
+        }
+        return type;
+    }
+
+    private Difficulty parseDifficultyFilter(String raw) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        List<String> errors = new ArrayList<>();
+        Difficulty difficulty = parseDifficulty(value, errors);
+        if (!errors.isEmpty()) {
+            throw new BusinessException(errors.get(0));
+        }
+        return difficulty;
+    }
+
+    private RecordStatus parseRecordStatusFilter(String raw) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        return switch (value.toUpperCase(Locale.ROOT)) {
+            case "DRAFT", "草稿", "0" -> RecordStatus.DRAFT;
+            case "ACTIVE", "启用", "正常", "1" -> RecordStatus.ACTIVE;
+            case "DISABLED", "停用", "禁用", "2" -> RecordStatus.DISABLED;
+            default -> throw new BusinessException("题目状态不合法: " + raw);
+        };
+    }
+
+    private PaperStatus parsePaperStatusFilter(String raw) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        List<String> errors = new ArrayList<>();
+        PaperStatus status = parsePaperStatus(value, errors);
+        if (!errors.isEmpty()) {
+            throw new BusinessException(errors.get(0));
+        }
+        return status;
+    }
+
+    private ExamStatus parseExamStatusFilter(String raw) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        List<String> errors = new ArrayList<>();
+        ExamStatus status = parseExamStatus(value, errors);
+        if (!errors.isEmpty()) {
+            throw new BusinessException(errors.get(0));
+        }
+        return status;
+    }
+
+    private Integer parseHomeworkStatusFilter(String raw) {
+        String value = value(raw);
+        if (value.isBlank()) {
+            return null;
+        }
+        List<String> errors = new ArrayList<>();
+        Integer status = parseHomeworkStatus(value, errors);
+        if (!errors.isEmpty()) {
+            throw new BusinessException(errors.get(0));
+        }
+        return status;
+    }
+
     private QuestionType parseQuestionType(String raw, List<String> errors) {
         String value = value(raw);
         if (value.isBlank()) {
@@ -603,6 +864,7 @@ public class ImportService {
             case "TRUE_FALSE", "JUDGE", "判断", "判断题" -> QuestionType.TRUE_FALSE;
             case "FILL_BLANK", "BLANK", "填空", "填空题" -> QuestionType.FILL_BLANK;
             case "SHORT_ANSWER", "SHORT", "简答", "简答题" -> QuestionType.SHORT_ANSWER;
+            case "FILE_UPLOAD", "FILE", "文件上传", "文件上传题" -> QuestionType.FILE_UPLOAD;
             default -> {
                 errors.add("题型不合法: " + raw);
                 yield QuestionType.SHORT_ANSWER;
@@ -671,6 +933,71 @@ public class ImportService {
                 yield 1;
             }
         };
+    }
+
+    private String questionTypeLabel(QuestionType type) {
+        if (type == null) {
+            return null;
+        }
+        return switch (type) {
+            case SINGLE_CHOICE -> "单选题";
+            case MULTIPLE_CHOICE -> "多选题";
+            case TRUE_FALSE -> "判断题";
+            case FILL_BLANK -> "填空题";
+            case SHORT_ANSWER -> "简答题";
+            case FILE_UPLOAD -> "文件上传题";
+        };
+    }
+
+    private String difficultyLabel(Difficulty difficulty) {
+        if (difficulty == null) {
+            return null;
+        }
+        return switch (difficulty) {
+            case EASY -> "简单";
+            case MEDIUM -> "中等";
+            case HARD -> "困难";
+        };
+    }
+
+    private String paperStatusLabel(PaperStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return switch (status) {
+            case DRAFT -> "草稿";
+            case PUBLISHED -> "已发布";
+            case ARCHIVED -> "归档";
+        };
+    }
+
+    private String examStatusLabel(ExamStatus status) {
+        if (status == null) {
+            return null;
+        }
+        return switch (status) {
+            case DRAFT -> "未开始";
+            case PUBLISHED -> "进行中";
+            case CLOSED -> "已结束";
+        };
+    }
+
+    private String homeworkStatusLabel(Integer status) {
+        return status != null && status == 0 ? "已结束" : "进行中";
+    }
+
+    private String formatDateTime(LocalDateTime value) {
+        return value == null ? null : value.format(DATE_TIME_FORMATTERS.get(0));
+    }
+
+    private String toText(Object raw) {
+        if (raw == null) {
+            return null;
+        }
+        if (raw instanceof BigDecimal decimal) {
+            return decimal.stripTrailingZeros().toPlainString();
+        }
+        return String.valueOf(raw);
     }
 
     private String requiredText(String raw, String fieldName, List<String> errors) {
@@ -931,9 +1258,6 @@ public class ImportService {
 
     private <T> T convert(Object source, Class<T> targetType) {
         return objectMapper.convertValue(source, targetType);
-    }
-
-    private record ExcelRow<T>(Integer rowNumber, T data) {
     }
 
     private record QuestionColumns(

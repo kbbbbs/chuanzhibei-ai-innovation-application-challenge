@@ -8,6 +8,21 @@
         </div>
       </template>
 
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="班级名称">
+          <el-input v-model="searchForm.className" placeholder="请输入班级名称" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="课程">
+          <el-select v-model="searchForm.courseId" placeholder="请选择课程" clearable>
+            <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
       <el-table :data="classList" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="className" label="班级名称" />
@@ -34,8 +49,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadClasses"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -121,6 +138,11 @@ const classList = ref([])
 const courses = ref([])
 const classStudents = ref([])
 
+const searchForm = reactive({
+  className: '',
+  courseId: null
+})
+
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10,
@@ -155,6 +177,12 @@ const loadClasses = async () => {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     })
+    if (searchForm.className && searchForm.className.trim()) {
+      params.className = searchForm.className.trim()
+    }
+    if (searchForm.courseId) {
+      params.courseId = searchForm.courseId
+    }
     const res = await getTeachingClasses(params)
     if (res.code === '200') {
       classList.value = getRecords(res.data)
@@ -165,6 +193,23 @@ const loadClasses = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadClasses()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadClasses()
+}
+
+const handleReset = () => {
+  searchForm.className = ''
+  searchForm.courseId = null
+  pagination.pageNum = 1
+  loadClasses()
 }
 
 const loadCourses = async () => {
@@ -348,6 +393,10 @@ onMounted(() => {
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 
 .student-toolbar {

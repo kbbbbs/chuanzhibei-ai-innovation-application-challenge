@@ -7,6 +7,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -16,6 +17,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+@Primary
 @Component
 public class MybatisAgentPendingActionStore implements AgentPendingActionStore {
     private static final Logger log = LoggerFactory.getLogger(MybatisAgentPendingActionStore.class);

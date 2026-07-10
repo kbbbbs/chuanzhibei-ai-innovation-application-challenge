@@ -5,13 +5,18 @@
         <div class="card-header">
           <span>题库管理</span>
           <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
+            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">新建题目</el-button>
           </div>
         </div>
       </template>
 
       <el-form :inline="true" :model="searchForm">
+        <el-form-item label="关键词">
+          <el-input v-model="searchForm.keyword" placeholder="请输入题目内容" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
         <el-form-item label="题目类型">
           <el-select v-model="searchForm.questionType" placeholder="请选择" clearable>
             <el-option label="单选题" value="single_choice" />
@@ -58,8 +63,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadQuestions"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -136,7 +143,7 @@
     <ImportDialog
       v-model="importDialogVisible"
       type="questions"
-      title="题库 Excel 导入"
+      title="题库导入"
       @imported="loadQuestions"
     />
   </div>
@@ -149,6 +156,7 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import ImportDialog from '@/components/ImportDialog.vue'
+import { exportImportData } from '@/api/imports'
 import { getCourses } from '@/utils/course'
 import { currentUserId, enumName, getRecords, getTotal, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
@@ -160,10 +168,12 @@ const formRef = ref(null)
 const loading = ref(false)
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
+const exporting = ref(false)
 const questions = ref([])
 const courses = ref([])
 
 const searchForm = reactive({
+  keyword: '',
   questionType: '',
   courseId: null
 })
@@ -358,6 +368,9 @@ const loadQuestions = async () => {
     if (searchForm.courseId) {
       params.courseId = searchForm.courseId
     }
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
     const res = await request.get('/api/questions', { params })
     if (res.code === '200' && res.data) {
       const pageData = res.data
@@ -391,6 +404,45 @@ const loadCourses = async () => {
 const handleSearch = () => {
   pagination.pageNum = 1
   loadQuestions()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadQuestions()
+}
+
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.questionType) {
+      params.type = TYPE_TO_ENUM[searchForm.questionType]
+    }
+    if (searchForm.courseId) {
+      params.courseId = searchForm.courseId
+    }
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    const blob = await exportImportData('questions', params)
+    downloadBlob(blob, `题库_${new Date().toISOString().slice(0, 10)}.${format}`)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+const downloadBlob = (blob, fileName) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 const handleCreate = async () => {
@@ -513,6 +565,7 @@ const handleDelete = async (row) => {
 }
 
 const handleReset = () => {
+  searchForm.keyword = ''
   searchForm.questionType = ''
   searchForm.courseId = null
   pagination.pageNum = 1
@@ -553,4 +606,3 @@ onMounted(() => {
 }
 
 </style>
-

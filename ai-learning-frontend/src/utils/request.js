@@ -57,6 +57,8 @@ request.interceptors.response.use(response => {
   return res
 }, error => {
   const status = error.response?.status
+  const responseData = normalizeResponse(error.response?.data)
+  const serverMessage = responseData?.msg || responseData?.message || error.message
   if (error.config?.silentError) {
     return Promise.reject(error)
   }
@@ -73,9 +75,9 @@ request.interceptors.response.use(response => {
   } else if (status === 403) {
     if (!silent) ElMessage.error('无权限访问该资源')
   } else if (status >= 500) {
-    // if (!silent) ElMessage.error('服务器异常，请稍后重试')
+    if (!silent) ElMessage.error(serverMessage || '服务器异常，请稍后重试')
   } else {
-    if (!silent) ElMessage.error(error.message || '网络请求失败')
+    if (!silent) ElMessage.error(serverMessage || '网络请求失败')
   }
   return Promise.reject(error)
 })

@@ -26,9 +26,10 @@ public class TeacherApplicationController {
 
     @GetMapping
     public Result list(@RequestParam(required = false) Integer status,
+                       @RequestParam(required = false) String keyword,
                        @RequestParam(defaultValue = "1") Integer pageNum,
                        @RequestParam(defaultValue = "10") Integer pageSize) {
-        return Result.success(service.list(status, pageNum, pageSize));
+        return Result.success(service.list(status, keyword, pageNum, pageSize));
     }
 
     @PostMapping("/{id}/review")

@@ -1,5 +1,6 @@
 package com.cupk.aiacademy.service;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.dto.HomeworkDto;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 public class HomeworkService {
@@ -59,6 +61,41 @@ public class HomeworkService {
         stampHomeworkForUpdate(homework, id);
         int row = homeworkMapper.updateById(homework);
         return row > 0 ? Result.success(homework) : Result.error();
+    }
+
+    @Transactional(readOnly = true)
+    public List<Homework> listForExport(Integer classId, Integer teacherId, String title, Integer status) {
+        permissionService.requireTeacherOrAdmin();
+        QueryWrapper<Homework> query = new QueryWrapper<>();
+        AuthUtils.LoginUser user = permissionService.currentUser();
+        if (authUtils.isTeacher(user)) {
+            if (classId != null && classId > 0) {
+                permissionService.requireClassTeacher(classId);
+                query.eq("class_id", classId);
+            } else {
+                List<Integer> classIds = permissionService.teacherClassIds(user.getUserId());
+                if (classIds.isEmpty()) {
+                    return List.of();
+                }
+                query.in("class_id", classIds);
+            }
+            query.eq("teacher_id", user.getUserId());
+        } else {
+            if (classId != null && classId > 0) {
+                query.eq("class_id", classId);
+            }
+            if (teacherId != null && teacherId > 0) {
+                query.eq("teacher_id", teacherId);
+            }
+        }
+        if (title != null && !title.trim().isEmpty()) {
+            query.like("title", title.trim());
+        }
+        if (status != null) {
+            query.eq("status", status);
+        }
+        query.orderByDesc("id");
+        return homeworkMapper.selectList(query);
     }
 
     private Result checkHomework(Homework homework) {

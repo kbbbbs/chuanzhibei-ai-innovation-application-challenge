@@ -4,13 +4,23 @@
       <template #header>
         <div class="card-header">
           <span>教师入驻审核</span>
-          <el-radio-group v-model="status" size="small" @change="loadApplications">
+          <el-radio-group v-model="status" size="small" @change="handleStatusChange">
             <el-radio-button :label="0">待审核</el-radio-button>
             <el-radio-button :label="1">已通过</el-radio-button>
             <el-radio-button :label="2">已拒绝</el-radio-button>
           </el-radio-group>
         </div>
       </template>
+
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="关键词">
+          <el-input v-model="searchForm.keyword" placeholder="请输入用户名、姓名、邮箱或电话" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
 
       <el-table :data="applications" border stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
@@ -34,20 +44,39 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        class="pagination"
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="pagination.total"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="loadApplications"
+        @size-change="handleSizeChange"
+      />
     </el-card>
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords } from '@/utils/apiHelpers'
+import { getRecords, getTotal } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const status = ref(0)
 const loading = ref(false)
 const applications = ref([])
+const searchForm = reactive({
+  keyword: ''
+})
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
 
 const statusText = value => ({ 0: '待审核', 1: '已通过', 2: '已拒绝' }[value] || '未知')
 const statusTag = value => ({ 0: 'warning', 1: 'success', 2: 'danger' }[value] || 'info')
@@ -55,11 +84,42 @@ const statusTag = value => ({ 0: 'warning', 1: 'success', 2: 'danger' }[value] |
 const loadApplications = async () => {
   loading.value = true
   try {
-    const res = await request.get('/teacher-applications', { params: { status: status.value, pageSize: 100 } })
-    if (res.code === '200') applications.value = getRecords(res.data)
+    const res = await request.get('/teacher-applications', {
+      params: {
+        status: status.value,
+        keyword: searchForm.keyword.trim(),
+        pageNum: pagination.pageNum,
+        pageSize: pagination.pageSize
+      }
+    })
+    if (res.code === '200') {
+      applications.value = getRecords(res.data)
+      pagination.total = getTotal(res.data)
+    }
   } finally {
     loading.value = false
   }
+}
+
+const handleStatusChange = () => {
+  pagination.pageNum = 1
+  loadApplications()
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadApplications()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadApplications()
+}
+
+const handleReset = () => {
+  searchForm.keyword = ''
+  pagination.pageNum = 1
+  loadApplications()
 }
 
 const review = async (row, nextStatus) => {
@@ -91,5 +151,14 @@ onMounted(loadApplications)
 
 .muted {
   color: var(--text-muted);
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 </style>

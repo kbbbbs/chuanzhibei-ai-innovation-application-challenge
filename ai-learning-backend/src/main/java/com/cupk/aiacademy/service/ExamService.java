@@ -72,6 +72,11 @@ public class ExamService {
 
     @Transactional(readOnly = true)
     public List<ExamResponseDTO> list(Long teacherId) {
+        return list(teacherId, null, null);
+    }
+
+    @Transactional(readOnly = true)
+    public List<ExamResponseDTO> list(Long teacherId, String keyword, Long classId) {
         QueryWrapper<ExamSession> query = new QueryWrapper<>();
         var user = permissionService.currentUser();
         if (permissionService.isTeacher(user)) {
@@ -81,9 +86,23 @@ public class ExamService {
             if (classIds.isEmpty()) {
                 return List.of();
             }
-            query.in("class_id", classIds).ne("status", ExamStatus.DRAFT.getCode());
+            if (classId != null && classId > 0) {
+                if (!classIds.contains(classId.intValue())) {
+                    return List.of();
+                }
+                query.eq("class_id", classId);
+            } else {
+                query.in("class_id", classIds);
+            }
+            query.ne("status", ExamStatus.DRAFT.getCode());
         } else if (teacherId != null && teacherId > 0) {
             query.eq("teacher_id", teacherId);
+        }
+        if (classId != null && classId > 0 && !permissionService.isStudent(user)) {
+            query.eq("class_id", classId);
+        }
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            query.like("title", keyword.trim());
         }
         query.orderByDesc("id");
         return examSessionMapper.selectList(query).stream().map(this::toResponse).toList();

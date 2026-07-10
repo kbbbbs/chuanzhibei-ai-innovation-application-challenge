@@ -14,9 +14,11 @@ public interface WorkStudyStudentMapper extends BaseMapper<WorkStudyStudent> {
                                                @Param("workStudyId") Integer workStudyId,
                                                @Param("studentId") Integer studentId,
                                                @Param("workMonth") String workMonth,
-                                               @Param("auditStatus") Integer auditStatus);
+                                               @Param("auditStatus") Integer auditStatus,
+                                               @Param("keyword") String keyword);
 
     List<WorkStudyStudent> selectListForExport(@Param("workStudyId") Integer workStudyId,
                                                 @Param("studentId") Integer studentId,
-                                                @Param("workMonth") String workMonth);
+                                                @Param("workMonth") String workMonth,
+                                                @Param("keyword") String keyword);
 }

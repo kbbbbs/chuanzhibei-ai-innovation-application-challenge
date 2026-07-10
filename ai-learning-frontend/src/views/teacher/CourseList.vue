@@ -10,7 +10,7 @@
 
       <el-form :inline="true" :model="searchForm">
         <el-form-item label="课程名称">
-          <el-input v-model="searchForm.title" placeholder="请输入课程名称" clearable />
+          <el-input v-model="searchForm.title" placeholder="请输入课程名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="分类">
           <el-select v-model="searchForm.categoryId" placeholder="请选择分类" clearable>
@@ -18,7 +18,7 @@
           </el-select>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="loadCourses">查询</el-button>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -26,7 +26,7 @@
       <el-table :data="courses" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="课程名称" />
-        <el-table-column prop="difficulty" label="难度" width="100" />
+        <el-table-column prop="difficulty" label="难度" width="130" />
         <el-table-column prop="studentCount" label="学生数" width="100" />
         <el-table-column prop="viewCount" label="浏览量" width="100" />
         <el-table-column label="状态" width="100">
@@ -55,7 +55,7 @@
         :page-sizes="[5, 10, 20, 50]"
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadCourses"
-        @size-change="loadCourses"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -109,6 +109,16 @@ const loadCourses = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadCourses()
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadCourses()
 }
 
 const loadCategories = async () => {

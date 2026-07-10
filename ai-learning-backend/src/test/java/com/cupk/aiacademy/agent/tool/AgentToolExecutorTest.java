@@ -1,9 +1,13 @@
 package com.cupk.aiacademy.agent.tool;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.cupk.aiacademy.agent.tool.course.ChapterCreatePlanTool;
 import com.cupk.aiacademy.agent.tool.course.ChapterSearchTool;
+import com.cupk.aiacademy.agent.tool.course.CourseCreatePlanTool;
 import com.cupk.aiacademy.agent.tool.course.CourseSearchTool;
 import com.cupk.aiacademy.agent.tool.course.CourseResourceSearchTool;
+import com.cupk.aiacademy.agent.tool.course.CourseStatusPlanTool;
+import com.cupk.aiacademy.agent.tool.course.CourseUpdatePlanTool;
 import com.cupk.aiacademy.agent.tool.course.LessonSearchTool;
 import com.cupk.aiacademy.agent.tool.course.TeachingClassSearchTool;
 import com.cupk.aiacademy.agent.tool.exam.ExamAnswerGradePlanTool;
@@ -20,6 +24,7 @@ import com.cupk.aiacademy.agent.tool.homework.HomeworkSearchTool;
 import com.cupk.aiacademy.agent.tool.learning.LearningPlanTool;
 import com.cupk.aiacademy.agent.tool.learning.LearningProgressTool;
 import com.cupk.aiacademy.agent.tool.notice.NoticeCreatePlanTool;
+import com.cupk.aiacademy.agent.action.AgentActionPlanFactory;
 import com.cupk.aiacademy.agent.action.InMemoryAgentPendingActionStore;
 import com.cupk.aiacademy.agent.tool.api.AgentToolOperationType;
 import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
@@ -48,6 +53,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -168,6 +174,21 @@ class AgentToolExecutorTest {
     }
 
     @Test
+    void buildToolContextSkipsWritePlanTools() {
+        AgentToolExecutor service = newService();
+        loginAsStudent(10);
+
+        String context = service.buildToolContext(
+                List.of("notice_publish_plan"),
+                "帮我发布一条通知，提醒一班明天提交作业",
+                5,
+                1000
+        );
+
+        assertEquals("", context);
+    }
+
+    @Test
     void noticeCreatePlanReturnsStructuredWritePlan() {
         AgentToolExecutor service = newService();
         loginAsStudent(10);
@@ -187,8 +208,141 @@ class AgentToolExecutorTest {
         assertEquals(true, result.data().get("requiresConfirmation"));
         assertTrue(result.data().containsKey("actionId"));
         assertTrue(result.data().containsKey("expiresAt"));
+        assertTrue(result.data().containsKey("parameterSchema"));
+        assertTrue(result.data().containsKey("missingRequiredFields"));
         assertTrue(result.content().contains("操作计划=发布通知"));
         assertTrue(result.content().contains("需要确认=是"));
+        assertTrue(result.content().contains("待补齐字段="));
+        assertTrue(result.content().contains("确认ID="));
+    }
+
+    @Test
+    void courseCreatePlanReturnsStructuredWritePlan() {
+        AgentToolExecutor service = newService();
+        loginAsStudent(10);
+
+        List<AgentToolResult> results = service.executeTools(
+                List.of("course_publish_plan"),
+                "帮我创建一门 Java 入门课程",
+                5
+        );
+
+        assertEquals(1, results.size());
+        AgentToolResult result = results.get(0);
+        assertEquals("course_create_plan", result.toolName());
+        assertEquals(AgentToolOperationType.WRITE_PLAN, result.operationType());
+        assertTrue(result.success());
+        assertEquals("course.create", result.data().get("actionCode"));
+        assertEquals(true, result.data().get("requiresConfirmation"));
+        assertTrue(result.data().containsKey("actionId"));
+        assertTrue(result.data().containsKey("parameterSchema"));
+        assertTrue(result.data().containsKey("missingRequiredFields"));
+        assertTrue(result.content().contains("操作计划=创建课程"));
+        assertTrue(result.content().contains("已识别参数=title(课程名称)=Java 入门"));
+        assertTrue(result.content().contains("可选字段="));
+        assertTrue(result.content().contains("确认ID="));
+    }
+
+    @Test
+    void courseUpdatePlanReturnsStructuredWritePlan() {
+        AgentToolExecutor service = newService();
+        loginAsStudent(10);
+
+        List<AgentToolResult> results = service.executeTools(
+                List.of("course_modify_plan"),
+                "帮我把 101 号课程标题改成 Java 基础",
+                5
+        );
+
+        assertEquals(1, results.size());
+        AgentToolResult result = results.get(0);
+        assertEquals("course_update_plan", result.toolName());
+        assertEquals(AgentToolOperationType.WRITE_PLAN, result.operationType());
+        assertTrue(result.success());
+        assertEquals("course.update", result.data().get("actionCode"));
+        assertEquals(true, result.data().get("requiresConfirmation"));
+        assertTrue(result.data().containsKey("actionId"));
+        assertTrue(result.data().containsKey("parameterSchema"));
+        assertTrue(result.content().contains("操作计划=修改课程"));
+        assertTrue(result.content().contains("已识别参数=courseId(课程ID)=101、title(新的课程名称)=Java 基础"));
+        assertEquals(List.of(), result.data().get("missingRequiredFields"));
+    }
+
+    @Test
+    void courseUpdatePlanExtractsOriginalTitleForTitleRename() {
+        AgentToolExecutor service = newService();
+        loginAsStudent(10);
+
+        List<AgentToolResult> results = service.executeTools(
+                List.of("course_modify_plan"),
+                "修改标题是我不想吃肉，改成我想吃肉",
+                5
+        );
+
+        assertEquals(1, results.size());
+        AgentToolResult result = results.get(0);
+        assertEquals("course_update_plan", result.toolName());
+        assertEquals("course.update", result.data().get("actionCode"));
+        java.util.Map<?, ?> parameters = (java.util.Map<?, ?>) result.data().get("parameters");
+        assertEquals("我不想吃肉", parameters.get("originalTitle"));
+        assertEquals("我想吃肉", parameters.get("title"));
+        assertTrue(result.content().contains("originalTitle(原课程名称)=我不想吃肉"));
+        assertTrue(result.content().contains("title(新的课程名称)=我想吃肉"));
+        assertEquals(List.of(), result.data().get("missingRequiredFields"));
+    }
+
+    @Test
+    void courseStatusPlanReturnsHighRiskWritePlan() {
+        AgentToolExecutor service = newService();
+        loginAsStudent(10);
+
+        List<AgentToolResult> results = service.executeTools(
+                List.of("course_archive_plan"),
+                "帮我下架 101 号课程",
+                5
+        );
+
+        assertEquals(1, results.size());
+        AgentToolResult result = results.get(0);
+        assertEquals("course_status_plan", result.toolName());
+        assertEquals(AgentToolOperationType.WRITE_PLAN, result.operationType());
+        assertTrue(result.success());
+        assertEquals("course.status", result.data().get("actionCode"));
+        assertEquals("HIGH", result.data().get("riskLevel"));
+        assertEquals(CourseStatusPlanTool.CONFIRMATION_TEXT, result.data().get("confirmationText"));
+        assertTrue(result.data().containsKey("actionId"));
+        assertTrue(result.content().contains("操作计划=变更课程状态"));
+        assertTrue(result.content().contains("二次确认文本=" + CourseStatusPlanTool.CONFIRMATION_TEXT));
+        assertTrue(result.content().contains("已识别参数=courseId(课程ID)=101、status(目标状态)=0"));
+        assertEquals(List.of(), result.data().get("missingRequiredFields"));
+    }
+
+    @Test
+    void chapterCreatePlanReturnsStructuredWritePlan() {
+        AgentToolExecutor service = newService();
+        loginAsStudent(10);
+
+        List<AgentToolResult> results = service.executeTools(
+                List.of("chapter_add_plan"),
+                "帮我给 Java 入门 这门课创建一个章节，标题叫人工输入测试章节",
+                5
+        );
+
+        assertEquals(1, results.size());
+        AgentToolResult result = results.get(0);
+        assertEquals("chapter_create_plan", result.toolName());
+        assertEquals(AgentToolOperationType.WRITE_PLAN, result.operationType());
+        assertTrue(result.success());
+        assertEquals("chapter.create", result.data().get("actionCode"));
+        assertEquals(true, result.data().get("requiresConfirmation"));
+        assertTrue(result.data().containsKey("actionId"));
+        assertTrue(result.data().containsKey("parameterSchema"));
+        assertTrue(result.data().containsKey("missingRequiredFields"));
+        assertTrue(result.content().contains("操作计划=创建章节"));
+        Map<?, ?> parameters = (Map<?, ?>) result.data().get("parameters");
+        assertEquals("Java 入门", parameters.get("courseTitle"));
+        assertEquals("人工输入测试章节", parameters.get("title"));
+        assertTrue(result.content().contains("可选字段="));
         assertTrue(result.content().contains("确认ID="));
     }
 
@@ -438,16 +592,21 @@ class AgentToolExecutorTest {
         AgentToolSupport support = new AgentToolSupport(homeworkSubmitMapper, learningProgressMapper,
                 chapterMapper, lessonMapper, courseMapper, teachingClassMapper, classStudentMapper);
         InMemoryAgentPendingActionStore pendingActionStore = new InMemoryAgentPendingActionStore();
+        AgentActionPlanFactory planFactory = new AgentActionPlanFactory(pendingActionStore);
         return new AgentToolExecutor(List.of(
                 new CourseSearchTool(courseMapper, support),
+                new CourseCreatePlanTool(planFactory),
+                new CourseUpdatePlanTool(planFactory),
+                new CourseStatusPlanTool(planFactory),
                 new ChapterSearchTool(chapterMapper, support),
+                new ChapterCreatePlanTool(planFactory),
                 new LessonSearchTool(lessonMapper, support),
                 new CourseResourceSearchTool(lessonMapper, support),
                 new TeachingClassSearchTool(teachingClassMapper, support),
                 new HomeworkSearchTool(homeworkMapper, support),
                 new LearningProgressTool(support),
                 new LearningPlanTool(support),
-                new NoticeCreatePlanTool(pendingActionStore),
+                new NoticeCreatePlanTool(planFactory),
                 new HomeworkCreatePlanTool(pendingActionStore),
                 new HomeworkUpdatePlanTool(pendingActionStore),
                 new HomeworkDeletePlanTool(pendingActionStore),

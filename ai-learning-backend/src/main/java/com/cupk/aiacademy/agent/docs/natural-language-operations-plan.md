@@ -96,6 +96,9 @@ agent/
 - `course_status_plan`：生成 `course.status` 的课程状态变更计划和 10 分钟有效的 `actionId`，风险等级为 `HIGH`
   ，要求二次确认文本 `确认变更课程状态`。
 - `course.status`：教师或管理员通过 `actionId` 或 `actionCode` 确认后变更课程状态，执行时校验课程ID、教师归属和状态范围，当前用于上下架、停用、恢复等场景，不物理删除课程记录。
+- `course_delete_plan`：生成 `course.delete` 的课程删除计划和 10 分钟有效的 `actionId`，风险等级为 `HIGH`
+  ，要求二次确认文本 `确认删除课程`。
+- `course.delete`：教师或管理员通过 `actionId` 或 `actionCode` 确认后删除课程，执行时校验课程ID或课程名称定位、教师归属和二次确认文本；删除类表达不再映射为下架。
 - `chapter_create_plan`：生成 `chapter.create` 的创建章节计划和 10 分钟有效的 `actionId`，不写业务数据库。
 - `chapter.create`：教师或管理员通过 `actionId` 或 `actionCode` 确认后创建章节，执行时校验课程ID、课程归属、章节标题和排序值。
 - `chapter_update_plan`：生成 `chapter.update` 的修改章节计划和 10 分钟有效的 `actionId`，不写业务数据库。

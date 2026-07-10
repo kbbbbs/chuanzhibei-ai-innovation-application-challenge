@@ -5,7 +5,7 @@
         <span>我的作业</span>
       </template>
 
-      <el-tabs v-model="activeTab">
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="待完成" name="pending">
           <el-table :data="pendingHomework" border stripe>
             <template #empty><AppEmpty /></template>
@@ -22,6 +22,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination
+            class="pagination"
+            v-model:current-page="pendingPagination.pageNum"
+            v-model:page-size="pendingPagination.pageSize"
+            :total="allPendingHomework.length"
+            :page-sizes="[5, 10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handlePendingSizeChange"
+          />
         </el-tab-pane>
 
         <el-tab-pane label="已提交" name="submitted">
@@ -56,6 +65,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination
+            class="pagination"
+            v-model:current-page="submittedPagination.pageNum"
+            v-model:page-size="submittedPagination.pageSize"
+            :total="allSubmittedHomework.length"
+            :page-sizes="[5, 10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSubmittedSizeChange"
+          />
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -133,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { computed, ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Upload } from '@element-plus/icons-vue'
@@ -141,7 +159,7 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import { uploadHomeworkAttachment } from '@/api/homework'
-import { currentUserId, formatLocalDateTime, getRecords } from '@/utils/apiHelpers'
+import { currentUserId, formatLocalDateTime, getRecords, paginateRecords } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const userStore = useUserStore()
@@ -150,8 +168,18 @@ const route = useRoute()
 const router = useRouter()
 
 const activeTab = ref('pending')
-const pendingHomework = ref([])
-const submittedHomework = ref([])
+const allPendingHomework = ref([])
+const allSubmittedHomework = ref([])
+const pendingPagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const submittedPagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const pendingHomework = computed(() => paginateRecords(allPendingHomework.value, pendingPagination.pageNum, pendingPagination.pageSize))
+const submittedHomework = computed(() => paginateRecords(allSubmittedHomework.value, submittedPagination.pageNum, submittedPagination.pageSize))
 
 const submitDialogVisible = ref(false)
 const viewDialogVisible = ref(false)
@@ -190,8 +218,8 @@ const loadHomework = async () => {
       .filter(id => Number.isFinite(id) && id > 0)
 
     if (classIds.length === 0) {
-      pendingHomework.value = []
-      submittedHomework.value = []
+      allPendingHomework.value = []
+      allSubmittedHomework.value = []
       return
     }
 
@@ -211,16 +239,41 @@ const loadHomework = async () => {
     const homeworkById = new Map(allHomework.map(hw => [hw.id, hw]))
     const submittedIds = new Set(mySubmissions.map(s => s.homeworkId))
 
-    pendingHomework.value = allHomework.filter(hw => !submittedIds.has(hw.id) && hw.status === 1)
-    submittedHomework.value = mySubmissions.map(sub => {
+    allPendingHomework.value = allHomework.filter(hw => !submittedIds.has(hw.id) && hw.status === 1)
+    allSubmittedHomework.value = mySubmissions.map(sub => {
       const hw = homeworkById.get(sub.homeworkId)
       return { ...sub, title: hw?.title || sub.title || `作业${sub.homeworkId}`, fullScore: hw?.fullScore }
     })
+    normalizePage(pendingPagination, allPendingHomework.value.length)
+    normalizePage(submittedPagination, allSubmittedHomework.value.length)
     openHomeworkFromQuery()
   } catch (e) {
     // 全局异常已由 request.js 提示
   } finally {
     loading.value = false
+  }
+}
+
+const normalizePage = (pagination, total) => {
+  const maxPage = Math.max(1, Math.ceil(total / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handlePendingSizeChange = () => {
+  pendingPagination.pageNum = 1
+}
+
+const handleSubmittedSizeChange = () => {
+  submittedPagination.pageNum = 1
+}
+
+const handleTabChange = () => {
+  if (activeTab.value === 'pending') {
+    normalizePage(pendingPagination, allPendingHomework.value.length)
+  } else {
+    normalizePage(submittedPagination, allSubmittedHomework.value.length)
   }
 }
 
@@ -236,7 +289,7 @@ const handleSubmit = (row) => {
 const openHomeworkFromQuery = () => {
   const homeworkId = Number(route.query.homeworkId)
   if (!Number.isFinite(homeworkId) || homeworkId <= 0 || submitDialogVisible.value) return
-  const homework = pendingHomework.value.find(item => item.id === homeworkId)
+  const homework = allPendingHomework.value.find(item => item.id === homeworkId)
   if (!homework) return
   activeTab.value = 'pending'
   handleSubmit(homework)
@@ -335,5 +388,10 @@ watch(() => route.query.homeworkId, () => {
   flex-direction: column;
   gap: 8px;
   width: 100%;
+}
+
+.pagination {
+  margin-top: 16px;
+  justify-content: center;
 }
 </style>

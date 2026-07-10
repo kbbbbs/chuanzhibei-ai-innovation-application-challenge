@@ -117,10 +117,11 @@ public class WorkStudyController {
                                   @RequestParam(required = false) Integer workStudyId,
                                   @RequestParam(required = false) Integer studentId,
                                   @RequestParam(required = false) String workMonth,
-                                  @RequestParam(required = false) Integer auditStatus) {
+                                  @RequestParam(required = false) Integer auditStatus,
+                                  @RequestParam(required = false) String keyword) {
         pageNum = pageNum == null || pageNum <= 0 ? 1 : pageNum;
         pageSize = pageSize == null || pageSize <= 0 ? 10 : pageSize;
-        return Result.success(workStudyStudentService.pageList(pageNum, pageSize, workStudyId, studentId, workMonth, auditStatus));
+        return Result.success(workStudyStudentService.pageList(pageNum, pageSize, workStudyId, studentId, workMonth, auditStatus, keyword));
     }
 
     @GetMapping("/students/{id}")
@@ -153,6 +154,8 @@ public class WorkStudyController {
         try {
             workStudyStudentService.importExcel(workStudyId, file);
             return Result.success();
+        } catch (RuntimeException e) {
+            return Result.error("400", "导入失败：" + e.getMessage());
         } catch (IOException e) {
             return Result.error("500", "导入失败：" + e.getMessage());
         }
@@ -160,12 +163,14 @@ public class WorkStudyController {
 
     @GetMapping("/students/export")
     public void exportExcel(@RequestParam(required = false) Integer workStudyId,
-                            @RequestParam(required = false) Integer studentId,
-                            @RequestParam(required = false) String workMonth,
-                            HttpServletResponse response) {
+                             @RequestParam(required = false) Integer studentId,
+                             @RequestParam(required = false) String workMonth,
+                             @RequestParam(defaultValue = "xlsx") String format,
+                             @RequestParam(required = false) String keyword,
+                             HttpServletResponse response) {
         permissionService.requireTeacherOrAdmin();
         try {
-            workStudyStudentService.exportExcel(workStudyId, studentId, workMonth, response);
+            workStudyStudentService.exportExcel(workStudyId, studentId, workMonth, format, keyword, response);
         } catch (IOException e) {
             response.setStatus(500);
         }

@@ -69,4 +69,3 @@ public class AuthInterceptor implements HandlerInterceptor {
         return true;
     }
 }
-

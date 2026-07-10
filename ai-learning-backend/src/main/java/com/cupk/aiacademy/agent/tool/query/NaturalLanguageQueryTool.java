@@ -4,12 +4,11 @@ import com.cupk.aiacademy.agent.query.NaturalLanguageQueryService;
 import com.cupk.aiacademy.agent.tool.api.AgentTool;
 import com.cupk.aiacademy.agent.tool.api.AgentToolContext;
 import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
-import org.springframework.stereotype.Component;
 
 import java.util.Map;
 import java.util.Set;
 
-@Component
+@Deprecated(forRemoval = true)
 public class NaturalLanguageQueryTool implements AgentTool {
     private final NaturalLanguageQueryService queryService;
 

@@ -234,6 +234,20 @@ public class PermissionService {
                 .toList();
     }
 
+    public List<Integer> teacherStudentIds(Integer teacherId) {
+        List<Integer> classIds = teacherClassIds(teacherId);
+        if (classIds.isEmpty()) {
+            return List.of();
+        }
+        QueryWrapper<ClassStudent> query = new QueryWrapper<>();
+        query.in("class_id", classIds).eq("status", 1);
+        return classStudentMapper.selectList(query).stream()
+                .map(ClassStudent::getStudentId)
+                .filter(id -> id != null && id > 0)
+                .distinct()
+                .toList();
+    }
+
     public boolean hasRole(Integer userId, String roleCode) {
         return roleCode != null && roleCode.equals(authUtils.findRoleCode(userId));
     }

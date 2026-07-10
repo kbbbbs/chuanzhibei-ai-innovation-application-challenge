@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.config.AuthInterceptor;
 import com.cupk.aiacademy.config.WebMvcConfiguration;
+import com.cupk.aiacademy.mapper.OperationLogMapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,8 @@ class TeacherApplicationControllerTest {
     private TeacherApplicationService service;
     @MockitoBean
     private AuthUtils authUtils;
+    @MockitoBean
+    private OperationLogMapper operationLogMapper;
 
     @Test
     void publicTeacherApplicationDoesNotNeedLogin() throws Exception {

@@ -5,11 +5,28 @@
         <div class="card-header">
           <span>作业管理</span>
           <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">Excel导入</el-button>
+            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
+            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
             <el-button type="primary" @click="handleCreate">发布作业</el-button>
           </div>
         </div>
       </template>
+
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="作业标题">
+          <el-input v-model="searchForm.title" placeholder="请输入作业标题" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="教学班">
+          <el-select v-model="searchForm.classId" placeholder="请选择教学班" clearable>
+            <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
 
       <el-table :data="homeworkList" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
@@ -48,8 +65,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadHomework"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -115,7 +134,7 @@
     <ImportDialog
       v-model="importDialogVisible"
       type="homeworks"
-      title="作业 Excel 导入"
+      title="作业导入"
       @imported="loadHomework"
     />
   </div>
@@ -130,6 +149,7 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import ImportDialog from '@/components/ImportDialog.vue'
+import { exportImportData } from '@/api/imports'
 import { uploadHomeworkAttachment } from '@/api/homework'
 import request from '@/utils/request'
 import { getTeachingClasses } from '@/api/teachingClass'
@@ -143,11 +163,17 @@ const formRef = ref(null)
 const loading = ref(false)
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
+const exporting = ref(false)
 const attachmentUploading = ref(false)
 const homeworkUploadRef = ref(null)
 const attachmentName = ref('')
 const homeworkList = ref([])
 const classList = ref([])
+
+const searchForm = reactive({
+  title: '',
+  classId: null
+})
 
 const pagination = reactive({
   pageNum: 1,
@@ -185,6 +211,12 @@ const loadHomework = async () => {
       pageNum: pagination.pageNum,
       pageSize: pagination.pageSize
     })
+    if (searchForm.title && searchForm.title.trim()) {
+      params.title = searchForm.title.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
     const res = await request.get('/homeworks', { params })
     if (res.code === '200') {
       homeworkList.value = getRecords(res.data)
@@ -197,6 +229,23 @@ const loadHomework = async () => {
   }
 }
 
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadHomework()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadHomework()
+}
+
+const handleReset = () => {
+  searchForm.title = ''
+  searchForm.classId = null
+  pagination.pageNum = 1
+  loadHomework()
+}
+
 const loadClasses = async () => {
   try {
     const res = await getTeachingClasses(scopedTeacherParams(userStore, { pageSize: 100 }))
@@ -206,6 +255,37 @@ const loadClasses = async () => {
   } catch (e) {
     // 全局已提示
   }
+}
+
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.title && searchForm.title.trim()) {
+      params.title = searchForm.title.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
+    const blob = await exportImportData('homeworks', params)
+    downloadBlob(blob, `作业_${new Date().toISOString().slice(0, 10)}.${format}`)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+const downloadBlob = (blob, fileName) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
 }
 
 const handleCreate = () => {
@@ -351,6 +431,10 @@ onMounted(() => {
 .pagination-bar {
   margin-top: 20px;
   justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 
 .attachment-uploader {

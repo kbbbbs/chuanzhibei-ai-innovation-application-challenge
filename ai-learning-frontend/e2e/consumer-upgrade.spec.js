@@ -154,4 +154,3 @@ test('public teacher application and learning map render without console errors'
 
   expect(consoleErrors).toEqual([])
 })
-

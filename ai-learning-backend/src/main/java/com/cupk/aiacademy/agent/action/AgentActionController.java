@@ -3,16 +3,32 @@ package com.cupk.aiacademy.agent.action;
 import com.cupk.aiacademy.common.Result;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class AgentActionController {
     private final AgentActionExecutionService actionExecutionService;
+    private final AgentPendingActionQueryService pendingActionQueryService;
 
-    public AgentActionController(AgentActionExecutionService actionExecutionService) {
+    public AgentActionController(AgentActionExecutionService actionExecutionService,
+                                 AgentPendingActionQueryService pendingActionQueryService) {
         this.actionExecutionService = actionExecutionService;
+        this.pendingActionQueryService = pendingActionQueryService;
+    }
+
+    @GetMapping("/api/agent/actions/pending")
+    public Result listPending(@RequestParam(defaultValue = "20") Integer limit) {
+        return Result.success(pendingActionQueryService.listCurrentUserPending(limit));
+    }
+
+    @GetMapping("/api/agent/actions/pending/{actionId}")
+    public Result getPending(@PathVariable String actionId) {
+        return Result.success(pendingActionQueryService.getCurrentUserPending(actionId));
     }
 
     @PostMapping("/api/agent/actions/confirm")

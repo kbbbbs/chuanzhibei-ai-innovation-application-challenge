@@ -8,6 +8,16 @@
         </div>
       </template>
 
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item label="关键词">
+          <el-input v-model="searchForm.keyword" placeholder="请输入分类名称或描述" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
       <el-table :data="categories" border stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="id" label="ID" width="80" />
@@ -21,6 +31,16 @@
           </template>
         </el-table-column>
       </el-table>
+
+      <el-pagination
+        class="pagination"
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="filteredCategories.length"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- Form Dialog -->
@@ -45,19 +65,40 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { computed, ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import { paginateRecords } from '@/utils/apiHelpers'
 
 const { confirmDelete } = useConfirm()
 
 const formRef = ref(null)
 
-const categories = ref([])
+const allCategories = ref([])
 const loading = ref(false)
 const dialogVisible = ref(false)
+
+const searchForm = reactive({
+  keyword: ''
+})
+
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+
+const filteredCategories = computed(() => {
+  const keyword = searchForm.keyword.trim().toLowerCase()
+  if (!keyword) return allCategories.value
+  return allCategories.value.filter(item => {
+    return [item.name, item.description]
+      .some(value => String(value || '').toLowerCase().includes(keyword))
+  })
+})
+
+const categories = computed(() => paginateRecords(filteredCategories.value, pagination.pageNum, pagination.pageSize))
 
 const form = reactive({
   id: null,
@@ -75,13 +116,34 @@ const loadCategories = async () => {
   try {
     const res = await request.get('/categories')
     if (res.code === '200') {
-      categories.value = res.data
+      allCategories.value = Array.isArray(res.data) ? res.data : []
+      normalizePage()
     }
   } catch (err) {
     // 全局已提示
   } finally {
     loading.value = false
   }
+}
+
+const normalizePage = () => {
+  const maxPage = Math.max(1, Math.ceil(filteredCategories.value.length / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+}
+
+const handleReset = () => {
+  searchForm.keyword = ''
+  pagination.pageNum = 1
 }
 
 const handleCreate = () => {
@@ -151,5 +213,14 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
 }
 </style>

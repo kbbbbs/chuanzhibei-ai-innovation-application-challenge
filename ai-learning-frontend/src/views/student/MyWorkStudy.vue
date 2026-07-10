@@ -58,8 +58,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadData"
+        @size-change="handleSizeChange"
       />
     </el-card>
   </div>
@@ -109,6 +111,11 @@ const loadData = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadData()
 }
 
 const handleTabChange = () => {

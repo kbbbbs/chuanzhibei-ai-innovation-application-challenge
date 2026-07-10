@@ -1,22 +1,12 @@
 <template>
-  <main v-if="isManagementWorkspace" class="student-dashboard workspace-dashboard" v-loading="loading">
-    <section class="dashboard-hero management-hero">
+  <main v-if="isManagementWorkspace" class="management-console" v-loading="loading">
+    <section class="management-heading">
       <div>
         <p class="eyebrow">{{ todayText }}</p>
-        <h1>{{ workspaceTitle }}，{{ displayName }}</h1>
-        <p class="summary">{{ workspaceSummary }}</p>
+        <h1>管理控制台</h1>
+        <p>按业务域进入管理页面，减少重复入口，让教学、学生、勤工俭学与知识资产各自保持清晰。</p>
       </div>
-      <div class="hero-actions">
-        <el-button
-          v-for="action in workspaceHeroActions"
-          :key="action.path"
-          :type="action.primary ? 'primary' : 'default'"
-          @click="go(action.path)"
-        >
-          <el-icon><component :is="action.icon" /></el-icon>
-          {{ action.label }}
-        </el-button>
-      </div>
+      <el-tag effect="plain" size="large">{{ isAdmin ? '管理员' : '教师' }}</el-tag>
     </section>
 
     <section class="stat-grid">
@@ -31,19 +21,6 @@
       </button>
     </section>
 
-    <section v-if="teacherTrendData.length || teacherDistData.some(d=>d.count)" class="charts-row">
-      <el-card class="chart-card">
-        <template #header><span>近期提交趋势</span></template>
-        <ScoreTrendChart v-if="teacherTrendData.length" :data="teacherTrendData" height="280px" />
-        <el-empty v-else description="暂无数据" :image-size="60" />
-      </el-card>
-      <el-card class="chart-card">
-        <template #header><span>成绩分布</span></template>
-        <GradeDistributionChart v-if="teacherDistData.some(d=>d.count)" :data="teacherDistData" height="280px" />
-        <el-empty v-else description="暂无数据" :image-size="60" />
-      </el-card>
-    </section>
-
     <section class="dashboard-grid">
       <div class="dashboard-main">
         <section class="panel">
@@ -52,79 +29,28 @@
               <h2>{{ isAdmin ? '平台运营入口' : '教学工作台' }}</h2>
               <p>{{ isAdmin ? '管理平台账号、教师入驻、课程分类与全局资源。' : '管理课程建设、题库试卷、作业发布与批改进度。' }}</p>
             </div>
+            <p>{{ domain.description }}</p>
           </div>
+        </header>
 
-          <div class="learning-list">
-            <article v-for="action in workspaceActions" :key="action.path" class="learning-item">
-              <div class="course-mark">
-                <el-icon><component :is="action.icon" /></el-icon>
-              </div>
-              <div class="learning-copy">
-                <h3>{{ action.label }}</h3>
-                <p>{{ action.description }}</p>
-              </div>
-              <el-button size="small" type="primary" @click="go(action.path)">进入</el-button>
-            </article>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div>
-              <h2>{{ isAdmin ? '待处理运营事项' : '教学交付提醒' }}</h2>
-              <p>{{ isAdmin ? '集中处理教师入驻和平台课程运营事项。' : '跟进课程、作业和考试的交付进度。' }}</p>
-            </div>
-          </div>
-
-          <div class="todo-columns">
-            <div v-for="block in workspaceTodoBlocks" :key="block.title" class="todo-block">
-              <div class="todo-title">
-                <el-icon><component :is="block.icon" /></el-icon>
-                <span>{{ block.title }}</span>
-              </div>
-              <article v-for="item in block.items.slice(0, 3)" :key="item.id || item.title" class="todo-item">
-                <div>
-                  <h3>{{ item.title }}</h3>
-                  <p>{{ item.description }}</p>
-                </div>
-                <el-button size="small" @click="go(block.path)">处理</el-button>
-              </article>
-              <div v-if="!block.items.length" class="mini-empty">{{ block.emptyText }}</div>
-            </div>
-          </div>
-        </section>
-      </div>
-
-      <aside class="dashboard-side">
-        <section class="panel ai-panel">
-          <div class="ai-icon">
-            <el-icon><DataLine /></el-icon>
-          </div>
-          <h2>{{ isAdmin ? '平台健康' : '课程交付健康' }}</h2>
-          <p>{{ workspaceHealthText }}</p>
-          <div class="side-actions">
-            <el-button type="primary" @click="go(isAdmin ? '/users' : '/courses')">{{ isAdmin ? '管理用户' : '管理课程' }}</el-button>
-            <el-button @click="go(isAdmin ? '/teacher-applications' : '/homeworks')">{{ isAdmin ? '教师审核' : '作业批改' }}</el-button>
-          </div>
-        </section>
-
-        <section class="panel compact-panel">
-          <div class="panel-header compact">
-            <h2>{{ isAdmin ? '角色权限' : '教学资产' }}</h2>
-          </div>
-          <div class="work-status">
-            <span v-for="item in workspaceSideMetrics" :key="item.label"><b>{{ item.value }}</b> {{ item.label }}</span>
-          </div>
-        </section>
-
-        <section class="panel compact-panel">
-          <div class="panel-header compact">
-            <h2>资料研究</h2>
-            <el-button link type="primary" @click="go('/paper-search')">进入</el-button>
-          </div>
-          <p class="muted">检索论文、查看推荐结果并整理课程资料。</p>
-        </section>
-      </aside>
+        <div class="domain-actions" :class="{ 'two-columns': domain.actions.length > 3 }">
+          <button
+            v-for="action in domain.actions"
+            :key="action.path"
+            type="button"
+            class="domain-action"
+            :disabled="action.disabled"
+            @click="!action.disabled && go(action.path)"
+          >
+            <span class="action-icon"><el-icon><component :is="action.icon" /></el-icon></span>
+            <span class="action-copy">
+              <strong>{{ action.label }}</strong>
+              <small>{{ action.description }}</small>
+            </span>
+            <span class="action-state">{{ action.disabled ? '无权限' : '进入' }}</span>
+          </button>
+        </div>
+      </article>
     </section>
   </main>
 
@@ -295,11 +221,14 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import {
   Aim,
+  Bell,
   Checked,
+  Collection,
   Cpu,
   DataLine,
   Document,
   Edit,
+  Lightning,
   Menu,
   Reading,
   School,
@@ -349,6 +278,71 @@ const displayName = computed(() => userStore.nickname || userStore.username || '
 const isAdmin = computed(() => userStore.roleCode === 'admin')
 const isTeacher = computed(() => userStore.roleCode === 'teacher')
 const isManagementWorkspace = computed(() => isAdmin.value || isTeacher.value)
+const managementDomains = computed(() => [
+  {
+    key: 'teaching',
+    title: '教学管理',
+    description: '集中管理课程建设、教学班、通知、题库、试卷、考试与作业交付。',
+    icon: Reading,
+    tone: 'tone-blue',
+    className: 'domain-teaching',
+    actions: [
+      { label: '课程管理', description: '课程、章节与课时内容', path: '/courses', icon: Reading },
+      { label: '教学班管理', description: '教学班与选课成员', path: '/teaching-classes', icon: School },
+      { label: '通知管理', description: '发布教学通知与提醒', path: '/notices', icon: Bell },
+      { label: '题库管理', description: '维护题目与知识点', path: '/questions', icon: Edit },
+      { label: '试卷管理', description: '组卷与试卷配置', path: '/papers', icon: Document },
+      { label: '考试管理', description: '考试发布、答题与批改', path: '/exams', icon: Checked },
+      { label: '作业管理', description: '作业发布、提交与反馈', path: '/homeworks', icon: Tickets },
+      { label: '资源生成', description: '生成大纲、讲义与练习', path: '/resource-gen', icon: Lightning },
+      ...(isAdmin.value
+        ? [{ label: '课程分类', description: '维护平台课程分类', path: '/categories', icon: Menu }]
+        : []),
+    ]
+  },
+  {
+    key: 'students',
+    title: '学生管理',
+    description: '以行政班为主体维护学生名单、班级归属与成员调整。',
+    icon: School,
+    tone: 'tone-cyan',
+    className: 'domain-students',
+    restricted: !isAdmin.value,
+    actions: [
+      {
+        label: '行政班管理',
+        description: '创建行政班并维护学生成员',
+        path: '/administrative-classes',
+        icon: School,
+        disabled: !isAdmin.value
+      }
+    ]
+  },
+  {
+    key: 'work-study',
+    title: '勤工俭学管理',
+    description: '管理岗位发布、学生申请与劳务费名单。',
+    icon: Wallet,
+    tone: 'tone-amber',
+    className: 'domain-work-study',
+    actions: [
+      { label: '岗位管理', description: '维护岗位与招聘状态', path: '/work-studies', icon: Wallet },
+      { label: '劳务费名单', description: '维护学生劳务费记录', path: '/work-study-students', icon: User },
+    ]
+  },
+  {
+    key: 'knowledge',
+    title: '知识库管理',
+    description: '维护课程知识资产，并通过 Agent 将知识库用于检索、答疑和教学任务。',
+    icon: Collection,
+    tone: 'tone-green',
+    className: 'domain-knowledge',
+    actions: [
+      { label: '知识库管理', description: '维护知识库与上传文件', path: '/teacher-knowledge-base', icon: Collection },
+      { label: 'Agent 助手', description: '基于知识库处理教学任务', path: '/agent-chat', icon: Cpu },
+    ]
+  }
+])
 const todayText = computed(() => new Intl.DateTimeFormat('zh-CN', {
   month: 'long',
   day: 'numeric',
@@ -767,6 +761,168 @@ onMounted(loadDashboard)
 </script>
 
 <style scoped>
+.management-console {
+  width: min(1400px, 100%);
+  margin: 0 auto;
+}
+
+.management-heading {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+  padding: 4px 2px 22px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.management-heading h1 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 2rem;
+  line-height: 1.25;
+}
+
+.management-heading > div > p:last-child {
+  max-width: 760px;
+  margin: 10px 0 0;
+  color: var(--text-secondary);
+  line-height: 1.65;
+}
+
+.management-domain-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(340px, 0.85fr);
+  gap: 20px;
+  align-items: stretch;
+}
+
+.management-domain {
+  min-width: 0;
+  padding: 24px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: white;
+  box-shadow: var(--card-shadow);
+}
+
+.domain-teaching {
+  grid-row: span 2;
+}
+
+.domain-knowledge {
+  grid-column: 1 / -1;
+}
+
+.domain-header {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+  padding-bottom: 20px;
+}
+
+.domain-icon {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-md);
+  font-size: 25px;
+}
+
+.domain-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.domain-header h2 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.28rem;
+}
+
+.domain-header p {
+  margin: 7px 0 0;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  line-height: 1.6;
+}
+
+.domain-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.domain-actions.two-columns,
+.domain-knowledge .domain-actions {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.domain-action {
+  min-width: 0;
+  min-height: 76px;
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-color);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+}
+
+.domain-action:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: var(--primary-color-light);
+  background: var(--primary-color-soft);
+}
+
+.domain-action:disabled {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+.action-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: var(--radius-sm);
+  background: white;
+  color: var(--primary-color);
+  font-size: 19px;
+}
+
+.action-copy {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.action-copy strong {
+  font-size: 0.96rem;
+}
+
+.action-copy small {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.action-state {
+  color: var(--primary-color);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
 .student-dashboard {
   max-width: 1240px;
   margin: 0 auto;
@@ -1088,6 +1244,16 @@ onMounted(loadDashboard)
 }
 
 @media (max-width: 1100px) {
+  .management-domain-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .domain-teaching,
+  .domain-knowledge {
+    grid-column: auto;
+    grid-row: auto;
+  }
+
   .stat-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1102,6 +1268,20 @@ onMounted(loadDashboard)
 }
 
 @media (max-width: 760px) {
+  .management-heading {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .management-domain {
+    padding: 18px;
+  }
+
+  .domain-actions.two-columns,
+  .domain-knowledge .domain-actions {
+    grid-template-columns: 1fr;
+  }
+
   .dashboard-hero {
     flex-direction: column;
     align-items: stretch;

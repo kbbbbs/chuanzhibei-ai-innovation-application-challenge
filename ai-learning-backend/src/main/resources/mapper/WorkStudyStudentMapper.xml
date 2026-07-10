@@ -43,6 +43,14 @@
             <if test="auditStatus != null">
                 AND wss.audit_status = #{auditStatus}
             </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    CAST(wss.student_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.username LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR ws.job_name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
         </where>
         ORDER BY wss.create_time DESC
     </select>
@@ -64,6 +72,14 @@
             </if>
             <if test="workMonth != null and workMonth != ''">
                 AND wss.work_month = #{workMonth}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    CAST(wss.student_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.username LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR ws.job_name LIKE CONCAT('%', #{keyword}, '%')
+                )
             </if>
         </where>
         ORDER BY wss.create_time DESC

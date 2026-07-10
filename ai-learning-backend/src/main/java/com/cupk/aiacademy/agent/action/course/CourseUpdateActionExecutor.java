@@ -1,5 +1,6 @@
 package com.cupk.aiacademy.agent.action.course;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionContext;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionResult;
 import com.cupk.aiacademy.agent.action.AgentActionExecutor;
@@ -8,11 +9,14 @@ import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.CourseCategoryMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
+import com.cupk.aiacademy.agent.query.AgentWriteEntityLocator;
+import com.cupk.aiacademy.pojo.CourseCategory;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 
 @Component
@@ -21,10 +25,13 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
 
     private final CourseMapper courseMapper;
     private final CourseCategoryMapper categoryMapper;
+    private final AgentWriteEntityLocator entityLocator;
 
-    public CourseUpdateActionExecutor(CourseMapper courseMapper, CourseCategoryMapper categoryMapper) {
+    public CourseUpdateActionExecutor(CourseMapper courseMapper, CourseCategoryMapper categoryMapper,
+                                      AgentWriteEntityLocator entityLocator) {
         this.courseMapper = courseMapper;
         this.categoryMapper = categoryMapper;
+        this.entityLocator = entityLocator;
     }
 
     @Override
@@ -43,11 +50,7 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
         requireTeacherOrAdmin(user);
 
         Map<String, Object> parameters = context.parameters();
-        Integer courseId = requiredInteger(parameters, "courseId", "course_id", "id");
-        Course course = courseMapper.selectById(courseId);
-        if (course == null) {
-            throw new BusinessException("课程不存在");
-        }
+        Course course = resolveCourse(parameters);
         if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
             throw new BusinessException("只能修改当前登录教师负责的课程");
         }
@@ -70,6 +73,7 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
         data.put("newTitle", course.getTitle());
         data.put("oldCategoryId", oldValues.get("categoryId"));
         data.put("newCategoryId", course.getCategoryId());
+        data.put("newCategoryName", categoryName(course.getCategoryId()));
         data.put("oldDifficulty", oldValues.get("difficulty"));
         data.put("newDifficulty", course.getDifficulty());
         data.put("oldRating", oldValues.get("rating"));
@@ -84,6 +88,16 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
                 data,
                 LocalDateTime.now()
         );
+    }
+
+    private Course resolveCourse(Map<String, Object> parameters) {
+        Integer courseId = optionalInteger(parameters, "courseId", "course_id", "id");
+        String titleLocator = optionalString(parameters,
+                new String[]{"originalTitle", "original_title", "oldTitle", "old_title", "currentTitle", "current_title"}, 0);
+        String teacher = optionalString(parameters, "teacher", 0);
+        String difficulty = optionalString(parameters, "difficulty", 0);
+        Integer categoryId = optionalInteger(parameters, "categoryId", "category_id");
+        return entityLocator.locateCourse(courseId, titleLocator, teacher, difficulty, categoryId);
     }
 
     private boolean applyUpdates(Course course, Map<String, Object> parameters) {
@@ -120,6 +134,13 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
             course.setCategoryId(categoryId);
             changed = true;
         }
+        if (hasAnyKey(parameters, "categoryName", "category_name", "课程分类", "分类名称", "分类")) {
+            String categoryName = optionalString(parameters,
+                    new String[]{"categoryName", "category_name", "课程分类", "分类名称", "分类"}, 0);
+            Integer categoryId = resolveCategoryIdByName(categoryName);
+            course.setCategoryId(categoryId);
+            changed = true;
+        }
         if (hasAnyKey(parameters, "rating")) {
             course.setRating(optionalRating(parameters, "rating"));
             changed = true;
@@ -138,6 +159,37 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
         values.put("categoryId", course.getCategoryId());
         values.put("rating", course.getRating());
         return values;
+    }
+
+    private Integer resolveCategoryIdByName(String categoryName) {
+        if (categoryName == null || categoryName.isBlank()) {
+            throw new BusinessException("categoryName 不能为空");
+        }
+        List<CourseCategory> categories = categoryMapper.selectList(
+                new QueryWrapper<CourseCategory>().eq("name", categoryName.trim()));
+        if (categories == null || categories.isEmpty()) {
+            throw new BusinessException("课程分类不存在：" + categoryName);
+        }
+        if (categories.size() > 1) {
+            throw new BusinessException("课程分类名称不唯一，请补充 categoryId：" + categoryName);
+        }
+        return categories.get(0).getId();
+    }
+
+    private String categoryName(Integer categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        CourseCategory category = categoryMapper.selectById(categoryId);
+        return category == null ? null : category.getName();
+    }
+
+    private boolean appendEquals(QueryWrapper<Course> query, String column, String value, boolean hasLocator) {
+        if (value == null || value.isBlank()) {
+            return hasLocator;
+        }
+        query.eq(column, value.trim());
+        return true;
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
@@ -162,16 +214,16 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
         return value;
     }
 
+    private String optionalString(Map<String, Object> parameters, String key, int maxLength) {
+        return optionalString(parameters, new String[]{key}, maxLength);
+    }
+
     private Integer requiredInteger(Map<String, Object> parameters, String... keys) {
         Integer value = optionalInteger(parameters, keys);
         if (value == null || value <= 0) {
             throw new BusinessException(keys[0] + " 不能为空");
         }
         return value;
-    }
-
-    private String optionalString(Map<String, Object> parameters, String key, int maxLength) {
-        return optionalString(parameters, new String[]{key}, maxLength);
     }
 
     private String optionalString(Map<String, Object> parameters, String[] keys, int maxLength) {

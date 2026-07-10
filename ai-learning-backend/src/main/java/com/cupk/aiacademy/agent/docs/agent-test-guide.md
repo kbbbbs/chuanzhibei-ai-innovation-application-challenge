@@ -80,15 +80,15 @@ admin / 123456
 2. 调用 `GET /api/agent/model/health` 打印模型健康状态。
 3. 确保存在一个测试 Agent：`agent_smoke_test`，并启用 `notice_create_plan`。
 4. 调用 `POST /api/agent/sessions` 创建 Agent 会话。
-5. 调用 `POST /api/agent/sessions/{sessionId}/stream` 测普通流式聊天。
+5. 调用 `POST /api/agent/sessions/{sessionId}/chat` 测普通非流式聊天。
 6. 发送“发布通知”的自然语言请求，验证能生成待确认操作计划。
-7. 从流式 `complete.pendingAction.actionId` 获取 `actionId`，验证 `t_agent_pending_action` 链路可用。
+7. 从响应体 `data.pendingAction.actionId` 获取 `actionId`，验证 `t_agent_pending_action` 链路可用。
 8. 调用 pending action 列表和详情接口，确认前端无需解析文本也能拿到 `actionId`。
 
 默认不会真正执行写操作。看到下面这种结尾就说明基础链路通过：
 
 ```text
-[PASS] Agent 冒烟测试完成：登录、模型健康检查、会话、流式接口、写操作计划、pending action 均已覆盖。
+[PASS] Agent 冒烟测试完成：登录、模型健康检查、会话、非流式聊天、写操作计划、pending action 均已覆盖。
 ```
 
 ## 3. 常用测试命令
@@ -143,8 +143,8 @@ node scripts/agent-course-crud-smoke-test.mjs --confirm --category-id 1
 
 如果你的课程分类 ID 不是 `1`，把 `--category-id` 改成实际存在的分类 ID。执行后可检查：
 
-- `t_course`：新增课程、课程标题被修改、课程状态被变更。
-- `t_operation_log`：新增 `agent.course.create`、`agent.course.update`、`agent.course.status` 操作日志。
+- `t_course`：新增课程、课程标题被修改、课程状态被变更；删除课程类动作应走 `course.delete` 并调用删除逻辑，不应改成下架状态。
+- `t_operation_log`：新增 `agent.course.create`、`agent.course.update`、`agent.course.status`、`agent.course.delete` 操作日志。
 - `t_agent_pending_action`：已执行的 pending action 会被删除。
 - pending action 详情：应包含 `parameterSchema`、`jsonSchema`、`missingRequiredFields` 和 `parameterExtraction`。如果模型返回非法参数，`parameterExtraction.validationIssues` 会显示类型或枚举错误。
 

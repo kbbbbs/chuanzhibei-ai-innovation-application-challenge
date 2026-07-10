@@ -8,14 +8,23 @@
         </div>
       </template>
 
-      <div class="filter-bar">
-        <el-select v-model="filter.noticeType" placeholder="通知类型" clearable style="width: 160px" @change="resetAndLoad">
-          <el-option label="全部" value="" />
-          <el-option label="通用" value="general" />
-          <el-option label="考试" value="exam" />
-          <el-option label="作业" value="homework" />
-        </el-select>
-      </div>
+      <el-form :inline="true" :model="filter" class="filter-bar" @submit.prevent>
+        <el-form-item label="通知标题">
+          <el-input v-model="filter.title" placeholder="请输入通知标题" clearable @keyup.enter="resetAndLoad" />
+        </el-form-item>
+        <el-form-item label="通知类型">
+          <el-select v-model="filter.noticeType" placeholder="通知类型" clearable>
+            <el-option label="全部" value="" />
+            <el-option label="通用" value="general" />
+            <el-option label="考试" value="exam" />
+            <el-option label="作业" value="homework" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="resetAndLoad">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
 
       <el-table :data="noticeList" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
@@ -57,8 +66,10 @@
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
-        layout="total, prev, pager, next"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadNotices"
+        @size-change="handleSizeChange"
         class="pagination-bar"
       />
     </el-card>
@@ -138,7 +149,10 @@ const pagination = reactive({
   total: 0
 })
 
-const filter = reactive({ noticeType: '' })
+const filter = reactive({
+  title: '',
+  noticeType: ''
+})
 
 const dialogVisible = ref(false)
 const detailVisible = ref(false)
@@ -169,6 +183,11 @@ const resetAndLoad = () => {
   loadNotices()
 }
 
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadNotices()
+}
+
 const loadNotices = async () => {
   loading.value = true
   try {
@@ -178,6 +197,9 @@ const loadNotices = async () => {
     })
     if (filter.noticeType) {
       params.noticeType = filter.noticeType
+    }
+    if (filter.title && filter.title.trim()) {
+      params.title = filter.title.trim()
     }
     const res = await getNotices(params)
     if (res.code === '200') {
@@ -189,6 +211,13 @@ const loadNotices = async () => {
   } finally {
     loading.value = false
   }
+}
+
+const handleReset = () => {
+  filter.title = ''
+  filter.noticeType = ''
+  pagination.pageNum = 1
+  loadNotices()
 }
 
 const loadClasses = async () => {
@@ -308,7 +337,7 @@ onMounted(async () => {
 .pagination-bar {
   margin-top: 16px;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
 }
 .notice-detail .notice-content {
   white-space: pre-wrap;

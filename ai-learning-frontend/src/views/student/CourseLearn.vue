@@ -786,4 +786,3 @@ watch(
   justify-content: space-between;
 }
 </style>
-

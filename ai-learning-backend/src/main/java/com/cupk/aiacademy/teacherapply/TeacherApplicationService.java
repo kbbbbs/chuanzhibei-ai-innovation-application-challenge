@@ -60,10 +60,26 @@ public class TeacherApplicationService {
     }
 
     public Page<TeacherApplication> list(Integer status, int pageNum, int pageSize) {
+        return list(status, null, pageNum, pageSize);
+    }
+
+    public Page<TeacherApplication> list(Integer status, String keyword, int pageNum, int pageSize) {
         permissionService.requireAdmin();
         Page<TeacherApplication> page = new Page<>(Math.max(pageNum, 1), Math.max(pageSize, 1));
         QueryWrapper<TeacherApplication> query = new QueryWrapper<>();
         if (status != null) query.eq("status", status);
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            String term = keyword.trim();
+            query.and(wrapper -> wrapper.like("username", term)
+                    .or()
+                    .like("nickname", term)
+                    .or()
+                    .like("email", term)
+                    .or()
+                    .like("phone", term)
+                    .or()
+                    .like("reason", term));
+        }
         query.orderByDesc("id");
         applicationMapper.selectPage(page, query);
         page.getRecords().forEach(item -> item.setPassword(null));

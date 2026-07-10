@@ -51,6 +51,16 @@
           <AppEmpty />
         </template>
       </el-table>
+
+      <el-pagination
+        class="pagination"
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="allSubmissions.length"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @size-change="handleSizeChange"
+      />
     </el-card>
 
     <!-- Grading Dialog -->
@@ -98,7 +108,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { currentUserId, enumName, getRecords, normalizeStatus } from '@/utils/apiHelpers'
+import { currentUserId, enumName, getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers'
 import { useUserStore } from '@/store/user'
 import request from '@/utils/request'
 
@@ -109,7 +119,11 @@ const examId = computed(() => Number(route.params.id))
 const loading = ref(false)
 const submitLoading = ref(false)
 const exam = ref({})
-const submissions = ref([])
+const allSubmissions = ref([])
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
 const gradingDialogVisible = ref(false)
 const currentSubmission = ref({})
 const subjectiveAnswers = ref([])
@@ -125,6 +139,8 @@ const subjectiveTotal = computed(() => {
 const subjectiveMax = computed(() => {
   return subjectiveAnswers.value.reduce((sum, a) => sum + (a.maxScore || 0), 0)
 })
+
+const submissions = computed(() => paginateRecords(allSubmissions.value, pagination.pageNum, pagination.pageSize))
 
 const mapSubmission = (submission) => ({
   ...submission,
@@ -158,13 +174,25 @@ const loadSubmissions = async () => {
   try {
     const res = await request.get('/api/submissions', { params: { examId: examId.value } })
     if (res.code === '200') {
-      submissions.value = getRecords(res.data).map(mapSubmission)
+      allSubmissions.value = getRecords(res.data).map(mapSubmission)
+      normalizePage()
     }
   } catch (e) {
     // 全局已提示
   } finally {
     loading.value = false
   }
+}
+
+const normalizePage = () => {
+  const maxPage = Math.max(1, Math.ceil(allSubmissions.value.length / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
 }
 
 const handleGrade = async (row) => {
@@ -229,7 +257,8 @@ const handleSubmitGrade = async () => {
 
 const loadPage = () => {
   exam.value = {}
-  submissions.value = []
+  allSubmissions.value = []
+  pagination.pageNum = 1
   gradingDialogVisible.value = false
   currentSubmission.value = {}
   subjectiveAnswers.value = []
@@ -291,5 +320,10 @@ watch(
   padding: 10px;
   background: #f5f5f5;
   border-radius: 4px;
+}
+
+.pagination {
+  margin-top: 20px;
+  justify-content: center;
 }
 </style>

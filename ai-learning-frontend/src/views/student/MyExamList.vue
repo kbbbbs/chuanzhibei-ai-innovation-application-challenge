@@ -5,7 +5,7 @@
         <span>我的考试</span>
       </template>
 
-      <el-tabs v-model="activeTab">
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="待参加" name="upcoming">
           <el-table :data="upcomingExams" border stripe>
             <template #empty><AppEmpty /></template>
@@ -33,6 +33,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination
+            class="pagination"
+            v-model:current-page="upcomingPagination.pageNum"
+            v-model:page-size="upcomingPagination.pageSize"
+            :total="allUpcomingExams.length"
+            :page-sizes="[5, 10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleUpcomingSizeChange"
+          />
         </el-tab-pane>
 
         <el-tab-pane label="已完成" name="completed">
@@ -61,6 +70,15 @@
               </template>
             </el-table-column>
           </el-table>
+          <el-pagination
+            class="pagination"
+            v-model:current-page="completedPagination.pageNum"
+            v-model:page-size="completedPagination.pageSize"
+            :total="allCompletedExams.length"
+            :page-sizes="[5, 10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleCompletedSizeChange"
+          />
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -68,20 +86,30 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
+import { getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
 
 const activeTab = ref('upcoming')
-const upcomingExams = ref([])
-const completedExams = ref([])
+const allUpcomingExams = ref([])
+const allCompletedExams = ref([])
+const upcomingPagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const completedPagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const upcomingExams = computed(() => paginateRecords(allUpcomingExams.value, upcomingPagination.pageNum, upcomingPagination.pageSize))
+const completedExams = computed(() => paginateRecords(allCompletedExams.value, completedPagination.pageNum, completedPagination.pageSize))
 const loading = ref(false)
 
 const canStartExam = (exam) => {
@@ -146,14 +174,39 @@ const loadExams = async () => {
             .map(sub => sub.examId)
         )
 
-        upcomingExams.value = allExams.filter(e => !finishedExamIds.has(e.id) && e.status === 1)
-        completedExams.value = mappedSubmissions.filter(sub => sub.status >= 1)
+        allUpcomingExams.value = allExams.filter(e => !finishedExamIds.has(e.id) && e.status === 1)
+        allCompletedExams.value = mappedSubmissions.filter(sub => sub.status >= 1)
+        normalizePage(upcomingPagination, allUpcomingExams.value.length)
+        normalizePage(completedPagination, allCompletedExams.value.length)
       }
     }
   } catch (e) {
     // 全局异常已由 request.js 提示
   } finally {
     loading.value = false
+  }
+}
+
+const normalizePage = (pagination, total) => {
+  const maxPage = Math.max(1, Math.ceil(total / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handleUpcomingSizeChange = () => {
+  upcomingPagination.pageNum = 1
+}
+
+const handleCompletedSizeChange = () => {
+  completedPagination.pageNum = 1
+}
+
+const handleTabChange = () => {
+  if (activeTab.value === 'upcoming') {
+    normalizePage(upcomingPagination, allUpcomingExams.value.length)
+  } else {
+    normalizePage(completedPagination, allCompletedExams.value.length)
   }
 }
 
@@ -174,3 +227,10 @@ onMounted(() => {
   loadExams()
 })
 </script>
+
+<style scoped>
+.pagination {
+  margin-top: 16px;
+  justify-content: center;
+}
+</style>
