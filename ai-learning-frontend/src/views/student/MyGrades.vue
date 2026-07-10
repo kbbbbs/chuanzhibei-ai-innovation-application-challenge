@@ -1,5 +1,22 @@
 <template>
   <div class="my-grades">
+    <div v-if="gradedList.length" class="charts-row">
+      <el-card class="chart-card">
+        <template #header><span>成绩趋势</span></template>
+        <ScoreTrendChart :data="trendData" height="280px" />
+      </el-card>
+      <el-card class="chart-card">
+        <template #header>
+          <span>成绩分布</span>
+          <el-radio-group v-model="distType" size="small" style="margin-left:12px">
+            <el-radio-button label="bar">柱状图</el-radio-button>
+            <el-radio-button label="pie">饼图</el-radio-button>
+          </el-radio-group>
+        </template>
+        <GradeDistributionChart :data="distData" :type="distType" height="280px" />
+      </el-card>
+    </div>
+
     <el-card v-loading="loading">
       <template #header>
         <span>我的成绩</span>
@@ -49,10 +66,12 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ScoreTrendChart from '@/components/charts/ScoreTrendChart.vue'
+import GradeDistributionChart from '@/components/charts/GradeDistributionChart.vue'
 import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
@@ -61,6 +80,32 @@ const userStore = useUserStore()
 
 const grades = ref([])
 const loading = ref(false)
+const distType = ref('bar')
+
+const gradedList = computed(() =>
+  grades.value.filter(g => g.status === 2 && g.totalScore != null)
+)
+
+const trendData = computed(() =>
+  gradedList.value.map(g => ({
+    date: g.submitTime ? new Date(g.submitTime).toLocaleDateString('zh-CN') : '-',
+    score: Number(g.totalScore),
+    name: g.examTitle
+  }))
+)
+
+const distData = computed(() => {
+  const buckets = { '0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0 }
+  gradedList.value.forEach(g => {
+    const s = Number(g.totalScore)
+    if (s < 60) buckets['0-59']++
+    else if (s < 70) buckets['60-69']++
+    else if (s < 80) buckets['70-79']++
+    else if (s < 90) buckets['80-89']++
+    else buckets['90-100']++
+  })
+  return Object.entries(buckets).map(([range, count]) => ({ range, count }))
+})
 
 const loadGrades = async () => {
   loading.value = true
@@ -103,6 +148,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.my-grades {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.chart-card :deep(.el-card__header) {
+  display: flex;
+  align-items: center;
+}
+
 .score-total {
   font-weight: bold;
   color: #409eff;
@@ -110,5 +172,11 @@ onMounted(() => {
 
 .score-pending {
   color: #999;
+}
+
+@media (max-width: 900px) {
+  .charts-row {
+    grid-template-columns: 1fr;
+  }
 }
 </style>

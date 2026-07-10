@@ -92,4 +92,71 @@ public interface DashboardMapper {
             LIMIT 8
             """)
     List<Map<String, Object>> selectAllRecentSubmissions();
+
+    @Select("""
+            SELECT
+              CASE
+                WHEN r.total_score < 60 THEN '0-59'
+                WHEN r.total_score < 70 THEN '60-69'
+                WHEN r.total_score < 80 THEN '70-79'
+                WHEN r.total_score < 90 THEN '80-89'
+                ELSE '90-100'
+              END AS scoreRange,
+              COUNT(*) AS count,
+              ROUND(AVG(r.total_score), 1) AS avgScore
+            FROM t_exam_record r
+            JOIN t_exam_session s ON r.exam_session_id = s.id
+            WHERE s.teacher_id = #{teacherId}
+              AND r.status = 2
+              AND r.total_score IS NOT NULL
+            GROUP BY scoreRange
+            ORDER BY MIN(r.total_score)
+            """)
+    List<Map<String, Object>> selectTeacherScoreDistribution(Integer teacherId);
+
+    @Select("""
+            SELECT
+              CASE
+                WHEN r.total_score < 60 THEN '0-59'
+                WHEN r.total_score < 70 THEN '60-69'
+                WHEN r.total_score < 80 THEN '70-79'
+                WHEN r.total_score < 90 THEN '80-89'
+                ELSE '90-100'
+              END AS scoreRange,
+              COUNT(*) AS count,
+              ROUND(AVG(r.total_score), 1) AS avgScore
+            FROM t_exam_record r
+            WHERE r.status = 2
+              AND r.total_score IS NOT NULL
+            GROUP BY scoreRange
+            ORDER BY MIN(r.total_score)
+            """)
+    List<Map<String, Object>> selectAllScoreDistribution();
+
+    @Select("""
+            SELECT r.submit_time AS submitTime, r.total_score AS score,
+                   s.title AS examTitle, COALESCE(u.nickname, u.username) AS studentName
+            FROM t_exam_record r
+            JOIN t_exam_session s ON r.exam_session_id = s.id
+            JOIN t_user u ON r.student_id = u.id
+            WHERE s.teacher_id = #{teacherId}
+              AND r.status = 2
+              AND r.total_score IS NOT NULL
+            ORDER BY r.submit_time DESC
+            LIMIT 20
+            """)
+    List<Map<String, Object>> selectTeacherRecentExams(Integer teacherId);
+
+    @Select("""
+            SELECT r.submit_time AS submitTime, r.total_score AS score,
+                   s.title AS examTitle, COALESCE(u.nickname, u.username) AS studentName
+            FROM t_exam_record r
+            JOIN t_exam_session s ON r.exam_session_id = s.id
+            JOIN t_user u ON r.student_id = u.id
+            WHERE r.status = 2
+              AND r.total_score IS NOT NULL
+            ORDER BY r.submit_time DESC
+            LIMIT 20
+            """)
+    List<Map<String, Object>> selectAllRecentExams();
 }

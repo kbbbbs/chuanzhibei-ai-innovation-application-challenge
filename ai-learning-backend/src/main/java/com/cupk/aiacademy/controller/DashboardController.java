@@ -39,12 +39,16 @@ public class DashboardController {
             map.put("pendingGradingCount", dashboardMapper.countPendingGrading(currentUser.getUserId()));
             map.put("lowScoreCount", dashboardMapper.countLowScoreSubmissions(currentUser.getUserId()));
             map.put("recentSubmissions", normalizeRows(dashboardMapper.selectRecentSubmissions(currentUser.getUserId())));
+            map.put("scoreDistribution", normalizeRows(dashboardMapper.selectTeacherScoreDistribution(currentUser.getUserId())));
+            map.put("recentExams", normalizeRows(dashboardMapper.selectTeacherRecentExams(currentUser.getUserId())));
         } else if ("admin".equals(currentUser.getRoleCode())) {
             map.put("classCount", dashboardMapper.countAllClasses());
             map.put("activeClassCount", dashboardMapper.countAllActiveClasses());
             map.put("pendingGradingCount", dashboardMapper.countAllPendingGrading());
             map.put("lowScoreCount", dashboardMapper.countAllLowScoreSubmissions());
             map.put("recentSubmissions", normalizeRows(dashboardMapper.selectAllRecentSubmissions()));
+            map.put("scoreDistribution", normalizeRows(dashboardMapper.selectAllScoreDistribution()));
+            map.put("recentExams", normalizeRows(dashboardMapper.selectAllRecentExams()));
         }
 
         return Result.success(map);

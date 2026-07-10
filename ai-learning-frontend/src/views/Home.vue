@@ -31,6 +31,19 @@
       </button>
     </section>
 
+    <section v-if="teacherTrendData.length || teacherDistData.some(d=>d.count)" class="charts-row">
+      <el-card class="chart-card">
+        <template #header><span>近期提交趋势</span></template>
+        <ScoreTrendChart v-if="teacherTrendData.length" :data="teacherTrendData" height="280px" />
+        <el-empty v-else description="暂无数据" :image-size="60" />
+      </el-card>
+      <el-card class="chart-card">
+        <template #header><span>成绩分布</span></template>
+        <GradeDistributionChart v-if="teacherDistData.some(d=>d.count)" :data="teacherDistData" height="280px" />
+        <el-empty v-else description="暂无数据" :image-size="60" />
+      </el-card>
+    </section>
+
     <section class="dashboard-grid">
       <div class="dashboard-main">
         <section class="panel">
@@ -246,6 +259,9 @@
             <span>平均成绩</span>
           </div>
           <p class="muted">已完成考试 {{ completedExams.length }} 场，批改中 {{ gradingCount }} 场。</p>
+          <div v-if="studentTrendData.length > 1" style="margin-top:12px">
+            <ScoreTrendChart :data="studentTrendData" height="200px" />
+          </div>
         </section>
 
         <section class="panel compact-panel">
@@ -293,6 +309,8 @@ import {
   Wallet
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
+import ScoreTrendChart from '@/components/charts/ScoreTrendChart.vue'
+import GradeDistributionChart from '@/components/charts/GradeDistributionChart.vue'
 import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
 
 const router = useRouter()
@@ -321,6 +339,12 @@ const management = reactive({
   categories: []
 })
 
+const analytics = reactive({
+  scoreDistribution: [],
+  recentSubmissions: [],
+  recentExams: []
+})
+
 const displayName = computed(() => userStore.nickname || userStore.username || '同学')
 const isAdmin = computed(() => userStore.roleCode === 'admin')
 const isTeacher = computed(() => userStore.roleCode === 'teacher')
@@ -341,6 +365,38 @@ const greeting = computed(() => {
 const gradingCount = computed(() => completedExams.value.filter(item => item.status === 1).length)
 const pendingApplications = computed(() => workApplications.value.filter(item => Number(item.auditStatus) === 0).length)
 const averageScoreText = computed(() => dashboard.averageScore == null ? '-' : dashboard.averageScore)
+const studentTrendData = computed(() =>
+  completedExams.value
+    .filter(e => e.totalScore != null && e.submitTime)
+    .map(e => ({
+      date: new Date(e.submitTime).toLocaleDateString('zh-CN'),
+      score: Number(e.totalScore),
+      name: e.title || e.examName || ''
+    }))
+)
+const teacherTrendData = computed(() =>
+  (analytics.recentExams || analytics.recentSubmissions || []).map(s => ({
+    date: s.submitTime ? new Date(s.submitTime).toLocaleDateString('zh-CN') : '-',
+    score: Number(s.score || 0),
+    name: s.examTitle || s.studentName || s.homeworkTitle || ''
+  }))
+)
+const teacherDistData = computed(() => {
+  const raw = analytics.scoreDistribution || []
+  if (raw.length && raw[0].scoreRange) {
+    return raw.map(d => ({ range: d.scoreRange, count: d.count || 0 }))
+  }
+  const buckets = { '0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0 }
+  raw.forEach(d => {
+    const s = Number(d.avgScore || d.score || 0)
+    if (s < 60) buckets['0-59'] += (d.count || 1)
+    else if (s < 70) buckets['60-69'] += (d.count || 1)
+    else if (s < 80) buckets['70-79'] += (d.count || 1)
+    else if (s < 90) buckets['80-89'] += (d.count || 1)
+    else buckets['90-100'] += (d.count || 1)
+  })
+  return Object.entries(buckets).map(([range, count]) => ({ range, count }))
+})
 const pendingTeacherApplications = computed(() => management.applications.filter(item => Number(item.status) === 0 || item.status === 'PENDING').length)
 const publishedExams = computed(() => management.exams.filter(item => normalizeStatus(item.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, item.status) === 1).length)
 const publishedHomeworks = computed(() => management.homeworks.filter(item => normalizeStatus(item.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, item.status) === 1).length)
@@ -640,7 +696,8 @@ async function loadManagementDashboard() {
     questions,
     users,
     applications,
-    categories
+    categories,
+    dashboardSummary
   ] = await Promise.all([
     safeRecords('/courses', teacherParam),
     safeRecords('/teaching-classes', teacherParam),
@@ -651,6 +708,7 @@ async function loadManagementDashboard() {
     isAdmin.value ? safeRecords('/users') : Promise.resolve([]),
     isAdmin.value ? safeRecords('/teacher-applications') : Promise.resolve([]),
     isAdmin.value ? safeRecords('/categories') : Promise.resolve([]),
+    safeSummary()
   ])
 
   management.courses = scopedTeacherRows(courses)
@@ -662,6 +720,21 @@ async function loadManagementDashboard() {
   management.users = users
   management.applications = applications
   management.categories = categories
+
+  if (dashboardSummary) {
+    analytics.scoreDistribution = dashboardSummary.scoreDistribution || []
+    analytics.recentSubmissions = dashboardSummary.recentSubmissions || []
+    analytics.recentExams = dashboardSummary.recentExams || []
+  }
+}
+
+async function safeSummary() {
+  try {
+    const res = await request.get('/dashboard/summary', { silentError: true })
+    return res?.code === '200' ? res.data : null
+  } catch {
+    return null
+  }
 }
 
 async function loadStudentDashboard() {
@@ -1001,12 +1074,29 @@ onMounted(loadDashboard)
   width: 100%;
 }
 
+.charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  margin-bottom: 20px;
+  max-width: 1240px;
+}
+
+.chart-card :deep(.el-card__header) {
+  display: flex;
+  align-items: center;
+}
+
 @media (max-width: 1100px) {
   .stat-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 
   .dashboard-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .charts-row {
     grid-template-columns: 1fr;
   }
 }
