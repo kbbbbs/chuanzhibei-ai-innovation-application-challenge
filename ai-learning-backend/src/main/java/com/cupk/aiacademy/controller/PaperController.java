@@ -60,6 +60,11 @@ public class PaperController {
         return ApiResponse.success(null, "删除成功");
     }
 
+    @PostMapping("/{id}/publish")
+    public ApiResponse<PaperResponseDTO> publish(@PathVariable Long id) {
+        return ApiResponse.success(paperService.publish(id));
+    }
+
     @DeleteMapping("/{id}/questions/{paperQuestionId}")
     public ApiResponse<Void> removeQuestion(@PathVariable Long id, @PathVariable Long paperQuestionId) {
         paperService.removePaperQuestion(id, paperQuestionId);

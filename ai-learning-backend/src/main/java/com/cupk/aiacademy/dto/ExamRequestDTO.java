@@ -1,8 +1,6 @@
 package com.cupk.aiacademy.dto;
 
 import com.cupk.aiacademy.common.ExamStatus;
-import com.cupk.aiacademy.common.AssessmentType;
-import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -26,13 +24,10 @@ public class ExamRequestDTO {
     private String description;
     @NotNull
     private LocalDateTime startTime;
-    @NotNull
-    @Future
     private LocalDateTime endTime;
     @NotNull
     @Positive
     private Integer durationMinutes;
     @NotNull
     private ExamStatus status;
-    private AssessmentType assessmentType = AssessmentType.EXAM;
 }

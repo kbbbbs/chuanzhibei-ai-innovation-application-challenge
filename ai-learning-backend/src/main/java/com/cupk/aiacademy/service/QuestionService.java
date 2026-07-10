@@ -722,6 +722,11 @@ public class QuestionService {
         boolean isChoiceType = request.getType() == QuestionType.SINGLE_CHOICE
                 || request.getType() == QuestionType.MULTIPLE_CHOICE
                 || request.getType() == QuestionType.TRUE_FALSE;
+        boolean isAutoGradableType = isChoiceType || request.getType() == QuestionType.FILL_BLANK;
+        if (isAutoGradableType && request.getAnswers().stream()
+                .anyMatch(answer -> answer == null || answer.getAnswerContent() == null || answer.getAnswerContent().isBlank())) {
+            throw new BusinessException("自动批改题必须填写正确答案");
+        }
         if (isChoiceType) {
             if (request.getOptions() == null || request.getOptions().isEmpty()) {
                 throw new BusinessException("选择题必须包含选项");

@@ -64,20 +64,20 @@ export async function loginByUi(page, username = 'admin', password = '[REDACTED]
   await page.goto('/login')
   if (options.clearStorage) {
     await page.evaluate(() => localStorage.clear())
-    await page.reload()
+    await page.reload({ waitUntil: 'domcontentloaded' })
   }
   await page.getByPlaceholder('请输入用户名').fill(username)
   await page.getByPlaceholder('请输入密码').fill(password)
   await page.getByRole('button', { name: '登录' }).click()
-  await expect(page).toHaveURL(/\/home/)
+  await expect(page).toHaveURL(/\/console/)
   if (options.expectHomeHeading !== false) {
-    await expect(page.locator('.welcome-header, .dashboard-hero')).toBeVisible()
+    await expect(page.locator('.welcome-header, .dashboard-hero, .management-console')).toBeVisible()
   }
 }
 
 export async function logout(page, options = {}) {
-  if (options.fromHome) {
-    await page.goto('/home')
+  if (options.fromConsole) {
+    await page.goto('/console')
   }
   const trigger = page.locator('.user-profile-trigger')
   if (options.ifNeeded && await trigger.count() === 0) {
@@ -147,22 +147,49 @@ export function addClassStudentFixture(apiCall, { classId, studentId }) {
   })
 }
 
-export async function createHomeworkFixture(apiCall, { classId, teacherId, title, content, fullScore = 100 }) {
-  await apiCall('/homeworks', {
+export async function createHomeworkFixture(apiCall, { courseId, classId, teacherId, title, content }) {
+  const question = (await apiCall('/api/questions', {
+    method: 'POST',
+    data: {
+      courseId,
+      teacherId,
+      type: 'SHORT_ANSWER',
+      content,
+      difficulty: 'EASY',
+      knowledgePoint: 'E2E 作业',
+      analysis: '',
+      status: 'ACTIVE',
+      answers: [{ answerContent: '已完成', sortOrder: 1 }],
+    },
+  })).data
+  const paper = (await apiCall('/api/homework-papers', {
+    method: 'POST',
+    data: {
+      courseId,
+      teacherId,
+      name: `${title}题目`,
+      description: content,
+      durationMinutes: 60,
+      status: 'PUBLISHED',
+      ignoreWarnings: true,
+      questions: [{ questionId: question.id, sortOrder: 1, score: 100, requiredAnswer: true }],
+    },
+  })).data
+  const homework = (await apiCall('/api/homeworks', {
     method: 'POST',
     data: {
       classId,
       teacherId,
-      title,
-      content,
-      fullScore,
+      paperId: paper.id,
+      name: title,
+      description: content,
       startTime: localDateTime(-60000),
-      deadline: localDateTime(86400000),
-      status: 1,
+      endTime: localDateTime(86400000),
+      durationMinutes: 60,
+      status: 'PUBLISHED',
     },
-  })
-  return records((await apiCall('/homeworks', { params: { title, pageSize: 20 } })).data)
-    .find(item => item.title === title)
+  })).data
+  return { ...homework, fixturePaperId: paper.id, fixtureQuestionId: question.id }
 }
 
 export async function formItem(page, label) {

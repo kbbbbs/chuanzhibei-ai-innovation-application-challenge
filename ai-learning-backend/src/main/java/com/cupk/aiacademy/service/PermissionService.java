@@ -14,6 +14,8 @@ import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.ExamPaper;
 import com.cupk.aiacademy.pojo.ExamSession;
 import com.cupk.aiacademy.pojo.Homework;
+import com.cupk.aiacademy.pojo.HomeworkPaper;
+import com.cupk.aiacademy.pojo.HomeworkSession;
 import com.cupk.aiacademy.pojo.TeachingClass;
 import com.cupk.aiacademy.pojo.User;
 import org.springframework.stereotype.Service;
@@ -162,6 +164,17 @@ public class PermissionService {
         throw new ForbiddenException("无权维护该试卷");
     }
 
+    public void requireHomeworkPaperTeacher(HomeworkPaper paper) {
+        AuthUtils.LoginUser user = currentUser();
+        if (authUtils.isAdmin(user)) {
+            return;
+        }
+        if (authUtils.isTeacher(user) && Objects.equals(paper.getTeacherId(), user.getUserId())) {
+            return;
+        }
+        throw new ForbiddenException("无权维护该作业试卷");
+    }
+
     public void requireExamTeacher(ExamSession exam) {
         AuthUtils.LoginUser user = currentUser();
         if (authUtils.isAdmin(user)) {
@@ -171,6 +184,17 @@ public class PermissionService {
             return;
         }
         throw new ForbiddenException("无权维护该考试");
+    }
+
+    public void requireHomeworkAssessmentTeacher(HomeworkSession homework) {
+        AuthUtils.LoginUser user = currentUser();
+        if (authUtils.isAdmin(user)) {
+            return;
+        }
+        if (authUtils.isTeacher(user) && Objects.equals(homework.getTeacherId(), user.getUserId())) {
+            return;
+        }
+        throw new ForbiddenException("无权维护该作业");
     }
 
     public void requireHomeworkTeacher(Homework homework) {

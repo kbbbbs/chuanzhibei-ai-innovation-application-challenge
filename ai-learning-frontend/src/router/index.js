@@ -83,6 +83,12 @@ export const layoutChildren = [
     meta: { title: '作业管理', icon: 'Tickets', roles: ['admin', 'teacher'], requiresAuth: true, assessmentType: 'HOMEWORK' }
   },
   {
+    path: 'homework-papers',
+    name: 'HomeworkPaperList',
+    component: () => import('../views/teacher/PaperList.vue'),
+    meta: { title: '作业题卷', icon: 'Document', roles: ['admin', 'teacher'], requiresAuth: true, assessmentType: 'HOMEWORK' }
+  },
+  {
     path: 'homework/:id/submissions',
     name: 'HomeworkSubmissions',
     component: () => import('../views/teacher/ExamGrading.vue'),
@@ -93,6 +99,12 @@ export const layoutChildren = [
     name: 'ExamGrading',
     component: () => import('../views/teacher/ExamGrading.vue'),
     meta: { title: '考试批改', hidden: true, roles: ['admin', 'teacher'], requiresAuth: true }
+  },
+  {
+    path: 'exams/:id/results',
+    name: 'ExamResults',
+    component: () => import('../views/teacher/ExamResults.vue'),
+    meta: { title: '考试详情', hidden: true, roles: ['admin', 'teacher'], requiresAuth: true }
   },
   {
     path: 'resource-gen',
@@ -311,7 +323,7 @@ router.beforeEach((to, from, next) => {
   // Check role permission
   if (requiresAuth && !canAccess(to, userStore)) {
     ElMessage.error('无权限访问此页面')
-    return next('/')
+    return next({ name: 'Home' })
   }
 
   next()

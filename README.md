@@ -13,7 +13,17 @@ backend-api.md          后端接口简表
 
 ## 数据库
 
-仅执行 `database/ai_academy_export.sql` 重建 MySQL 数据库。后端默认连接本机 `ai_academy` 数据库，也可以通过环境变量调整：
+`database/` 仅保留两份可在空 MySQL 8.0+ 实例上直接导入的脚本：
+
+- `ai_academy_schema.sql`：完整表结构、索引和外键，不含实例数据。
+- `ai_academy_export.sql`：同一套结构及本地开发所需的示例数据。
+
+二选一执行即可，脚本会重建 `ai_academy` 数据库。后端默认连接本机 `ai_academy` 数据库，也可以通过环境变量调整：
+
+```bash
+mysql -uroot -p --default-character-set=utf8mb4 < database/ai_academy_schema.sql
+mysql -uroot -p --default-character-set=utf8mb4 < database/ai_academy_export.sql
+```
 
 ```bash
 DB_URL=jdbc:mysql://localhost:3306/ai_academy?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai

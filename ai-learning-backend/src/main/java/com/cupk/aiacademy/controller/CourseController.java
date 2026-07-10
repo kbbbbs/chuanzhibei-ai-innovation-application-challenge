@@ -189,6 +189,18 @@ public class CourseController {
         return row > 0 ? Result.success() : Result.error();
     }
 
+    @PutMapping("/{id}/enable")
+    public Result enable(@PathVariable Integer id) {
+        Course course = courseMapper.selectById(id);
+        if (course == null) {
+            return Result.error("404", "课程不存在");
+        }
+        permissionService.requireCourseTeacher(course);
+        course.setStatus(1);
+        course.setUpdatedAt(LocalDateTime.now());
+        return courseMapper.updateById(course) > 0 ? Result.success() : Result.error();
+    }
+
     @PutMapping("/{id}/view")
     public Result addViewCount(@PathVariable Integer id) {
         Course course = courseMapper.selectById(id);

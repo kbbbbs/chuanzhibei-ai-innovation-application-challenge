@@ -45,6 +45,10 @@ export const deleteCourse = id => {
   return request.delete('/courses/' + id)
 }
 
+export const enableCourse = id => {
+  return request.put('/courses/' + id + '/enable')
+}
+
 export const addCourseView = id => {
   return request.put('/courses/' + id + '/view')
 }

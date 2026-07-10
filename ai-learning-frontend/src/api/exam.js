@@ -67,6 +67,22 @@ export const closeExam = (id) => {
   return request.post(`/api/exams/${id}/close`)
 }
 
+export const submitExamResults = (id) => {
+  return request.post(`/api/exams/${id}/results/submit`)
+}
+
+export const getExamResults = (id) => {
+  return request.get(`/api/exams/${id}/results`)
+}
+
+export const exportExamResults = (id, format = 'xlsx') => {
+  return request.get(`/api/exams/${id}/results/export`, {
+    params: { format },
+    responseType: 'blob',
+    silentError: true
+  })
+}
+
 // Submission APIs
 export const startExam = (examId, candidateId) => {
   return request.post(`/api/exams/${examId}/submissions/start`, null, {

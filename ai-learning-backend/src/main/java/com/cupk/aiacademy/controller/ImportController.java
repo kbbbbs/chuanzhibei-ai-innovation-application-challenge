@@ -5,6 +5,7 @@ import com.cupk.aiacademy.common.LegacyHomeworkWritePolicy;
 import com.cupk.aiacademy.dto.imports.ImportConfirmRequest;
 import com.cupk.aiacademy.dto.imports.ImportConfirmResponse;
 import com.cupk.aiacademy.dto.imports.ImportPreviewResponse;
+import com.cupk.aiacademy.dto.imports.PaperImportConfirmRequest;
 import com.cupk.aiacademy.service.ImportService;
 import com.cupk.aiacademy.service.imports.TabularFileSupport.ExportFile;
 import org.springframework.http.ContentDisposition;
@@ -31,8 +32,22 @@ public class ImportController {
         this.importService = importService;
     }
 
-    @GetMapping("/{type}/template")
-    public ResponseEntity<byte[]> template(@PathVariable String type) {
+    @GetMapping("/questions/template")
+    public ResponseEntity<byte[]> questionTemplate() {
+        return template("questions");
+    }
+
+    @GetMapping("/papers/template")
+    public ResponseEntity<byte[]> paperTemplate() {
+        return template("papers");
+    }
+
+    @GetMapping("/homeworks/template")
+    public ResponseEntity<byte[]> homeworkTemplate() {
+        return template("homeworks");
+    }
+
+    private ResponseEntity<byte[]> template(String type) {
         byte[] file = importService.template(type);
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION, ContentDisposition.attachment()
@@ -49,13 +64,9 @@ public class ImportController {
     }
 
     @PostMapping("/papers/preview")
-    public ApiResponse<ImportPreviewResponse> previewPapers(@RequestParam("file") MultipartFile file) {
-        return ApiResponse.success(importService.preview("papers", file));
-    }
-
-    @PostMapping("/exams/preview")
-    public ApiResponse<ImportPreviewResponse> previewExams(@RequestParam("file") MultipartFile file) {
-        return ApiResponse.success(importService.preview("exams", file));
+    public ApiResponse<ImportPreviewResponse> previewPapers(@RequestParam("file") MultipartFile file,
+                                                            @RequestParam("courseId") Long courseId) {
+        return ApiResponse.success(importService.previewPapers(file, courseId));
     }
 
     @PostMapping("/homeworks/preview")
@@ -63,12 +74,19 @@ public class ImportController {
         return ApiResponse.success(importService.preview("homeworks", file));
     }
 
-    @PostMapping("/{type}/confirm")
-    public ApiResponse<ImportConfirmResponse> confirm(@PathVariable String type, @RequestBody ImportConfirmRequest request) {
-        if ("homeworks".equalsIgnoreCase(type)) {
-            LegacyHomeworkWritePolicy.rejectApiRequest();
-        }
-        return ApiResponse.success(importService.confirm(type, request));
+    @PostMapping("/questions/confirm")
+    public ApiResponse<ImportConfirmResponse> confirmQuestions(@RequestBody ImportConfirmRequest request) {
+        return ApiResponse.success(importService.confirmQuestions(request));
+    }
+
+    @PostMapping("/papers/confirm")
+    public ApiResponse<ImportConfirmResponse> confirmPapers(@RequestBody PaperImportConfirmRequest request) {
+        return ApiResponse.success(importService.confirmPapers(request));
+    }
+
+    @PostMapping("/homeworks/confirm")
+    public void confirmHomeworks() {
+        LegacyHomeworkWritePolicy.rejectApiRequest();
     }
 
     @GetMapping("/{type}/export")

@@ -25,6 +25,13 @@
                 {{ row.duration }}分钟
               </template>
             </el-table-column>
+            <el-table-column label="开始状态" width="100">
+              <template #default="{ row }">
+                <el-tag :type="hasExamStarted(row) ? 'success' : 'warning'">
+                  {{ hasExamStarted(row) ? '已开始' : '未开始' }}
+                </el-tag>
+              </template>
+            </el-table-column>
             <el-table-column label="操作" width="150">
               <template #default="{ row }">
                 <el-button size="small" type="primary" @click="handleStartExam(row)" :disabled="!canStartExam(row)">
@@ -86,7 +93,7 @@
 </template>
 
 <script setup>
-import { computed, reactive, ref, onMounted } from 'vue'
+import { computed, reactive, ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
@@ -114,6 +121,9 @@ const completedExams = computed(() => paginateRecords(allCompletedExams.value, c
 const loading = ref(false)
 const assessmentType = computed(() => route.meta.assessmentType || 'EXAM')
 const assessmentLabel = computed(() => assessmentType.value === 'HOMEWORK' ? '作业' : '考试')
+const isHomework = computed(() => assessmentType.value === 'HOMEWORK')
+const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
+const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
 const canStartExam = (exam) => {
   const now = new Date()
@@ -121,6 +131,8 @@ const canStartExam = (exam) => {
   const end = new Date(exam.endTime)
   return exam.status === 1 && now >= start && now <= end
 }
+
+const hasExamStarted = (exam) => exam.status === 1 && new Date() >= new Date(exam.startTime)
 
 const mapExam = (exam) => {
   const normalized = normalizeStatus(exam.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, 0)
@@ -141,7 +153,8 @@ const mapSubmission = (submission, exam) => {
   }, 0)
   return {
     ...submission,
-    title: exam?.title || submission.examName || `考试${submission.examId}`,
+    assessmentId: submission.homeworkId ?? submission.examId,
+    title: exam?.title || submission.homeworkName || submission.examName || `${assessmentLabel.value}${submission.homeworkId ?? submission.examId}`,
     duration: exam?.duration || 0,
     submitTime: submission.submittedAt,
     status: normalized,
@@ -157,26 +170,26 @@ const loadExams = async () => {
       const classIds = getRecords(classRes.data).map(c => c.classId)
 
       // Get all exams for these classes
-      const examRes = await request.get('/api/exams', {
-        params: { pageSize: 100, assessmentType: assessmentType.value }
+      const examRes = await request.get(assessmentApi.value, {
+        params: { pageSize: 100 }
       })
       if (examRes.code === '200') {
         const allExams = getRecords(examRes.data).map(mapExam).filter(e => classIds.includes(e.classId))
 
         // Get my submissions
-        const subRes = await request.get('/api/submissions', {
-          params: { studentId: userStore.userId, pageSize: 100, assessmentType: assessmentType.value }
+        const subRes = await request.get(submissionApi.value, {
+          params: { studentId: userStore.userId, pageSize: 100 }
         })
         const mySubmissions = subRes.code === '200' ? getRecords(subRes.data) : []
         const mappedSubmissions = mySubmissions.map(sub => {
-          const exam = allExams.find(e => e.id === sub.examId)
+          const exam = allExams.find(e => e.id === (sub.homeworkId ?? sub.examId))
           return mapSubmission(sub, exam)
         })
 
         const finishedExamIds = new Set(
           mappedSubmissions
             .filter(sub => sub.status >= 1)
-            .map(sub => sub.examId)
+            .map(sub => sub.assessmentId)
         )
 
         allUpcomingExams.value = allExams.filter(e => !finishedExamIds.has(e.id) && e.status === 1)
@@ -229,12 +242,21 @@ const handleStartExam = (exam) => {
 }
 
 const handleViewResult = (submission) => {
-  router.push({ name: 'ExamResult', params: { submissionId: submission.id } })
+  router.push({
+    name: 'ExamResult',
+    params: { submissionId: submission.id },
+    query: isHomework.value ? { assessmentType: 'HOMEWORK' } : undefined
+  })
 }
 
 onMounted(() => {
   loadExams()
 })
+
+watch(
+  () => route.name,
+  () => loadExams()
+)
 </script>
 
 <style scoped>

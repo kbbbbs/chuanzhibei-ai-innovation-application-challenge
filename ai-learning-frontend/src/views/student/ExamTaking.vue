@@ -89,6 +89,8 @@ const { confirmSubmit } = useConfirm()
 
 const examId = computed(() => Number(route.params.examId))
 const isHomework = computed(() => route.query.assessmentType === 'HOMEWORK')
+const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
+const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
 const exam = ref({ title: '' })
 const submission = ref(null)
@@ -160,8 +162,9 @@ const startTimer = () => {
   if (timer) clearInterval(timer)
   const durationMinutes = exam.value.durationMinutes || exam.value.duration || 0
   const startedAt = submission.value?.startedAt ? new Date(submission.value.startedAt) : new Date()
-  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - startedAt.getTime()) / 1000))
-  remainingTime.value = Math.max(durationMinutes * 60 - elapsedSeconds, 0)
+  const durationCutoff = startedAt.getTime() + durationMinutes * 60 * 1000
+  const examCutoff = exam.value.endTime ? new Date(exam.value.endTime).getTime() : durationCutoff
+  remainingTime.value = Math.max(Math.floor((Math.min(durationCutoff, examCutoff) - Date.now()) / 1000), 0)
   timer = setInterval(() => {
     remainingTime.value--
     if (remainingTime.value <= 0) {
@@ -175,19 +178,19 @@ const startTimer = () => {
 const loadExam = async () => {
   loading.value = true
   try {
-    const res = await request.get(`/api/exams/${examId.value}`)
+    const res = await request.get(`${assessmentApi.value}/${examId.value}`)
     if (res.code === '200') {
       exam.value = {
         ...res.data,
         title: res.data.name || res.data.title || '',
       }
 
-      const startRes = await request.post(`/api/exams/${examId.value}/submissions/start`, null, {
+      const startRes = await request.post(`${assessmentApi.value}/${examId.value}/submissions/start`, null, {
         params: { candidateId: String(userStore.userId) }
       })
       if (startRes.code !== '200' || !startRes.data?.id) return
 
-      const detailRes = await request.get(`/api/submissions/${startRes.data.id}/student`)
+      const detailRes = await request.get(`${submissionApi.value}/${startRes.data.id}/student`)
       if (detailRes.code !== '200') return
 
       submission.value = detailRes.data
@@ -259,7 +262,7 @@ const handleSaveDraft = async ({ notify = true } = {}) => {
 
   saveLoading.value = true
   try {
-    const res = await request.post(`/api/submissions/${submission.value.id}/answers`, buildAnswerPayload())
+    const res = await request.post(`${submissionApi.value}/${submission.value.id}/answers`, buildAnswerPayload())
     if (res.code === '200' && notify) {
       ElMessage.success('答案已暂存')
     }
@@ -282,7 +285,7 @@ const handleSubmit = async (skipConfirm = false) => {
   try {
     if (!await handleSaveDraft({ notify: false })) return
 
-    const res = await request.post(`/api/submissions/${submission.value.id}/submit`)
+    const res = await request.post(`${submissionApi.value}/${submission.value.id}/submit`)
     if (res.code === '200') {
       ElMessage.success('提交成功')
       clearInterval(timer)

@@ -3,7 +3,8 @@ package com.cupk.aiacademy.common;
 public enum ExamStatus {
     DRAFT(0),
     PUBLISHED(1),
-    CLOSED(3);
+    CLOSED(3),
+    RESULTS_SUBMITTED(4);
 
     private final int code;
 
@@ -21,6 +22,9 @@ public enum ExamStatus {
         }
         if (code == 1 || code == 2) {
             return PUBLISHED;
+        }
+        if (code == 4) {
+            return RESULTS_SUBMITTED;
         }
         return CLOSED;
     }

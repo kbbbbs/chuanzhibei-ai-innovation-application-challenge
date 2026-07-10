@@ -23,7 +23,12 @@
 
     <section class="dashboard-grid">
       <div class="dashboard-main">
-        <section class="panel">
+        <section
+          v-for="domain in managementDomains"
+          :key="domain.key"
+          class="panel management-domain"
+          :class="domain.className"
+        >
           <div class="panel-header">
             <div>
               <h2>{{ isAdmin ? '平台运营入口' : '教学工作台' }}</h2>
@@ -300,24 +305,24 @@ const managementDomains = computed(() => [
         : []),
     ]
   },
-  {
-    key: 'students',
-    title: '学生管理',
-    description: '以行政班为主体维护学生名单、班级归属与成员调整。',
-    icon: School,
-    tone: 'tone-cyan',
-    className: 'domain-students',
-    restricted: !isAdmin.value,
-    actions: [
-      {
-        label: '行政班管理',
-        description: '创建行政班并维护学生成员',
-        path: '/administrative-classes',
+  ...(isAdmin.value
+    ? [{
+        key: 'students',
+        title: '学生管理',
+        description: '以行政班为主体维护学生名单、班级归属与成员调整。',
         icon: School,
-        disabled: !isAdmin.value
-      }
-    ]
-  },
+        tone: 'tone-cyan',
+        className: 'domain-students',
+        actions: [
+          {
+            label: '行政班管理',
+            description: '创建行政班并维护学生成员',
+            path: '/administrative-classes',
+            icon: School,
+          }
+        ]
+      }]
+    : []),
   {
     key: 'work-study',
     title: '勤工俭学管理',

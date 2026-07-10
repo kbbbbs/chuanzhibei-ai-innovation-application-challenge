@@ -81,6 +81,7 @@ async function setupFixtures() {
   await addClassStudentFixture(apiCall, { classId: created.class.id, studentId: student.id })
 
   created.homework = await createHomeworkFixture(apiCall, {
+    courseId: created.course.id,
     classId: created.class.id,
     teacherId: teacher.id,
     title: `自动化作业_${suffix}`,
@@ -116,6 +117,7 @@ async function setupFixtures() {
       description: 'browser e2e paper',
       durationMinutes: 60,
       status: 'PUBLISHED',
+      ignoreWarnings: true,
       questions: [{
         questionId: created.question.id,
         sortOrder: 1,
@@ -148,6 +150,9 @@ async function cleanupFixtures() {
     await apiCall(`/api/exams/${created.exam.id}`, { method: 'DELETE', allowFail: true })
   }
   if (created.fixturePaper?.id) await apiCall(`/api/papers/${created.fixturePaper.id}`, { method: 'DELETE', allowFail: true })
+  if (created.homework?.id) await apiCall(`/api/homeworks/${created.homework.id}`, { method: 'DELETE', allowFail: true })
+  if (created.homework?.fixturePaperId) await apiCall(`/api/homework-papers/${created.homework.fixturePaperId}`, { method: 'DELETE', allowFail: true })
+  if (created.homework?.fixtureQuestionId) await apiCall(`/api/questions/${created.homework.fixtureQuestionId}`, { method: 'DELETE', allowFail: true })
   if (created.uiPaperId) await apiCall(`/api/papers/${created.uiPaperId}`, { method: 'DELETE', allowFail: true })
   if (created.uiQuestionId) await apiCall(`/api/questions/${created.uiQuestionId}`, { method: 'DELETE', allowFail: true })
   if (created.uiUserId) await apiCall(`/users/${created.uiUserId}`, { method: 'DELETE', allowFail: true })
@@ -195,7 +200,7 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
   await expect(page.locator('.layout-aside').getByText('课程管理')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('用户管理')).toBeVisible()
 
-  for (const path of ['/courses', '/questions', '/papers', '/exams', '/homeworks', '/teaching-classes', '/users', '/categories', '/my-classes', '/learning-routes', '/my-homeworks', '/my-exams', '/my-grades', '/home']) {
+  for (const path of ['/courses', '/questions', '/papers', '/exams', '/homeworks', '/teaching-classes', '/users', '/categories', '/my-classes', '/learning-routes', '/my-homeworks', '/my-exams', '/my-grades', '/console']) {
     await page.goto(path)
     await page.waitForLoadState('networkidle')
     await expect(page.locator('.layout-aside')).toBeVisible()
@@ -219,6 +224,7 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
 
   await page.goto('/users')
   await page.getByRole('button', { name: '新增用户' }).click()
+  await expect(page.locator('.el-dialog:visible')).toBeVisible()
   await fillFormInput(page, '用户名', `ui_student_${suffix}`)
   await fillFormInput(page, '密码', '123456')
   await fillFormInput(page, '昵称', `UI学生_${suffix}`)
@@ -330,7 +336,7 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
     await expectNoVisibleError(page)
   }
 
-  await logout(page, { fromHome: true, ifNeeded: true })
+  await logout(page, { fromConsole: true, ifNeeded: true })
   await loginByUi(page, 'student', '123456')
   await expect(page.locator('.layout-aside').getByText('我的班级')).toBeVisible()
   await expect(page.locator('.layout-aside').getByText('学习路线')).toBeVisible()
@@ -348,11 +354,12 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
   await expect(page.locator('.el-message--error:visible')).toHaveCount(0)
 
   await page.goto('/my-homeworks')
-  await clickRowButton(page, `自动化作业_${suffix}`, '提交作业')
-  await fillFormInput(page, '作业内容', `学生UI提交_${suffix}`)
-  await page.locator('.el-dialog:visible').getByRole('button', { name: '提交' }).click()
+  await clickRowButton(page, `自动化作业_${suffix}`, '开始作业')
+  await expect(page).toHaveURL(/\/exam-taking\//)
+  await page.getByPlaceholder('请输入答案').fill(`学生UI提交_${suffix}`)
+  await page.getByRole('button', { name: '提交试卷' }).click()
   await page.locator('.el-message-box:visible').getByRole('button', { name: '确定' }).click()
-  await expect(page.locator('.el-dialog:visible')).toHaveCount(0)
+  await expect(page).toHaveURL(/\/my-homeworks/)
   await expect(page.getByRole('tab', { name: '已提交' })).toBeVisible()
   await page.getByRole('tab', { name: '已提交' }).click()
   await expect(page.locator('.el-table__body-wrapper tr:visible').filter({ hasText: `自动化作业_${suffix}` }).first()).toBeVisible()
@@ -370,7 +377,7 @@ test('权限、导航、增删改、学生流程和反复跳转保持稳定', as
     await expect(page.getByText(`自动化考试_${suffix}`)).toBeVisible()
   }
 
-  await logout(page, { fromHome: true, ifNeeded: true })
+  await logout(page, { fromConsole: true, ifNeeded: true })
   await loginByUi(page, 'admin', '123456')
   await page.goto(`/homework/${created.homework.id}/submissions`)
   await clickRowButton(page, `学生UI提交_${suffix}`, '批改')

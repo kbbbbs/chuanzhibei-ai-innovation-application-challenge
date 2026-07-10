@@ -21,7 +21,7 @@ test.describe('错误操作友好反馈', () => {
   })
 
   test('管理端表单错误和不存在学生会给出可理解反馈', async ({ page }) => {
-    await loginByUi(page)
+    await loginByUi(page, 'admin', '123456', { expectHomeHeading: false })
 
     await page.goto('/categories')
     await page.getByRole('button', { name: '新增分类' }).click()

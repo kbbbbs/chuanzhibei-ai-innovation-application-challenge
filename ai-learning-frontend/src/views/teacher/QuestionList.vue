@@ -101,19 +101,23 @@
           <el-button size="small" @click="addOption">添加选项</el-button>
         </el-form-item>
 
-        <el-form-item v-if="['single_choice', 'true_false'].includes(form.questionType)" label="正确答案" prop="correctAnswer">
+        <el-form-item v-if="['single_choice', 'true_false'].includes(form.questionType)" label="正确答案" prop="correctAnswer" required>
           <el-select v-model="form.correctAnswer" placeholder="请选择正确答案">
             <el-option v-for="(opt, idx) in form.options" :key="idx" :label="opt.text" :value="idx" />
           </el-select>
         </el-form-item>
 
-        <el-form-item v-if="form.questionType === 'multiple_choice'" label="正确答案" prop="correctAnswers">
+        <el-form-item v-if="form.questionType === 'multiple_choice'" label="正确答案" prop="correctAnswers" required>
           <el-checkbox-group v-model="form.correctAnswers">
             <el-checkbox v-for="(opt, idx) in form.options" :key="idx" :label="idx">{{ opt.text }}</el-checkbox>
           </el-checkbox-group>
         </el-form-item>
 
-        <el-form-item v-if="['fill_blank', 'short_answer'].includes(form.questionType)" label="参考答案">
+        <el-form-item v-if="form.questionType === 'fill_blank'" label="正确答案" prop="referenceAnswer" required>
+          <el-input v-model="form.referenceAnswer" type="textarea" :rows="2" />
+        </el-form-item>
+
+        <el-form-item v-if="form.questionType === 'short_answer'" label="参考答案">
           <el-input v-model="form.referenceAnswer" type="textarea" :rows="2" />
         </el-form-item>
 
@@ -324,17 +328,12 @@ const buildRequestDTO = () => {
         answerContent: String.fromCharCode(65 + idx),
         sortOrder: 1
       }]
-    } else {
-      dto.answers = [{ answerContent: 'A', sortOrder: 1 }]
     }
   } else if (type === 'multiple_choice') {
     dto.answers = (form.correctAnswers || []).map((idx, i) => ({
       answerContent: String.fromCharCode(65 + idx),
       sortOrder: i + 1
     }))
-    if (dto.answers.length === 0) {
-      dto.answers = [{ answerContent: 'A', sortOrder: 1 }]
-    }
   } else {
     dto.answers = [{
       answerContent: (form.referenceAnswer || '').trim() || '暂无参考答案',
@@ -511,6 +510,10 @@ const handleSubmit = async () => {
   if (form.questionType === 'multiple_choice' &&
       (!form.correctAnswers || form.correctAnswers.length < 2)) {
     ElMessage.warning('多选题请至少选择两个正确答案')
+    return
+  }
+  if (form.questionType === 'fill_blank' && !form.referenceAnswer?.trim()) {
+    ElMessage.warning('请输入正确答案')
     return
   }
 
