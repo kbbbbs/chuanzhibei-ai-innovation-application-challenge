@@ -42,9 +42,9 @@
           <el-icon><DataBoard /></el-icon>
           <span>控制台</span>
         </el-button>
-        <el-button class="agent-nav-btn" type="primary" link @click="handleAgentEntry">
-          <el-icon><Cpu /></el-icon>
-          <span>Agent 助手</span>
+        <el-button class="notice-nav-btn" type="primary" link @click="handleNoticeEntry">
+          <el-icon><Bell /></el-icon>
+          <span>通知</span>
         </el-button>
 
         <!-- User Profile Dropdown or Login Button -->
@@ -200,9 +200,8 @@ import { useUserStore } from '@/store/user'
 import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
 import AgentFloatingAssistant from '@/components/agent/AgentFloatingAssistant.vue'
-import { openAgentAssistant } from '@/utils/agentAssistant'
 import {
-  DataBoard, Cpu, School, Tickets, Checked,
+  DataBoard, School, Tickets, Checked,
   DataLine, Reading, Edit, Document, SwitchButton, User, UserFilled, Menu, Collection, Bell, MapLocation,
   Suitcase, Setting, Fold, Expand
 } from '@element-plus/icons-vue'
@@ -261,17 +260,12 @@ function toggleSidebar() {
   localStorage.setItem('layout-sidebar-collapsed', String(sidebarCollapsed.value))
 }
 
-function handleAgentEntry() {
+function handleNoticeEntry() {
   if (userStore.isLoggedIn) {
-    openAgentAssistant()
+    router.push('/notices')
     return
   }
-  const target = router.resolve({
-    path: route.path,
-    query: { ...route.query, openAgent: '1' },
-    hash: route.hash,
-  }).fullPath
-  router.push({ path: '/login', query: { redirect: target } })
+  router.push({ path: '/login', query: { redirect: '/notices' } })
 }
 
 async function scrollToHomeSection(id) {
@@ -727,7 +721,7 @@ const handleCommand = async (command) => {
 }
 
 .console-nav-btn,
-.agent-nav-btn {
+.notice-nav-btn {
   height: 36px;
   padding: 0 14px;
   border-radius: 18px;
@@ -738,7 +732,7 @@ const handleCommand = async (command) => {
 }
 
 .console-nav-btn:hover,
-.agent-nav-btn:hover {
+.notice-nav-btn:hover {
   background: var(--primary-color-light);
   color: var(--primary-color-hover);
 }
@@ -984,14 +978,14 @@ const handleCommand = async (command) => {
 
   .home-entry .sub-title,
   .console-nav-btn span,
-  .agent-nav-btn span,
+  .notice-nav-btn span,
   .username,
   .role-badge {
     display: none;
   }
 
   .console-nav-btn,
-  .agent-nav-btn {
+  .notice-nav-btn {
     width: 36px;
     padding: 0;
   }
@@ -1009,7 +1003,7 @@ const handleCommand = async (command) => {
   }
 
   .console-nav-btn span,
-  .agent-nav-btn span {
+  .notice-nav-btn span {
     display: none;
   }
 
@@ -1039,7 +1033,7 @@ const handleCommand = async (command) => {
   }
 
   .console-nav-btn,
-  .agent-nav-btn,
+  .notice-nav-btn,
   .user-entry-btn {
     width: 36px;
     padding: 0;

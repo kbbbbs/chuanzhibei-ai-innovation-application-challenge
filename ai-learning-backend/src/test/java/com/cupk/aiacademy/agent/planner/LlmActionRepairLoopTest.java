@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.agent.planner;
 
 import com.cupk.aiacademy.agent.action.AgentActionCatalog;
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
 import com.cupk.aiacademy.agent.action.AgentActionPlanFactory;
 import com.cupk.aiacademy.agent.action.AgentActionSchemaValidator;
 import com.cupk.aiacademy.agent.action.AgentActionSpec;
@@ -9,8 +10,11 @@ import com.cupk.aiacademy.agent.action.InMemoryAgentPendingActionStore;
 import com.cupk.aiacademy.agent.tool.course.CourseCreatePlanTool;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
 
+import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -23,6 +27,37 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class LlmActionRepairLoopTest {
+    @Test
+    void continuationMergesExistingArgumentsWithUserSupplement() {
+        PlannerModelClient model = mock(PlannerModelClient.class);
+        ObjectMapper objectMapper = new ObjectMapper();
+        AgentActionCatalog catalog = courseCatalog();
+        AgentActionSpec spec = catalog.findByActionCode("course.create").orElseThrow();
+        AgentPlannerProperties properties = properties(1);
+        AgentActionClarificationDraft draft = AgentActionClarificationDraft.create(
+                "course.create",
+                "建一门课，名字叫测试",
+                Map.of("title", "测试"),
+                List.of("categoryId 或 categoryName"),
+                Duration.ofMinutes(10)
+        );
+        when(model.call(anyString(), anyInt())).thenReturn("""
+                {"decision":"ACTION","actionCode":"course.create","arguments":{"categoryName":"计算机科学与技术"},"missingRequiredFields":[],"userMessage":"","confidence":0.95}
+                """);
+
+        LlmActionPlanResult result = loop(model, objectMapper, catalog, properties)
+                .continuePlan(draft, "课程分类计算机科学与技术", List.of(spec));
+
+        assertTrue(result.getValidation().isValid());
+        assertEquals("测试", result.getValidation().getNormalizedArguments().get("title"));
+        assertEquals("计算机科学与技术",
+                result.getValidation().getNormalizedArguments().get("categoryName"));
+        ArgumentCaptor<String> prompt = ArgumentCaptor.forClass(String.class);
+        verify(model).call(prompt.capture(), anyInt());
+        assertTrue(prompt.getValue().contains("existingArguments"));
+        assertTrue(prompt.getValue().contains("课程分类计算机科学与技术"));
+    }
+
     @Test
     void missingUserInputStopsBeforeRepairCall() {
         PlannerModelClient model = mock(PlannerModelClient.class);

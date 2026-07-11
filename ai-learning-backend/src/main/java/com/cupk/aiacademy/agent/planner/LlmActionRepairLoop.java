@@ -1,13 +1,16 @@
 package com.cupk.aiacademy.agent.planner;
 
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
 import com.cupk.aiacademy.agent.action.AgentActionSpec;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 @Component
 public class LlmActionRepairLoop {
@@ -36,9 +39,33 @@ public class LlmActionRepairLoop {
     }
 
     public LlmActionPlanResult plan(String userText, List<AgentActionSpec> specs) {
+        return planWithPrompt(
+                userText,
+                specs,
+                promptBuilder.buildPlanPrompt(userText, specs),
+                Map.of()
+        );
+    }
+
+    public LlmActionPlanResult continuePlan(AgentActionClarificationDraft draft,
+                                            String followUpText,
+                                            List<AgentActionSpec> specs) {
+        String mergedRequest = draft.originalRequest() + "；用户补充：" + followUpText.trim();
+        return planWithPrompt(
+                mergedRequest,
+                specs,
+                promptBuilder.buildContinuationPrompt(draft, followUpText.trim(), specs),
+                draft.normalizedArguments()
+        );
+    }
+
+    private LlmActionPlanResult planWithPrompt(String userText,
+                                               List<AgentActionSpec> specs,
+                                               String initialPrompt,
+                                               Map<String, Object> seedArguments) {
         LlmActionDecision decision = null;
         LlmActionValidationResult validation = null;
-        String prompt = promptBuilder.buildPlanPrompt(userText, specs);
+        String prompt = initialPrompt;
         int maxAttempts = Math.max(1, properties.getMaxRepairRounds() + 1);
         int attempts = 0;
         boolean exhausted = false;
@@ -50,6 +77,7 @@ public class LlmActionRepairLoop {
                 decision = callModel(prompt);
                 log.info("Agent planner stage completed: stage=write_parameters, model={}, attempt={}, promptChars={}, elapsedMs={}",
                         properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
+                mergeSeedArguments(decision, seedArguments);
                 validation = validator.validate(decision, specs);
             } catch (AgentPlanningException e) {
                 log.warn("Agent planner model call failed: stage=write_parameters, attempt={}, message={}",
@@ -81,6 +109,18 @@ public class LlmActionRepairLoop {
         }
 
         return new LlmActionPlanResult(decision, validation, attempts, exhausted);
+    }
+
+    private void mergeSeedArguments(LlmActionDecision decision, Map<String, Object> seedArguments) {
+        if (decision == null || seedArguments == null || seedArguments.isEmpty()
+                || !isActionDecision(decision)) {
+            return;
+        }
+        Map<String, Object> merged = new LinkedHashMap<>(seedArguments);
+        if (decision.getArguments() != null) {
+            merged.putAll(decision.getArguments());
+        }
+        decision.setArguments(merged);
     }
 
     private boolean requiresUserInput(LlmActionValidationResult validation) {

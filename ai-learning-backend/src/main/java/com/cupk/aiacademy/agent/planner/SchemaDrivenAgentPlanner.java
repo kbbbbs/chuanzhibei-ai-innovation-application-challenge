@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.agent.planner;
 
 import com.cupk.aiacademy.agent.action.AgentActionCatalog;
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
 import com.cupk.aiacademy.agent.action.AgentActionParameterSpec;
 import com.cupk.aiacademy.agent.action.AgentActionSpec;
 import com.cupk.aiacademy.agent.core.config.AgentConfigurationParser;
@@ -73,6 +74,27 @@ public class SchemaDrivenAgentPlanner {
         return plan(userText.trim(), List.of(selected), true);
     }
 
+    public Optional<AgentDirectActionReply> tryContinue(AgentDefinition agent,
+                                                        AgentActionClarificationDraft draft,
+                                                        String followUpText) {
+        if (!properties.isEnabled() || agent == null || draft == null || draft.isExpired()
+                || followUpText == null || followUpText.isBlank()) {
+            return Optional.empty();
+        }
+        List<String> enabledTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
+        AgentActionSpec selected = actionCatalog.enabledSpecs(enabledTools).stream()
+                .filter(spec -> normalize(spec.actionCode()).equals(normalize(draft.actionCode())))
+                .findFirst()
+                .orElse(null);
+        if (selected == null) {
+            return Optional.empty();
+        }
+
+        LlmActionPlanResult result = repairLoop.continuePlan(draft, followUpText.trim(), List.of(selected));
+        String mergedRequest = draft.originalRequest() + "；用户补充：" + followUpText.trim();
+        return replyFromResult(mergedRequest, result);
+    }
+
     private Optional<AgentDirectActionReply> plan(String userText,
                                                   List<AgentActionSpec> specs,
                                                   boolean selectedIntent) {
@@ -89,22 +111,24 @@ public class SchemaDrivenAgentPlanner {
             return Optional.empty();
         }
 
+        return replyFromResult(userText, result);
+    }
+
+    private Optional<AgentDirectActionReply> replyFromResult(String rawRequest,
+                                                             LlmActionPlanResult result) {
         if (result == null || result.getValidation() == null) {
             return Optional.empty();
         }
-
         if (isChatDecision(result.getDecision())) {
-            log.info("Scoped write planner vetoed selected action and returned CHAT");
+            log.info("Scoped write planner vetoed selected or continued action and returned CHAT");
             return Optional.empty();
         }
-
         if (!result.getValidation().isValid()) {
             log.debug("Schema-driven agent planner requires user input: errors={}",
                     result.getValidation().getErrors());
-            return Optional.of(clarificationReply(result));
+            return Optional.of(clarificationReply(rawRequest, result));
         }
-
-        return Optional.of(planFactory.create(userText, result.getValidation()));
+        return Optional.of(planFactory.create(rawRequest, result.getValidation()));
     }
 
     private String normalize(String value) {
@@ -117,13 +141,25 @@ public class SchemaDrivenAgentPlanner {
                 && "CHAT".equals(decision.getDecision().trim().toUpperCase(Locale.ROOT));
     }
 
-    private AgentDirectActionReply clarificationReply(LlmActionPlanResult result) {
+    private AgentDirectActionReply clarificationReply(String originalRequest,
+                                                       LlmActionPlanResult result) {
         LlmActionDecision decision = result.getDecision();
         LlmActionValidationResult validation = result.getValidation();
         List<String> missing = validation.getMissingRequiredFields();
+        AgentActionClarificationDraft clarificationDraft = null;
         String message;
         if (missing != null && !missing.isEmpty()) {
             message = "请补充：" + String.join("、", humanizeMissingFields(validation.getActionCode(), missing)) + "。";
+            AgentActionSpec spec = actionCatalog.findByActionCode(validation.getActionCode()).orElse(null);
+            if (spec != null) {
+                clarificationDraft = AgentActionClarificationDraft.create(
+                        validation.getActionCode(),
+                        originalRequest,
+                        validation.getNormalizedArguments(),
+                        missing,
+                        spec.pendingTtl()
+                );
+            }
         } else if (result.isExhausted()) {
             int attempts = Math.max(1, result.getAttempts());
             message = "操作参数校验已达到最大尝试次数（" + attempts + " 次）："
@@ -134,7 +170,7 @@ public class SchemaDrivenAgentPlanner {
                 message = validationFailureMessage(validation.getErrors()) + "。";
             }
         }
-        return new AgentDirectActionReply(conciseMessage(message), null);
+        return new AgentDirectActionReply(conciseMessage(message), null, clarificationDraft);
     }
 
     private List<String> humanizeMissingFields(String actionCode, List<String> missingFields) {

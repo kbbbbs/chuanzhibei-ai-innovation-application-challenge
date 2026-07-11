@@ -160,7 +160,7 @@ const detailLoading = ref(false)
 const detail = reactive({})
 
 const canEdit = computed(() => {
-  const role = userStore.role
+  const role = userStore.roleCode
   return role === 'teacher' || role === 'admin'
 })
 

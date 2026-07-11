@@ -1,25 +1,14 @@
 builtin_models:
-  - id: ai-learning-llm-default
-    type: KnowledgeQA
-    source: remote
-    is_default: true
-    name: ${LLM_MODEL_NAME}
-    description: AI Learning local default chat model.
-    parameters:
-      base_url: ${LLM_BASE_URL}
-      api_key: "[REDACTED]"
-      provider: ${LLM_PROVIDER}
-
   - id: ai-learning-embedding-default
     type: Embedding
     source: remote
     is_default: true
     name: ${EMBEDDING_MODEL_NAME}
-    description: AI Learning local default embedding model for course and paper retrieval.
+    description: Remote embedding model used by WeKnora as the AI Learning Agent RAG retriever.
     parameters:
       base_url: ${EMBEDDING_BASE_URL}
       api_key: "[REDACTED]"
       provider: ${EMBEDDING_PROVIDER}
       embedding_parameters:
-        dimension: 1024
+        dimension: 3072
         truncate_prompt_tokens: 0

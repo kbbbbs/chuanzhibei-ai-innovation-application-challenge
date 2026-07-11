@@ -73,9 +73,7 @@ public class AgentPromptAssembler {
             if ("user".equals(message.getRole())) {
                 promptMessages.add(new UserMessage(message.getContent()));
             } else if ("assistant".equals(message.getRole())) {
-                promptMessages.add(new AssistantMessage("pending_action".equals(message.getToolName())
-                        ? "系统已接管该操作请求。"
-                        : message.getContent()));
+                promptMessages.add(new AssistantMessage(historyAssistantContent(message)));
             }
         }
         promptMessages.add(new UserMessage(currentUserContent.trim()));
@@ -122,8 +120,11 @@ public class AgentPromptAssembler {
         StringBuilder prompt = new StringBuilder(systemPrompt(agent));
         prompt.append("\n\n").append(CONCISE_RESPONSE_RULES);
         if (hasWritePlanTools(agent)) {
-            prompt.append("\n\n重要规则：不要编造 actionId、确认ID、待确认操作记录或执行结果。")
-                    .append("如果本轮没有真实工具调用结果，就只能说明需要通过系统支持的待确认操作入口生成计划。");
+            prompt.append("\n\n系统操作真实性规则：普通聊天模型永远不能声称已经生成、创建、提交、执行或确认了系统操作，")
+                    .append("也不能声称存在待确认动作、actionId 或确认ID。")
+                    .append("读工具结果只代表完成了数据查询，绝不代表生成了写操作。")
+                    .append("真实待确认动作只会由后端以结构化 pendingAction 返回，并且不会经过本普通聊天回答。")
+                    .append("没有结构化写操作结果时，必须明确说明尚未生成或执行任何操作。");
         }
         if (!isBlank(knowledgeContext)) {
             prompt.append("\n\n知识库参考资料（优先基于资料回答；资料不足时说明无法从资料中确认）：\n")
@@ -134,6 +135,16 @@ public class AgentPromptAssembler {
                     .append(toolContext);
         }
         return prompt.toString();
+    }
+
+    private String historyAssistantContent(AgentMessage message) {
+        if ("pending_action".equals(message.getToolName())) {
+            return "系统已接管该操作请求。";
+        }
+        if ("action_clarification".equals(message.getToolName())) {
+            return "系统正在等待用户补充操作参数，尚未生成待确认动作。";
+        }
+        return message.getContent();
     }
 
     private boolean hasWritePlanTools(AgentDefinition agent) {

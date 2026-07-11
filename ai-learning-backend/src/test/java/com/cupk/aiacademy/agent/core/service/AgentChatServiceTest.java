@@ -1,6 +1,8 @@
 package com.cupk.aiacademy.agent.core.service;
 
 import com.cupk.aiacademy.agent.core.config.AgentChatProperties;
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
+import com.cupk.aiacademy.agent.action.AgentPendingActionResponse;
 import com.cupk.aiacademy.agent.action.AgentPendingActionStore;
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
 import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
@@ -9,6 +11,7 @@ import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenReadToolPlanner;
 import com.cupk.aiacademy.agent.planner.AgentPlanningException;
+import com.cupk.aiacademy.agent.planner.AgentPlanningOutcome;
 import com.cupk.aiacademy.agent.planner.UnifiedAgentPlanner;
 import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
@@ -1656,6 +1659,142 @@ class AgentChatServiceTest {
         verifyNoInteractions(chatModelClient);
     }
 
+    @Test
+    void chatPersistsClarificationDraftReturnedByUnifiedPlanner() throws Exception {
+        AgentChatService service = newService(new AgentChatProperties(), unifiedAgentPlanner);
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        AgentActionClarificationDraft draft = courseClarificationDraft();
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(messageMapper.selectList(any())).thenReturn(List.of());
+        when(unifiedAgentPlanner.plan(agent, "建一门课，名字叫测试"))
+                .thenReturn(AgentPlanningOutcome.write(new AgentDirectActionReply(
+                        "请补充：课程分类。",
+                        null,
+                        draft
+                )));
+        stubInsertedMessageIds(300);
+
+        AgentChatResponse response = service.chat(1, chatRequest("建一门课，名字叫测试"));
+
+        assertEquals("请补充：课程分类。", response.getContent());
+        assertNull(response.getPendingAction());
+        ArgumentCaptor<AgentMessage> messageCaptor = ArgumentCaptor.forClass(AgentMessage.class);
+        verify(messageMapper, org.mockito.Mockito.times(2)).insert(messageCaptor.capture());
+        AgentMessage storedAssistant = messageCaptor.getAllValues().get(1);
+        assertEquals("assistant", storedAssistant.getRole());
+        assertEquals("action_clarification", storedAssistant.getToolName());
+        AgentActionClarificationDraft storedDraft = new ObjectMapper().readValue(
+                storedAssistant.getToolResult(), AgentActionClarificationDraft.class);
+        assertEquals("course.create", storedDraft.actionCode());
+        assertEquals("测试", storedDraft.normalizedArguments().get("title"));
+        assertEquals(List.of("categoryId 或 categoryName"), storedDraft.missingRequiredFields());
+        verifyNoInteractions(chatModelClient);
+    }
+
+    @Test
+    void chatContinuesClarificationDraftAndReturnsStructuredPendingAction() throws Exception {
+        AgentChatService service = newServiceWithPlanners(schemaDrivenAgentPlanner, unifiedAgentPlanner);
+        loginAs(10);
+        AgentDefinition agent = agentDefinition(2);
+        AgentActionClarificationDraft draft = courseClarificationDraft();
+        AgentPendingActionResponse pendingAction = AgentPendingActionResponse.fromToolData(Map.of(
+                "actionId", "action-course-1",
+                "actionCode", "course.create",
+                "confirmationText", "确认创建课程",
+                "parameters", Map.of(
+                        "title", "测试",
+                        "categoryName", "计算机科学与技术"
+                )
+        ));
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
+        when(messageMapper.selectList(any())).thenReturn(List.of(
+                message(1, "user", "建一门课，名字叫测试"),
+                clarificationMessage(2, draft)
+        ));
+        when(schemaDrivenAgentPlanner.tryContinue(
+                org.mockito.ArgumentMatchers.eq(agent),
+                any(AgentActionClarificationDraft.class),
+                org.mockito.ArgumentMatchers.eq("课程分类计算机科学与技术")
+        )).thenReturn(Optional.of(new AgentDirectActionReply("动作待确认", pendingAction)));
+        stubInsertedMessageIds(400);
+
+        AgentChatResponse response = service.chat(1, chatRequest("课程分类计算机科学与技术"));
+
+        assertEquals("动作待确认", response.getContent());
+        assertEquals("action-course-1", response.getPendingAction().actionId());
+        assertEquals("course.create", response.getPendingAction().actionCode());
+        assertEquals("测试", response.getPendingAction().parameters().get("title"));
+        ArgumentCaptor<AgentActionClarificationDraft> draftCaptor =
+                ArgumentCaptor.forClass(AgentActionClarificationDraft.class);
+        verify(schemaDrivenAgentPlanner).tryContinue(
+                org.mockito.ArgumentMatchers.eq(agent),
+                draftCaptor.capture(),
+                org.mockito.ArgumentMatchers.eq("课程分类计算机科学与技术")
+        );
+        assertEquals("course.create", draftCaptor.getValue().actionCode());
+        assertEquals("测试", draftCaptor.getValue().normalizedArguments().get("title"));
+        verifyNoInteractions(unifiedAgentPlanner, chatModelClient);
+
+        ArgumentCaptor<AgentMessage> messageCaptor = ArgumentCaptor.forClass(AgentMessage.class);
+        verify(messageMapper, org.mockito.Mockito.times(2)).insert(messageCaptor.capture());
+        AgentMessage storedAssistant = messageCaptor.getAllValues().get(1);
+        assertEquals("pending_action", storedAssistant.getToolName());
+        assertTrue(storedAssistant.getToolResult().contains("\"actionId\":\"action-course-1\""));
+        assertTrue(storedAssistant.getToolResult().contains("\"actionCode\":\"course.create\""));
+    }
+
+    @Test
+    void chatCancelsActiveClarificationDraftWithoutCallingPlannerOrModel() throws Exception {
+        AgentChatService service = newServiceWithPlanners(schemaDrivenAgentPlanner, unifiedAgentPlanner);
+        loginAs(10);
+        AgentActionClarificationDraft draft = courseClarificationDraft();
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
+        when(messageMapper.selectList(any())).thenReturn(List.of(
+                message(1, "user", "建一门课，名字叫测试"),
+                clarificationMessage(2, draft)
+        ));
+        stubInsertedMessageIds(500);
+
+        AgentChatResponse response = service.chat(1, chatRequest("取消操作"));
+
+        assertEquals("已取消本次操作。", response.getContent());
+        assertNull(response.getPendingAction());
+        verifyNoInteractions(schemaDrivenAgentPlanner, unifiedAgentPlanner, chatModelClient);
+        ArgumentCaptor<AgentMessage> messageCaptor = ArgumentCaptor.forClass(AgentMessage.class);
+        verify(messageMapper, org.mockito.Mockito.times(2)).insert(messageCaptor.capture());
+        AgentMessage storedAssistant = messageCaptor.getAllValues().get(1);
+        assertEquals("assistant", storedAssistant.getRole());
+        assertNull(storedAssistant.getToolName());
+        assertNull(storedAssistant.getToolResult());
+    }
+
+    @Test
+    void chatBlocksOrdinaryModelFromClaimingPendingActionWasCreated() {
+        AgentChatService service = newService();
+        loginAs(10);
+        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
+        when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
+        when(messageMapper.selectList(any())).thenReturn(List.of());
+        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse(
+                "系统已生成待确认操作，请通过待确认操作入口核对并确认。"
+        ));
+        stubInsertedMessageIds(600);
+
+        AgentChatResponse response = service.chat(1, chatRequest("课程分类计算机科学与技术"));
+
+        assertEquals("本轮未生成待确认动作，请重新说明要执行的操作。", response.getContent());
+        assertNull(response.getPendingAction());
+        ArgumentCaptor<AgentMessage> messageCaptor = ArgumentCaptor.forClass(AgentMessage.class);
+        verify(messageMapper, org.mockito.Mockito.times(2)).insert(messageCaptor.capture());
+        AgentMessage storedAssistant = messageCaptor.getAllValues().get(1);
+        assertEquals("本轮未生成待确认动作，请重新说明要执行的操作。", storedAssistant.getContent());
+        assertNull(storedAssistant.getToolName());
+    }
+
     @ParameterizedTest
     @CsvSource(value = {
             "401 invalid api key|Agent 模型配置异常，请联系管理员。",
@@ -1784,6 +1923,42 @@ class AgentChatServiceTest {
                                         UnifiedAgentPlanner planner) {
         return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
                 new ObjectMapper(), knowledgeContextProvider, null, null, planner);
+    }
+
+    private AgentChatService newServiceWithPlanners(SchemaDrivenAgentPlanner writePlanner,
+                                                    UnifiedAgentPlanner planner) {
+        return new AgentChatService(chatModelClient, new AgentChatProperties(), agentDefinitionMapper,
+                sessionMapper, messageMapper, new ObjectMapper(), knowledgeContextProvider,
+                writePlanner, null, planner);
+    }
+
+    private AgentActionClarificationDraft courseClarificationDraft() {
+        long createdAt = System.currentTimeMillis();
+        return new AgentActionClarificationDraft(
+                "course.create",
+                "建一门课，名字叫测试",
+                Map.of("title", "测试"),
+                List.of("categoryId 或 categoryName"),
+                createdAt,
+                createdAt + 300_000
+        );
+    }
+
+    private AgentMessage clarificationMessage(Integer id,
+                                               AgentActionClarificationDraft draft) throws Exception {
+        AgentMessage message = message(id, "assistant", "请补充：课程分类。");
+        message.setToolName("action_clarification");
+        message.setToolResult(new ObjectMapper().writeValueAsString(draft));
+        return message;
+    }
+
+    private void stubInsertedMessageIds(int firstId) {
+        AtomicInteger idSequence = new AtomicInteger(firstId);
+        doAnswer(invocation -> {
+            AgentMessage message = invocation.getArgument(0);
+            message.setId(idSequence.getAndIncrement());
+            return 1;
+        }).when(messageMapper).insert(any(AgentMessage.class));
     }
 
     private AgentChatProperties chatProperties(int historyMessageLimit, int historyMaxCharacters) {

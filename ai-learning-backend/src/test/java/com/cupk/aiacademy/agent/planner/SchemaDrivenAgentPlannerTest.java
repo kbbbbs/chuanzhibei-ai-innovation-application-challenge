@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.agent.planner;
 
 import com.cupk.aiacademy.agent.action.AgentActionCatalog;
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
 import com.cupk.aiacademy.agent.action.AgentActionParameterSpec;
 import com.cupk.aiacademy.agent.action.AgentActionRiskLevel;
 import com.cupk.aiacademy.agent.action.AgentActionSpec;
@@ -18,6 +19,7 @@ import java.util.Map;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
@@ -135,7 +137,47 @@ class SchemaDrivenAgentPlannerTest {
 
         assertEquals("请补充：课程分类。", reply.orElseThrow().content());
         assertNull(reply.orElseThrow().pendingAction());
+        assertNotNull(reply.orElseThrow().clarificationDraft());
+        assertEquals("course.create", reply.orElseThrow().clarificationDraft().actionCode());
+        assertEquals("Python 入门", reply.orElseThrow().clarificationDraft().normalizedArguments().get("title"));
         verifyNoInteractions(planFactory);
+    }
+
+    @Test
+    void continuesClarificationDraftIntoValidatedPendingPlan() {
+        AgentActionSpec spec = courseSpec();
+        AgentDefinition agent = new AgentDefinition();
+        agent.setEnabledTools("[\"course_create_plan\"]");
+        AgentActionClarificationDraft draft = AgentActionClarificationDraft.create(
+                "course.create",
+                "建一门课，名字叫测试",
+                Map.of("title", "测试"),
+                List.of("categoryId 或 categoryName"),
+                Duration.ofMinutes(10)
+        );
+        LlmActionValidationResult validation = new LlmActionValidationResult(
+                true,
+                "course.create",
+                Map.of("title", "测试", "categoryName", "计算机科学与技术"),
+                List.of(),
+                List.of()
+        );
+        AgentDirectActionReply pendingReply = new AgentDirectActionReply("动作待确认", null);
+        String mergedRequest = "建一门课，名字叫测试；用户补充：课程分类计算机科学与技术";
+        when(properties.isEnabled()).thenReturn(true);
+        when(actionCatalog.enabledSpecs(List.of("course_create_plan"))).thenReturn(List.of(spec));
+        when(repairLoop.continuePlan(draft, "课程分类计算机科学与技术", List.of(spec)))
+                .thenReturn(new LlmActionPlanResult(actionDecision("course.create"), validation, 1, false));
+        when(planFactory.create(mergedRequest, validation)).thenReturn(pendingReply);
+
+        Optional<AgentDirectActionReply> reply = newPlanner().tryContinue(
+                agent,
+                draft,
+                "课程分类计算机科学与技术"
+        );
+
+        assertEquals(pendingReply, reply.orElseThrow());
+        verify(planFactory).create(mergedRequest, validation);
     }
 
     @Test

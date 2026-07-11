@@ -108,6 +108,14 @@ test('homepage keeps designed readiness states when recommendation data is empty
   expect(laneHeight).toBeLessThan(700)
 })
 
+test('header notice entry preserves the notice destination for guests', async ({ page }) => {
+  await page.goto('/home')
+
+  await page.getByRole('button', { name: '通知', exact: true }).click()
+
+  await expect(page).toHaveURL(/\/login\?redirect=\/notices$/)
+})
+
 test('smart prep cards route teachers to the resource generator', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' })
   await signInAs(page, 'teacher')

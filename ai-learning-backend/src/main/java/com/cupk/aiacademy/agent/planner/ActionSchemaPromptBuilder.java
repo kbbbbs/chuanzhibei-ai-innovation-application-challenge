@@ -1,5 +1,6 @@
 package com.cupk.aiacademy.agent.planner;
 
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
 import com.cupk.aiacademy.agent.action.AgentActionSpec;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
@@ -92,6 +93,49 @@ public class ActionSchemaPromptBuilder {
                 %s
                 """.formatted(currentTime(), userText, toJson(previous), toJson(errors),
                 toJson(scopedSchemas(specs)));
+    }
+
+    public String buildContinuationPrompt(AgentActionClarificationDraft draft,
+                                          String followUpText,
+                                          List<AgentActionSpec> specs) {
+        return """
+                你是未完成系统操作的参数续填规划器。请判断用户的新消息是否在补充上一轮缺失信息。
+
+                严格要求：
+                1. 只能返回 JSON 对象，不要 markdown，不要解释。
+                2. 如果新消息是在回答 missingRequiredFields，返回 decision=ACTION，并合并 existingArguments。
+                3. existingArguments 中没有被用户明确修改的值必须保留，禁止丢失或编造。
+                4. 如果用户取消、转向无关话题、提出新问题或发起另一项操作，返回 decision=CHAT，actionCode 为空，arguments 为空。
+                5. actionCode 只能使用 draftActionCode，arguments 只能包含 actionSchemas 中声明的字段。
+                6. 如果补充后仍缺字段，保持 decision=ACTION，并在 missingRequiredFields 中列出剩余字段。
+
+                返回格式：
+                {
+                  "decision": "ACTION",
+                  "actionCode": "course.create",
+                  "arguments": {
+                    "title": "Python 入门",
+                    "categoryName": "计算机科学与技术"
+                  },
+                  "missingRequiredFields": [],
+                  "userMessage": "",
+                  "confidence": 0.95
+                }
+
+                draftActionCode：%s
+                原始请求：%s
+                existingArguments：%s
+                missingRequiredFields：%s
+                用户新消息：%s
+                actionSchemas：%s
+                """.formatted(
+                draft.actionCode(),
+                draft.originalRequest(),
+                toJson(draft.normalizedArguments()),
+                toJson(draft.missingRequiredFields()),
+                followUpText,
+                toJson(scopedSchemas(specs))
+        );
     }
 
     private List<Map<String, Object>> scopedSchemas(List<AgentActionSpec> specs) {

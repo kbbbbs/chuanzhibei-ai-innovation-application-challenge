@@ -9,6 +9,7 @@ import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
 import com.cupk.aiacademy.agent.core.llm.ChatModelTimeoutException;
 import com.cupk.aiacademy.agent.core.prompt.AgentPromptAssembler;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
+import com.cupk.aiacademy.agent.action.AgentActionClarificationDraft;
 import com.cupk.aiacademy.agent.action.AgentPendingAction;
 import com.cupk.aiacademy.agent.action.AgentPendingActionResponse;
 import com.cupk.aiacademy.agent.action.AgentPendingActionStore;
@@ -130,6 +131,7 @@ public class AgentChatService {
             + "]";
     private static final int ACTIVE_STATUS = 1;
     private static final int DELETED_STATUS = 0;
+    private static final String ACTION_CLARIFICATION_TOOL_NAME = "action_clarification";
     private static final String MODEL_FAILURE_CONTENT = "Agent 处理失败，请稍后重试。";
     /**
      * 外部依赖：模型调用、配置、数据库 Mapper、JSON 处理、知识库检索和工具调用。
@@ -352,6 +354,8 @@ public class AgentChatService {
         AgentSession session = ensureSession(sessionId);
         AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
         String content = request.getContent().trim();
+        List<AgentMessage> historyMessages = loadMessages(sessionId);
+        AgentActionClarificationDraft activeDraft = readActiveClarificationDraft(historyMessages);
         long deadlineNanos = System.nanoTime()
                 + Duration.ofSeconds(chatProperties.getRequestTimeoutSeconds()).toNanos();
 
@@ -359,11 +363,16 @@ public class AgentChatService {
         String selectedToolContext = "";
         try {
             if (canUseAgentTools()) {
-                if (unifiedAgentPlanner != null) {
+                if (activeDraft != null && isClarificationCancellation(content)) {
+                    directReply = Optional.of(new AgentDirectActionReply("已取消本次操作。", null));
+                } else if (activeDraft != null && schemaDrivenAgentPlanner != null) {
+                    directReply = schemaDrivenAgentPlanner.tryContinue(agent, activeDraft, content);
+                }
+                if (directReply.isEmpty() && unifiedAgentPlanner != null) {
                     AgentPlanningOutcome outcome = unifiedAgentPlanner.plan(agent, content);
                     directReply = Optional.ofNullable(outcome.getDirectReply());
                     selectedToolContext = outcome.getToolContext() == null ? "" : outcome.getToolContext();
-                } else {
+                } else if (directReply.isEmpty() && unifiedAgentPlanner == null) {
                     directReply = schemaDrivenAgentPlanner == null
                             ? Optional.empty()
                             : schemaDrivenAgentPlanner.tryPlan(agent, content);
@@ -377,7 +386,8 @@ public class AgentChatService {
         } catch (AgentPlanningException e) {
             AgentMessage userMessage = setMessage(sessionId, "user", content);
             ensureSessionTitle(session, content);
-            AgentMessage assistantMessage = setMessage(sessionId, "assistant", e.getUserMessage());
+            AgentMessage assistantMessage = setMessage(
+                    sessionId, "assistant", e.getUserMessage(), null, activeDraft);
             touchSession(sessionId);
             log.warn("Agent planning stopped with user-facing feedback: sessionId={}, attempts={}, errors={}, message={}",
                     sessionId, e.getAttempts(), e.getValidationErrors(), e.getMessage());
@@ -392,7 +402,13 @@ public class AgentChatService {
             AgentDirectActionReply reply = directReply.get();
             AgentMessage userMessage = setMessage(sessionId, "user", content);
             ensureSessionTitle(session, content);
-            AgentMessage assistantMessage = setMessage(sessionId, "assistant", reply.content(), reply.pendingAction());
+            AgentMessage assistantMessage = setMessage(
+                    sessionId,
+                    "assistant",
+                    reply.content(),
+                    reply.pendingAction(),
+                    reply.clarificationDraft()
+            );
             touchSession(sessionId);
             return toChatResponse(sessionId, userMessage.getId(), assistantMessage, reply.pendingAction());
         }
@@ -400,7 +416,7 @@ public class AgentChatService {
         applyProviderModelCompatibility(agent);
 
         // 构造包含系统提示词、知识库/工具上下文和历史消息的模型 Prompt，并先落库用户消息。
-        Prompt prompt = promptAssembler.buildPrompt(agent, loadMessages(sessionId), content, selectedToolContext);
+        Prompt prompt = promptAssembler.buildPrompt(agent, historyMessages, content, selectedToolContext);
         AgentMessage userMessage = setMessage(sessionId, "user", content);
         ensureSessionTitle(session, content);
 
@@ -412,7 +428,7 @@ public class AgentChatService {
             throw recordModelFailure(sessionId, userMessage.getId(), e);
         }
 
-        String assistantContent = assistantContent(chatResponse);
+        String assistantContent = guardUnsupportedOperationClaim(assistantContent(chatResponse));
         if (isBlank(assistantContent)) {
             throw recordModelFailure(sessionId,
                     userMessage.getId(),
@@ -424,6 +440,27 @@ public class AgentChatService {
         touchSession(sessionId);
 
         return toChatResponse(sessionId, userMessage.getId(), assistantMessage);
+    }
+
+    private String guardUnsupportedOperationClaim(String content) {
+        if (isBlank(content)) {
+            return content;
+        }
+        List<String> unsupportedClaims = List.of(
+                "系统已生成待确认操作",
+                "系统已生成待确认动作",
+                "已生成待确认操作",
+                "已生成待确认动作",
+                "待确认操作已生成",
+                "待确认动作已生成",
+                "请通过待确认操作入口",
+                "请前往待确认操作"
+        );
+        if (unsupportedClaims.stream().noneMatch(content::contains)) {
+            return content;
+        }
+        log.warn("Blocked unsupported pending-action claim from ordinary model response");
+        return "本轮未生成待确认动作，请重新说明要执行的操作。";
     }
 
     /**
@@ -696,6 +733,14 @@ public class AgentChatService {
                                     String role,
                                     String content,
                                     AgentPendingActionResponse pendingAction) {
+        return setMessage(sessionId, role, content, pendingAction, null);
+    }
+
+    private AgentMessage setMessage(Integer sessionId,
+                                    String role,
+                                    String content,
+                                    AgentPendingActionResponse pendingAction,
+                                    AgentActionClarificationDraft clarificationDraft) {
         AgentMessage message = new AgentMessage();
         message.setSessionId(sessionId);
         message.setRole(role);
@@ -708,10 +753,50 @@ public class AgentChatService {
                 log.warn("Failed to serialize pending action for message history: actionId={}",
                         pendingAction.actionId(), e);
             }
+        } else if (clarificationDraft != null) {
+            message.setToolName(ACTION_CLARIFICATION_TOOL_NAME);
+            try {
+                message.setToolResult(objectMapper.writeValueAsString(clarificationDraft));
+            } catch (Exception e) {
+                log.warn("Failed to serialize action clarification draft: actionCode={}",
+                        clarificationDraft.actionCode(), e);
+            }
         }
         message.setCreateTime(LocalDateTime.now());
         messageMapper.insert(message);
         return message;
+    }
+
+    private AgentActionClarificationDraft readActiveClarificationDraft(List<AgentMessage> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return null;
+        }
+        AgentMessage latest = messages.get(messages.size() - 1);
+        if (latest == null
+                || !"assistant".equals(latest.getRole())
+                || !ACTION_CLARIFICATION_TOOL_NAME.equals(latest.getToolName())
+                || isBlank(latest.getToolResult())) {
+            return null;
+        }
+        try {
+            AgentActionClarificationDraft draft = objectMapper.readValue(
+                    latest.getToolResult(), AgentActionClarificationDraft.class);
+            return draft.isExpired() || isBlank(draft.actionCode()) ? null : draft;
+        } catch (Exception e) {
+            log.warn("Failed to read action clarification draft: messageId={}", latest.getId(), e);
+            return null;
+        }
+    }
+
+    private boolean isClarificationCancellation(String content) {
+        String value = content == null ? "" : content.trim().replaceAll("[，。！？!?,；;\\s]", "");
+        return value.equals("取消")
+                || value.equals("算了")
+                || value.equals("不用了")
+                || value.equals("停止")
+                || value.equals("放弃")
+                || value.equals("取消操作")
+                || value.equals("取消本次操作");
     }
 
     /**
