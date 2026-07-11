@@ -6,6 +6,8 @@ import com.cupk.aiacademy.agent.definition.controller.AgentDefinitionController;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.Result;
 import jakarta.validation.ConstraintViolationException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -24,6 +26,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -36,6 +39,7 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @RestControllerAdvice(assignableTypes = {ChatController.class, AgentModelController.class, AgentDefinitionController.class, AgentActionController.class})
 public class AgentExceptionHandler {
+    private static final Logger log = LoggerFactory.getLogger(AgentExceptionHandler.class);
 
     /**
      * 请求体缺失、JSON 格式错误等场景。
@@ -108,7 +112,7 @@ public class AgentExceptionHandler {
         data.put("userMessageId", e.getUserMessageId());
         data.put("assistantMessageId", e.getAssistantMessageId());
         if (e.getDiagnostics() != null) {
-            data.put("diagnostics", e.getDiagnostics().toData());
+            data.put("diagnostics", e.getDiagnostics().toPublicData());
         }
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(Result.error("500", e.getMessage(), data));
@@ -119,8 +123,12 @@ public class AgentExceptionHandler {
      */
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Result> handleException(Exception e) {
-        String message = e.getMessage() == null || e.getMessage().isBlank() ? "服务器内部错误" : e.getMessage();
-        return error(HttpStatus.INTERNAL_SERVER_ERROR, "500", message);
+        String errorId = UUID.randomUUID().toString().substring(0, 8);
+        log.error("Unhandled Agent API error: errorId={}", errorId, e);
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("errorId", errorId);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(Result.error("500", "Agent 服务内部错误，请稍后重试（错误编号：" + errorId + "）", data));
     }
 
     private ResponseEntity<Result> error(HttpStatusCode status, String code, String message) {

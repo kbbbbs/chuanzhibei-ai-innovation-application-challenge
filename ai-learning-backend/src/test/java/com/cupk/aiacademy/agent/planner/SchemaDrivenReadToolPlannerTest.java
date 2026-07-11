@@ -148,7 +148,8 @@ class SchemaDrivenReadToolPlannerTest {
         String context = planner.planToolContext(agent("[\"course_search\"]"), "查一下课程");
 
         assertTrue(context.contains("未执行平台数据库查询"));
-        assertTrue(context.contains("工具不存在或未启用"));
+        assertTrue(context.contains("查询条件校验已达到最大尝试次数（4 次）"));
+        assertTrue(context.contains("需要的查询功能当前未启用"));
         verify(executor, never()).executeReadTool(any(), org.mockito.ArgumentMatchers.<Map<String, Object>>any());
     }
 

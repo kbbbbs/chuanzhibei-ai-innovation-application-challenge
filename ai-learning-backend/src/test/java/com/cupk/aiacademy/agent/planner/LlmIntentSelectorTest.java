@@ -10,8 +10,11 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -87,6 +90,56 @@ class LlmIntentSelectorTest {
 
         assertEquals(AgentIntentSelection.Type.CHAT, result.getType());
         assertFalse(org.mockito.Mockito.mockingDetails(model).getInvocations().iterator().hasNext());
+    }
+
+    @Test
+    void retriesEmptyPlannerResponseBeforeSelectingIntent() {
+        PlannerModelClient model = mock(PlannerModelClient.class);
+        AgentActionCatalog actionCatalog = mock(AgentActionCatalog.class);
+        AgentReadToolCatalog readCatalog = mock(AgentReadToolCatalog.class);
+        AgentPlannerProperties properties = properties();
+        List<String> enabledTools = List.of("course_create_plan");
+        when(actionCatalog.enabledIntentSummaries(enabledTools)).thenReturn(List.of(
+                Map.of("code", "course.create", "summary", "新增课程")
+        ));
+        when(readCatalog.enabledIntentSummaries(enabledTools)).thenReturn(List.of());
+        when(model.call(anyString()))
+                .thenThrow(new AgentPlanningException("规划模型返回为空", null,
+                        "操作规划服务未返回结果，请稍后重试。"))
+                .thenReturn("{\"decision\":\"WRITE\",\"code\":\"course.create\",\"confidence\":0.95}");
+
+        AgentIntentSelection result = new LlmIntentSelector(
+                model, new ObjectMapper(), actionCatalog, readCatalog, properties)
+                .select(agent("[\"course_create_plan\"]"), "新增一门 Python 入门课");
+
+        assertEquals(AgentIntentSelection.Type.WRITE, result.getType());
+        assertEquals("course.create", result.getCode());
+        verify(model, times(2)).call(anyString());
+    }
+
+    @Test
+    void exhaustedIntentValidationExposesSafeUserFeedback() {
+        PlannerModelClient model = mock(PlannerModelClient.class);
+        AgentActionCatalog actionCatalog = mock(AgentActionCatalog.class);
+        AgentReadToolCatalog readCatalog = mock(AgentReadToolCatalog.class);
+        AgentPlannerProperties properties = properties();
+        List<String> enabledTools = List.of("course_create_plan");
+        when(actionCatalog.enabledIntentSummaries(enabledTools)).thenReturn(List.of(
+                Map.of("code", "course.create", "summary", "新增课程")
+        ));
+        when(readCatalog.enabledIntentSummaries(enabledTools)).thenReturn(List.of());
+        when(model.call(anyString())).thenReturn(
+                "{\"decision\":\"WRITE\",\"code\":\"missing\",\"confidence\":0.95}"
+        );
+
+        AgentPlanningException exception = assertThrows(AgentPlanningException.class, () ->
+                new LlmIntentSelector(model, new ObjectMapper(), actionCatalog, readCatalog, properties)
+                        .select(agent("[\"course_create_plan\"]"), "新增一门 Python 入门课"));
+
+        assertEquals(2, exception.getAttempts());
+        assertTrue(exception.getUserMessage().contains("最大尝试次数（2 次）"));
+        assertTrue(exception.getUserMessage().contains("功能当前未启用"));
+        verify(model, times(2)).call(anyString());
     }
 
     private AgentPlannerProperties properties() {

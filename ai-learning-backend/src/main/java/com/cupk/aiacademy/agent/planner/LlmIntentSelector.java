@@ -50,19 +50,37 @@ public class LlmIntentSelector {
 
         String prompt = buildPrompt(userText.trim(), writeActions, readTools);
         List<String> errors = List.of();
+        List<String> lastValidationErrors = List.of();
+        AgentPlanningException lastPlanningFailure = null;
+        String modelText = "";
         int maxAttempts = Math.max(1, properties.getMaxRepairRounds() + 1);
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
-            long startedNanos = System.nanoTime();
-            String modelText = plannerModelClient.call(prompt);
-            log.info("Agent planner stage completed: stage=intent_select, model={}, attempt={}, promptChars={}, elapsedMs={}",
-                    properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
             LlmIntentDecision decision;
             try {
+                long startedNanos = System.nanoTime();
+                modelText = plannerModelClient.call(prompt);
+                lastPlanningFailure = null;
+                log.info("Agent planner stage completed: stage=intent_select, model={}, attempt={}, promptChars={}, elapsedMs={}",
+                        properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
                 decision = parse(modelText);
                 errors = validate(decision, writeActions, readTools);
+                if (!errors.isEmpty()) {
+                    lastValidationErrors = errors;
+                }
+            } catch (AgentPlanningException e) {
+                decision = null;
+                lastPlanningFailure = e;
+                List<String> combined = new ArrayList<>(lastValidationErrors);
+                if (!combined.contains(e.getUserMessage())) {
+                    combined.add(e.getUserMessage());
+                }
+                errors = List.copyOf(combined);
+                log.warn("Agent planner model call failed: stage=intent_select, attempt={}, message={}",
+                        attempt + 1, e.getMessage());
             } catch (Exception e) {
                 decision = null;
                 errors = List.of(safeMessage(e));
+                lastValidationErrors = errors;
             }
             if (errors.isEmpty()) {
                 AgentIntentSelection selection = toSelection(decision);
@@ -73,7 +91,56 @@ public class LlmIntentSelector {
                 prompt = buildRepairPrompt(userText.trim(), writeActions, readTools, modelText, errors);
             }
         }
-        throw new AgentPlanningException("无法可靠判断请求类型：" + String.join("；", errors));
+        throw new AgentPlanningException(
+                "无法可靠判断请求类型：" + String.join("；", errors),
+                lastPlanningFailure,
+                intentFailureMessage(errors, lastPlanningFailure, maxAttempts),
+                errors,
+                maxAttempts
+        );
+    }
+
+    private String intentFailureMessage(List<String> errors,
+                                        AgentPlanningException lastPlanningFailure,
+                                        int attempts) {
+        String validationMessage = firstValidationMessage(errors);
+        if (!validationMessage.isBlank()) {
+            return "请求类型校验已达到最大尝试次数（" + attempts + " 次）：" + validationMessage + "。";
+        }
+        String reason = lastPlanningFailure == null
+                ? "没有得到有效的识别结果"
+                : trimEndingPunctuation(lastPlanningFailure.getUserMessage());
+        return "请求类型识别未完成（已尝试 " + attempts + " 次）：" + reason + "。";
+    }
+
+    private String firstValidationMessage(List<String> errors) {
+        if (errors == null) {
+            return "";
+        }
+        for (String error : errors) {
+            String value = error == null ? "" : error.trim();
+            if (value.isBlank() || value.startsWith("操作规划服务") || value.startsWith("操作规划超时")) {
+                continue;
+            }
+            if (value.contains("置信度不足")) {
+                return "我无法可靠判断这是普通问答、数据查询还是系统操作";
+            }
+            if (value.contains("不存在或未启用")) {
+                return "识别到的功能当前未启用";
+            }
+            if (value.contains("JSON") || value.contains("决策") || value.contains("decision")) {
+                return "模型返回的请求类型格式不正确";
+            }
+            return trimEndingPunctuation(value);
+        }
+        return "";
+    }
+
+    private String trimEndingPunctuation(String value) {
+        if (value == null) {
+            return "";
+        }
+        return value.trim().replaceFirst("[。！？；;]+$", "");
     }
 
     private List<String> validate(LlmIntentDecision decision,

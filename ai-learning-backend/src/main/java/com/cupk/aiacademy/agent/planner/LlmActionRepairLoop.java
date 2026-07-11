@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -39,8 +40,11 @@ public class LlmActionRepairLoop {
         LlmActionValidationResult validation = null;
         String prompt = promptBuilder.buildPlanPrompt(userText, specs);
         int maxAttempts = Math.max(1, properties.getMaxRepairRounds() + 1);
+        int attempts = 0;
+        boolean exhausted = false;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            attempts = attempt + 1;
             try {
                 long startedNanos = System.nanoTime();
                 decision = callModel(prompt);
@@ -48,13 +52,19 @@ public class LlmActionRepairLoop {
                         properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
                 validation = validator.validate(decision, specs);
             } catch (AgentPlanningException e) {
-                throw e;
+                log.warn("Agent planner model call failed: stage=write_parameters, attempt={}, message={}",
+                        attempt + 1, e.getMessage());
+                validation = appendError(validation, e.getUserMessage());
             } catch (Exception e) {
-                validation = LlmActionValidationResult.invalid(
-                        List.of("模型输出无法解析：" + safeMessage(e)));
+                validation = appendError(validation, "模型输出格式不正确：" + safeMessage(e));
+            }
+
+            if (validation == null) {
+                validation = LlmActionValidationResult.invalid(List.of("模型未返回可校验的操作参数"));
             }
 
             if (validation.isValid()
+                    || requiresUserInput(validation)
                     || (decision != null && !isActionDecision(decision))) {
                 break;
             }
@@ -65,10 +75,34 @@ public class LlmActionRepairLoop {
                         decision,
                         validation.getErrors()
                 );
+            } else {
+                exhausted = true;
             }
         }
 
-        return new LlmActionPlanResult(decision, validation);
+        return new LlmActionPlanResult(decision, validation, attempts, exhausted);
+    }
+
+    private boolean requiresUserInput(LlmActionValidationResult validation) {
+        return validation.getMissingRequiredFields() != null
+                && !validation.getMissingRequiredFields().isEmpty();
+    }
+
+    private LlmActionValidationResult appendError(LlmActionValidationResult previous, String error) {
+        if (previous == null) {
+            return LlmActionValidationResult.invalid(List.of(error));
+        }
+        List<String> errors = new ArrayList<>(previous.getErrors() == null ? List.of() : previous.getErrors());
+        if (error != null && !error.isBlank() && !errors.contains(error.trim())) {
+            errors.add(error.trim());
+        }
+        return new LlmActionValidationResult(
+                false,
+                previous.getActionCode(),
+                previous.getNormalizedArguments(),
+                previous.getMissingRequiredFields(),
+                errors
+        );
     }
 
     private long elapsedMillis(long startedNanos) {

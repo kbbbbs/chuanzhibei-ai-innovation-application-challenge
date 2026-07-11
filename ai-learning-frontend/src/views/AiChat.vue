@@ -2,7 +2,13 @@
   <div class="ai-chat-page" :class="{ 'embedded-mode': props.embedded }">
     <div class="chat-sidebar">
       <div class="sidebar-header">
-        <el-button type="primary" class="new-chat-btn" :loading="creatingSession" @click="handleNewSession">
+        <el-button
+          type="primary"
+          class="new-chat-btn"
+          :loading="creatingSession"
+          :disabled="!hasAvailableAgent || loading"
+          @click="handleNewSession"
+        >
           <el-icon><Plus /></el-icon>
           <span>新对话</span>
         </el-button>
@@ -17,26 +23,30 @@
         >
           <div class="session-info">
             <div class="session-title">{{ session.title || '新对话' }}</div>
-            <div class="session-time">{{ formatTime(session.updatedAt || session.createdAt) }}</div>
-          </div>
-          <div class="session-actions">
-            <el-button
-              class="session-action"
-              text
-              size="small"
-              @click.stop="renameSession(session)"
-            >
-              <el-icon><EditPen /></el-icon>
-            </el-button>
-            <el-button
-              class="session-action"
-              text
-              size="small"
-              type="danger"
-              @click.stop="deleteSession(session.id)"
-            >
-              <el-icon><Delete /></el-icon>
-            </el-button>
+            <div class="session-meta">
+              <div class="session-time">{{ formatTime(session.updatedAt || session.createdAt) }}</div>
+              <div class="session-actions">
+                <el-button
+                  class="session-action"
+                  text
+                  size="small"
+                  aria-label="编辑会话标题"
+                  @click.stop="renameSession(session)"
+                >
+                  <el-icon><EditPen /></el-icon>
+                </el-button>
+                <el-button
+                  class="session-action"
+                  text
+                  size="small"
+                  type="danger"
+                  aria-label="删除会话"
+                  @click.stop="deleteSession(session.id)"
+                >
+                  <el-icon><Delete /></el-icon>
+                </el-button>
+              </div>
+            </div>
           </div>
         </div>
         <el-empty v-if="!sessionsLoading && sessions.length === 0" description="暂无对话" :image-size="60" />
@@ -51,7 +61,8 @@
           size="large"
           filterable
           :loading="agentsLoading"
-          :disabled="loading || creatingSession"
+          :disabled="!hasAvailableAgent || loading || creatingSession"
+          placeholder="暂无可用 Agent"
         >
           <el-option
             v-for="agent in agents"
@@ -95,7 +106,7 @@
           <div class="placeholder-icon">
             <el-icon :size="64"><ChatDotRound /></el-icon>
           </div>
-          <h2>AI 学习助手</h2>
+          <h2>{{ hasAvailableAgent ? 'AI 学习助手' : '暂无可用 Agent' }}</h2>
           <p>{{ currentAgentDescription }}</p>
         </div>
 
@@ -118,19 +129,22 @@
             </div>
             <template v-else>
               <div
-                v-if="displayMessageContent(msg)"
+                v-if="hasConfirmableAction(msg)"
+                class="message-hint action-pending-hint"
+              >
+                <el-icon><CircleCheck /></el-icon>
+                <span>动作待确认</span>
+              </div>
+              <div
+                v-else-if="displayMessageContent(msg)"
                 class="markdown-body"
                 v-html="renderMarkdown(displayMessageContent(msg))"
               ></div>
               <div v-else-if="msg.streaming" class="message-hint">
                 <el-icon><Loading /></el-icon>
-                <span>正在生成回复...</span>
+                <span>正在生成…</span>
               </div>
-              <div v-else-if="hasActionHint(msg.content) && !hasConfirmableAction(msg)" class="message-hint">
-                <el-icon><Loading /></el-icon>
-                <span>确认信息生成中，请稍后再试。</span>
-              </div>
-              <div class="message-tools">
+              <div v-if="displayMessageContent(msg) || (msg.failed && msg.retryContent)" class="message-tools">
                 <el-button v-if="displayMessageContent(msg)" size="small" text @click="copyMessage(displayMessageContent(msg))">
                   <el-icon><CopyDocument /></el-icon>
                   <span>复制</span>
@@ -139,14 +153,6 @@
                   <el-icon><Refresh /></el-icon>
                   <span>重试</span>
                 </el-button>
-                <el-button v-if="hasConfirmableAction(msg)" size="small" text type="primary" @click="openActionDialog(msg)">
-                  <el-icon><CircleCheck /></el-icon>
-                  <span>确认动作</span>
-                </el-button>
-              </div>
-              <div v-if="hasConfirmableAction(msg)" class="message-hint">
-                  <el-icon><CircleCheck /></el-icon>
-                  <span>检测到待确认操作，请核对后再执行。</span>
               </div>
             </template>
           </div>
@@ -192,15 +198,15 @@
             :rows="3"
             :maxlength="inputMaxLength"
             show-word-limit
-            placeholder="输入你的问题，按 Enter 发送，Shift+Enter 换行"
-            :disabled="loading || messagesLoading"
+            :placeholder="hasAvailableAgent ? '输入你的问题，按 Enter 发送，Shift+Enter 换行' : '请联系管理员创建或启用 Agent'"
+            :disabled="!hasAvailableAgent || loading || messagesLoading"
             @keydown.enter.exact="handleKeyDown"
             resize="none"
           />
           <el-button
             class="send-btn"
             type="primary"
-            :disabled="!inputMessage.trim() || loading || messagesLoading"
+            :disabled="!hasAvailableAgent || !inputMessage.trim() || loading || messagesLoading"
             :loading="loading"
             @click="sendMessage"
           >
@@ -398,18 +404,21 @@
       </template>
     </el-dialog>
 
-    <el-dialog v-if="canUseOperations" v-model="actionDialogVisible" title="确认指令" width="520px" destroy-on-close>
+    <el-dialog
+      v-if="canUseOperations"
+      v-model="actionDialogVisible"
+      title="确认动作"
+      width="min(480px, calc(100vw - 32px))"
+      :close-on-click-modal="false"
+      destroy-on-close
+    >
       <div class="action-summary-card">
         <div class="action-summary-row">
-          <span>指令模式</span>
-          <strong>待确认</strong>
-        </div>
-        <div class="action-summary-row">
-          <span>指令类型</span>
+          <span>操作类型</span>
           <strong>{{ actionCrudType(actionForm.actionCode) }}</strong>
         </div>
         <div class="action-summary-row action-summary-content">
-          <span>指令内容</span>
+          <span>操作内容</span>
           <strong>{{ actionForm.summaryContent || '已识别系统指令' }}</strong>
         </div>
       </div>
@@ -419,7 +428,7 @@
         type="warning"
         show-icon
         :closable="false"
-        :title="`该操作会自动提交确认文本：${actionForm.confirmationText}`"
+        :title="`高风险操作确认词：${actionForm.confirmationText}`"
       />
       <div v-if="hasActionParameterSchema" class="action-parameter-card">
         <div class="action-parameter-header">
@@ -487,24 +496,14 @@
             <div v-if="field.description" class="action-parameter-help">{{ field.description }}</div>
           </el-form-item>
         </el-form>
-        <el-input
-          v-model="actionForm.parametersText"
-          class="action-parameter-json"
-          type="textarea"
-          :rows="4"
-          @blur="syncParameterTextToForm"
-        />
       </div>
-      <div v-if="actionResult.visible" class="action-result-card" :class="{ success: actionResult.success, error: !actionResult.success }">
-        <div class="action-result-title">{{ actionResult.success ? '完成' : '未完成' }}</div>
+      <div v-if="actionResult.visible" class="action-result-card error">
+        <div class="action-result-title">执行失败</div>
         <div class="action-result-message">{{ actionResult.message }}</div>
-        <router-link class="action-result-link" :to="actionResult.link">
-          打开{{ actionResult.linkText }}
-        </router-link>
       </div>
       <template #footer>
         <el-button @click="actionDialogVisible = false">取消</el-button>
-        <el-button type="primary" :loading="confirmingAction" @click="submitActionConfirm">确认执行</el-button>
+        <el-button type="primary" :loading="confirmingAction" @click="submitActionConfirm">确认动作</el-button>
       </template>
     </el-dialog>
   </div>
@@ -571,19 +570,13 @@ const props = defineProps({
 })
 const emit = defineEmits(['context-consumed'])
 
-const DEFAULT_AGENT = {
-  id: 1,
-  code: 'learning_assistant',
-  name: '通用学习助教',
-  description: '面向学生的通用学习答疑 Agent',
-  status: 1
-}
+const DEFAULT_AGENT_ID = 1
 const MAX_KNOWLEDGE_FILE_SIZE = 5 * 1024 * 1024
 
-const agents = ref([DEFAULT_AGENT])
+const agents = ref([])
 const route = useRoute()
 const userStore = useUserStore()
-const selectedAgentId = ref(DEFAULT_AGENT.id)
+const selectedAgentId = ref(null)
 const currentSessionId = ref(null)
 const inputMessage = ref('')
 const loading = ref(false)
@@ -628,16 +621,14 @@ const chatOnceReply = ref('')
 const chatOnceLoading = ref(false)
 
 const actionDialogVisible = ref(false)
+const openingActionDialog = ref(false)
 const pendingActionDialogVisible = ref(false)
 const pendingActionsLoading = ref(false)
 const pendingActions = ref([])
 const confirmingAction = ref(false)
 const actionResult = reactive({
   visible: false,
-  success: false,
-  message: '',
-  link: '/console',
-  linkText: '控制台'
+  message: ''
 })
 const actionForm = reactive({
   actionId: '',
@@ -662,10 +653,15 @@ const selectedContextLabel = computed(() => {
   return labels.join(' · ')
 })
 const inputMaxLength = computed(() => selectedContextText.value ? 2000 : 4000)
+const hasAvailableAgent = computed(() => {
+  return selectedAgentId.value != null
+    && agents.value.some(agent => sameId(agent.id, selectedAgentId.value))
+})
 
 const currentAgentDescription = computed(() => {
   const agent = agents.value.find(item => sameId(item.id, selectedAgentId.value))
-  return agent?.description || '开始一次新的学习对话'
+  if (!agent) return '请联系管理员创建或启用 Agent 后再开始对话'
+  return agent.description || '开始一次新的学习对话'
 })
 
 const currentUserAvatar = computed(() => userStore.avatar || localStorage.getItem('avatar') || '')
@@ -735,7 +731,7 @@ function normalizeSession(session) {
   const updatedAt = session.updateTime || session.updatedAt || session.latestTime || createdAt
   return {
     id,
-    agentId: session.agentId ?? DEFAULT_AGENT.id,
+    agentId: session.agentId ?? DEFAULT_AGENT_ID,
     title: session.title || session.preview || '新会话',
     createdAt,
     updatedAt
@@ -746,8 +742,16 @@ function composeContextualPrompt(question) {
   return buildAgentContextPrompt(question, props.selectedContext)
 }
 
+function normalizeAssistantCopy(content) {
+  if (content === 'AI 回复失败，请稍后重试。') {
+    return '暂时无法回复，请重试。'
+  }
+  return content
+}
+
 function normalizeMessage(message) {
-  const content = message.content || message.message || message.reply || ''
+  const rawContent = message.content || message.message || message.reply || ''
+  const content = message.role === 'assistant' ? normalizeAssistantCopy(rawContent) : rawContent
   const contextual = message.role === 'assistant' ? null : parseAgentContextPrompt(content)
   return {
     id: message.id,
@@ -763,8 +767,8 @@ function normalizeMessage(message) {
 
 function normalizeReply(payload) {
   const data = unwrapData(payload)
-  if (typeof data === 'string') return data
-  return data?.content || data?.reply || data?.message || '抱歉，未能获取回复。'
+  if (typeof data === 'string') return normalizeAssistantCopy(data)
+  return normalizeAssistantCopy(data?.content || data?.reply || data?.message || '暂时没有回复，请重试。')
 }
 
 function timeValue(dateStr) {
@@ -805,15 +809,15 @@ async function loadAgents() {
   try {
     const response = await getAgentDefinitions({ status: 1 })
     const list = toArray(response).map(normalizeAgent).filter(agent => agent.id)
-    if (list.length > 0) {
-      agents.value = list
-      if (!agents.value.some(agent => sameId(agent.id, selectedAgentId.value))) {
-        selectedAgentId.value = agents.value[0].id
-      }
+    agents.value = list
+    if (list.length === 0) {
+      selectedAgentId.value = null
+    } else if (!agents.value.some(agent => sameId(agent.id, selectedAgentId.value))) {
+      selectedAgentId.value = agents.value[0].id
     }
   } catch (e) {
-    agents.value = [DEFAULT_AGENT]
-    selectedAgentId.value = DEFAULT_AGENT.id
+    agents.value = []
+    selectedAgentId.value = null
   } finally {
     agentsLoading.value = false
   }
@@ -848,6 +852,9 @@ async function loadSessions(activateFirst = false) {
 }
 
 async function createSession(title = '新会话') {
+  if (!hasAvailableAgent.value) {
+    throw new Error('暂无可用 Agent，请联系管理员创建或启用 Agent')
+  }
   const response = await createAgentSession({
     agentId: selectedAgentId.value,
     title: trimTitle(title)
@@ -864,11 +871,15 @@ async function createSession(title = '新会话') {
 }
 
 async function handleNewSession() {
+  if (!hasAvailableAgent.value) {
+    ElMessage.warning('暂无可用 Agent，请联系管理员创建或启用 Agent')
+    return
+  }
   creatingSession.value = true
   try {
     await createSession()
   } catch (e) {
-    ElMessage.error('新建对话失败')
+    ElMessage.error(e?.message || '新建对话失败')
   } finally {
     creatingSession.value = false
   }
@@ -888,13 +899,18 @@ async function switchSession(session) {
 async function loadSessionMessages(sessionId) {
   messagesLoading.value = true
   messages.value = []
+  let pendingMessage = null
   try {
     const response = await getAgentMessages(sessionId)
     messages.value = toArray(response).map(normalizeMessage)
+    pendingMessage = latestPendingActionMessage()
   } finally {
     messagesLoading.value = false
     await nextTick()
     scrollToBottom()
+  }
+  if (pendingMessage) {
+    await openActionDialog(pendingMessage)
   }
 }
 
@@ -940,6 +956,10 @@ function deleteSession(sessionId) {
 }
 
 async function sendMessage() {
+  if (!hasAvailableAgent.value) {
+    ElMessage.warning('暂无可用 Agent，请联系管理员创建或启用 Agent')
+    return
+  }
   const question = inputMessage.value.trim()
   if (!question || loading.value) return
   const content = composeContextualPrompt(question)
@@ -988,7 +1008,7 @@ async function sendMessage() {
       messages.value.push({
         localId: `assistant_error_${Date.now()}`,
         role: 'assistant',
-        content: '请求失败，请稍后重试。',
+        content: normalizeAssistantCopy(extractRequestMessage(e, 'Agent 处理失败，请稍后重试。')),
         failed: true,
         retryContent: question,
         createdAt: new Date().toISOString()
@@ -1002,17 +1022,22 @@ async function sendMessage() {
 }
 
 async function sendNormalMessage(content) {
-  const response = await sendAgentMessage(currentSessionId.value, { content })
+  const response = await sendAgentMessage(currentSessionId.value, { content }, { silent: true })
   const payload = unwrapData(response)
   const pendingAction = pendingActionFromPayload(response)
-  messages.value.push({
+  const assistantMessage = {
     id: payload?.assistantMessageId,
     localId: `assistant_${Date.now()}`,
     role: 'assistant',
     content: normalizeReply(payload),
     pendingAction,
     createdAt: payload?.createTime || new Date().toISOString()
-  })
+  }
+  messages.value.push(assistantMessage)
+  if (pendingAction && canUseOperations.value) {
+    await nextTick()
+    await openActionDialog(assistantMessage)
+  }
   return !pendingAction
 }
 
@@ -1284,17 +1309,8 @@ async function runChatOnce() {
   }
 }
 
-function hasActionHint(content) {
-  const text = content || ''
-  return /(?:actionId|确认ID)\s*[=：:]/i.test(text) || /待确认操作|确认执行|操作计划|指令模式|确认按钮/.test(text)
-}
-
 function pendingActionOf(message) {
   return message?.pendingAction || message?.pending_action || null
-}
-
-function hasPendingAction(message) {
-  return hasConfirmableAction(message)
 }
 
 function hasConfirmableAction(message) {
@@ -1306,16 +1322,8 @@ function hasConfirmableAction(message) {
   return false
 }
 
-function extractActionId(content) {
-  return (content || '').match(/(?:actionId|确认ID)\s*[=：:]\s*([A-Za-z0-9_-]+)/i)?.[1] || ''
-}
-
-function extractActionCode(content) {
-  return (content || '').match(/actionCode\s*[=：:]\s*([A-Za-z0-9_.-]+)/i)?.[1] || ''
-}
-
 function displayMessageContent(message) {
-  if (message?.role === 'assistant' && hasActionHint(message.content)) {
+  if (message?.role === 'assistant' && hasConfirmableAction(message)) {
     return ''
   }
   return message?.content || ''
@@ -1395,15 +1403,6 @@ function syncFormParametersToText() {
   actionForm.parametersText = JSON.stringify(cleanActionParameters(actionForm.parameters), null, 2)
 }
 
-function syncParameterTextToForm() {
-  try {
-    actionForm.parameters = cleanActionParameters(parseParametersJson(actionForm.parametersText))
-  } catch (e) {
-    ElMessage.error(e.message || 'parameters JSON 格式不正确')
-    syncFormParametersToText()
-  }
-}
-
 function updateActionParameter(field, value) {
   if (!field?.name) return
   if (value === null || value === undefined || value === '') {
@@ -1478,10 +1477,7 @@ function openManualActionDialog() {
 
 function resetActionResult() {
   actionResult.visible = false
-  actionResult.success = false
   actionResult.message = ''
-  actionResult.link = '/console'
-  actionResult.linkText = '控制台'
 }
 
 function summarizePendingParams(parameters) {
@@ -1501,35 +1497,66 @@ function formatPendingTime(value) {
 }
 
 async function openActionDialog(message) {
-  if (!canUseOperations.value) return
-  const pendingAction = pendingActionOf(message)
-  actionForm.actionId = pendingAction?.actionId || ''
-  actionForm.actionCode = pendingAction?.actionCode || ''
-  actionForm.confirmationText = ''
-  actionForm.parametersText = '{}'
-  actionForm.parameters = {}
-  actionForm.parameterSchema = []
-  actionForm.missingRequiredFields = []
-  actionForm.requiredAnyOf = []
-  actionForm.confirmed = true
-  actionForm.summaryContent = ''
-  resetActionResult()
-  applyPendingActionToForm(pendingAction)
-  if (!actionForm.actionId.trim() && !actionForm.actionCode.trim()) {
-    ElMessage.warning('这条消息没有结构化待确认操作，请重新发送任务生成新的待确认操作。')
-    return
-  }
-  if (actionForm.actionId) {
-    try {
-      applyPendingActionToForm(unwrapData(await getAgentPendingAction(actionForm.actionId)))
-    } catch {
-      actionForm.actionId = ''
-      actionForm.actionCode = ''
-      ElMessage.warning('该待确认操作不存在或已过期，请重新发送任务生成新的待确认操作。')
+  if (!canUseOperations.value || openingActionDialog.value || actionDialogVisible.value) return
+  openingActionDialog.value = true
+  try {
+    const pendingAction = pendingActionOf(message)
+    actionForm.actionId = pendingAction?.actionId || ''
+    actionForm.actionCode = pendingAction?.actionCode || ''
+    actionForm.confirmationText = ''
+    actionForm.parametersText = '{}'
+    actionForm.parameters = {}
+    actionForm.parameterSchema = []
+    actionForm.missingRequiredFields = []
+    actionForm.requiredAnyOf = []
+    actionForm.confirmed = true
+    actionForm.summaryContent = ''
+    resetActionResult()
+    applyPendingActionToForm(pendingAction)
+    if (!actionForm.actionId.trim() && !actionForm.actionCode.trim()) {
+      ElMessage.warning('未生成可确认动作，请补充信息后重试。')
       return
     }
+    if (actionForm.actionId) {
+      try {
+        applyPendingActionToForm(unwrapData(await getAgentPendingAction(actionForm.actionId)))
+      } catch {
+        actionForm.actionId = ''
+        actionForm.actionCode = ''
+        ElMessage.warning('动作已处理或已过期，请重新发起。')
+        return
+      }
+    }
+    actionDialogVisible.value = true
+  } finally {
+    openingActionDialog.value = false
   }
-  actionDialogVisible.value = true
+}
+
+function latestPendingActionMessage() {
+  if (!canUseOperations.value) return null
+  for (let index = messages.value.length - 1; index >= 0; index -= 1) {
+    if (hasConfirmableAction(messages.value[index])) {
+      return messages.value[index]
+    }
+  }
+  return null
+}
+
+function clearConfirmedPendingAction(actionId, actionCode) {
+  messages.value.forEach(message => {
+    const pendingAction = pendingActionOf(message)
+    const matchesId = actionId && sameId(pendingAction?.actionId, actionId)
+    const matchesCode = !actionId && actionCode && pendingAction?.actionCode === actionCode
+    if (matchesId || matchesCode) {
+      message.pendingAction = null
+      message.content = '动作已完成'
+    }
+  })
+  pendingActions.value = pendingActions.value.filter(action => {
+    if (actionId) return !sameId(action.actionId, actionId)
+    return action.actionCode !== actionCode
+  })
 }
 
 function parseParametersJson(text) {
@@ -1544,66 +1571,32 @@ function parseParametersJson(text) {
 
 function extractRequestMessage(error, fallback) {
   const data = error?.response?.data
-  return data?.msg || data?.message || error?.message || fallback
+  const serverMessage = data?.msg || data?.message
+  if (serverMessage) return serverMessage
+  const localMessage = error?.message || ''
+  return /^Request failed with status code/i.test(localMessage) ? fallback : (localMessage || fallback)
 }
 
 function actionCrudType(actionCode) {
   const operation = String(actionCode || '').split('.').pop()
   const labels = {
-    create: 'CREATE（新增）',
-    add: 'CREATE（新增）',
-    attach: 'CREATE（新增）',
-    update: 'UPDATE（修改）',
-    status: 'UPDATE（状态变更）',
-    sort: 'UPDATE（修改）',
-    grade: 'UPDATE（修改）',
-    close: 'UPDATE（修改）',
-    delete: 'DELETE（删除）',
-    remove: 'DELETE（删除）'
+    create: '新增',
+    add: '新增',
+    attach: '新增',
+    update: '修改',
+    status: '状态变更',
+    sort: '排序调整',
+    grade: '批改',
+    close: '结束',
+    delete: '删除',
+    remove: '移除'
   }
-  return labels[operation] || 'WRITE（写操作）'
+  return labels[operation] || '系统操作'
 }
 
-function actionLinkFor(actionCode, resultData) {
-  const code = String(actionCode || '')
-  if (code.startsWith('course.') || code.startsWith('chapter.') || code.startsWith('lesson.') || code.startsWith('course.resource.')) {
-    const courseId = resultData?.courseId
-    if (courseId) {
-      return { link: `/courses/${courseId}`, linkText: '课程详情' }
-    }
-    return { link: '/courses', linkText: '课程管理' }
-  }
-  if (code.startsWith('teaching.class.') || code.startsWith('class.student.')) {
-    return { link: '/teaching-classes', linkText: '教学班管理' }
-  }
-  if (code.startsWith('notice.')) {
-    return { link: '/notices', linkText: '通知管理' }
-  }
-  if (code.startsWith('homework.')) {
-    return { link: '/homeworks', linkText: '作业管理' }
-  }
-  if (code.startsWith('exam.session.') || code.startsWith('exam.answer.')) {
-    return { link: '/exams', linkText: '考试管理' }
-  }
-  if (code.startsWith('question.')) {
-    return { link: '/questions', linkText: '题库管理' }
-  }
-  if (code.startsWith('exam.paper.')) {
-    return { link: '/papers', linkText: '试卷管理' }
-  }
-  if (code.startsWith('grade.record.')) {
-    return { link: '/my-grades', linkText: '成绩页面' }
-  }
-  return { link: '/console', linkText: '控制台' }
-}
-
-function showActionResult(success, message, resultData) {
-  const target = actionLinkFor(actionForm.actionCode, resultData)
+function showActionError(message) {
   actionResult.visible = true
-  actionResult.success = success
-  actionResult.message = message || (success ? '操作已完成' : '操作未完成')
-  actionResult.link = target.link
-  actionResult.linkText = target.linkText
+  actionResult.message = message || '动作执行失败'
 }
 
 async function submitActionConfirm() {
@@ -1623,6 +1616,8 @@ async function submitActionConfirm() {
     return
   }
   confirmingAction.value = true
+  const confirmedActionId = actionForm.actionId.trim()
+  const confirmedActionCode = actionForm.actionCode.trim()
   try {
     const response = await confirmAgentAction({
       actionId: actionForm.actionId.trim() || null,
@@ -1632,11 +1627,13 @@ async function submitActionConfirm() {
       parameters
     })
     const result = unwrapData(response)
-    showActionResult(true, result?.message || '动作已执行', result?.data)
-    ElMessage.success(actionResult.message)
+    clearConfirmedPendingAction(confirmedActionId, confirmedActionCode)
+    actionDialogVisible.value = false
+    resetActionResult()
+    ElMessage.success(result?.message || '动作已完成')
   } catch (e) {
     const message = extractRequestMessage(e, '动作执行失败')
-    showActionResult(false, message, null)
+    showActionError(message)
     if (!/待确认操作不存在|待确认操作已过期/.test(message)) {
       ElMessage.error(message)
     }
@@ -1685,8 +1682,73 @@ onMounted(async () => {
 }
 
 .embedded-mode .chat-sidebar {
-  width: 240px;
-  min-width: 240px;
+  width: 132px;
+  min-width: 132px;
+}
+
+.embedded-mode .sidebar-header {
+  padding: 10px;
+}
+
+.embedded-mode .session-list {
+  padding: 6px;
+}
+
+.embedded-mode .session-item {
+  margin-bottom: 6px;
+  padding: 8px;
+}
+
+.embedded-mode .session-title {
+  display: -webkit-box;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.45;
+  white-space: normal;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.embedded-mode .chat-header {
+  padding: 8px 10px;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.embedded-mode .agent-selector {
+  width: auto;
+  min-width: 150px;
+  flex: 1 1 180px;
+}
+
+.embedded-mode .chat-actions {
+  gap: 4px;
+}
+
+.embedded-mode .chat-actions :deep(.el-button.is-circle) {
+  width: 30px;
+  height: 30px;
+}
+
+.embedded-mode .chat-messages {
+  padding: 12px;
+}
+
+.embedded-mode .message-wrapper {
+  max-width: 96%;
+}
+
+.embedded-mode .chat-input-area {
+  padding: 10px;
+  gap: 8px;
+}
+
+.embedded-mode .chat-input-row {
+  gap: 8px;
+}
+
+.embedded-mode .chat-input-area :deep(.el-textarea__inner) {
+  min-height: 60px !important;
 }
 
 .chat-sidebar {
@@ -1717,9 +1779,7 @@ onMounted(async () => {
 }
 
 .session-item {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: block;
   padding: 12px;
   cursor: pointer;
   transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
@@ -1745,9 +1805,8 @@ onMounted(async () => {
 }
 
 .session-info {
-  flex: 1;
+  min-width: 0;
   overflow: hidden;
-  margin-right: 8px;
 }
 
 .session-title {
@@ -1761,15 +1820,32 @@ onMounted(async () => {
 }
 
 .session-time {
+  min-width: 0;
+  overflow: hidden;
   font-size: 12px;
   color: var(--text-muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-meta {
+  min-height: 26px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
 }
 
 .session-actions {
   display: flex;
   align-items: center;
+  flex-shrink: 0;
   opacity: 0;
   transition: opacity 0.2s;
+}
+
+.session-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .session-item:hover .session-actions,
@@ -2068,6 +2144,12 @@ onMounted(async () => {
   gap: 12px;
 }
 
+.action-pending-hint {
+  margin-top: 0;
+  color: #D97706;
+  font-weight: 600;
+}
+
 .chat-input-row {
   width: 100%;
   display: flex;
@@ -2291,21 +2373,12 @@ onMounted(async () => {
   line-height: 1.4;
 }
 
-.action-parameter-json {
-  margin-top: 12px;
-}
-
 .action-result-card {
   margin-top: 14px;
   padding: 14px;
   border-radius: var(--radius-md);
   border: 1px solid var(--border-color);
   background: #F8FAFC;
-}
-
-.action-result-card.success {
-  border-color: #A7F3D0;
-  background: #ECFDF5;
 }
 
 .action-result-card.error {
@@ -2353,6 +2426,7 @@ onMounted(async () => {
   }
 
   .ai-chat-page.embedded-mode {
+    flex-direction: row;
     height: 100%;
     min-height: 0;
   }
@@ -2366,8 +2440,11 @@ onMounted(async () => {
   }
 
   .embedded-mode .chat-sidebar {
-    width: 100%;
-    min-width: 0;
+    width: 120px;
+    min-width: 120px;
+    height: auto;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 0;
   }
 
   .chat-header {
@@ -2385,6 +2462,12 @@ onMounted(async () => {
 
   .message-wrapper {
     max-width: 94%;
+  }
+}
+
+@media (max-width: 560px) {
+  .embedded-mode .chat-sidebar {
+    display: none;
   }
 }
 </style>

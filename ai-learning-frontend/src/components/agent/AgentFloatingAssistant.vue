@@ -5,9 +5,11 @@
         v-if="userStore.isLoggedIn && panelOpen"
         ref="panelRef"
         class="agent-floating-panel"
+        :class="{ 'is-dragging': dragState.kind === 'panel' }"
+        :style="panelStyle"
         aria-label="Agent 侧边助手"
       >
-        <header class="floating-panel-header">
+        <header class="floating-panel-header" title="拖动窗口" @pointerdown="startPanelDrag">
           <div class="floating-panel-title">
             <span class="assistant-mark">
               <el-icon><Cpu /></el-icon>
@@ -17,7 +19,14 @@
               <span>{{ permissionLabel }}</span>
             </div>
           </div>
-          <el-button text circle aria-label="关闭 Agent 助手" @click="panelOpen = false">
+          <el-button
+            text
+            circle
+            data-agent-no-drag
+            aria-label="关闭 Agent 助手"
+            @pointerdown.stop
+            @click="closePanel"
+          >
             <el-icon><Close /></el-icon>
           </el-button>
         </header>
@@ -39,7 +48,16 @@
       content="打开 Agent 助手"
       placement="left"
     >
-      <button class="agent-floating-launcher" type="button" @click="openPanel()">
+      <button
+        ref="launcherRef"
+        class="agent-floating-launcher"
+        :class="{ 'is-dragging': dragState.kind === 'launcher' }"
+        :style="launcherStyle"
+        type="button"
+        aria-label="打开 Agent 助手，拖动可调整位置"
+        @pointerdown="startLauncherDrag"
+        @click="handleLauncherClick"
+      >
         <el-icon><Cpu /></el-icon>
         <span>Agent</span>
         <i v-if="selectedContext" class="context-dot"></i>
@@ -76,11 +94,29 @@ const route = useRoute()
 const router = useRouter()
 const userStore = useUserStore()
 const panelRef = ref(null)
+const launcherRef = ref(null)
 const panelOpen = ref(false)
 const selectedContext = ref(null)
 const draftPrompt = ref('')
 const draftVersion = ref(0)
 const selectionAction = reactive({ visible: false, left: 0, top: 0 })
+const launcherPosition = reactive({ x: 0, y: 0, initialized: false })
+const panelPosition = reactive({ x: 0, y: 0 })
+const dragState = reactive({
+  kind: '',
+  pointerId: null,
+  startX: 0,
+  startY: 0,
+  originX: 0,
+  originY: 0,
+  moved: false,
+})
+const suppressLauncherClick = ref(false)
+
+const VIEWPORT_GAP = 12
+const ANCHOR_GAP = 10
+const DEFAULT_LAUNCHER_WIDTH = 104
+const DEFAULT_LAUNCHER_HEIGHT = 48
 
 const hideLauncher = computed(() => Boolean(route.meta?.hideChrome) || route.name === 'AgentChat')
 const permissionLabel = computed(() => {
@@ -92,8 +128,16 @@ const selectionActionStyle = computed(() => ({
   left: `${selectionAction.left}px`,
   top: `${selectionAction.top}px`,
 }))
+const panelStyle = computed(() => ({
+  left: `${panelPosition.x}px`,
+  top: `${panelPosition.y}px`,
+}))
+const launcherStyle = computed(() => ({
+  left: `${launcherPosition.x}px`,
+  top: `${launcherPosition.y}px`,
+}))
 
-function openPanel(options = {}) {
+async function openPanel(options = {}) {
   if (!userStore.isLoggedIn) return
   if (typeof options.prompt === 'string' && options.prompt.trim()) {
     draftPrompt.value = options.prompt.trim().slice(0, 4000)
@@ -102,8 +146,31 @@ function openPanel(options = {}) {
   if (options.context?.text) {
     selectedContext.value = normalizeContext(options.context)
   }
+  const shouldAnchor = !panelOpen.value
+  const anchor = shouldAnchor ? launcherAnchor() : null
+  if (shouldAnchor) {
+    positionPanelFromAnchor(anchor, estimatedPanelSize())
+  }
   panelOpen.value = true
   selectionAction.visible = false
+  await nextTick()
+  if (shouldAnchor) {
+    positionPanelFromAnchor(anchor)
+  } else {
+    constrainPanelToViewport()
+  }
+}
+
+function closePanel() {
+  panelOpen.value = false
+}
+
+function handleLauncherClick(event) {
+  if (suppressLauncherClick.value) {
+    event.preventDefault()
+    return
+  }
+  openPanel()
 }
 
 function openFromSelection() {
@@ -172,6 +239,145 @@ function clamp(value, min, max) {
   return Math.min(Math.max(value, min), max)
 }
 
+function viewportSize() {
+  return { width: window.innerWidth, height: window.innerHeight }
+}
+
+function launcherSize() {
+  return {
+    width: launcherRef.value?.offsetWidth || (window.innerWidth <= 900 ? 48 : DEFAULT_LAUNCHER_WIDTH),
+    height: launcherRef.value?.offsetHeight || DEFAULT_LAUNCHER_HEIGHT,
+  }
+}
+
+function estimatedPanelSize() {
+  const viewport = viewportSize()
+  return {
+    width: Math.min(Math.max(viewport.width * 0.34, 400), 480, viewport.width - VIEWPORT_GAP * 2),
+    height: Math.min(Math.max(viewport.height * 0.54, 420), 560, viewport.height - VIEWPORT_GAP * 2),
+  }
+}
+
+function ensureLauncherPosition() {
+  if (launcherPosition.initialized) return
+  const viewport = viewportSize()
+  const size = launcherSize()
+  launcherPosition.x = Math.max(VIEWPORT_GAP, viewport.width - size.width - 24)
+  launcherPosition.y = Math.max(VIEWPORT_GAP, viewport.height - size.height - 28)
+  launcherPosition.initialized = true
+}
+
+function launcherAnchor() {
+  ensureLauncherPosition()
+  const size = launcherSize()
+  return {
+    left: launcherPosition.x,
+    top: launcherPosition.y,
+    width: size.width,
+    height: size.height,
+  }
+}
+
+function positionPanelFromAnchor(anchor, size) {
+  if (!anchor) return
+  const viewport = viewportSize()
+  const panelSize = size || {
+    width: panelRef.value?.offsetWidth || estimatedPanelSize().width,
+    height: panelRef.value?.offsetHeight || estimatedPanelSize().height,
+  }
+  const anchorCenterX = anchor.left + anchor.width / 2
+  const anchorCenterY = anchor.top + anchor.height / 2
+  const desiredX = anchorCenterX <= viewport.width / 2
+    ? anchor.left
+    : anchor.left + anchor.width - panelSize.width
+  const desiredY = anchorCenterY <= viewport.height / 2
+    ? anchor.top + anchor.height + ANCHOR_GAP
+    : anchor.top - panelSize.height - ANCHOR_GAP
+
+  panelPosition.x = clamp(desiredX, VIEWPORT_GAP, Math.max(VIEWPORT_GAP, viewport.width - panelSize.width - VIEWPORT_GAP))
+  panelPosition.y = clamp(desiredY, VIEWPORT_GAP, Math.max(VIEWPORT_GAP, viewport.height - panelSize.height - VIEWPORT_GAP))
+}
+
+function constrainPosition(position, size) {
+  const viewport = viewportSize()
+  position.x = clamp(position.x, VIEWPORT_GAP, Math.max(VIEWPORT_GAP, viewport.width - size.width - VIEWPORT_GAP))
+  position.y = clamp(position.y, VIEWPORT_GAP, Math.max(VIEWPORT_GAP, viewport.height - size.height - VIEWPORT_GAP))
+}
+
+function constrainPanelToViewport() {
+  if (!panelRef.value) return
+  constrainPosition(panelPosition, {
+    width: panelRef.value.offsetWidth,
+    height: panelRef.value.offsetHeight,
+  })
+}
+
+function constrainLauncherToViewport() {
+  ensureLauncherPosition()
+  constrainPosition(launcherPosition, launcherSize())
+}
+
+function startDrag(kind, event) {
+  if (event.button !== 0) return
+  if (kind === 'panel' && event.target?.closest?.('[data-agent-no-drag]')) return
+  const position = kind === 'panel' ? panelPosition : launcherPosition
+  dragState.kind = kind
+  dragState.pointerId = event.pointerId
+  dragState.startX = event.clientX
+  dragState.startY = event.clientY
+  dragState.originX = position.x
+  dragState.originY = position.y
+  dragState.moved = false
+  document.body.classList.add('agent-assistant-dragging')
+  event.preventDefault()
+}
+
+function startPanelDrag(event) {
+  startDrag('panel', event)
+}
+
+function startLauncherDrag(event) {
+  ensureLauncherPosition()
+  startDrag('launcher', event)
+}
+
+function handlePointerMove(event) {
+  if (!dragState.kind || event.pointerId !== dragState.pointerId) return
+  const deltaX = event.clientX - dragState.startX
+  const deltaY = event.clientY - dragState.startY
+  if (Math.abs(deltaX) + Math.abs(deltaY) > 4) {
+    dragState.moved = true
+  }
+  const position = dragState.kind === 'panel' ? panelPosition : launcherPosition
+  const size = dragState.kind === 'panel'
+    ? { width: panelRef.value?.offsetWidth || 0, height: panelRef.value?.offsetHeight || 0 }
+    : launcherSize()
+  position.x = dragState.originX + deltaX
+  position.y = dragState.originY + deltaY
+  constrainPosition(position, size)
+}
+
+function endPointerDrag(event) {
+  if (!dragState.kind || event.pointerId !== dragState.pointerId) return
+  const draggedLauncher = dragState.kind === 'launcher' && dragState.moved
+  dragState.kind = ''
+  dragState.pointerId = null
+  document.body.classList.remove('agent-assistant-dragging')
+  if (draggedLauncher) {
+    suppressLauncherClick.value = true
+    window.setTimeout(() => {
+      suppressLauncherClick.value = false
+    }, 0)
+  }
+}
+
+function handleViewportResize() {
+  constrainLauncherToViewport()
+  if (panelOpen.value) {
+    nextTick(constrainPanelToViewport)
+  }
+}
+
 async function consumeRouteOpenRequest() {
   if (!userStore.isLoggedIn || String(route.query.openAgent || '') !== '1') return
   const promptValue = Array.isArray(route.query.prompt) ? route.query.prompt[0] : route.query.prompt
@@ -207,7 +413,12 @@ watch(
 )
 
 onMounted(() => {
+  ensureLauncherPosition()
   window.addEventListener(AGENT_ASSISTANT_OPEN_EVENT, handleOpenEvent)
+  window.addEventListener('pointermove', handlePointerMove)
+  window.addEventListener('pointerup', endPointerDrag)
+  window.addEventListener('pointercancel', endPointerDrag)
+  window.addEventListener('resize', handleViewportResize)
   document.addEventListener('pointerup', captureSelection)
   document.addEventListener('mouseup', captureSelection)
   document.addEventListener('keyup', captureSelection)
@@ -216,10 +427,15 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener(AGENT_ASSISTANT_OPEN_EVENT, handleOpenEvent)
+  window.removeEventListener('pointermove', handlePointerMove)
+  window.removeEventListener('pointerup', endPointerDrag)
+  window.removeEventListener('pointercancel', endPointerDrag)
+  window.removeEventListener('resize', handleViewportResize)
   document.removeEventListener('pointerup', captureSelection)
   document.removeEventListener('mouseup', captureSelection)
   document.removeEventListener('keyup', captureSelection)
   document.removeEventListener('scroll', hideSelectionAction, true)
+  document.body.classList.remove('agent-assistant-dragging')
 })
 </script>
 
@@ -227,10 +443,10 @@ onBeforeUnmount(() => {
 .agent-floating-panel {
   position: fixed;
   z-index: 2100;
-  top: 80px;
-  right: 24px;
-  bottom: 24px;
-  width: min(920px, calc(100vw - 48px));
+  width: clamp(400px, 34vw, 480px);
+  height: clamp(420px, 54vh, 560px);
+  max-width: calc(100vw - 24px);
+  max-height: calc(100vh - 24px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -241,14 +457,21 @@ onBeforeUnmount(() => {
 }
 
 .floating-panel-header {
-  min-height: 58px;
-  padding: 0 16px;
+  min-height: 52px;
+  padding: 0 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   color: #fff;
   background: linear-gradient(135deg, #312e81, #2563eb 58%, #0891b2);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.agent-floating-panel.is-dragging .floating-panel-header {
+  cursor: grabbing;
 }
 
 .floating-panel-header :deep(.el-button) {
@@ -302,8 +525,6 @@ onBeforeUnmount(() => {
 .agent-floating-launcher {
   position: fixed;
   z-index: 1900;
-  right: 24px;
-  bottom: 28px;
   min-width: 104px;
   height: 48px;
   padding: 0 18px;
@@ -318,12 +539,20 @@ onBeforeUnmount(() => {
   box-shadow: 0 14px 30px rgba(37, 99, 235, .32);
   font-weight: 700;
   cursor: pointer;
+  touch-action: none;
+  user-select: none;
   transition: transform .2s ease, box-shadow .2s ease;
 }
 
 .agent-floating-launcher:hover {
   transform: translateY(-2px);
   box-shadow: 0 18px 36px rgba(37, 99, 235, .38);
+}
+
+.agent-floating-launcher.is-dragging {
+  cursor: grabbing;
+  transform: scale(1.03);
+  transition: none;
 }
 
 .context-dot {
@@ -369,16 +598,12 @@ onBeforeUnmount(() => {
 
 @media (max-width: 900px) {
   .agent-floating-panel {
-    top: 12px;
-    right: 12px;
-    bottom: 12px;
-    width: calc(100vw - 24px);
+    width: min(400px, calc(100vw - 24px));
+    height: min(520px, calc(100vh - 24px));
     border-radius: 16px;
   }
 
   .agent-floating-launcher {
-    right: 16px;
-    bottom: 18px;
     min-width: 48px;
     width: 48px;
     padding: 0;

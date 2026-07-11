@@ -25,6 +25,10 @@ import java.util.List;
 public class AgentPromptAssembler {
     private static final Logger log = LoggerFactory.getLogger(AgentPromptAssembler.class);
     private static final String SYSTEM_PROMPT = "你是一个智能教学管理平台助手";
+    public static final String CONCISE_RESPONSE_RULES = "回复要求：默认使用简洁、自然的中文，先直接回答结论。"
+            + "简单问题控制在 1 到 4 句；需要列举时通常不超过 5 项。"
+            + "不要复述用户问题，不写客套开场、重复总结或无关延伸。"
+            + "只有用户明确要求详细解释、完整步骤、长文或教学展开时才增加篇幅。";
 
     private final AgentChatProperties chatProperties;
     private final AgentConfigurationParser configurationParser;
@@ -69,7 +73,9 @@ public class AgentPromptAssembler {
             if ("user".equals(message.getRole())) {
                 promptMessages.add(new UserMessage(message.getContent()));
             } else if ("assistant".equals(message.getRole())) {
-                promptMessages.add(new AssistantMessage(message.getContent()));
+                promptMessages.add(new AssistantMessage("pending_action".equals(message.getToolName())
+                        ? "系统已接管该操作请求。"
+                        : message.getContent()));
             }
         }
         promptMessages.add(new UserMessage(currentUserContent.trim()));
@@ -114,6 +120,7 @@ public class AgentPromptAssembler {
 
     private String systemPrompt(AgentDefinition agent, String knowledgeContext, String toolContext) {
         StringBuilder prompt = new StringBuilder(systemPrompt(agent));
+        prompt.append("\n\n").append(CONCISE_RESPONSE_RULES);
         if (hasWritePlanTools(agent)) {
             prompt.append("\n\n重要规则：不要编造 actionId、确认ID、待确认操作记录或执行结果。")
                     .append("如果本轮没有真实工具调用结果，就只能说明需要通过系统支持的待确认操作入口生成计划。");

@@ -31,19 +31,35 @@ public class PlannerModelClient {
             ChatResponse response = chatModelClient.call(plannerPrompt(promptText),
                     Duration.ofSeconds(Math.max(1, timeoutSeconds)));
             if (response == null || response.getResult() == null || response.getResult().getOutput() == null) {
-                throw new AgentPlanningException("规划模型未返回内容");
+                throw new AgentPlanningException(
+                        "规划模型未返回内容",
+                        null,
+                        "操作规划服务未返回结果，请稍后重试。"
+                );
             }
             String content = response.getResult().getOutput().getContent();
             if (content == null || content.isBlank()) {
-                throw new AgentPlanningException("规划模型返回为空");
+                throw new AgentPlanningException(
+                        "规划模型返回为空",
+                        null,
+                        "操作规划服务未返回结果，请稍后重试。"
+                );
             }
             return content.trim();
         } catch (AgentPlanningException e) {
             throw e;
         } catch (ChatModelTimeoutException e) {
-            throw new AgentPlanningException("Agent 规划超时，请重新发送", e);
+            throw new AgentPlanningException(
+                    "Agent 规划超时，请重新发送",
+                    e,
+                    "操作规划超时，请稍后重试。"
+            );
         } catch (Exception e) {
-            throw new AgentPlanningException("Agent 规划模型调用失败：" + safeMessage(e), e);
+            throw new AgentPlanningException(
+                    "Agent 规划模型调用失败：" + safeMessage(e),
+                    e,
+                    "操作规划服务暂时不可用，请稍后重试。"
+            );
         }
     }
 

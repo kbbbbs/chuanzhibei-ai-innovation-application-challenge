@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -65,7 +66,11 @@ public class SchemaDrivenReadToolPlanner {
         AgentReadToolSpec selected = readToolCatalog.enabledSpecs(enabledTools).stream()
                 .filter(spec -> normalize(spec.getToolName()).equals(normalize(toolName)))
                 .findFirst()
-                .orElseThrow(() -> new AgentPlanningException("读工具不存在或未启用：" + toolName));
+                .orElseThrow(() -> new AgentPlanningException(
+                        "读工具不存在或未启用：" + toolName,
+                        null,
+                        "当前 Agent 不支持这项数据查询。"
+                ));
         return planAndExecute(userText.trim(), List.of(selected), true);
     }
 
@@ -76,8 +81,11 @@ public class SchemaDrivenReadToolPlanner {
         LlmReadToolValidationResult validation = null;
         String prompt = buildPlanPrompt(userText, specs, selectedIntent);
         int maxAttempts = Math.max(1, properties.getMaxRepairRounds() + 1);
+        int attempts = 0;
+        boolean exhausted = false;
 
         for (int attempt = 0; attempt < maxAttempts; attempt++) {
+            attempts = attempt + 1;
             try {
                 long startedNanos = System.nanoTime();
                 decision = callModel(prompt);
@@ -85,16 +93,22 @@ public class SchemaDrivenReadToolPlanner {
                         properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
                 validation = validator.validate(decision, specs);
             } catch (AgentPlanningException e) {
-                throw e;
+                log.warn("Agent planner model call failed: stage=read_parameters, attempt={}, message={}",
+                        attempt + 1, e.getMessage());
+                validation = appendReadError(validation, e.getUserMessage());
             } catch (Exception e) {
-                validation = LlmReadToolValidationResult.invalid(
-                        List.of("模型输出无法解析：" + safeMessage(e)));
+                validation = appendReadError(validation, "模型输出格式不正确：" + safeMessage(e));
             }
-            if (validation.isValid()) {
+            if (validation == null) {
+                validation = LlmReadToolValidationResult.invalid(List.of("模型未返回可校验的查询参数"));
+            }
+            if (validation.isValid() || requiresReadInput(validation)) {
                 break;
             }
             if (attempt + 1 < maxAttempts) {
                 prompt = buildRepairPrompt(userText, specs, decision, validation.getErrors(), selectedIntent);
+            } else {
+                exhausted = true;
             }
         }
 
@@ -104,9 +118,14 @@ public class SchemaDrivenReadToolPlanner {
             List<String> errors = validation == null
                     ? List.of("模型未返回可校验的读工具决策")
                     : validation.getErrors();
-            return "[read_planner]\n未执行平台数据库查询；读工具规划在限定轮次内仍未通过后端校验；"
-                    + "校验错误=" + String.join("；", errors)
-                    + "。回答时必须明确说明尚未查询到平台数据，并请用户补充更明确的查询对象或条件。";
+            String reason = readFailureMessage(errors);
+            String stage = requiresReadInput(validation)
+                    ? "查询平台数据前还需要用户补充条件"
+                    : exhausted
+                    ? "查询条件校验已达到最大尝试次数（" + attempts + " 次）"
+                    : "查询条件未通过校验";
+            return "[read_planner]\n未执行平台数据库查询；" + stage + "；原因=" + reason
+                    + "。请直接、简洁地告诉用户本次没有查询平台数据，以及需要补充或重试的内容。";
         }
         if (validation.isChat()) {
             log.info("Agent read planner selected CHAT");
@@ -125,8 +144,67 @@ public class SchemaDrivenReadToolPlanner {
         } catch (Exception e) {
             log.warn("Model-selected read tool failed: tool={}, message={}",
                     validation.getToolName(), e.getMessage(), e);
-            return "[" + validation.getToolName() + "]\n工具执行失败：" + safeMessage(e);
+            return "[" + validation.getToolName() + "]\n平台数据查询失败，本次没有获取到最新数据。";
         }
+    }
+
+    private LlmReadToolValidationResult appendReadError(LlmReadToolValidationResult previous, String error) {
+        if (previous == null) {
+            return LlmReadToolValidationResult.invalid(List.of(error));
+        }
+        List<String> errors = new ArrayList<>(previous.getErrors() == null ? List.of() : previous.getErrors());
+        if (error != null && !error.isBlank() && !errors.contains(error.trim())) {
+            errors.add(error.trim());
+        }
+        return new LlmReadToolValidationResult(
+                false,
+                false,
+                previous.getToolName(),
+                previous.getNormalizedArguments(),
+                errors
+        );
+    }
+
+    private boolean requiresReadInput(LlmReadToolValidationResult validation) {
+        if (validation == null || validation.getErrors() == null) {
+            return false;
+        }
+        return validation.getErrors().stream()
+                .filter(java.util.Objects::nonNull)
+                .anyMatch(error -> error.startsWith("缺少必填参数"));
+    }
+
+    private String readFailureMessage(List<String> errors) {
+        if (errors == null || errors.isEmpty()) {
+            return "没有得到有效的查询条件";
+        }
+        for (String error : errors) {
+            String value = error == null ? "" : error.trim();
+            if (value.isBlank()) {
+                continue;
+            }
+            if (value.startsWith("操作规划服务") || value.startsWith("操作规划超时")) {
+                return trimEndingPunctuation(value);
+            }
+            if (value.startsWith("缺少必填参数")) {
+                return "缺少必要的查询条件";
+            }
+            if (value.contains("置信度不足")) {
+                return "无法可靠判断查询对象或条件";
+            }
+            if (value.contains("不存在或未启用")) {
+                return "需要的查询功能当前未启用";
+            }
+            if (value.contains("模型输出") || value.contains("JSON") || value.contains("decision")) {
+                return "模型返回的查询参数格式不正确";
+            }
+            return "查询参数未通过校验";
+        }
+        return "没有得到有效的查询条件";
+    }
+
+    private String trimEndingPunctuation(String value) {
+        return value == null ? "" : value.trim().replaceFirst("[。！？；;]+$", "");
     }
 
     private LlmReadToolDecision callModel(String promptText) {
