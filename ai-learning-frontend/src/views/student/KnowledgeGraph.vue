@@ -51,7 +51,7 @@
       <el-empty v-else description="请选择一个知识库查看图谱" />
     </el-card>
 
-    <div v-if="selectedKb" class="graph-layout">
+    <div v-if="selectedKb && !isAlgoBilingual" class="graph-layout">
       <el-card shadow="never" class="graph-card">
         <template #header>
           <div class="card-header">
@@ -131,7 +131,7 @@
       </el-card>
     </div>
 
-    <el-card v-if="selectedKb" shadow="never" class="algo-graph-card">
+    <el-card v-if="selectedKb && isAlgoBilingual" shadow="never" class="algo-graph-card">
       <template #header>
         <div class="card-header">
           <span>算法双语知识图谱</span>
@@ -175,6 +175,7 @@ const selectedNodeId = ref('')
 const graphData = ref({ enabled: false, nodes: [], relations: [] })
 
 const selectedKb = computed(() => knowledgeBases.value.find(kb => kb.id === selectedKbId.value) || null)
+const isAlgoBilingual = computed(() => selectedKb.value?.name === '算法双语')
 const graphEnabled = computed(() => Boolean(graphData.value?.enabled))
 
 function pickNodeLabel(node, fallback) {

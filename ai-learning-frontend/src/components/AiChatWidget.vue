@@ -15,6 +15,9 @@
           <el-option label="知识库 RAG" value="knowledge" />
           <el-option label="Agent 智能体" value="agent" />
         </el-select>
+        <el-button v-if="collapsible" circle size="small" class="collapse-btn" @click="emit('toggleCollapse')">
+          <el-icon><ArrowDown v-if="collapsed" /><ArrowUp v-else /></el-icon>
+        </el-button>
       </div>
     </div>
 
@@ -35,7 +38,7 @@
     </div>
 
     <!-- Chat Messages Box -->
-    <div class="chat-messages" ref="messagesContainer">
+    <div class="chat-messages" ref="messagesContainer" v-show="!collapsed">
       <div class="welcome-msg" v-if="messages.length === 0">
         <div class="welcome-icon"><el-icon><ChatDotRound /></el-icon></div>
         <h4 v-if="!canUseAssistant">登录后使用 AI 知识助手</h4>
@@ -100,7 +103,7 @@
     </div>
 
     <!-- Chat Input Box -->
-    <div class="chat-input-area">
+    <div class="chat-input-area" v-show="!collapsed">
       <el-input
         v-model="inputQuery"
         type="textarea"
@@ -243,7 +246,7 @@ import { useWeKnora } from '@/composables/useWeKnora'
 import { confirmAgentAction, getAgentPendingAction } from '@/api/agent'
 import { MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
-import { Cpu, User, ChatDotRound, Position, RefreshRight } from '@element-plus/icons-vue'
+import { Cpu, User, ChatDotRound, Position, RefreshRight, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 
@@ -264,8 +267,18 @@ const props = defineProps({
   hideKbSelector: {
     type: Boolean,
     default: false
+  },
+  collapsible: {
+    type: Boolean,
+    default: false
+  },
+  collapsed: {
+    type: Boolean,
+    default: false
   }
 })
+
+const emit = defineEmits(['toggleCollapse'])
 
 const {
   messages,
