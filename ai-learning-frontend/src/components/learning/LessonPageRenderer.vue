@@ -1,9 +1,5 @@
 <template>
-  <article
-    class="lesson-page"
-    data-agent-selectable="lesson-content"
-    :data-agent-lesson-title="pageTitle"
-  >
+  <article class="lesson-page">
     <section class="page-hero">
       <div>
         <p class="eyebrow">互动课本</p>

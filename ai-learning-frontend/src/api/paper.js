@@ -15,3 +15,5 @@ export const getPaperMarks = (paperIds) => request.get('/api/paper/marks/batch',
 })
 export const savePaperMark = (paperId, data) => request.put(`/api/paper/marks/${paperId}`, data)
 export const deletePaperMark = (paperId) => request.delete(`/api/paper/marks/${paperId}`)
+export const generatePaperMarks = () => request.post('/api/paper/generate-marks')
+export const batchGeneratePaperMarks = () => request.post('/api/paper/generate-marks-batch')

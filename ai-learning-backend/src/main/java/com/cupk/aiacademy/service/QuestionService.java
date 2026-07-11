@@ -93,34 +93,6 @@ public class QuestionService {
         return toResponse(question);
     }
 
-    /**
-     * 智能备课最终发布使用的严格写入入口。调用方已经在同一事务中创建课程，
-     * 此方法复用题目规则校验与序列化逻辑，但允许管理员作为草稿课程所有者。
-     */
-    @Transactional
-    public QuestionResponseDTO createFromPreparation(QuestionRequestDTO request,
-                                                     Integer courseId,
-                                                     Integer ownerId) {
-        permissionService.requireTeacherOrAdmin();
-        var user = permissionService.currentUser();
-        if (!permissionService.isAdmin(user) && !Objects.equals(user.getUserId(), ownerId)) {
-            throw new ForbiddenException("无权为该备课课程创建题目");
-        }
-        if (courseId == null || courseId <= 0 || ownerId == null || ownerId <= 0) {
-            throw new BusinessException("课程或创建人不能为空");
-        }
-        request.setCourseId(courseId.longValue());
-        request.setTeacherId(ownerId.longValue());
-        validateQuestionRules(request);
-        Question question = new Question();
-        fillQuestion(question, request);
-        LocalDateTime now = LocalDateTime.now();
-        question.setCreateTime(now);
-        question.setUpdateTime(now);
-        questionMapper.insert(question);
-        return toResponse(question);
-    }
-
     @Transactional
     public QuestionResponseDTO update(Long id, QuestionRequestDTO request) {
         validateQuestionRules(request);

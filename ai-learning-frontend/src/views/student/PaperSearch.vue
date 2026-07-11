@@ -22,6 +22,7 @@
         </el-form-item>
         <el-form-item label="来源">
           <el-select v-model="searchForm.source" style="width: 160px" @change="resetPage">
+            <el-option label="全部来源" value="all" />
             <el-option label="本地数据库" value="local" />
             <el-option label="arXiv" value="arxiv" />
             <el-option label="OpenAlex" value="openalex" />
@@ -38,7 +39,7 @@
         <el-form-item>
           <el-button type="primary" :loading="loading" @click="handleSearch">搜索</el-button>
           <el-button @click="handleReset">重置</el-button>
-          <el-button v-if="searchForm.source !== 'local'" :loading="importing" @click="handleImport">
+          <el-button v-if="searchForm.source !== 'local' && searchForm.source !== 'all'" :loading="importing" @click="handleImport">
             导入到本地
           </el-button>
           <el-button v-if="!showRecommendations" @click="showRecommendations = true">显示推荐</el-button>
@@ -100,11 +101,14 @@
 
     <el-card style="margin-top: 16px" v-loading="loading">
       <div v-if="hasSearched && total === 0 && !loading" class="search-empty">
-        <template v-if="searchForm.source !== 'local' && isChinese(searchForm.keyword)">
+        <template v-if="searchForm.source !== 'local' && searchForm.source !== 'all' && isChinese(searchForm.keyword)">
           「{{ searchForm.keyword }}」是中文关键词，{{ sourceLabel(searchForm.source) }} 为英文论文库，中文检索结果有限。
           <el-button type="primary" link @click="switchToLocal">切换到本地数据库</el-button>
           <span style="margin:0 8px;color:#c0c4cc">|</span>
           或尝试英文关键词，如 Machine Learning / Deep Learning / Neural Network
+        </template>
+        <template v-else-if="searchForm.source === 'all'">
+          全部来源中均未找到「{{ searchForm.keyword }}」相关论文，请尝试更换关键词。
         </template>
         <template v-else-if="searchForm.source !== 'local'">
           「{{ searchForm.keyword }}」在 {{ sourceLabel(searchForm.source) }} 中未找到结果，建议尝试其他来源或更换关键词。
@@ -353,6 +357,8 @@ async function loadVisibleMarks() {
   }
 }
 
+const ALL_SOURCES = ['local', 'arxiv', 'openalex', 'semantic_scholar']
+
 const handleSearch = async () => {
   if (!searchForm.keyword.trim()) {
     ElMessage.warning('请输入搜索关键词')
@@ -362,24 +368,27 @@ const handleSearch = async () => {
   showRecommendations.value = false
   loading.value = true
   try {
-    const res = await searchPapers(buildSearchParams())
-    if (res.code === '200') {
-      const data = res.data
-      if (data && data.data) {
-        papers.value = data.data
-        total.value = data.total || 0
-      } else if (Array.isArray(data)) {
-        papers.value = data
-        total.value = data.length
-      } else {
-        papers.value = []
-        total.value = 0
-      }
-      await loadVisibleMarks()
-    } else {
-      papers.value = []
-      total.value = 0
+    const isAllSources = searchForm.source === 'all'
+    const sources = isAllSources ? ALL_SOURCES : [searchForm.source]
+    const results = await Promise.allSettled(
+      sources.map(src => searchPapers({ ...buildSearchParams(), source: src }))
+    )
+    const merged = []
+    results.forEach((r, idx) => {
+      if (r.status !== 'fulfilled') return
+      const data = r.value?.data
+      let list = []
+      if (data && data.data) list = data.data
+      else if (Array.isArray(data)) list = data
+      if (isAllSources) list = list.map(item => ({ ...item, source: item.source || sources[idx] }))
+      merged.push(...list)
+    })
+    if (isAllSources) {
+      merged.sort((a, b) => (b.citationCount || 0) - (a.citationCount || 0))
     }
+    papers.value = merged
+    total.value = merged.length
+    await loadVisibleMarks()
   } catch {
     papers.value = []
     total.value = 0
@@ -416,6 +425,7 @@ function isChinese(str) {
 
 function sourceLabel(src) {
   return {
+    all: '全部来源',
     arxiv: 'arXiv',
     openalex: 'OpenAlex',
     local: '本地数据库',
@@ -617,6 +627,7 @@ const handleReset = () => {
 }
 
 onMounted(() => {
+  document.querySelector('.layout-main')?.scrollTo({ top: 0 })
   const initialKeyword = typeof route.query.keyword === 'string' ? route.query.keyword.trim() : ''
   if (initialKeyword) {
     searchForm.keyword = initialKeyword

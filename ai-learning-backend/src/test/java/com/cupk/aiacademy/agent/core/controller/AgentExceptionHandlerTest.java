@@ -64,19 +64,4 @@ class AgentExceptionHandlerTest {
                 .andExpect(jsonPath("$.msg").value("title 会话标题不能为空"))
                 .andExpect(jsonPath("$.success").doesNotExist());
     }
-
-    @Test
-    void unexpectedAgentErrorReturnsSafeReferenceInsteadOfRawMessage() throws Exception {
-        when(agentChatService.listMessages(1))
-                .thenThrow(new RuntimeException("internal jdbc://secret-host details"));
-
-        mockMvc.perform(get("/api/agent/sessions/1/messages"))
-                .andExpect(status().isInternalServerError())
-                .andExpect(jsonPath("$.code").value("500"))
-                .andExpect(jsonPath("$.msg").value(org.hamcrest.Matchers.startsWith(
-                        "Agent 服务内部错误，请稍后重试（错误编号：")))
-                .andExpect(jsonPath("$.msg").value(org.hamcrest.Matchers.not(
-                        org.hamcrest.Matchers.containsString("secret-host"))))
-                .andExpect(jsonPath("$.data.errorId").isNotEmpty());
-    }
 }

@@ -53,7 +53,7 @@ class AgentActionIntentRouterTest {
                 "发布作业，教学班ID 1，标题叫第一次作业"
         ).orElseThrow();
 
-        assertEquals("动作待确认", reply.content());
+        assertTrue(reply.content().contains("指令模式：待确认"));
         assertNotNull(reply.pendingAction());
         assertEquals("homework.create", reply.pendingAction().actionCode());
         assertTrue(reply.pendingAction().parameters().containsKey("parameterSchema"));

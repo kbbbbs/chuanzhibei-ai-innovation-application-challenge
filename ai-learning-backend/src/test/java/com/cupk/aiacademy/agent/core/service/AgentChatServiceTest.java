@@ -1,15 +1,12 @@
 package com.cupk.aiacademy.agent.core.service;
 
 import com.cupk.aiacademy.agent.core.config.AgentChatProperties;
-import com.cupk.aiacademy.agent.action.AgentPendingActionStore;
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
 import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
 import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenReadToolPlanner;
-import com.cupk.aiacademy.agent.planner.AgentPlanningException;
-import com.cupk.aiacademy.agent.planner.UnifiedAgentPlanner;
 import com.cupk.aiacademy.agent.tool.AgentToolExecutor;
 import com.cupk.aiacademy.agent.tool.api.AgentToolResult;
 import com.cupk.aiacademy.common.AuthUtils;
@@ -27,8 +24,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -42,7 +37,6 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -85,12 +79,6 @@ class AgentChatServiceTest {
 
     @Mock
     private SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner;
-
-    @Mock
-    private UnifiedAgentPlanner unifiedAgentPlanner;
-
-    @Mock
-    private AgentPendingActionStore pendingActionStore;
 
     @AfterEach
     void clearUserContext() {
@@ -142,25 +130,6 @@ class AgentChatServiceTest {
     }
 
     @Test
-    void listMessagesMarksRemovedPendingActionAsFinished() {
-        AgentChatService service = newService(pendingActionStore);
-        loginAs(10);
-        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10));
-        AgentMessage assistant = message(2, "assistant", "动作待确认");
-        assistant.setToolName("pending_action");
-        assistant.setToolResult("""
-                {"actionId":"action-1","actionCode":"homework.create","expired":false}
-                """);
-        when(messageMapper.selectList(any())).thenReturn(List.of(assistant));
-        when(pendingActionStore.findById("action-1")).thenReturn(Optional.empty());
-
-        List<com.cupk.aiacademy.dto.AgentMessageResponse> messages = service.listMessages(1);
-
-        assertNull(messages.getFirst().getPendingAction());
-        assertEquals("动作已结束", messages.getFirst().getContent());
-    }
-
-    @Test
     void updateSessionRenamesOwnerSession() {
         AgentChatService service = newService();
         loginAs(10);
@@ -202,68 +171,25 @@ class AgentChatServiceTest {
     }
 
     @Test
-    void createSessionResolvesDefaultAgentByCodeWhenDefaultIdIsNotOne() {
-        AgentChatService service = newService();
-        AgentDefinition defaultAgent = agentDefinition(102);
-        defaultAgent.setCode("learning_assistant");
-        when(agentDefinitionMapper.selectById(1)).thenReturn(null);
-        when(agentDefinitionMapper.selectOne(any())).thenReturn(defaultAgent);
-
-        AgentSession session = service.createSession(null);
-
-        assertEquals(102, session.getAgentId());
-        ArgumentCaptor<AgentSession> captor = ArgumentCaptor.forClass(AgentSession.class);
-        verify(sessionMapper).insert(captor.capture());
-        assertEquals(102, captor.getValue().getAgentId());
-    }
-
-    @Test
     void chatUsesAgentDefinitionPromptAndOptions() {
         AgentChatService service = newService();
         loginAs(10);
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
         when(messageMapper.selectList(any())).thenReturn(List.of(message(1, "user", "讲一下递归")));
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(new ChatResponse(List.of(
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(new ChatResponse(List.of(
                 new Generation(new AssistantMessage("递归是一种函数调用自身的方式。"))
         )));
 
         service.chat(1, chatRequest("讲一下递归"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
+        verify(chatModelClient).call(captor.capture());
         Prompt prompt = captor.getValue();
-        assertTrue(prompt.getInstructions().get(0).getContent().startsWith("你是 Java 课程助教。"));
-        assertTrue(prompt.getInstructions().get(0).getContent().contains("默认使用简洁、自然的中文"));
+        assertEquals("你是 Java 课程助教。", prompt.getInstructions().get(0).getContent());
         OpenAiChatOptions options = (OpenAiChatOptions) prompt.getOptions();
         assertEquals("deepseek-test", options.getModel());
         assertEquals(0.3, options.getTemperature());
-    }
-
-    @Test
-    void chatPromptSanitizesPendingActionHistory() {
-        AgentChatService service = newService();
-        loginAs(10);
-        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
-        when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
-        AgentMessage pending = message(2, "assistant", "冗长的待确认说明和确认ID=secret-action-id");
-        pending.setToolName("pending_action");
-        when(messageMapper.selectList(any())).thenReturn(List.of(
-                message(1, "user", "创建一门课程"),
-                pending
-        ));
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class)))
-                .thenReturn(chatResponse("好的"));
-
-        service.chat(1, chatRequest("现在几点"));
-
-        ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
-        List<?> instructions = captor.getValue().getInstructions();
-        assertTrue(instructions.stream().anyMatch(message ->
-                "系统已接管该操作请求。".equals(((org.springframework.ai.chat.messages.Message) message).getContent())));
-        assertTrue(instructions.stream().noneMatch(message ->
-                ((org.springframework.ai.chat.messages.Message) message).getContent().contains("secret-action-id")));
     }
 
     @Test
@@ -277,12 +203,12 @@ class AgentChatServiceTest {
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
         when(messageMapper.selectList(any())).thenReturn(List.of());
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("讲一下递归"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
+        verify(chatModelClient).call(captor.capture());
         OpenAiChatOptions options = (OpenAiChatOptions) captor.getValue().getOptions();
         assertNull(options.getModel());
         assertEquals(0.3, options.getTemperature());
@@ -299,16 +225,15 @@ class AgentChatServiceTest {
         when(messageMapper.selectList(any())).thenReturn(List.of());
         when(knowledgeContextProvider.retrieve(agent, "什么是递归"))
                 .thenReturn("[1] 递归是函数调用自身的方式。\n[2] 递归必须设置终止条件。");
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("什么是递归"));
 
         verify(knowledgeContextProvider).retrieve(agent, "什么是递归");
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
+        verify(chatModelClient).call(captor.capture());
         String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
         assertTrue(systemPrompt.contains("知识库参考资料"));
-        assertTrue(systemPrompt.contains("默认使用简洁、自然的中文"));
         assertTrue(systemPrompt.contains("递归是函数调用自身的方式。"));
         assertTrue(systemPrompt.contains("递归必须设置终止条件。"));
         assertEquals("什么是递归", captor.getValue().getInstructions()
@@ -326,12 +251,12 @@ class AgentChatServiceTest {
         when(messageMapper.selectList(any())).thenReturn(List.of());
         when(schemaDrivenReadToolPlanner.planToolContext(agent, "推荐一下 Java 学习计划"))
                 .thenReturn("[learning_plan]\n建议每天学习 30 分钟");
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("推荐一下 Java 学习计划"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
+        verify(chatModelClient).call(captor.capture());
         String systemPrompt = captor.getValue().getInstructions().get(0).getContent();
         assertTrue(systemPrompt.contains("工具调用结果"));
         assertTrue(systemPrompt.contains("建议每天学习 30 分钟"));
@@ -1603,8 +1528,7 @@ class AgentChatServiceTest {
         when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
         when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
         when(messageMapper.selectList(any())).thenReturn(List.of(message(1, "user", "讲一下递归")));
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class)))
-                .thenThrow(new RuntimeException("timeout"));
+        when(chatModelClient.call(any(Prompt.class))).thenThrow(new RuntimeException("timeout"));
         AtomicInteger idSequence = new AtomicInteger(100);
         doAnswer(invocation -> {
             AgentMessage message = invocation.getArgument(0);
@@ -1615,74 +1539,14 @@ class AgentChatServiceTest {
         AgentModelCallException exception = assertThrows(AgentModelCallException.class,
                 () -> service.chat(1, chatRequest("讲一下递归")));
 
-        assertEquals("Agent 响应超时，请重新发送。", exception.getMessage());
+        assertEquals("AI 回复失败，请稍后重试。", exception.getMessage());
         assertEquals(100, exception.getUserMessageId());
         assertEquals(101, exception.getAssistantMessageId());
         ArgumentCaptor<AgentMessage> captor = ArgumentCaptor.forClass(AgentMessage.class);
         verify(messageMapper, org.mockito.Mockito.times(2)).insert(captor.capture());
         assertEquals("user", captor.getAllValues().get(0).getRole());
         assertEquals("assistant", captor.getAllValues().get(1).getRole());
-        assertEquals("Agent 响应超时，请重新发送。", captor.getAllValues().get(1).getContent());
-    }
-
-    @Test
-    void unifiedPlannerFailureBecomesSpecificAssistantReply() {
-        AgentChatService service = newService(new AgentChatProperties(), unifiedAgentPlanner);
-        loginAs(10);
-        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
-        when(agentDefinitionMapper.selectById(2)).thenReturn(agentDefinition(2));
-        when(unifiedAgentPlanner.plan(any(AgentDefinition.class), org.mockito.ArgumentMatchers.eq("新增一门课程")))
-                .thenThrow(new AgentPlanningException(
-                        "无法可靠判断请求类型：模型返回格式错误",
-                        null,
-                        "请求类型校验已达到最大尝试次数（2 次）：模型返回的请求类型格式不正确。",
-                        List.of("模型返回格式错误"),
-                        2
-                ));
-        AtomicInteger idSequence = new AtomicInteger(200);
-        doAnswer(invocation -> {
-            AgentMessage message = invocation.getArgument(0);
-            message.setId(idSequence.getAndIncrement());
-            return 1;
-        }).when(messageMapper).insert(any(AgentMessage.class));
-
-        AgentChatResponse response = service.chat(1, chatRequest("新增一门课程"));
-
-        assertEquals("请求类型校验已达到最大尝试次数（2 次）：模型返回的请求类型格式不正确。",
-                response.getContent());
-        assertEquals(200, response.getUserMessageId());
-        assertEquals(201, response.getAssistantMessageId());
-        verify(unifiedAgentPlanner).plan(any(AgentDefinition.class), org.mockito.ArgumentMatchers.eq("新增一门课程"));
-        verifyNoInteractions(chatModelClient);
-    }
-
-    @ParameterizedTest
-    @CsvSource(value = {
-            "401 invalid api key|Agent 模型配置异常，请联系管理员。",
-            "429 rate limit|当前请求较多，请稍后再试。",
-            "request timeout|Agent 响应超时，请重新发送。",
-            "connection refused|暂时无法连接模型服务，请稍后再试。",
-            "503 service unavailable|模型服务暂时异常，请稍后再试。"
-    }, delimiter = '|')
-    void chatOnceMapsModelFailureToSpecificUserMessage(String modelError, String expectedMessage) {
-        AgentChatService service = newService();
-        when(chatModelClient.call(any(Prompt.class))).thenThrow(new RuntimeException(modelError));
-
-        AgentModelCallException exception = assertThrows(AgentModelCallException.class,
-                () -> service.chatOnce("你好"));
-
-        assertEquals(expectedMessage, exception.getMessage());
-    }
-
-    @Test
-    void chatOnceReportsEmptyModelResponseSpecifically() {
-        AgentChatService service = newService();
-        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse(""));
-
-        AgentModelCallException exception = assertThrows(AgentModelCallException.class,
-                () -> service.chatOnce("你好"));
-
-        assertEquals("模型没有返回内容，请重新发送。", exception.getMessage());
+        assertEquals("AI 回复失败，请稍后重试。", captor.getAllValues().get(1).getContent());
     }
 
     @Test
@@ -1697,15 +1561,15 @@ class AgentChatServiceTest {
                 message(3, "user", "recent-user"),
                 message(4, "assistant", "recent-assistant")
         ));
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("current-question"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
+        verify(chatModelClient).call(captor.capture());
         List<?> instructions = captor.getValue().getInstructions();
         assertEquals(4, instructions.size());
-        assertTrue(captor.getValue().getInstructions().get(0).getContent().startsWith("你是 Java 课程助教。"));
+        assertEquals("你是 Java 课程助教。", captor.getValue().getInstructions().get(0).getContent());
         assertEquals("recent-user", captor.getValue().getInstructions().get(1).getContent());
         assertEquals("recent-assistant", captor.getValue().getInstructions().get(2).getContent());
         assertEquals("current-question", captor.getValue().getInstructions().get(3).getContent());
@@ -1722,34 +1586,16 @@ class AgentChatServiceTest {
                 message(2, "assistant", "too-long"),
                 message(3, "user", "xy")
         ));
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("ok"));
+        when(chatModelClient.call(any(Prompt.class))).thenReturn(chatResponse("ok"));
 
         service.chat(1, chatRequest("current-question"));
 
         ArgumentCaptor<Prompt> captor = ArgumentCaptor.forClass(Prompt.class);
-        verify(chatModelClient).call(captor.capture(), any(java.time.Duration.class));
+        verify(chatModelClient).call(captor.capture());
         assertEquals(3, captor.getValue().getInstructions().size());
-        assertTrue(captor.getValue().getInstructions().get(0).getContent().startsWith("你是 Java 课程助教。"));
+        assertEquals("你是 Java 课程助教。", captor.getValue().getInstructions().get(0).getContent());
         assertEquals("xy", captor.getValue().getInstructions().get(1).getContent());
         assertEquals("current-question", captor.getValue().getInstructions().get(2).getContent());
-    }
-
-    @Test
-    void studentChatSkipsAgentToolPlanning() {
-        AgentChatService service = newService(new AgentChatProperties(), schemaDrivenAgentPlanner, schemaDrivenReadToolPlanner);
-        loginAs(10, "student");
-        AgentDefinition agent = agentDefinition(2);
-        agent.setEnabledTools("[\"course_search\",\"course_create_plan\"]");
-        when(sessionMapper.selectById(1)).thenReturn(activeSession(1, 10, 2));
-        when(agentDefinitionMapper.selectById(2)).thenReturn(agent);
-        when(messageMapper.selectList(any())).thenReturn(List.of());
-        when(chatModelClient.call(any(Prompt.class), any(java.time.Duration.class))).thenReturn(chatResponse("plain chat"));
-
-        AgentChatResponse response = service.chat(1, chatRequest("解释一下递归"));
-
-        assertEquals("plain chat", response.getContent());
-        assertEquals("[]", agent.getEnabledTools());
-        verifyNoInteractions(schemaDrivenAgentPlanner, schemaDrivenReadToolPlanner);
     }
 
     private AgentChatService newService() {
@@ -1757,7 +1603,10 @@ class AgentChatServiceTest {
     }
 
     private void assertDirectActionReply(AgentChatResponse response) {
-        assertEquals("动作待确认", response.getContent());
+        assertTrue(response.getContent().contains("1. 指令模式：待确认"));
+        assertTrue(response.getContent().contains("2. 指令类型："));
+        assertTrue(response.getContent().contains("3. 指令内容："));
+        assertTrue(response.getContent().contains("4. 确认按钮：请点击下方确认动作"));
         assertNotNull(response.getPendingAction());
     }
 
@@ -1767,23 +1616,11 @@ class AgentChatServiceTest {
                 (SchemaDrivenAgentPlanner) null, (SchemaDrivenReadToolPlanner) null);
     }
 
-    private AgentChatService newService(AgentPendingActionStore store) {
-        return new AgentChatService(chatModelClient, new AgentChatProperties(), agentDefinitionMapper,
-                sessionMapper, messageMapper, new ObjectMapper(), knowledgeContextProvider,
-                null, null, null, store);
-    }
-
     private AgentChatService newService(AgentChatProperties chatProperties,
                                         SchemaDrivenAgentPlanner writePlanner,
                                         SchemaDrivenReadToolPlanner readPlanner) {
         return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
                 new ObjectMapper(), knowledgeContextProvider, writePlanner, readPlanner);
-    }
-
-    private AgentChatService newService(AgentChatProperties chatProperties,
-                                        UnifiedAgentPlanner planner) {
-        return new AgentChatService(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
-                new ObjectMapper(), knowledgeContextProvider, null, null, planner);
     }
 
     private AgentChatProperties chatProperties(int historyMessageLimit, int historyMaxCharacters) {
@@ -1794,14 +1631,10 @@ class AgentChatServiceTest {
     }
 
     private void loginAs(Integer userId) {
-        loginAs(userId, "teacher");
-    }
-
-    private void loginAs(Integer userId, String roleCode) {
         AuthUtils.LoginUser user = new AuthUtils.LoginUser();
         user.setUserId(userId);
         user.setUsername("user" + userId);
-        user.setRoleCode(roleCode);
+        user.setRoleCode("student");
         UserContext.set(user);
     }
 

@@ -57,7 +57,7 @@ class ChatControllerTest {
     @Test
     void chatOnceModelFailureReturnsResultShape() throws Exception {
         when(agentChatService.chatOnce("你好"))
-                .thenThrow(new AgentModelCallException("暂时无法回复，请重试。",
+                .thenThrow(new AgentModelCallException("AI 回复失败，请稍后重试。",
                         null,
                         null,
                         null,
@@ -71,13 +71,10 @@ class ChatControllerTest {
                         .content("{\"content\":\"你好\"}"))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.code").value("500"))
-                .andExpect(jsonPath("$.msg").value("暂时无法回复，请重试。"))
+                .andExpect(jsonPath("$.msg").value("AI 回复失败，请稍后重试。"))
+                .andExpect(jsonPath("$.data.diagnostics.provider").value("deepseek"))
+                .andExpect(jsonPath("$.data.diagnostics.model").value("deepseek-v4-flash"))
                 .andExpect(jsonPath("$.data.diagnostics.category").value("AUTHENTICATION"))
-                .andExpect(jsonPath("$.data.diagnostics.retryable").value(false))
-                .andExpect(jsonPath("$.data.diagnostics.provider").doesNotExist())
-                .andExpect(jsonPath("$.data.diagnostics.model").doesNotExist())
-                .andExpect(jsonPath("$.data.diagnostics.rootException").doesNotExist())
-                .andExpect(jsonPath("$.data.diagnostics.rootMessage").doesNotExist())
                 .andExpect(jsonPath("$.success").doesNotExist());
     }
 

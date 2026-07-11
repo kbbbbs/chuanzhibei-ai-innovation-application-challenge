@@ -108,29 +108,6 @@ public class AgentActionCatalog {
         return Collections.unmodifiableList(summaries);
     }
 
-    public List<Map<String, Object>> enabledIntentSummaries(List<String> enabledTools) {
-        if (enabledTools == null || enabledTools.isEmpty()) {
-            return List.of();
-        }
-        List<Map<String, Object>> summaries = new ArrayList<>();
-        Set<String> seenActionCodes = new LinkedHashSet<>();
-        for (String enabledTool : enabledTools) {
-            Optional<AgentActionSpec> optionalSpec = findByToolName(enabledTool);
-            if (optionalSpec.isEmpty()) {
-                continue;
-            }
-            AgentActionSpec spec = optionalSpec.get();
-            if (!seenActionCodes.add(normalizeActionCode(spec.actionCode()))) {
-                continue;
-            }
-            Map<String, Object> summary = new LinkedHashMap<>();
-            summary.put("code", spec.actionCode());
-            summary.put("summary", spec.summary().isBlank() ? spec.actionName() : spec.summary());
-            summaries.add(Collections.unmodifiableMap(summary));
-        }
-        return Collections.unmodifiableList(summaries);
-    }
-
     public Optional<String> findEnabledToolNameByActionCode(List<String> enabledTools, String actionCode) {
         String normalizedActionCode = normalizeActionCode(actionCode);
         if (enabledTools == null || enabledTools.isEmpty() || normalizedActionCode.isEmpty()) {

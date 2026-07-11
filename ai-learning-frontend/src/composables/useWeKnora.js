@@ -25,14 +25,7 @@ function pendingActionFromPayload(payload) {
 
 function extractMessage(payload, fallback) {
   if (!payload) return fallback
-  const responseData = payload?.response?.data
-  const serverMessage = responseData?.msg || responseData?.message
-  if (serverMessage) return serverMessage
-  if (payload instanceof Error) {
-    return /^Request failed with status code/i.test(payload.message || '')
-      ? fallback
-      : (payload.message || fallback)
-  }
+  if (payload instanceof Error) return payload.message || fallback
   if (typeof payload === 'string') return payload || fallback
   return payload.msg || payload.message || payload.error || fallback
 }

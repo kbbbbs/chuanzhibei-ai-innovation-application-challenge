@@ -107,7 +107,7 @@
 3. `LlmActionRepairLoop` 负责模型调用、JSON 解析和最多 3 轮结构化修复。
 4. `LlmActionDecisionValidator` 与 `AgentActionSchemaValidator` 统一校验 actionCode、字段白名单、类型、枚举、必填和二选一约束。
 5. 只有校验通过后，`LlmValidatedPlanFactory` 才生成 `pendingAction`；修复后仍失败则返回需要用户补充的信息。
-6. `LlmIntentSelector` 先从摘要目录选择单个读工具，`SchemaDrivenReadToolPlanner` 再根据该工具的独立 arguments schema 提取和校验参数；CHAT 不再额外调用模型复核。
+6. `SchemaDrivenReadToolPlanner` 根据每个工具的独立 arguments schema 选择并校验单个读工具；首次 CHAT 会二次模型复核，不再盲跑所有工具。
 7. 前端和历史消息读取结构化 `pendingAction`，执行前通过数据库接口重新校验 actionId。
 
 这条路线等价于在 Java/Spring 内实现 TypeChat 的核心模式：用强 schema 约束模型输出，再用本地校验和业务执行器兜底；不需要把 TypeChat 的 TypeScript runtime 直接引入到后端。

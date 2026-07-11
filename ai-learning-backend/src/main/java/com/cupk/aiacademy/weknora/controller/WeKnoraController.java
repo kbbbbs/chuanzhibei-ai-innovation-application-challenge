@@ -157,4 +157,9 @@ public class WeKnoraController {
         String path = request.getRequestURI().replace("/api/weknora/local-file/", "");
         weKnoraService.proxyLocalFile(path, response);
     }
+
+    @GetMapping("/health")
+    public Result healthCheck() {
+        return weKnoraService.healthCheck();
+    }
 }

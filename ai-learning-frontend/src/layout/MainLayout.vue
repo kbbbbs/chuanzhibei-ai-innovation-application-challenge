@@ -1,38 +1,22 @@
 <template>
   <el-container class="layout-container">
     <!-- Persistent Top Navigation Header (Glassmorphism & High-end) -->
-    <el-header v-if="!hideChrome" class="layout-header" :class="{ 'public-home-header': isPublicHome }">
+    <el-header v-if="!hideChrome" class="layout-header">
       <div class="header-left">
-        <button v-if="!isPublicHome" class="brand-link" type="button" @click="router.push('/home')">
+        <button class="brand-link" type="button" @click="router.push('/home')">
           <div class="logo-icon">E</div>
           <span class="logo-text">EduLoop <span class="sub-title">智教云环</span></span>
         </button>
-        <nav ref="homeNavRef" v-if="isPublicHome" class="home-nav" aria-label="首页模块导航">
-          <span class="home-nav-indicator" :style="homeNavIndicatorStyle" aria-hidden="true" />
+        <nav v-if="isPublicHome" class="home-nav" aria-label="首页模块导航">
           <button
-            :ref="element => setHomeNavButtonRef(element, 'home-top')"
-            class="brand-link home-nav-item home-entry"
-            :class="{ active: activeHomeSection === 'home-top' }"
-            type="button"
-            aria-label="EduLoop 智教云环首页"
-            :aria-current="activeHomeSection === 'home-top' ? 'page' : undefined"
-            @click="scrollToHomeSection('home-top')"
-          >
-            <div class="logo-icon">E</div>
-            <span class="logo-text">EduLoop <span class="sub-title">智教云环</span></span>
-          </button>
-          <button
-            v-for="(item, index) in homeNavItems"
+            v-for="item in homeNavItems"
             :key="item.id"
-            :ref="element => setHomeNavButtonRef(element, item.id)"
             type="button"
             class="home-nav-item"
             :class="{ active: activeHomeSection === item.id }"
-            :style="{ '--nav-delay': `${index * 0.07}s` }"
-            :aria-current="activeHomeSection === item.id ? 'page' : undefined"
             @click="scrollToHomeSection(item.id)"
           >
-            <span>{{ item.label }}</span>
+            {{ item.label }}
           </button>
         </nav>
       </div>
@@ -42,7 +26,7 @@
           <el-icon><DataBoard /></el-icon>
           <span>控制台</span>
         </el-button>
-        <el-button class="agent-nav-btn" type="primary" link @click="handleAgentEntry">
+        <el-button class="agent-nav-btn" type="primary" link @click="router.push('/agent-chat')">
           <el-icon><Cpu /></el-icon>
           <span>Agent 助手</span>
         </el-button>
@@ -178,29 +162,23 @@
       </el-aside>
 
       <el-main
-        ref="layoutMainRef"
         class="layout-main"
         :class="{ 'public-main': hideChrome || isPublicHome, 'full-width-main': route.meta?.fullWidth }"
         @scroll.passive="handleMainScroll"
-        @wheel.passive="cancelHomeScroll"
-        @touchstart.passive="cancelHomeScroll"
       >
         <router-view />
       </el-main>
     </el-container>
 
-    <AgentFloatingAssistant />
   </el-container>
 </template>
 
 <script setup>
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { layoutChildren } from '@/router'
 import { ElMessage } from 'element-plus'
-import AgentFloatingAssistant from '@/components/agent/AgentFloatingAssistant.vue'
-import { openAgentAssistant } from '@/utils/agentAssistant'
 import {
   DataBoard, Cpu, School, Tickets, Checked,
   DataLine, Reading, Edit, Document, SwitchButton, User, UserFilled, Menu, Collection, Bell, MapLocation,
@@ -222,56 +200,18 @@ const shouldShowSidebar = computed(() => userStore.isLoggedIn
   && !isPublicHome.value
   && route.name !== 'CourseLearn'
   && !route.meta?.fullWidth)
-const activeHomeSection = ref('home-top')
+const activeHomeSection = ref('')
 const homeNavItems = [
-  { id: 'home-learning-recommendation', label: '学习推荐' },
-  { id: 'home-research-discovery', label: '科研发现' },
-  { id: 'home-interactive-lab', label: '互动实验' },
-  { id: 'home-smart-prep', label: '智能备课' },
+  { id: 'home-recommendation', label: '智能推荐' },
+  { id: 'home-resource-gen', label: '资源生成' },
+  { id: 'home-paper-search', label: '论文查询' },
+  { id: 'home-teaching-loop', label: '教学闭环' },
 ]
-const homeNavRef = ref(null)
-const layoutMainRef = ref(null)
-const homeNavIndicatorStyle = ref({ width: '0px', transform: 'translateX(0)', opacity: 0 })
-const homeNavButtonRefs = new Map()
 let scrollFrame = null
-let homeScrollFrame = null
-let programmaticHomeTarget = ''
-
-function setHomeNavButtonRef(element, id) {
-  if (element) homeNavButtonRefs.set(id, element)
-  else homeNavButtonRefs.delete(id)
-}
-
-function updateHomeNavIndicator() {
-  const nav = homeNavRef.value
-  const button = homeNavButtonRefs.get(activeHomeSection.value)
-  if (!nav || !button) {
-    homeNavIndicatorStyle.value = { ...homeNavIndicatorStyle.value, opacity: 0 }
-    return
-  }
-  homeNavIndicatorStyle.value = {
-    width: `${button.offsetWidth}px`,
-    transform: `translateX(${button.offsetLeft}px)`,
-    opacity: 1,
-  }
-}
 
 function toggleSidebar() {
   sidebarCollapsed.value = !sidebarCollapsed.value
   localStorage.setItem('layout-sidebar-collapsed', String(sidebarCollapsed.value))
-}
-
-function handleAgentEntry() {
-  if (userStore.isLoggedIn) {
-    openAgentAssistant()
-    return
-  }
-  const target = router.resolve({
-    path: route.path,
-    query: { ...route.query, openAgent: '1' },
-    hash: route.hash,
-  }).fullPath
-  router.push({ path: '/login', query: { redirect: target } })
 }
 
 async function scrollToHomeSection(id) {
@@ -279,73 +219,21 @@ async function scrollToHomeSection(id) {
   const hash = `#${id}`
   if (!isPublicHome.value) {
     await router.push({ path: '/home', hash })
-    return
-  }
-  if (route.hash !== hash) {
-    void router.replace({ path: '/home', hash })
+  } else if (route.hash !== hash) {
+    await router.replace({ path: '/home', hash })
   }
   await nextTick()
-  animateHomeScroll(id)
-}
-
-function animateHomeScroll(id) {
-  const scroller = layoutMainRef.value?.$el || layoutMainRef.value
-  const target = document.getElementById(id)
-  if (!scroller || !target) return
-
-  if (homeScrollFrame !== null) window.cancelAnimationFrame(homeScrollFrame)
-  const startTop = scroller.scrollTop
-  const scrollerTop = scroller.getBoundingClientRect().top
-  const destination = id === 'home-top'
-    ? 0
-    : Math.max(0, startTop + target.getBoundingClientRect().top - scrollerTop)
-  const distance = destination - startTop
-  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  const duration = reduceMotion ? 0 : Math.min(420, Math.max(240, Math.abs(distance) * .16))
-  const startedAt = performance.now()
-  programmaticHomeTarget = id
-
-  const finish = () => {
-    scroller.scrollTop = destination
-    programmaticHomeTarget = ''
-    homeScrollFrame = null
-    activeHomeSection.value = id
-  }
-
-  if (!duration || Math.abs(distance) < 2) {
-    finish()
-    return
-  }
-
-  const tick = now => {
-    const progress = Math.min(1, (now - startedAt) / duration)
-    const eased = 1 - Math.pow(1 - progress, 3)
-    scroller.scrollTop = startTop + distance * eased
-    if (progress < 1) homeScrollFrame = window.requestAnimationFrame(tick)
-    else finish()
-  }
-  homeScrollFrame = window.requestAnimationFrame(tick)
-}
-
-function cancelHomeScroll() {
-  if (homeScrollFrame === null) return
-  window.cancelAnimationFrame(homeScrollFrame)
-  homeScrollFrame = null
-  programmaticHomeTarget = ''
-  updateActiveHomeSection()
+  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
 
 function updateActiveHomeSection() {
   scrollFrame = null
   if (!isPublicHome.value) return
-  if (programmaticHomeTarget) return
 
-  const scroller = layoutMainRef.value?.$el || layoutMainRef.value
-  const scrollerTop = scroller?.getBoundingClientRect().top || 64
-  let current = 'home-top'
+  let current = ''
   for (const item of homeNavItems) {
     const section = document.getElementById(item.id)
-    if (section && section.getBoundingClientRect().top <= scrollerTop + 120) {
+    if (section && section.getBoundingClientRect().top <= 112) {
       current = item.id
     }
   }
@@ -361,7 +249,7 @@ watch(
   () => route.fullPath,
   async () => {
     if (!isPublicHome.value) {
-      activeHomeSection.value = 'home-top'
+      activeHomeSection.value = ''
       return
     }
 
@@ -369,7 +257,7 @@ watch(
     const targetId = route.hash.replace(/^#/, '')
     if (targetId) {
       activeHomeSection.value = targetId
-      if (programmaticHomeTarget !== targetId) animateHomeScroll(targetId)
+      document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     } else {
       updateActiveHomeSection()
     }
@@ -377,21 +265,8 @@ watch(
   { immediate: true }
 )
 
-watch(activeHomeSection, async () => {
-  await nextTick()
-  updateHomeNavIndicator()
-})
-
-onMounted(async () => {
-  window.addEventListener('resize', updateHomeNavIndicator)
-  await nextTick()
-  updateHomeNavIndicator()
-})
-
 onBeforeUnmount(() => {
   if (scrollFrame !== null) window.cancelAnimationFrame(scrollFrame)
-  if (homeScrollFrame !== null) window.cancelAnimationFrame(homeScrollFrame)
-  window.removeEventListener('resize', updateHomeNavIndicator)
 })
 
 const activeMenu = computed(() => {
@@ -415,6 +290,8 @@ const managementMenuEntries = computed(() => {
     'homework-papers',
     'exams',
     'homeworks',
+    'grade-analysis',
+    'resource-gen',
     'resource-gen',
     'categories',
   ]
@@ -578,7 +455,7 @@ const handleCommand = async (command) => {
 .header-left {
   display: flex;
   align-items: center;
-  gap: 0;
+  gap: 22px;
   flex: 1;
   min-width: 0;
 }
@@ -593,10 +470,6 @@ const handleCommand = async (command) => {
   background: transparent;
   cursor: pointer;
   transition: background 0.2s ease;
-}
-
-.public-home-header .brand-link {
-  animation: header-brand-in .55s ease both;
 }
 
 .brand-link:hover {
@@ -625,33 +498,15 @@ const handleCommand = async (command) => {
 }
 
 .home-nav {
-  position: relative;
-  align-self: center;
-  height: 52px;
+  align-self: stretch;
   display: flex;
   align-items: stretch;
-  justify-content: stretch;
+  justify-content: space-evenly;
   flex: 1;
   min-width: 0;
-  margin: 0 16px 0 0;
+  margin: 0 12px;
   overflow-x: auto;
   scrollbar-width: none;
-}
-
-.home-nav-indicator {
-  position: absolute;
-  z-index: 2;
-  top: auto;
-  bottom: 0;
-  left: 0;
-  height: 2px;
-  border: 0;
-  border-radius: 2px 2px 0 0;
-  background: var(--primary-color);
-  box-shadow: none;
-  pointer-events: none;
-  will-change: transform, width;
-  transition: transform .2s cubic-bezier(.2, .8, .2, 1), width .2s cubic-bezier(.2, .8, .2, 1), opacity .12s ease;
 }
 
 .home-nav::-webkit-scrollbar {
@@ -660,10 +515,8 @@ const handleCommand = async (command) => {
 
 .home-nav-item {
   position: relative;
-  z-index: 1;
-  flex: 1 1 0;
-  min-width: 104px;
-  padding: 0 16px;
+  flex: 0 0 auto;
+  padding: 0 22px;
   border: 0;
   background: transparent;
   color: var(--text-secondary);
@@ -671,22 +524,30 @@ const handleCommand = async (command) => {
   font-weight: 700;
   white-space: nowrap;
   cursor: pointer;
-  transition: color .16s ease, background .16s ease, transform .16s ease;
+  transition: color 0.2s ease, background 0.2s ease;
 }
 
-.public-home-header .home-nav-item {
-  animation: header-nav-in .55s ease both;
-  animation-delay: calc(.08s + var(--nav-delay));
+.home-nav-item::after {
+  content: "";
+  position: absolute;
+  right: 22px;
+  bottom: 0;
+  left: 22px;
+  height: 3px;
+  background: transparent;
 }
 
 .home-nav-item:hover {
-  color: var(--primary-color);
+  color: var(--text-primary);
   background: var(--bg-hover);
 }
 
 .home-nav-item.active {
   color: var(--primary-color);
-  background: var(--bg-hover);
+}
+
+.home-nav-item.active::after {
+  background: var(--primary-color);
 }
 
 .sub-title {
@@ -694,35 +555,6 @@ const handleCommand = async (command) => {
   color: var(--text-secondary);
   font-size: 0.95rem;
   margin-left: 4px;
-}
-
-.home-nav-item:active {
-  transform: translateY(1px);
-}
-
-.home-nav-item.home-entry {
-  flex: 1.35 1 0;
-  min-width: 196px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  text-align: left;
-}
-
-.home-nav-item.home-entry.active .logo-text,
-.home-nav-item.home-entry.active .sub-title {
-  color: var(--primary-color);
-}
-
-@keyframes header-brand-in {
-  from { opacity: 0; transform: translateX(-10px); }
-  to { opacity: 1; transform: translateX(0); }
-}
-
-@keyframes header-nav-in {
-  from { opacity: 0; transform: translateY(-8px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .console-nav-btn,
@@ -950,52 +782,6 @@ const handleCommand = async (command) => {
   color: #EF4444 !important;
 }
 
-@media (max-width: 1100px) and (min-width: 761px) {
-  .layout-header {
-    padding: 0 18px;
-  }
-
-  .home-nav {
-    margin-right: 10px;
-  }
-
-  .home-nav-item {
-    min-width: 78px;
-    padding: 0 8px;
-    font-size: .9rem;
-  }
-
-  .home-nav-item.home-entry {
-    min-width: 148px;
-    flex-grow: 1.15;
-    gap: 8px;
-  }
-
-  .home-entry .logo-icon {
-    width: 32px;
-    height: 32px;
-    font-size: 17px;
-  }
-
-  .home-entry .logo-text {
-    font-size: 1.05rem;
-  }
-
-  .home-entry .sub-title,
-  .console-nav-btn span,
-  .agent-nav-btn span,
-  .username,
-  .role-badge {
-    display: none;
-  }
-
-  .console-nav-btn,
-  .agent-nav-btn {
-    width: 36px;
-    padding: 0;
-  }
-}
-
 @media (max-width: 760px) {
   .layout-header {
     padding: 0 14px;
@@ -1022,19 +808,13 @@ const handleCommand = async (command) => {
   }
 
   .home-nav {
+    justify-content: flex-start;
     margin: 0;
-    overflow: visible;
   }
 
-  .home-nav .home-nav-item:not(.home-entry),
-  .home-nav-indicator {
-    display: none;
-  }
-
-  .home-nav-item.home-entry {
-    min-width: 0;
-    padding: 0;
-    flex: 0 0 auto;
+  .home-nav-item::after {
+    right: 10px;
+    left: 10px;
   }
 
   .console-nav-btn,
@@ -1056,11 +836,5 @@ const handleCommand = async (command) => {
   .layout-main.public-main {
     padding: 0;
   }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .public-home-header .brand-link,
-  .public-home-header .home-nav-item { animation: none; }
-  .home-nav-indicator { transition: none; }
 }
 </style>

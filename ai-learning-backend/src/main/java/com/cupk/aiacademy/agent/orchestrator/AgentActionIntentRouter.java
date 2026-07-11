@@ -311,7 +311,10 @@ public class AgentActionIntentRouter {
     }
 
     private String formatWritePlanReply(AgentToolResult result) {
-        return "动作待确认";
+        return "1. 指令模式：待确认\n"
+                + "2. 指令类型：" + crudType(result) + "\n"
+                + "3. 指令内容：" + instructionContent(result) + "\n"
+                + "4. 确认按钮：请点击下方确认动作";
     }
 
     private String crudType(AgentToolResult result) {

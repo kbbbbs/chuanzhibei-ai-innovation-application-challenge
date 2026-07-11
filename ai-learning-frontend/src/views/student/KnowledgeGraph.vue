@@ -130,6 +130,18 @@
         </div>
       </el-card>
     </div>
+
+    <el-card v-if="selectedKb" shadow="never" class="algo-graph-card">
+      <template #header>
+        <div class="card-header">
+          <span>算法双语知识图谱</span>
+          <div class="graph-header-tags">
+            <el-tag type="primary" effect="light" size="small">中英双语</el-tag>
+          </div>
+        </div>
+      </template>
+      <AlgorithmBilingualGraph />
+    </el-card>
   </div>
 </template>
 
@@ -140,6 +152,7 @@ import { VueFlow } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import * as kbApi from '@/api/knowledgeBase'
+import AlgorithmBilingualGraph from '@/components/knowledge/AlgorithmBilingualGraph.vue'
 
 function unwrapData(data) {
   while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined)
@@ -412,8 +425,13 @@ onMounted(loadKnowledgeBases)
 
 .summary-card,
 .graph-card,
-.relation-card {
+.relation-card,
+.algo-graph-card {
   border-radius: 18px;
+}
+
+.algo-graph-card {
+  margin-top: 16px;
 }
 
 .summary-row {

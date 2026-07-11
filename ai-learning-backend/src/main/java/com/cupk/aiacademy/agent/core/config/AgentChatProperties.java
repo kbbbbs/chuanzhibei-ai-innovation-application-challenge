@@ -21,7 +21,6 @@ public class AgentChatProperties {
     private int knowledgeContextMaxCharacters = 4000;
     private int toolContextMaxItems = 5;
     private int toolContextMaxCharacters = 4000;
-    private int requestTimeoutSeconds = 25;
 
     public int getHistoryMessageLimit() {
         return Math.max(0, historyMessageLimit);
@@ -69,13 +68,5 @@ public class AgentChatProperties {
 
     public void setToolContextMaxCharacters(int toolContextMaxCharacters) {
         this.toolContextMaxCharacters = toolContextMaxCharacters;
-    }
-
-    public int getRequestTimeoutSeconds() {
-        return Math.max(1, requestTimeoutSeconds);
-    }
-
-    public void setRequestTimeoutSeconds(int requestTimeoutSeconds) {
-        this.requestTimeoutSeconds = requestTimeoutSeconds;
     }
 }

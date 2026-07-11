@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
@@ -105,59 +104,7 @@ class SchemaDrivenAgentPlannerTest {
         );
 
         assertTrue(reply.isPresent());
-        assertEquals("请补充：classId 或 className。", reply.orElseThrow().content());
-        assertNull(reply.orElseThrow().pendingAction());
-        verifyNoInteractions(planFactory);
-    }
-
-    @Test
-    void courseCreateMissingCategoryUsesBusinessLabel() {
-        AgentActionSpec spec = courseSpec();
-        AgentDefinition agent = new AgentDefinition();
-        agent.setEnabledTools("[\"course_create_plan\"]");
-        LlmActionValidationResult validation = new LlmActionValidationResult(
-                false,
-                "course.create",
-                Map.of("title", "Python 入门"),
-                List.of("categoryId 或 categoryName"),
-                List.of("缺少必填参数：[categoryId 或 categoryName]")
-        );
-        when(properties.isEnabled()).thenReturn(true);
-        when(actionCatalog.enabledSpecs(List.of("course_create_plan"))).thenReturn(List.of(spec));
-        when(actionCatalog.findByActionCode("course.create")).thenReturn(Optional.of(spec));
-        when(repairLoop.plan("新增一门课，名字叫python入门", List.of(spec)))
-                .thenReturn(new LlmActionPlanResult(actionDecision("course.create"), validation, 1, false));
-
-        Optional<AgentDirectActionReply> reply = newPlanner().tryPlan(
-                agent,
-                "新增一门课，名字叫python入门"
-        );
-
-        assertEquals("请补充：课程分类。", reply.orElseThrow().content());
-        assertNull(reply.orElseThrow().pendingAction());
-        verifyNoInteractions(planFactory);
-    }
-
-    @Test
-    void exhaustedRepairReturnsValidationFeedbackToUser() {
-        AgentActionSpec spec = homeworkSpec();
-        AgentDefinition agent = agentWithTools();
-        LlmActionValidationResult validation = new LlmActionValidationResult(
-                false,
-                "homework.create",
-                Map.of(),
-                List.of(),
-                List.of("操作规划服务未返回结果，请稍后重试。")
-        );
-        when(properties.isEnabled()).thenReturn(true);
-        when(actionCatalog.enabledSpecs(List.of("homework_create_plan"))).thenReturn(List.of(spec));
-        when(repairLoop.plan("发布作业", List.of(spec)))
-                .thenReturn(new LlmActionPlanResult(actionDecision(), validation, 2, true));
-
-        Optional<AgentDirectActionReply> reply = newPlanner().tryPlan(agent, "发布作业");
-
-        assertEquals("操作参数校验已达到最大尝试次数（2 次）：操作规划服务未返回结果，请稍后重试。",
-                reply.orElseThrow().content());
+        assertTrue(reply.orElseThrow().content().contains("请补充具体教学班"));
         assertNull(reply.orElseThrow().pendingAction());
         verifyNoInteractions(planFactory);
     }
@@ -173,35 +120,11 @@ class SchemaDrivenAgentPlannerTest {
     }
 
     private LlmActionDecision actionDecision() {
-        return actionDecision("homework.create");
-    }
-
-    private LlmActionDecision actionDecision(String actionCode) {
         LlmActionDecision decision = new LlmActionDecision();
         decision.setDecision("ACTION");
-        decision.setActionCode(actionCode);
+        decision.setActionCode("homework.create");
         decision.setConfidence(0.9);
         return decision;
-    }
-
-    private AgentActionSpec courseSpec() {
-        return new AgentActionSpec(
-                "course.create",
-                "创建课程",
-                "course",
-                AgentActionRiskLevel.MEDIUM,
-                true,
-                "",
-                "创建课程",
-                List.of(
-                        new AgentActionParameterSpec("title", "课程名称", true),
-                        new AgentActionParameterSpec("categoryId", "课程分类ID", false),
-                        new AgentActionParameterSpec("categoryName", "课程分类名称", false)
-                ),
-                List.of(List.of("categoryId", "categoryName")),
-                List.of("会新增课程"),
-                Duration.ofMinutes(10)
-        );
     }
 
     private AgentActionSpec homeworkSpec() {

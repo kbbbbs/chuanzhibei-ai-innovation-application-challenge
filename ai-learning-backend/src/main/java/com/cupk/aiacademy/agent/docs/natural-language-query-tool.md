@@ -17,11 +17,10 @@
 
 ```text
 用户自然语言
--> LlmIntentSelector（摘要级选择 CHAT/READ/WRITE）
--> SchemaDrivenReadToolPlanner（仅接收选中的一个读工具 Schema）
+-> SchemaDrivenReadToolPlanner
 -> LLM 从启用的专用读工具中选择 TOOL/CHAT，并生成 arguments JSON
 -> AgentActionSchemaValidator 校验字段、类型、必填、二选一和范围
--> 失败后把结构化错误反馈给 LLM，默认最多修复 1 轮
+-> 失败后把结构化错误反馈给 LLM，最多修复 3 轮
 -> 执行一个专用读工具
 -> observation 交给最终模型回答
 ```

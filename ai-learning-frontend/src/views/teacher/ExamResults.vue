@@ -11,21 +11,53 @@
         </div>
       </template>
 
-      <el-descriptions :column="4" border class="summary">
-        <el-descriptions-item label="平均分">{{ results.averageScore ?? 0 }}</el-descriptions-item>
-        <el-descriptions-item label="合格率">{{ results.passRate ?? 0 }}%</el-descriptions-item>
-        <el-descriptions-item label="最高分">{{ results.highestScore ?? 0 }}</el-descriptions-item>
-        <el-descriptions-item label="最低分">{{ results.lowestScore ?? 0 }}</el-descriptions-item>
-      </el-descriptions>
+      <!-- 统计卡片 -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <span class="stat-value">{{ results.averageScore ?? 0 }}</span>
+          <span class="stat-label">平均分</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ results.passRate ?? 0 }}%</span>
+          <span class="stat-label">合格率</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ results.highestScore ?? 0 }}</span>
+          <span class="stat-label">最高分</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ results.lowestScore ?? 0 }}</span>
+          <span class="stat-label">最低分</span>
+        </div>
+      </div>
 
+      <!-- 成绩分布图表 -->
+      <div v-if="studentScores.length" class="charts-row">
+        <el-card class="chart-card">
+          <template #header><span>成绩分布</span></template>
+          <GradeDistributionChart :data="chartDistData" type="bar" height="260px" />
+        </el-card>
+        <el-card class="chart-card">
+          <template #header><span>合格率</span></template>
+          <div ref="passChartRef" class="pass-donut" />
+        </el-card>
+      </div>
+
+      <!-- 学生列表 - 带颜色标记 -->
       <el-table :data="results.studentScores || []" border stripe>
         <template #empty><AppEmpty /></template>
-        <el-table-column prop="studentId" label="学生ID" width="100" />
-        <el-table-column prop="studentName" label="学生" min-width="140" />
-        <el-table-column label="成绩" width="120">
-          <template #default="{ row }">{{ row.totalScore ?? 0 }} / {{ results.fullScore ?? 0 }}</template>
+        <el-table-column label="排名" width="70">
+          <template #default="{ $index }">{{ $index + 1 }}</template>
         </el-table-column>
-        <el-table-column label="状态" width="120">
+        <el-table-column prop="studentName" label="学生" min-width="120" />
+        <el-table-column label="成绩" width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="scoreTag(row.totalScore)" effect="dark" size="small">
+              {{ row.totalScore ?? 0 }} / {{ results.fullScore ?? 0 }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.absent" type="info">未参加</el-tag>
             <el-tag v-else-if="row.submissionStatus === 'GRADED'" type="success">已批改</el-tag>
@@ -62,10 +94,12 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { computed, nextTick, ref, watch, onBeforeUnmount } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import * as echarts from 'echarts'
 import AppEmpty from '@/components/AppEmpty.vue'
+import GradeDistributionChart from '@/components/charts/GradeDistributionChart.vue'
 import { exportExamResults, getExamResults } from '@/api/exam'
 import request from '@/utils/request'
 
@@ -75,6 +109,52 @@ const loading = ref(false)
 const exporting = ref(false)
 const results = ref({})
 const paperVisible = ref(false)
+const passChartRef = ref(null)
+let passChartInstance = null
+
+const studentScores = computed(() => results.value.studentScores || [])
+
+const chartDistData = computed(() => {
+  const buckets = { '0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0 }
+  studentScores.value.forEach(s => {
+    const v = Number(s.totalScore) || 0
+    if (v < 60) buckets['0-59']++
+    else if (v < 70) buckets['60-69']++
+    else if (v < 80) buckets['70-79']++
+    else if (v < 90) buckets['80-89']++
+    else buckets['90-100']++
+  })
+  return Object.entries(buckets).map(([range, count]) => ({ range, count }))
+})
+
+function scoreTag(score) {
+  const v = Number(score) || 0
+  if (v >= 80) return 'success'
+  if (v >= 60) return ''
+  return 'danger'
+}
+
+function renderPassDonut() {
+  if (!passChartRef.value) return
+  if (passChartInstance) passChartInstance.dispose()
+  passChartInstance = echarts.init(passChartRef.value)
+  const total = studentScores.value.length || 1
+  const passed = studentScores.value.filter(s => (Number(s.totalScore) || 0) >= (Number(results.value.fullScore) || 100) * 0.6).length
+  const failed = total - passed
+  passChartInstance.setOption({
+    tooltip: { trigger: 'item', formatter: '{b}: {c}人 ({d}%)' },
+    legend: { bottom: 0, textStyle: { fontSize: 11 } },
+    series: [{
+      type: 'pie', radius: ['50%', '72%'], center: ['50%', '45%'],
+      data: [
+        { name: '合格', value: passed, itemStyle: { color: '#67C23A' } },
+        { name: '不及格', value: failed, itemStyle: { color: '#F56C6C' } }
+      ],
+      label: { show: false },
+      emphasis: { label: { show: true, fontSize: 16, fontWeight: 'bold' } }
+    }]
+  })
+}
 const currentStudent = ref({})
 const paper = ref({})
 
@@ -94,6 +174,8 @@ const loadResults = async () => {
   try {
     const res = await getExamResults(examId)
     if (res.code === '200') results.value = res.data || {}
+    await nextTick()
+    renderPassDonut()
   } catch (e) {
     // 全局已提示
   } finally {
@@ -135,28 +217,29 @@ const resolveResourceUrl = (url) => {
 }
 
 watch(() => route.params.id, loadResults, { immediate: true })
+onBeforeUnmount(() => { passChartInstance?.dispose() })
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.card-header { display: flex; justify-content: space-between; align-items: center; }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+.stat-card {
+  background: var(--bg-elevated); border-radius: 14px; padding: 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border: 1px solid var(--border-color); box-shadow: var(--card-shadow);
 }
+.stat-value { font-size: 28px; font-weight: 800; color: #303133; }
+.stat-label { font-size: 12px; color: #909399; }
 
-.summary,
-.paper-summary {
-  margin-bottom: 20px;
-}
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.chart-card :deep(.el-card__header) { display: flex; align-items: center; }
+.pass-donut { width: 100%; height: 260px; }
 
-.answer-item {
-  border-bottom: 1px solid #ebeef5;
-  padding: 14px 0;
-  display: grid;
-  gap: 8px;
-}
+.summary, .paper-summary { margin-bottom: 20px; }
+.answer-item { border-bottom: 1px solid #ebeef5; padding: 14px 0; display: grid; gap: 8px; }
+.question { font-weight: 600; }
 
-.question {
-  font-weight: 600;
-}
-</style>
+@media (max-width: 768px) {
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  .charts-row { grid-template-columns: 1fr; }
+}</style>

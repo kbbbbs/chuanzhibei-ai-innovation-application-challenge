@@ -107,6 +107,12 @@ export const layoutChildren = [
     meta: { title: '考试详情', hidden: true, roles: ['admin', 'teacher'], requiresAuth: true }
   },
   {
+    path: 'grade-analysis',
+    name: 'GradeAnalysis',
+    component: () => import('../views/teacher/GradeAnalysis.vue'),
+    meta: { title: '成绩分析', icon: 'DataLine', roles: ['admin', 'teacher'], requiresAuth: true }
+  },
+  {
     path: 'resource-gen',
     name: 'IntelligentResourceGen',
     component: () => import('../views/teacher/IntelligentResourceGen.vue'),
@@ -121,10 +127,7 @@ export const layoutChildren = [
   {
     path: 'agent-chat',
     name: 'AgentChat',
-    redirect: to => ({
-      path: '/console',
-      query: { ...to.query, openAgent: '1' }
-    }),
+    component: () => import('../views/AiChat.vue'),
     meta: { title: 'Agent 助手', icon: 'Cpu', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true, fullWidth: true }
   },
   {
@@ -206,6 +209,18 @@ export const layoutChildren = [
     name: 'PaperSearch',
     component: () => import('../views/student/PaperSearch.vue'),
     meta: { title: '论文查询', icon: 'Search', roles: ['admin', 'teacher', 'student'] }
+  },
+  {
+    path: 'my-library',
+    name: 'MyLibrary',
+    component: () => import('../views/student/MyLibrary.vue'),
+    meta: { title: '个人资料库', icon: 'Collection', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+  },
+  {
+    path: 'my-notes',
+    name: 'MyNotes',
+    component: () => import('../views/student/MyNotes.vue'),
+    meta: { title: '引用与笔记', icon: 'Document', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'knowledge-base',
@@ -300,6 +315,9 @@ const routes = [
 const router = createRouter({
   history: createWebHistory(),
   routes,
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
 function canAccess(to, userStore) {
