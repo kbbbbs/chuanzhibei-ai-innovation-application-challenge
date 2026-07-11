@@ -199,8 +199,42 @@ class ExamWorkflowIntegrationTest {
         assertEquals(new BigDecimal("14.00"), graded.getTotalScore());
         assertEquals(SubmissionStatus.GRADED, graded.getStatus());
 
+        jdbcTemplate.update("UPDATE t_exam_session SET end_time = ? WHERE id = ?", LocalDateTime.now().minusSeconds(1), exam.getId());
+        var firstResults = examResultService.submit(exam.getId());
+        assertEquals(new BigDecimal("14.00"), firstResults.getStudentScores().getFirst().getTotalScore());
+
+        gradeItem.setScore(new BigDecimal("7.50"));
+        SubmissionResponseDTO regraded = submissionService.manualGrade(submission.getId(), gradeRequest);
+        assertEquals(new BigDecimal("7.50"), regraded.getSubjectiveScore());
+        assertEquals(new BigDecimal("12.50"), regraded.getTotalScore());
+        assertEquals(0, new BigDecimal("7.50").compareTo(jdbcTemplate.queryForObject(
+                "SELECT score FROM t_exam_answer WHERE id = ?", BigDecimal.class, gradeItem.getSubmissionAnswerId())));
+        assertEquals(0, new BigDecimal("12.50").compareTo(jdbcTemplate.queryForObject(
+                "SELECT total_score FROM t_exam_record WHERE id = ?", BigDecimal.class, submission.getId())));
+
+        var resubmittedResults = examResultService.submit(exam.getId());
+        assertEquals(new BigDecimal("12.50"), resubmittedResults.getStudentScores().getFirst().getTotalScore());
+
         loginAsStudent();
         assertThrows(RuntimeException.class, () -> submissionService.start(exam.getId(), "student-001"));
+    }
+
+    @Test
+    void createsFileUploadQuestionWithoutCorrectAnswer() {
+        loginAsTeacher();
+        QuestionRequestDTO request = new QuestionRequestDTO();
+        request.setCourseId(COURSE_ID);
+        request.setContent("请上传实验报告");
+        request.setType(QuestionType.FILE_UPLOAD);
+        request.setDifficulty(Difficulty.MEDIUM);
+        request.setStatus(RecordStatus.ACTIVE);
+        request.setAnswers(List.of());
+
+        var created = questionService.create(request);
+
+        assertTrue(created.getAnswers().isEmpty());
+        assertEquals("[]", jdbcTemplate.queryForObject(
+                "SELECT answer FROM t_question WHERE id = ?", String.class, created.getId()));
     }
 
     @Test

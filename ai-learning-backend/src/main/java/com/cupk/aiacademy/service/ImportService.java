@@ -320,7 +320,10 @@ public class ImportService {
         }
         request.setOptions(choiceType ? options : null);
 
-        String rawAnswers = requiredText(firstNonBlank(source.answers(), source.correctAnswers(), source.singleChoiceAnswer()), "正确答案", errors);
+        String rawAnswers = firstNonBlank(source.answers(), source.correctAnswers(), source.singleChoiceAnswer());
+        if (request.getType() != QuestionType.FILE_UPLOAD) {
+            rawAnswers = requiredText(rawAnswers, "正确答案", errors);
+        }
         List<QuestionRequestDTO.QuestionAnswerRequest> answers = parseAnswers(rawAnswers, request.getType());
         request.setAnswers(answers);
         if (request.getType() == QuestionType.MULTIPLE_CHOICE && answers.size() < 2) {

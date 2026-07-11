@@ -53,7 +53,7 @@
             <el-button size="small" @click="handleGrading(row)">批改</el-button>
             <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
             <el-button v-if="row.status === 1 && isExamStarted(row) && !isExamEnded(row)" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
-            <el-button v-if="!isHomework && isExamEnded(row) && row.status !== 3" size="small" type="primary" @click="handleSubmitResults(row)">提交</el-button>
+            <el-button v-if="!isHomework && isExamEnded(row)" size="small" type="primary" @click="handleSubmitResults(row)">提交</el-button>
             <el-button v-if="!isHomework && row.status === 3" size="small" type="primary" @click="handleResultDetails(row)">详情</el-button>
             <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
           </template>
@@ -541,7 +541,7 @@ const handleGrading = (row) => {
 
 const handleSubmitResults = async (row) => {
   try {
-    const confirmed = await confirmDelete('确认提交本次考试成绩？提交后可查看详情和导出成绩表')
+    const confirmed = await confirmDelete('确认提交本次考试成绩？再次提交会更新已批改的分数和统计结果')
     if (!confirmed) return
     const res = await request.post(`/api/exams/${row.id}/results/submit`)
     if (res.code === '200') {
