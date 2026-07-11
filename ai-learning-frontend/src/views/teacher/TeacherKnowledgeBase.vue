@@ -12,19 +12,24 @@
 
     <div class="teacher-kb-layout">
       <div class="kb-left">
-        <section class="panel kb-list-panel">
+        <section class="panel kb-list-panel" :class="{ collapsed: kbListCollapsed }">
           <div class="panel-title">
             <div>
               <span>知识库列表</span>
               <span class="panel-sub">按课程整理你的教学资料</span>
             </div>
-            <el-tag size="small" effect="plain">{{ filteredKbs.length }} 个</el-tag>
+            <div class="panel-title-right">
+              <el-tag size="small" effect="plain">{{ filteredKbs.length }} 个</el-tag>
+              <el-button circle size="small" class="collapse-toggle" @click="kbListCollapsed = !kbListCollapsed">
+                <el-icon><ArrowDown v-if="kbListCollapsed" /><ArrowUp v-else /></el-icon>
+              </el-button>
+            </div>
           </div>
-          <div class="kb-search">
+          <div class="kb-search" v-show="!kbListCollapsed">
             <el-input v-model="kbSearch" placeholder="搜索知识库名称或描述" clearable />
             <el-button @click="resetKbSearch">重置</el-button>
           </div>
-          <div class="panel-body scroll-y" v-loading="kbLoading">
+          <div class="panel-body scroll-y" v-loading="kbLoading" v-show="!kbListCollapsed">
             <el-empty v-if="filteredKbs.length === 0 && !kbLoading" :description="kbs.length === 0 ? '暂无知识库' : '未找到知识库'">
               <el-button type="primary" @click="openCreateDialog">新建知识库</el-button>
             </el-empty>
@@ -36,6 +41,35 @@
                 <span class="kb-desc">{{ kb.description || '暂无知识库描述' }}</span>
               </div>
               <el-tag size="small" effect="plain">{{ kb.knowledge_count || 0 }} 文档</el-tag>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel history-panel">
+          <div class="panel-title">
+            <div>
+              <span>历史对话</span>
+              <span class="panel-sub">查看和继续之前的会话</span>
+            </div>
+            <div class="panel-title-right">
+              <el-tag size="small" effect="plain">{{ sessions.length }} 个</el-tag>
+              <el-button circle size="small" class="collapse-toggle" @click="historyCollapsed = !historyCollapsed">
+                <el-icon><ArrowDown v-if="historyCollapsed" /><ArrowUp v-else /></el-icon>
+              </el-button>
+            </div>
+          </div>
+          <div class="panel-body scroll-y" v-loading="sessionsLoading" v-show="!historyCollapsed">
+            <el-empty v-if="sessions.length === 0 && !sessionsLoading" description="暂无历史对话">
+              <el-button type="primary" @click="handleNewChat">开始新对话</el-button>
+            </el-empty>
+            <div v-for="s in sessions" :key="s.id"
+              :class="['session-item', { active: activeSessionId === s.id }]"
+              @click="switchSession(s)">
+              <div class="session-item-left">
+                <span class="session-title">{{ s.title || '未命名会话' }}</span>
+                <span class="session-meta">{{ formatSessionTime(s.created_at || s.updated_at) }}</span>
+              </div>
+              <el-button size="small" type="danger" :icon="Delete" circle @click.stop="handleDeleteSession(s)" />
             </div>
           </div>
         </section>
@@ -72,11 +106,16 @@
             <el-button type="success" size="small" :loading="uploading" @click="doUpload">确认上传</el-button>
           </div>
 
-          <div class="panel-body scroll-y" v-loading="filesLoading">
-            <div class="section-caption">
-              <span>文件列表</span>
+          <div class="section-caption">
+            <span>文件列表</span>
+            <div class="section-caption-right">
               <span>{{ files.length }} 份</span>
+              <el-button circle size="small" class="collapse-toggle" @click="filesCollapsed = !filesCollapsed">
+                <el-icon><ArrowDown v-if="filesCollapsed" /><ArrowUp v-else /></el-icon>
+              </el-button>
             </div>
+          </div>
+          <div class="panel-body scroll-y" v-loading="filesLoading" v-show="!filesCollapsed">
             <el-empty v-if="files.length === 0 && !filesLoading" description="暂无文件" />
             <div v-for="f in files" :key="f.id" class="file-item">
               <div class="file-main">
@@ -98,37 +137,33 @@
         <section class="panel graph-panel" v-if="selectedKb">
           <div class="panel-title">
             <div>
-              <span>知识图谱预览</span>
-              <span class="panel-sub">快速预览当前知识库的图谱结构</span>
+              <span>{{ selectedKb.name === '算法双语' ? '算法双语知识图谱' : '知识图谱预览' }}</span>
+              <span class="panel-sub">{{ selectedKb.name === '算法双语' ? '算法核心概念，中英双语切换展示' : '快速预览当前知识库的图谱结构' }}</span>
             </div>
-            <el-button size="small" type="primary" link @click="openGraph">查看完整图谱</el-button>
+            <div class="panel-title-right">
+              <el-tag v-if="selectedKb.name === '算法双语'" size="small" type="primary" effect="plain">中英双语</el-tag>
+              <el-button v-if="selectedKb.name !== '算法双语'" size="small" type="primary" link @click="openGraph">查看完整图谱</el-button>
+            </div>
           </div>
           <div class="panel-body">
-            <KnowledgeGraphPreview :kb-id="selectedKb.id" :refresh-key="graphRefreshKey" />
-          </div>
-        </section>
-
-        <section class="panel algo-graph-panel" v-if="selectedKb">
-          <div class="panel-title">
-            <div>
-              <span>算法双语知识图谱</span>
-              <span class="panel-sub">算法核心概念，中英双语切换展示</span>
-            </div>
-            <el-tag size="small" type="primary" effect="plain">中英双语</el-tag>
-          </div>
-          <div class="panel-body">
-            <AlgorithmBilingualGraph />
+            <KnowledgeGraphPreview v-if="selectedKb.name !== '算法双语'" :kb-id="selectedKb.id" :refresh-key="graphRefreshKey" />
+            <AlgorithmBilingualGraph v-else />
           </div>
         </section>
       </div>
 
       <div class="kb-right">
-        <AiChatWidget
-          :inline="true"
-          :key="kbs.length + (selectedKb?.id || '')"
-          :knowledge-base-id="selectedKb?.id || ''"
-          :hide-kb-selector="Boolean(selectedKb?.id)"
-        />
+        <div class="panel chat-panel">
+          <AiChatWidget
+            :inline="true"
+            :key="kbs.length + (selectedKb?.id || '')"
+            :knowledge-base-id="selectedKb?.id || ''"
+            :hide-kb-selector="Boolean(selectedKb?.id)"
+            :collapsible="true"
+            :collapsed="chatCollapsed"
+            @toggle-collapse="chatCollapsed = !chatCollapsed"
+          />
+        </div>
       </div>
     </div>
 
@@ -325,7 +360,7 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete } from '@element-plus/icons-vue'
+import { Delete, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
 import KnowledgeGraphPreview from '@/components/knowledge/KnowledgeGraphPreview.vue'
 import AlgorithmBilingualGraph from '@/components/knowledge/AlgorithmBilingualGraph.vue'
@@ -334,6 +369,7 @@ import { generateQuestionsFromKnowledgeBase, batchCreateQuestions } from '@/api/
 import { getCourses } from '@/utils/course'
 import { currentUserId, scopedTeacherParams, getRecords } from '@/utils/apiHelpers'
 import { useUserStore } from '@/store/user'
+import { useWeKnora } from '@/composables/useWeKnora'
 
 function unwrapData(data) {
   while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined)
@@ -350,11 +386,20 @@ function unwrapList(data) {
 const kbs = ref([]); const kbLoading = ref(false)
 const kbSearch = ref('')
 const selectedKb = ref(null)
+const kbListCollapsed = ref(false)
+const historyCollapsed = ref(false)
+const chatCollapsed = ref(false)
+const filesCollapsed = ref(false)
 const router = useRouter()
 const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
 const graphRefreshKey = ref(0)
 const statusPollTimer = ref(null)
+
+// 历史对话
+const { sessions, loadSessions, removeSession } = useWeKnora()
+const sessionsLoading = ref(false)
+const activeSessionId = ref(null)
 
 const filteredKbs = computed(() => {
   const keyword = kbSearch.value.trim().toLowerCase()
@@ -726,7 +771,37 @@ async function skipGenSave() {
   genVisible.value = false
 }
 
-onMounted(loadKBs)
+function formatSessionTime(t) {
+  if (!t) return '-'
+  return t.slice(0, 19).replace('T', ' ')
+}
+
+async function loadHistorySessions() {
+  sessionsLoading.value = true
+  try { await loadSessions() } finally { sessionsLoading.value = false }
+}
+
+function switchSession(s) {
+  activeSessionId.value = s.id
+  ElMessage.success(`已切换到「${s.title || '未命名会话'}」`)
+}
+
+async function handleDeleteSession(s) {
+  try { await ElMessageBox.confirm(`确定删除「${s.title || '未命名会话'}」？`, '确认', { type: 'warning' }) } catch { return }
+  try {
+    await removeSession(s.id)
+    if (activeSessionId.value === s.id) activeSessionId.value = null
+    ElMessage.success('已删除')
+  } catch { ElMessage.error('删除失败') }
+}
+
+function handleNewChat() {
+  selectedKb.value = null
+  files.value = []
+  activeSessionId.value = null
+}
+
+onMounted(() => { loadKBs(); loadHistorySessions() })
 onBeforeUnmount(stopStatusPolling)
 </script>
 
@@ -784,6 +859,11 @@ onBeforeUnmount(stopStatusPolling)
   max-height: 360px;
 }
 
+.kb-list-panel.collapsed {
+  min-height: 0;
+  max-height: none;
+}
+
 .panel-title {
   padding: 16px 18px;
   font-weight: 700;
@@ -798,6 +878,24 @@ onBeforeUnmount(stopStatusPolling)
 
 .panel-title-stack {
   align-items: flex-start;
+}
+
+.panel-title-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.collapse-toggle {
+  border: none;
+  background: var(--bg-subtle);
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+}
+
+.collapse-toggle:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
 }
 
 .panel-sub {
@@ -868,6 +966,69 @@ onBeforeUnmount(stopStatusPolling)
   box-shadow: var(--shadow-xs);
 }
 
+/* 历史对话 */
+.history-panel {
+  max-height: 320px;
+}
+
+.session-item {
+  padding: 12px 14px;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  transition: all .18s ease;
+  border: 1px solid transparent;
+}
+
+.session-item + .session-item {
+  margin-top: 6px;
+}
+
+.session-item:hover {
+  background: var(--bg-subtle);
+  border-color: var(--border-color);
+}
+
+.session-item.active {
+  background: var(--primary-color-soft);
+  border-color: var(--primary-color-light);
+}
+
+.session-item-left {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.session-meta {
+  font-size: 11px;
+  color: var(--text-muted);
+  display: block;
+  margin-top: 3px;
+}
+
+/* Chat panel */
+.chat-panel {
+  height: 100%;
+}
+
+.chat-panel .ai-widget-container {
+  max-height: none;
+  height: 100%;
+}
+
 .kb-item-left {
   flex: 1;
   min-width: 0;
@@ -909,9 +1070,16 @@ onBeforeUnmount(stopStatusPolling)
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
+  padding: 12px 12px 0;
   color: var(--text-secondary);
   font-size: 12px;
   font-weight: 600;
+}
+
+.section-caption-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .file-item {
@@ -950,13 +1118,6 @@ onBeforeUnmount(stopStatusPolling)
 
 .graph-panel :deep(.preview-shell) {
   min-height: 260px;
-}
-
-.algo-graph-panel .panel-body {
-  padding: 12px;
-}
-
-.gen-steps {
   margin-bottom: 20px;
 }
 
