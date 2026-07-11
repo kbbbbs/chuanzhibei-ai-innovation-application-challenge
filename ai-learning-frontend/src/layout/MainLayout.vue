@@ -998,6 +998,10 @@ const handleCommand = async (command) => {
 }
 
 @media (max-width: 760px) {
+  .layout-aside {
+    display: none;
+  }
+
   .layout-header {
     padding: 0 14px;
   }

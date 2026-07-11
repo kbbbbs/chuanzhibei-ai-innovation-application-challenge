@@ -9,7 +9,18 @@
       </template>
 
       <div v-if="submission.id">
-        <el-result v-if="submission.status === 2" icon="success" :title="`总分：${submission.totalScore}`" :sub-title="`客观题：${submission.objectiveScore} | 主观题：${submission.subjectiveScore}`">
+        <el-result v-if="submission.cheated" icon="error" title="本次考试被判定为作弊" :sub-title="`切屏 ${submission.screenSwitchCount || 0} 次，成绩记为 -1`">
+          <template #extra>
+            <el-descriptions :column="2" border>
+              <el-descriptions-item label="考试名称">{{ exam.title }}</el-descriptions-item>
+              <el-descriptions-item label="提交时间">
+                {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
+              </el-descriptions-item>
+            </el-descriptions>
+          </template>
+        </el-result>
+
+        <el-result v-else-if="submission.status === 2" icon="success" :title="`总分：${submission.totalScore}`" :sub-title="`客观题：${submission.objectiveScore} | 主观题：${submission.subjectiveScore}`">
         <template #extra>
           <el-descriptions :column="2" border>
             <el-descriptions-item label="考试名称">{{ exam.title }}</el-descriptions-item>

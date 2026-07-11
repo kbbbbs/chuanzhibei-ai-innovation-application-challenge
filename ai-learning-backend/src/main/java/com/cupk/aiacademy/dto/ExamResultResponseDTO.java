@@ -30,5 +30,7 @@ public class ExamResultResponseDTO {
         private BigDecimal totalScore;
         private SubmissionStatus submissionStatus;
         private boolean absent;
+        private boolean cheated;
+        private Integer screenSwitchCount;
     }
 }

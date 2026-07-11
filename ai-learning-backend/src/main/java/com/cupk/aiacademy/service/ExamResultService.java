@@ -87,7 +87,7 @@ public class ExamResultService {
             row.setStudentName(score.getStudentName());
             row.setExamName(results.getExamName());
             row.setTotalScore(score.getTotalScore());
-            row.setStatus(score.isAbsent() ? "未参加" : submissionStatusName(score.getSubmissionStatus()));
+            row.setStatus(score.isAbsent() ? "未参加" : score.isCheated() ? "作弊" : submissionStatusName(score.getSubmissionStatus()));
             return row;
         }).toList();
         return TabularFileSupport.exportFile("考试成绩_" + examId, format, ExamScoreExportRow.class, rows);
@@ -122,7 +122,10 @@ public class ExamResultService {
         List<ExamResultResponseDTO.StudentScore> scores = members.stream()
                 .map(member -> toStudentScore(member, users.get(member.getStudentId()), recordByStudentId.get(member.getStudentId())))
                 .toList();
-        List<BigDecimal> values = scores.stream().map(ExamResultResponseDTO.StudentScore::getTotalScore).toList();
+        List<BigDecimal> values = scores.stream()
+                .filter(score -> !score.isCheated())
+                .map(ExamResultResponseDTO.StudentScore::getTotalScore)
+                .toList();
 
         ExamResultResponseDTO response = new ExamResultResponseDTO();
         response.setExamId(exam.getId().longValue());
@@ -148,6 +151,8 @@ public class ExamResultService {
         if (record != null) {
             score.setSubmissionId(record.getId().longValue());
             score.setSubmissionStatus(SubmissionStatus.fromCode(record.getStatus()));
+            score.setCheated(record.getCheated() != null && record.getCheated() == 1);
+            score.setScreenSwitchCount(record.getScreenSwitchCount() == null ? 0 : record.getScreenSwitchCount());
         }
         return score;
     }

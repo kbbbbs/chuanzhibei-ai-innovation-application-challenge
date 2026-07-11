@@ -74,7 +74,8 @@
         </el-table-column>
         <el-table-column label="总分" width="100">
           <template #default="{ row }">
-            <span v-if="row.totalScore !== null" class="score-total">
+            <span v-if="row.cheated" class="score-cheated">作弊（-1）</span>
+            <span v-else-if="row.totalScore !== null" class="score-total">
               {{ row.totalScore }}
             </span>
             <span v-else class="score-pending">批改中</span>
@@ -82,7 +83,8 @@
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag v-if="row.status === 2" type="success">已批改</el-tag>
+            <el-tag v-if="row.cheated" type="danger">作弊</el-tag>
+            <el-tag v-else-if="row.status === 2" type="success">已批改</el-tag>
             <el-tag v-else type="warning">批改中</el-tag>
           </template>
         </el-table-column>
@@ -131,11 +133,11 @@ const loading = ref(false)
 const distType = ref('bar')
 
 const gradedAll = computed(() =>
-  allGrades.value.filter(g => g.status === 2 && g.totalScore != null)
+  allGrades.value.filter(g => g.status === 2 && g.totalScore != null && !g.cheated)
 )
 
 const gradedList = computed(() =>
-  grades.value.filter(g => g.status === 2 && g.totalScore != null)
+  grades.value.filter(g => g.status === 2 && g.totalScore != null && !g.cheated)
 )
 
 const overallAvg = computed(() => {

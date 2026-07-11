@@ -114,6 +114,15 @@
               <el-form-item label="考试说明">
                 <el-input v-model="form.description" type="textarea" :rows="3" />
               </el-form-item>
+              <template v-if="!isHomework">
+                <el-form-item label="切屏上限" prop="maxScreenSwitches">
+                  <el-input-number v-model="form.maxScreenSwitches" :min="0" :max="99" />
+                  <span class="field-hint">超过该次数自动判作弊，成绩记为 -1</span>
+                </el-form-item>
+                <el-form-item label="禁用剪贴板">
+                  <el-switch v-model="form.disableClipboard" />
+                </el-form-item>
+              </template>
               <el-form-item label="状态">
                 <el-text>到达开始时间后自动开始</el-text>
               </el-form-item>
@@ -127,6 +136,8 @@
                 <el-descriptions-item label="时长">{{ form.durationMinutes }} 分钟</el-descriptions-item>
                 <el-descriptions-item label="开始时间">{{ form.startTime ? new Date(form.startTime).toLocaleString() : '-' }}</el-descriptions-item>
                 <el-descriptions-item label="结束时间">{{ formEndTime ? formEndTime.toLocaleString() : '-' }}</el-descriptions-item>
+                <el-descriptions-item v-if="!isHomework" label="切屏上限">{{ form.maxScreenSwitches }} 次</el-descriptions-item>
+                <el-descriptions-item v-if="!isHomework" label="剪贴板">{{ form.disableClipboard ? '禁用' : '允许' }}</el-descriptions-item>
                 <el-descriptions-item label="状态">到达开始时间后自动开始</el-descriptions-item>
                 <el-descriptions-item label="考试说明">{{ form.description || '-' }}</el-descriptions-item>
               </el-descriptions>
@@ -195,6 +206,8 @@ const form = reactive({
   description: '',
   startTime: null,
   durationMinutes: 60,
+  maxScreenSwitches: 3,
+  disableClipboard: false,
   status: 1
 })
 
@@ -228,6 +241,8 @@ const mapExamForDisplay = (e) => ({
   durationMinutes: e.durationMinutes,
   startTime: e.startTime,
   endTime: e.endTime,
+  maxScreenSwitches: e.maxScreenSwitches ?? 3,
+  disableClipboard: Boolean(e.disableClipboard),
   status: normalizeStatus(e.status, ENUM_TO_STATUS, 0)
 })
 
@@ -376,6 +391,8 @@ const handleCreate = () => {
     description: '',
     startTime: null,
     durationMinutes: 60,
+    maxScreenSwitches: 3,
+    disableClipboard: false,
     status: 1
   })
   examStep.value = 0
@@ -400,6 +417,8 @@ const handleEdit = async (row) => {
         description: data.description || '',
         startTime: data.startTime ? new Date(data.startTime) : null,
         durationMinutes: data.durationMinutes ?? 60,
+        maxScreenSwitches: data.maxScreenSwitches ?? 3,
+        disableClipboard: Boolean(data.disableClipboard),
         status: normalizeStatus(data.status, ENUM_TO_STATUS, 0)
       })
       examStep.value = 0
@@ -474,6 +493,8 @@ const buildRequestDTO = () => {
     description: form.description || '',
     startTime: formatLocalDateTime(form.startTime),
     durationMinutes: form.durationMinutes || 60,
+    maxScreenSwitches: isHomework.value ? 3 : Number(form.maxScreenSwitches ?? 3),
+    disableClipboard: isHomework.value ? false : Boolean(form.disableClipboard),
     status: STATUS_TO_ENUM[form.status] || 'DRAFT',
   }
 }
@@ -630,5 +651,11 @@ onUnmounted(() => {
 .wizard-content {
   flex: 1;
   min-width: 0;
+}
+
+.field-hint {
+  margin-left: 12px;
+  color: #909399;
+  font-size: 13px;
 }
 </style>

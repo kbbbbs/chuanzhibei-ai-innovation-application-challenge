@@ -32,19 +32,26 @@
         </el-table-column>
         <el-table-column label="总分" width="100">
           <template #default="{ row }">
-            {{ row.totalScore !== null ? row.totalScore : '-' }}
+            <el-tag v-if="row.cheated" type="danger">作弊（-1）</el-tag>
+            <template v-else>{{ row.totalScore !== null ? row.totalScore : '-' }}</template>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
-            <el-tag v-if="row.status === 2" type="success">已批改</el-tag>
+            <el-tag v-if="row.cheated" type="danger">作弊</el-tag>
+            <el-tag v-else-if="row.status === 2" type="success">已批改</el-tag>
             <el-tag v-else-if="row.status === 1" type="warning">待批改</el-tag>
             <el-tag v-else type="info">未提交</el-tag>
           </template>
         </el-table-column>
+        <el-table-column v-if="!isHomework" label="切屏" width="90" align="center">
+          <template #default="{ row }">{{ row.screenSwitchCount || 0 }}</template>
+        </el-table-column>
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.status >= 1" size="small" type="primary" @click="handleGrade(row)">批改</el-button>
+            <el-button v-if="row.status >= 1" size="small" type="primary" :disabled="row.cheated" @click="handleGrade(row)">
+              {{ row.cheated ? '已锁定' : '批改' }}
+            </el-button>
           </template>
         </el-table-column>
         <template #empty>

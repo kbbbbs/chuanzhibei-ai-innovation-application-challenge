@@ -197,6 +197,8 @@ public class ExamService {
         response.setEndTime(exam.getEndTime());
         response.setDurationMinutes(exam.getDuration());
         response.setStatus(ExamStatus.fromCode(exam.getStatus()));
+        response.setMaxScreenSwitches(exam.getMaxScreenSwitches() == null ? 3 : exam.getMaxScreenSwitches());
+        response.setDisableClipboard(exam.getDisableClipboard() != null && exam.getDisableClipboard() == 1);
         response.setCreatedAt(exam.getCreateTime());
         response.setUpdatedAt(exam.getUpdateTime());
         return response;
@@ -214,6 +216,9 @@ public class ExamService {
         }
         if (request.getStatus() == null) {
             throw new BusinessException("考试状态不能为空");
+        }
+        if (request.getMaxScreenSwitches() == null || request.getMaxScreenSwitches() < 0) {
+            throw new BusinessException("允许切屏次数不能小于0");
         }
     }
 
@@ -276,6 +281,8 @@ public class ExamService {
         exam.setEndTime(request.getStartTime().plusMinutes(request.getDurationMinutes()));
         exam.setDuration(request.getDurationMinutes());
         exam.setStatus(request.getStatus().getCode());
+        exam.setMaxScreenSwitches(request.getMaxScreenSwitches());
+        exam.setDisableClipboard(Boolean.TRUE.equals(request.getDisableClipboard()) ? 1 : 0);
     }
 
     private void transitionStatuses(QueryWrapper<ExamSession> query, ExamStatus targetStatus, LocalDateTime now) {

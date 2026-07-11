@@ -20,6 +20,8 @@ public class ExamResponseDTO {
     private LocalDateTime endTime;
     private Integer durationMinutes;
     private ExamStatus status;
+    private Integer maxScreenSwitches;
+    private Boolean disableClipboard;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

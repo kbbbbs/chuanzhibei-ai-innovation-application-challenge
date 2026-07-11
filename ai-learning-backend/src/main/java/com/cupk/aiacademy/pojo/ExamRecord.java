@@ -42,6 +42,12 @@ public class ExamRecord {
     private Integer status;
     private String comment;
 
+    @TableField("screen_switch_count")
+    private Integer screenSwitchCount;
+
+    @TableField("cheated")
+    private Integer cheated;
+
     @TableField("create_time")
     private LocalDateTime createTime;
 

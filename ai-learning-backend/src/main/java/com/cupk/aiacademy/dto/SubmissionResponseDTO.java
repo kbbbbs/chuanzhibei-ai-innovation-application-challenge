@@ -24,6 +24,9 @@ public class SubmissionResponseDTO {
     private BigDecimal subjectiveScore;
     private BigDecimal totalScore;
     private SubmissionStatus status;
+    private Integer screenSwitchCount;
+    private Integer maxScreenSwitches;
+    private Boolean cheated;
     private List<SubmissionAnswerResponse> answers;
 
     @Getter

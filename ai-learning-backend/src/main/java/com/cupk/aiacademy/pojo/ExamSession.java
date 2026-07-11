@@ -35,6 +35,12 @@ public class ExamSession {
     private Integer duration;
     private Integer status;
 
+    @TableField("max_screen_switches")
+    private Integer maxScreenSwitches;
+
+    @TableField("disable_clipboard")
+    private Integer disableClipboard;
+
     @TableField("create_time")
     private LocalDateTime createTime;
 

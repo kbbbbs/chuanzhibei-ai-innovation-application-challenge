@@ -62,12 +62,14 @@
             </el-table-column>
             <el-table-column label="得分" width="100">
               <template #default="{ row }">
-                {{ row.totalScore !== null ? row.totalScore : '批改中' }}
+                <span v-if="row.cheated" class="cheated-score">作弊（-1）</span>
+                <template v-else>{{ row.totalScore !== null ? row.totalScore : '批改中' }}</template>
               </template>
             </el-table-column>
             <el-table-column label="状态" width="100">
               <template #default="{ row }">
-                <el-tag v-if="row.status === 2" type="success">已批改</el-tag>
+                <el-tag v-if="row.cheated" type="danger">作弊</el-tag>
+                <el-tag v-else-if="row.status === 2" type="success">已批改</el-tag>
                 <el-tag v-else type="warning">批改中</el-tag>
               </template>
             </el-table-column>

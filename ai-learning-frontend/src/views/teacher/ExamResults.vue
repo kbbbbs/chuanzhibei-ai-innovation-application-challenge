@@ -52,17 +52,21 @@
         <el-table-column prop="studentName" label="学生" min-width="120" />
         <el-table-column label="成绩" width="120" align="center">
           <template #default="{ row }">
-            <el-tag :type="scoreTag(row.totalScore)" effect="dark" size="small">
-              {{ row.totalScore ?? 0 }} / {{ results.fullScore ?? 0 }}
+            <el-tag :type="row.cheated ? 'danger' : scoreTag(row.totalScore)" effect="dark" size="small">
+              {{ row.cheated ? '作弊（-1）' : `${row.totalScore ?? 0} / ${results.fullScore ?? 0}` }}
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column label="状态" width="100" align="center">
           <template #default="{ row }">
             <el-tag v-if="row.absent" type="info">未参加</el-tag>
+            <el-tag v-else-if="row.cheated" type="danger">作弊</el-tag>
             <el-tag v-else-if="row.submissionStatus === 'GRADED'" type="success">已批改</el-tag>
             <el-tag v-else type="warning">待批改</el-tag>
           </template>
+        </el-table-column>
+        <el-table-column label="切屏" width="80" align="center">
+          <template #default="{ row }">{{ row.absent ? '-' : (row.screenSwitchCount || 0) }}</template>
         </el-table-column>
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
@@ -116,7 +120,7 @@ const studentScores = computed(() => results.value.studentScores || [])
 
 const chartDistData = computed(() => {
   const buckets = { '0-59': 0, '60-69': 0, '70-79': 0, '80-89': 0, '90-100': 0 }
-  studentScores.value.forEach(s => {
+  studentScores.value.filter(s => !s.cheated).forEach(s => {
     const v = Number(s.totalScore) || 0
     if (v < 60) buckets['0-59']++
     else if (v < 70) buckets['60-69']++
@@ -138,8 +142,9 @@ function renderPassDonut() {
   if (!passChartRef.value) return
   if (passChartInstance) passChartInstance.dispose()
   passChartInstance = echarts.init(passChartRef.value)
-  const total = studentScores.value.length || 1
-  const passed = studentScores.value.filter(s => (Number(s.totalScore) || 0) >= (Number(results.value.fullScore) || 100) * 0.6).length
+  const scoredStudents = studentScores.value.filter(s => !s.cheated)
+  const total = scoredStudents.length || 1
+  const passed = scoredStudents.filter(s => (Number(s.totalScore) || 0) >= (Number(results.value.fullScore) || 100) * 0.6).length
   const failed = total - passed
   passChartInstance.setOption({
     tooltip: { trigger: 'item', formatter: '{b}: {c}人 ({d}%)' },

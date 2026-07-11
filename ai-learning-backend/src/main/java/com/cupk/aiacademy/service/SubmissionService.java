@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.service;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.ExamStatus;
 import com.cupk.aiacademy.common.JudgeStatus;
@@ -106,6 +107,8 @@ public class SubmissionService {
         record.setSubjectiveScore(BigDecimal.ZERO);
         record.setTotalScore(BigDecimal.ZERO);
         record.setStatus(SubmissionStatus.IN_PROGRESS.getCode());
+        record.setScreenSwitchCount(0);
+        record.setCheated(0);
         record.setCreateTime(now);
         record.setUpdateTime(now);
         try {
@@ -141,6 +144,11 @@ public class SubmissionService {
             throw new BusinessException("当前答卷不允许继续作答");
         }
         checkDuration(record, true);
+        applyAnswers(record, request);
+        return toResponse(record);
+    }
+
+    private void applyAnswers(ExamRecord record, SubmissionRequestsDTO.SaveAnswerRequest request) {
         if (request == null || request.getAnswers() == null || request.getAnswers().isEmpty()) {
             throw new BusinessException("答案不能为空");
         }
@@ -152,17 +160,41 @@ public class SubmissionService {
             answer.setGradeStatus(isBlank(normalizedAnswer) ? JudgeStatus.NOT_ANSWERED.getCode() : JudgeStatus.ANSWERED.getCode());
             answerMapper.updateById(answer);
         }
-        return toResponse(record);
     }
 
     @Transactional
     public SubmissionResponseDTO submit(Long submissionId) {
+        return submit(submissionId, null);
+    }
+
+    @Transactional
+    public SubmissionResponseDTO submit(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
         ExamRecord record = getEntityById(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷状态不允许交卷");
         }
         checkDuration(record, true);
+        if (request != null) {
+            applyAnswers(record, request);
+        }
+        return finalizeSubmission(record, false);
+    }
+
+    @Transactional
+    public SubmissionResponseDTO autoSubmit(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
+        ExamRecord record = getEntityById(submissionId);
+        requireStudentRecord(record);
+        if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
+            return toResponse(record);
+        }
+        if (request != null) {
+            applyAnswers(record, request);
+        }
+        return finalizeSubmission(record, checkDuration(record, false));
+    }
+
+    private SubmissionResponseDTO finalizeSubmission(ExamRecord record, boolean timeout) {
         BigDecimal objectiveScore = BigDecimal.ZERO;
         boolean hasSubjective = false;
         for (ExamAnswer answer : listAnswers(record.getId())) {
@@ -192,9 +224,47 @@ public class SubmissionService {
         record.setSubmitTime(now);
         record.setTotalScore(objectiveScore.add(record.getSubjectiveScore() == null ? BigDecimal.ZERO : record.getSubjectiveScore()));
         record.setStatus(hasSubjective ? SubmissionStatus.PENDING_MANUAL_REVIEW.getCode() : SubmissionStatus.GRADED.getCode());
-        record.setComment(record.getComment());
+        record.setComment(timeout ? timeoutComment(record, now) : record.getComment());
         record.setUpdateTime(now);
         recordMapper.updateById(record);
+        return toResponse(record);
+    }
+
+    @Transactional
+    public SubmissionResponseDTO reportScreenSwitch(Long submissionId) {
+        ExamRecord record = getEntityById(submissionId);
+        requireStudentRecord(record);
+        if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
+            return toResponse(record);
+        }
+        if (checkDuration(record, false)) {
+            return toResponse(record);
+        }
+
+        UpdateWrapper<ExamRecord> increment = new UpdateWrapper<>();
+        increment.eq("id", record.getId())
+                .eq("status", SubmissionStatus.IN_PROGRESS.getCode())
+                .and(wrapper -> wrapper.eq("cheated", 0).or().isNull("cheated"))
+                .setSql("screen_switch_count = COALESCE(screen_switch_count, 0) + 1")
+                .set("update_time", LocalDateTime.now());
+        recordMapper.update(null, increment);
+
+        record = getEntityById(submissionId);
+        ExamSession exam = examSessionMapper.selectById(record.getExamSessionId());
+        int limit = exam == null || exam.getMaxScreenSwitches() == null ? 3 : exam.getMaxScreenSwitches();
+        int count = record.getScreenSwitchCount() == null ? 0 : record.getScreenSwitchCount();
+        if (count > limit && (record.getCheated() == null || record.getCheated() == 0)) {
+            LocalDateTime now = LocalDateTime.now();
+            record.setCheated(1);
+            record.setObjectiveScore(BigDecimal.ZERO);
+            record.setSubjectiveScore(BigDecimal.ZERO);
+            record.setTotalScore(new BigDecimal("-1"));
+            record.setSubmitTime(now);
+            record.setStatus(SubmissionStatus.GRADED.getCode());
+            record.setComment("切屏次数超过上限（" + count + "/" + limit + "），系统判定作弊");
+            record.setUpdateTime(now);
+            recordMapper.updateById(record);
+        }
         return toResponse(record);
     }
 
@@ -202,6 +272,9 @@ public class SubmissionService {
     public SubmissionResponseDTO manualGrade(Long submissionId, SubmissionRequestsDTO.ManualGradeRequest request) {
         ExamRecord record = getEntityById(submissionId);
         requireTeacherRecord(record);
+        if (record.getCheated() != null && record.getCheated() == 1) {
+            throw new BusinessException("作弊答卷不能修改成绩");
+        }
         if (request == null || request.getGrades() == null || request.getGrades().isEmpty()) {
             throw new BusinessException("批改结果不能为空");
         }
@@ -340,6 +413,9 @@ public class SubmissionService {
         response.setSubjectiveScore(record.getSubjectiveScore());
         response.setTotalScore(record.getTotalScore());
         response.setStatus(SubmissionStatus.fromCode(record.getStatus()));
+        response.setScreenSwitchCount(record.getScreenSwitchCount() == null ? 0 : record.getScreenSwitchCount());
+        response.setMaxScreenSwitches(exam == null || exam.getMaxScreenSwitches() == null ? 3 : exam.getMaxScreenSwitches());
+        response.setCheated(record.getCheated() != null && record.getCheated() == 1);
         response.setAnswers(listAnswers(record.getId()).stream()
                 .map(answer -> toAnswerResponse(answer, includeReferenceAnswer))
                 .toList());
@@ -360,6 +436,9 @@ public class SubmissionService {
         response.setSubjectiveScore(record.getSubjectiveScore());
         response.setTotalScore(record.getTotalScore());
         response.setStatus(SubmissionStatus.fromCode(record.getStatus()));
+        response.setScreenSwitchCount(record.getScreenSwitchCount() == null ? 0 : record.getScreenSwitchCount());
+        response.setMaxScreenSwitches(exam == null || exam.getMaxScreenSwitches() == null ? 3 : exam.getMaxScreenSwitches());
+        response.setCheated(record.getCheated() != null && record.getCheated() == 1);
         response.setAnswers(listAnswers(record.getId()).stream()
                 .map(this::toStudentAnswerResponse)
                 .toList());

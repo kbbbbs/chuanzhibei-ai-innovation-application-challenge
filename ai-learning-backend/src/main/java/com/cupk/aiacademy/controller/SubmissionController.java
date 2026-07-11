@@ -38,8 +38,22 @@ public class SubmissionController {
     }
 
     @PostMapping("/api/submissions/{id}/submit")
-    public ApiResponse<SubmissionResponseDTO> submit(@PathVariable Long id) {
-        return ApiResponse.success(submissionService.submit(id));
+    public ApiResponse<SubmissionResponseDTO> submit(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) SubmissionRequestsDTO.SaveAnswerRequest request) {
+        return ApiResponse.success(submissionService.submit(id, request));
+    }
+
+    @PostMapping("/api/submissions/{id}/auto-submit")
+    public ApiResponse<SubmissionResponseDTO> autoSubmit(
+            @PathVariable Long id,
+            @Valid @RequestBody(required = false) SubmissionRequestsDTO.SaveAnswerRequest request) {
+        return ApiResponse.success(submissionService.autoSubmit(id, request));
+    }
+
+    @PostMapping("/api/submissions/{id}/screen-switch")
+    public ApiResponse<SubmissionResponseDTO> reportScreenSwitch(@PathVariable Long id) {
+        return ApiResponse.success(submissionService.reportScreenSwitch(id));
     }
 
     @GetMapping("/api/submissions/{id}")

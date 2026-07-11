@@ -49,6 +49,11 @@ public class ExamWorkflowController {
         return Result.success(submissionService.submit(id));
     }
 
+    @PostMapping("/exam-records/{id}/screen-switch")
+    public Result reportScreenSwitch(@PathVariable Long id) {
+        return Result.success(submissionService.reportScreenSwitch(id));
+    }
+
     @GetMapping("/exam-records/{id}/student")
     public Result getStudentById(@PathVariable Long id) {
         return Result.success(submissionService.getStudentSubmissionById(id));

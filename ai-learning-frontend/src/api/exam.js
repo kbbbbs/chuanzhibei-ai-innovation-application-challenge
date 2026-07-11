@@ -110,6 +110,10 @@ export const submitExam = (submissionId) => {
   return request.post(`/api/submissions/${submissionId}/submit`)
 }
 
+export const reportScreenSwitch = (submissionId) => {
+  return request.post(`/api/submissions/${submissionId}/screen-switch`)
+}
+
 export const gradeSubjective = (submissionId, data) => {
   return request.post(`/api/submissions/${submissionId}/grade-subjective`, data)
 }

@@ -4,14 +4,30 @@
       <template #header>
         <div class="exam-header">
           <span>{{ exam.title }}</span>
-          <div class="timer">
-            <el-icon><Clock /></el-icon>
-            <span class="timer-text">{{ formatTime(remainingTime) }}</span>
+          <div class="exam-status-panel" :class="{ urgent: remainingTime <= 300 }">
+            <div class="timer">
+              <el-icon><Clock /></el-icon>
+              <div>
+                <span class="timer-label">剩余时间</span>
+                <strong class="timer-text">{{ formatTime(remainingTime) }}</strong>
+              </div>
+            </div>
+            <div v-if="!isHomework" class="screen-switch-status">
+              切屏 {{ screenSwitchCount }} / {{ maxScreenSwitches }}
+            </div>
           </div>
         </div>
       </template>
 
       <el-alert v-if="exam.description" :title="exam.description" type="info" :closable="false" class="exam-description" />
+      <el-alert
+        v-if="!isHomework"
+        :title="antiCheatNotice"
+        type="warning"
+        :closable="false"
+        show-icon
+        class="exam-description"
+      />
 
       <div v-for="(question, idx) in questions" :key="question.id" class="question-block">
         <div class="question-title">
@@ -97,15 +113,29 @@ const submission = ref(null)
 const questions = ref([])
 const answers = reactive({})
 const remainingTime = ref(0)
+const screenSwitchCount = ref(0)
 const loading = ref(false)
 const saveLoading = ref(false)
 const uploadingQuestionId = ref(null)
 let timer = null
+let examDeadline = 0
+let screenSwitchReporting = false
+let autoSubmitTriggered = false
+
+const maxScreenSwitches = computed(() => Number(exam.value.maxScreenSwitches ?? 3))
+const antiCheatNotice = computed(() => {
+  const clipboardText = exam.value.disableClipboard ? '本场考试已禁用复制、剪切和粘贴。' : ''
+  return `请勿切换标签页或离开考试窗口，超过 ${maxScreenSwitches.value} 次将判定作弊，成绩记为 -1。${clipboardText}`
+})
 
 const formatTime = (seconds) => {
-  const m = Math.floor(seconds / 60)
-  const s = seconds % 60
-  return `${m}:${s.toString().padStart(2, '0')}`
+  const safeSeconds = Math.max(Number(seconds) || 0, 0)
+  const h = Math.floor(safeSeconds / 3600)
+  const m = Math.floor((safeSeconds % 3600) / 60)
+  const s = safeSeconds % 60
+  return h > 0
+    ? `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
+    : `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`
 }
 
 const TYPE_TO_FRONTEND = {
@@ -164,15 +194,76 @@ const startTimer = () => {
   const startedAt = submission.value?.startedAt ? new Date(submission.value.startedAt) : new Date()
   const durationCutoff = startedAt.getTime() + durationMinutes * 60 * 1000
   const examCutoff = exam.value.endTime ? new Date(exam.value.endTime).getTime() : durationCutoff
-  remainingTime.value = Math.max(Math.floor((Math.min(durationCutoff, examCutoff) - Date.now()) / 1000), 0)
-  timer = setInterval(() => {
-    remainingTime.value--
-    if (remainingTime.value <= 0) {
+  examDeadline = Math.min(durationCutoff, examCutoff)
+  const updateRemainingTime = () => {
+    remainingTime.value = Math.max(Math.ceil((examDeadline - Date.now()) / 1000), 0)
+    if (remainingTime.value === 0 && !autoSubmitTriggered) {
+      autoSubmitTriggered = true
       clearInterval(timer)
       ElMessage.warning('考试时间到，自动提交')
       handleSubmit(true)
     }
+  }
+  updateRemainingTime()
+  timer = setInterval(() => {
+    updateRemainingTime()
   }, 1000)
+}
+
+const handleCheated = () => {
+  if (timer) clearInterval(timer)
+  ElMessage.error('切屏次数已超过上限，本次考试被判定为作弊，成绩为 -1')
+  router.replace({ name: 'MyExamList' })
+}
+
+const reportVisibilityViolation = async () => {
+  if (isHomework.value || !submission.value?.id || screenSwitchReporting) return
+  screenSwitchReporting = true
+  try {
+    const res = await request.post(`${submissionApi.value}/${submission.value.id}/screen-switch`)
+    if (res.code === '200' && res.data) {
+      screenSwitchCount.value = Math.max(screenSwitchCount.value, Number(res.data.screenSwitchCount || 0))
+      if (res.data.cheated) {
+        handleCheated()
+      } else {
+        ElMessage.warning(`检测到切屏，当前 ${screenSwitchCount.value}/${maxScreenSwitches.value} 次`)
+      }
+    }
+  } catch (e) {
+    // 全局异常已由 request.js 提示
+  } finally {
+    screenSwitchReporting = false
+  }
+}
+
+const handleVisibilityChange = () => {
+  if (document.hidden) {
+    reportVisibilityViolation()
+  }
+}
+
+const preventClipboard = (event) => {
+  if (isHomework.value || !exam.value.disableClipboard || !submission.value?.id) return
+  event.preventDefault()
+  ElMessage.warning('本场考试已禁用剪贴板操作')
+}
+
+const bindAntiCheatEvents = () => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.addEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('copy', preventClipboard)
+  document.removeEventListener('cut', preventClipboard)
+  document.removeEventListener('paste', preventClipboard)
+  document.addEventListener('copy', preventClipboard)
+  document.addEventListener('cut', preventClipboard)
+  document.addEventListener('paste', preventClipboard)
+}
+
+const unbindAntiCheatEvents = () => {
+  document.removeEventListener('visibilitychange', handleVisibilityChange)
+  document.removeEventListener('copy', preventClipboard)
+  document.removeEventListener('cut', preventClipboard)
+  document.removeEventListener('paste', preventClipboard)
 }
 
 const loadExam = async () => {
@@ -194,9 +285,15 @@ const loadExam = async () => {
       if (detailRes.code !== '200') return
 
       submission.value = detailRes.data
+      screenSwitchCount.value = Number(detailRes.data.screenSwitchCount || 0)
+      if (detailRes.data.cheated) {
+        handleCheated()
+        return
+      }
       questions.value = (detailRes.data.answers || []).map(normalizeQuestion)
       initializeAnswers()
       startTimer()
+      bindAntiCheatEvents()
     }
   } catch (e) {
     // 全局异常已由 request.js 提示
@@ -283,9 +380,14 @@ const handleSubmit = async (skipConfirm = false) => {
 
   loading.value = true
   try {
-    if (!await handleSaveDraft({ notify: false })) return
-
-    const res = await request.post(`${submissionApi.value}/${submission.value.id}/submit`)
+    let res
+    if (isHomework.value) {
+      if (!await handleSaveDraft({ notify: false })) return
+      res = await request.post(`${submissionApi.value}/${submission.value.id}/submit`)
+    } else {
+      const action = skipConfirm === true ? 'auto-submit' : 'submit'
+      res = await request.post(`${submissionApi.value}/${submission.value.id}/${action}`, buildAnswerPayload())
+    }
     if (res.code === '200') {
       ElMessage.success('提交成功')
       clearInterval(timer)
@@ -311,6 +413,11 @@ const loadPage = () => {
   questions.value = []
   resetAnswers()
   remainingTime.value = 0
+  screenSwitchCount.value = 0
+  examDeadline = 0
+  screenSwitchReporting = false
+  autoSubmitTriggered = false
+  unbindAntiCheatEvents()
   loadExam()
 }
 
@@ -322,6 +429,7 @@ watch(
 
 onUnmounted(() => {
   if (timer) clearInterval(timer)
+  unbindAntiCheatEvents()
 })
 </script>
 
@@ -335,7 +443,37 @@ onUnmounted(() => {
 .timer {
   display: flex;
   align-items: center;
-  font-size: 18px;
+  gap: 8px;
+}
+
+.exam-status-panel {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 250px;
+  padding: 8px 12px;
+  border: 1px solid #dcdfe6;
+  border-radius: 6px;
+  background: #f5f7fa;
+}
+
+.exam-status-panel.urgent {
+  border-color: #f56c6c;
+  background: #fef0f0;
+}
+
+.timer-label {
+  display: block;
+  color: #606266;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.screen-switch-status {
+  margin-left: auto;
+  color: #606266;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 .question-block {
@@ -376,9 +514,27 @@ onUnmounted(() => {
 }
 
 .timer-text {
-  margin-left: 5px;
+  display: block;
+  margin-top: 4px;
   font-weight: bold;
   color: #f56c6c;
+  font-size: 22px;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 700px) {
+  .exam-header {
+    align-items: flex-start;
+    gap: 12px;
+    flex-direction: column;
+  }
+
+  .exam-status-panel {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
 }
 
 .submit-action {

@@ -11,7 +11,9 @@ import com.cupk.aiacademy.common.AuthUtils;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.ExamRequestDTO;
 import com.cupk.aiacademy.dto.PaperRequestDTO;
+import com.cupk.aiacademy.dto.PaperResponseDTO;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
+import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.dto.SubmissionRequestsDTO;
 import com.cupk.aiacademy.dto.SubmissionResponseDTO;
 import com.cupk.aiacademy.service.ExamService;
@@ -116,6 +118,81 @@ class ExamWorkflowIntegrationTest {
     @AfterEach
     void clearUserContext() {
         UserContext.clear();
+    }
+
+    @Test
+    void exceedingScreenSwitchLimitMarksSubmissionAsCheating() {
+        setCurrentUser(TEACHER_ID, "teacher");
+        QuestionResponseDTO question = questionService.create(buildSingleChoiceQuestion());
+        PaperResponseDTO paper = paperService.create(buildPaperRequest(question.getId()));
+
+        ExamRequestDTO examRequest = new ExamRequestDTO();
+        examRequest.setClassId(CLASS_ID);
+        examRequest.setName("反作弊测试考试");
+        examRequest.setPaperId(paper.getId());
+        examRequest.setDescription("切屏超过一次即作弊");
+        examRequest.setStartTime(LocalDateTime.now().minusMinutes(1));
+        examRequest.setDurationMinutes(60);
+        examRequest.setStatus(ExamStatus.PUBLISHED);
+        examRequest.setMaxScreenSwitches(1);
+        examRequest.setDisableClipboard(true);
+        var exam = examService.create(examRequest);
+        assertEquals(1, exam.getMaxScreenSwitches());
+        assertTrue(exam.getDisableClipboard());
+
+        setCurrentUser(STUDENT_ID, "student");
+        SubmissionResponseDTO submission = submissionService.start(exam.getId(), String.valueOf(STUDENT_ID));
+
+        SubmissionResponseDTO firstSwitch = submissionService.reportScreenSwitch(submission.getId());
+        assertEquals(1, firstSwitch.getScreenSwitchCount());
+        assertEquals(false, firstSwitch.getCheated());
+
+        SubmissionResponseDTO secondSwitch = submissionService.reportScreenSwitch(submission.getId());
+        assertEquals(2, secondSwitch.getScreenSwitchCount());
+        assertEquals(true, secondSwitch.getCheated());
+        assertEquals(new BigDecimal("-1"), secondSwitch.getTotalScore());
+        assertEquals(SubmissionStatus.GRADED, secondSwitch.getStatus());
+        assertEquals(0, new BigDecimal("-1").compareTo(jdbcTemplate.queryForObject(
+                "SELECT total_score FROM t_exam_record WHERE id = ?", BigDecimal.class, submission.getId())));
+        assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT cheated FROM t_exam_record WHERE id = ?", Integer.class, submission.getId()));
+    }
+
+    @Test
+    void zeroScreenSwitchLimitMarksFirstSwitchAsCheating() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        jdbcTemplate.update(
+                "UPDATE t_exam_session SET max_screen_switches = 0 WHERE id = ?",
+                exam.getId());
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        SubmissionResponseDTO switched = submissionService.reportScreenSwitch(submission.getId());
+
+        assertEquals(1, switched.getScreenSwitchCount());
+        assertTrue(switched.getCheated());
+        assertEquals(new BigDecimal("-1"), switched.getTotalScore());
+    }
+
+    @Test
+    void screenSwitchAfterDeadlineIsNotCounted() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        jdbcTemplate.update(
+                "UPDATE t_exam_session SET end_time = ? WHERE id = ?",
+                LocalDateTime.now().minusSeconds(1), exam.getId());
+
+        SubmissionResponseDTO switched = submissionService.reportScreenSwitch(submission.getId());
+
+        assertEquals(0, switched.getScreenSwitchCount());
+        assertFalse(switched.getCheated());
+        assertEquals(SubmissionStatus.IN_PROGRESS, switched.getStatus());
     }
 
     @Test
@@ -261,6 +338,30 @@ class ExamWorkflowIntegrationTest {
         jdbcTemplate.update("UPDATE t_exam_session SET end_time = ? WHERE id = ?", LocalDateTime.now().minusSeconds(1), exam.getId());
 
         assertThrows(RuntimeException.class, () -> submissionService.submit(submission.getId()));
+    }
+
+    @Test
+    void autoSubmitPersistsCurrentAnswersAfterDeadline() {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        SubmissionRequestsDTO.AnswerItem answer = new SubmissionRequestsDTO.AnswerItem();
+        answer.setPaperQuestionId(submission.getAnswers().getFirst().getPaperQuestionId());
+        answer.setSelectedOptionKeys(List.of("A"));
+        SubmissionRequestsDTO.SaveAnswerRequest request = new SubmissionRequestsDTO.SaveAnswerRequest();
+        request.setAnswers(List.of(answer));
+
+        jdbcTemplate.update("UPDATE t_exam_session SET end_time = ? WHERE id = ?", LocalDateTime.now().minusSeconds(1), exam.getId());
+        SubmissionResponseDTO autoSubmitted = submissionService.autoSubmit(submission.getId(), request);
+
+        assertEquals(SubmissionStatus.GRADED, autoSubmitted.getStatus());
+        assertEquals(new BigDecimal("5.00"), autoSubmitted.getTotalScore());
+        assertTrue(jdbcTemplate.queryForObject(
+                "SELECT comment FROM t_exam_record WHERE id = ?", String.class, submission.getId())
+                .startsWith("超时自动交卷"));
     }
 
     @Test
