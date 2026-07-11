@@ -24,7 +24,7 @@
 
     <!-- 图表区域 -->
     <div v-if="gradedAll.length" class="charts-row two-cols">
-      <el-card class="chart-card">
+      <el-card v-if="compareData.length" class="chart-card">
         <template #header><span>成绩趋势</span></template>
         <ScoreTrendChart :data="trendData" height="280px" />
       </el-card>
@@ -196,10 +196,10 @@ const distData = computed(() => {
 })
 
 const compareData = computed(() =>
-  gradedAll.value.map(g => ({
+  gradedAll.value.filter(g => g.classAvgScore != null).map(g => ({
     name: g.examTitle || g.courseTitle || '-',
     myScore: Number(g.totalScore),
-    avgScore: g.classAvgScore != null ? Number(g.classAvgScore) : Math.round(Number(g.totalScore) * 0.85)
+    avgScore: Number(g.classAvgScore)
   }))
 )
 

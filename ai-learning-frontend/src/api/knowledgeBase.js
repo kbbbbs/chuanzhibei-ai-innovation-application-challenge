@@ -1,6 +1,5 @@
 import request from '@/utils/request'
 
-export const checkWeKnoraHealth = () => request.get('/api/weknora/health')
 export const listKnowledgeBases = () => request.get('/api/weknora/knowledge-bases')
 export const createKnowledgeBase = (data) => request.post('/api/weknora/knowledge-bases', data)
 export const updateKnowledgeBase = (kbId, data) => request.put(`/api/weknora/knowledge-bases/${kbId}`, data)

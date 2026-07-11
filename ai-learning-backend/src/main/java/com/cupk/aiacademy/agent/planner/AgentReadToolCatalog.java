@@ -56,6 +56,17 @@ public class AgentReadToolCatalog {
         return List.copyOf(specs);
     }
 
+    public List<Map<String, Object>> enabledIntentSummaries(List<String> enabledTools) {
+        List<Map<String, Object>> summaries = new ArrayList<>();
+        for (AgentReadToolSpec spec : enabledSpecs(enabledTools)) {
+            Map<String, Object> summary = new LinkedHashMap<>();
+            summary.put("code", spec.getToolName());
+            summary.put("summary", spec.getDescription());
+            summaries.add(Map.copyOf(summary));
+        }
+        return List.copyOf(summaries);
+    }
+
     private AgentReadToolSpec specFor(String name, String description) {
         return switch (name) {
             case "course_category_search" -> new AgentReadToolSpec(name, description,

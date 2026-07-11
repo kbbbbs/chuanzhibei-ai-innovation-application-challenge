@@ -73,6 +73,17 @@ public class AgentModelDiagnostics {
         return data;
     }
 
+    /**
+     * 面向普通聊天接口的安全诊断信息。原始异常类和错误正文只保留在服务端日志及管理员健康检查中。
+     */
+    public Map<String, Object> toPublicData() {
+        Map<String, Object> data = new LinkedHashMap<>();
+        data.put("category", category);
+        data.put("retryable", retryable);
+        data.put("timestamp", timestamp);
+        return data;
+    }
+
     public String provider() {
         return provider;
     }

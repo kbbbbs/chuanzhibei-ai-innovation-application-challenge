@@ -31,7 +31,6 @@ public class WeKnoraServiceImpl implements WeKnoraService {
     private static final MediaType JSON_TYPE = MediaType.parse("application/json; charset=utf-8");
 
     private final OkHttpClient client;
-    private final OkHttpClient fastClient;
     private final WeKnoraConfig config;
     private final OcrService ocrService;
 
@@ -41,10 +40,6 @@ public class WeKnoraServiceImpl implements WeKnoraService {
         this.client = new OkHttpClient.Builder()
                 .connectTimeout(30, TimeUnit.SECONDS)
                 .readTimeout(120, TimeUnit.SECONDS)
-                .build();
-        this.fastClient = new OkHttpClient.Builder()
-                .connectTimeout(3, TimeUnit.SECONDS)
-                .readTimeout(5, TimeUnit.SECONDS)
                 .build();
     }
 
@@ -1518,37 +1513,6 @@ public class WeKnoraServiceImpl implements WeKnoraService {
         } catch (Exception e) {
             log.warn("DELETE {} failed: {}", apiPath, e.getMessage());
             return null;
-        }
-    }
-
-    @Override
-    public Result healthCheck() {
-        String url = config.getBaseUrl() + "/api/v1/knowledge-bases";
-        try {
-            Request request = new Request.Builder()
-                    .url(url)
-                    .header("X-API-Key", config.getApiKey())
-                    .get()
-                    .build();
-            try (Response response = fastClient.newCall(request).execute()) {
-                if (response.isSuccessful()) {
-                    return Result.success(Map.of(
-                        "status", "ok",
-                        "baseUrl", config.getBaseUrl(),
-                        "weKnoraReachable", true
-                    ), "WeKnora 连接正常");
-                }
-                int code = response.code();
-                String body = response.body() != null ? response.body().string() : "";
-                return Result.error("WeKnora 返回异常状态: HTTP " + code + " — " + body);
-            }
-        } catch (java.net.ConnectException e) {
-            return Result.error("无法连接 WeKnora 服务 (" + url + ")，请确认服务已启动");
-        } catch (java.net.SocketTimeoutException e) {
-            return Result.error("连接 WeKnora 超时 (" + url + ")，请检查网络");
-        } catch (Exception e) {
-            log.warn("WeKnora health check failed: {}", e.getMessage());
-            return Result.error("WeKnora 连接失败: " + e.getMessage());
         }
     }
 }

@@ -55,7 +55,7 @@
       <!-- Lesson Content -->
       <el-col :span="lessonContentSpan" class="lesson-main-col">
         <template v-if="currentLesson">
-          <el-card class="lesson-main-card">
+          <el-card class="lesson-main-card" :data-agent-course-title="course.title || ''">
             <template #header>
               <div class="lesson-header">
                 <span>{{ currentLesson.title }}</span>

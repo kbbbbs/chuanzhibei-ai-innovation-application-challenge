@@ -61,7 +61,4 @@ public interface WeKnoraService {
 
     /** 代理 WeKnora 本地文件（用于渲染 local:// 图片引用） */
     void proxyLocalFile(String path, HttpServletResponse response);
-
-    /** 健康检查：快速检测 WeKnora 服务是否可达 */
-    Result healthCheck();
 }

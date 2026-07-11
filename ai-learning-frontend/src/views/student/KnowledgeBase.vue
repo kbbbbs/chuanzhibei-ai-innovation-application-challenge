@@ -24,12 +24,7 @@
             </div>
           </div>
           <div v-show="sectionOpen.knowledgeBases" v-loading="kbLoading" class="panel-body scroll-y">
-            <div v-if="kbError" class="kb-error-state">
-              <div class="kb-error-icon">!</div>
-              <p>{{ kbError }}</p>
-              <el-button type="primary" size="small" @click="loadKBs">重新连接</el-button>
-            </div>
-            <el-empty v-else-if="kbs.length === 0 && !kbLoading" description="暂无知识库" />
+            <el-empty v-if="kbs.length === 0 && !kbLoading" description="暂无知识库" />
             <div v-for="kb in kbs" :key="kb.id"
               :class="['kb-item', { active: selectedKb?.id === kb.id }]"
               @click="selectKb(kb)">
@@ -281,7 +276,7 @@ const userStore = useUserStore()
 const router = useRouter()
 const userId = computed(() => userStore.userId || 'anonymous')
 
-const kbs = ref([]); const selectedKb = ref(null); const kbLoading = ref(false); const kbError = ref('')
+const kbs = ref([]); const selectedKb = ref(null); const kbLoading = ref(false)
 const files = ref([]); const filesLoading = ref(false)
 const sessions = ref([]); const currentSessionId = ref(null)
 const historyMap = reactive(loadHistories())
@@ -567,19 +562,13 @@ function setMainMode(mode) {
 
 const loadKBs = async () => {
   kbLoading.value = true
-  kbError.value = ''
   try {
     const res = await kbApi.listKnowledgeBases()
     if (res.code === '200' && res.data) {
       const data = unwrapData(res.data)
       kbs.value = Array.isArray(data) ? data : (data?.items || data?.list || [])
-    } else {
-      kbError.value = res.msg || '获取知识库列表失败'
     }
-  } catch (err) {
-    kbError.value = '知识库服务无法连接，请确认 WeKnora 已启动（端口 8091）'
-    kbs.value = []
-  } finally { kbLoading.value = false }
+  } catch { kbs.value = [] } finally { kbLoading.value = false }
 }
 
 async function loadFiles() {
@@ -995,26 +984,6 @@ onMounted(loadKBs)
 .kb-left .panel:nth-child(3) :deep(.graph-preview-container) {
   min-height: 0;
   height: 220px;
-}
-
-.kb-error-state {
-  text-align: center;
-  padding: 28px 16px;
-}
-.kb-error-icon {
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  background: #fef2f2;
-  color: #ef4444;
-  font-size: 24px; font-weight: 700;
-  display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 12px;
-}
-.kb-error-state p {
-  color: #6b7280;
-  font-size: 13px;
-  margin-bottom: 16px;
-  line-height: 1.6;
 }
 
 .kb-item {

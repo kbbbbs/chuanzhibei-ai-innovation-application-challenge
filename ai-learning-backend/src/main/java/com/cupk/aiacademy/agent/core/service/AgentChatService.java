@@ -6,12 +6,18 @@ import com.cupk.aiacademy.agent.core.config.AgentConfigurationParser;
 import com.cupk.aiacademy.agent.core.exception.AgentModelCallException;
 import com.cupk.aiacademy.agent.core.llm.AgentModelDiagnostics;
 import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
+import com.cupk.aiacademy.agent.core.llm.ChatModelTimeoutException;
 import com.cupk.aiacademy.agent.core.prompt.AgentPromptAssembler;
 import com.cupk.aiacademy.agent.knowledge.KnowledgeContextProvider;
+import com.cupk.aiacademy.agent.action.AgentPendingAction;
 import com.cupk.aiacademy.agent.action.AgentPendingActionResponse;
+import com.cupk.aiacademy.agent.action.AgentPendingActionStore;
 import com.cupk.aiacademy.agent.orchestrator.AgentDirectActionReply;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenReadToolPlanner;
 import com.cupk.aiacademy.agent.planner.SchemaDrivenAgentPlanner;
+import com.cupk.aiacademy.agent.planner.AgentPlanningException;
+import com.cupk.aiacademy.agent.planner.AgentPlanningOutcome;
+import com.cupk.aiacademy.agent.planner.UnifiedAgentPlanner;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.AgentChatRequest;
@@ -36,6 +42,7 @@ import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -49,6 +56,7 @@ public class AgentChatService {
     private static final String SYSTEM_PROMPT = "你是一个智能教学管理平台助手";
     private static final int DEFAULT_AGENT_ID = 1;
     private static final String DEFAULT_AGENT_CODE = "learning_assistant";
+    private static final String NO_AGENT_TOOLS = "[]";
     private static final String DEFAULT_AGENT_ENABLED_TOOLS = "["
             + "\"course_search\","
             + "\"course_category_search\","
@@ -122,7 +130,7 @@ public class AgentChatService {
             + "]";
     private static final int ACTIVE_STATUS = 1;
     private static final int DELETED_STATUS = 0;
-    private static final String MODEL_FAILURE_CONTENT = "AI 回复失败，请稍后重试。";
+    private static final String MODEL_FAILURE_CONTENT = "Agent 处理失败，请稍后重试。";
     /**
      * 外部依赖：模型调用、配置、数据库 Mapper、JSON 处理、知识库检索和工具调用。
      */
@@ -136,6 +144,8 @@ public class AgentChatService {
     private final AgentPromptAssembler promptAssembler;
     private final SchemaDrivenAgentPlanner schemaDrivenAgentPlanner;
     private final SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner;
+    private final UnifiedAgentPlanner unifiedAgentPlanner;
+    private final AgentPendingActionStore pendingActionStore;
 
     /**
      * Spring 注入使用的构造方法。
@@ -149,7 +159,9 @@ public class AgentChatService {
                             ObjectMapper objectMapper,
                             KnowledgeContextProvider knowledgeContextProvider,
                             ObjectProvider<SchemaDrivenAgentPlanner> schemaDrivenAgentPlannerProvider,
-                            ObjectProvider<SchemaDrivenReadToolPlanner> schemaDrivenReadToolPlannerProvider
+                            ObjectProvider<SchemaDrivenReadToolPlanner> schemaDrivenReadToolPlannerProvider,
+                            ObjectProvider<UnifiedAgentPlanner> unifiedAgentPlannerProvider,
+                            ObjectProvider<AgentPendingActionStore> pendingActionStoreProvider
     ) {
         this(
                 chatModelClient,
@@ -160,7 +172,9 @@ public class AgentChatService {
                 objectMapper,
                 knowledgeContextProvider,
                 schemaDrivenAgentPlannerProvider == null ? null : schemaDrivenAgentPlannerProvider.getIfAvailable(),
-                schemaDrivenReadToolPlannerProvider == null ? null : schemaDrivenReadToolPlannerProvider.getIfAvailable()
+                schemaDrivenReadToolPlannerProvider == null ? null : schemaDrivenReadToolPlannerProvider.getIfAvailable(),
+                unifiedAgentPlannerProvider == null ? null : unifiedAgentPlannerProvider.getIfAvailable(),
+                pendingActionStoreProvider == null ? null : pendingActionStoreProvider.getIfAvailable()
         );
     }
 
@@ -182,7 +196,8 @@ public class AgentChatService {
                 new ObjectMapper(),
                 null,
                 (SchemaDrivenAgentPlanner) null,
-                (SchemaDrivenReadToolPlanner) null
+                (SchemaDrivenReadToolPlanner) null,
+                (UnifiedAgentPlanner) null
         );
     }
 
@@ -198,7 +213,40 @@ public class AgentChatService {
                      KnowledgeContextProvider knowledgeContextProvider,
                      SchemaDrivenAgentPlanner schemaDrivenAgentPlanner,
                      SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner
-     ) {
+    ) {
+        this(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
+                objectMapper, knowledgeContextProvider, schemaDrivenAgentPlanner,
+                schemaDrivenReadToolPlanner, null);
+    }
+
+    AgentChatService(ChatModelClient chatModelClient,
+                     AgentChatProperties chatProperties,
+                     AgentDefinitionMapper agentDefinitionMapper,
+                     AgentSessionMapper sessionMapper,
+                     AgentMessageMapper messageMapper,
+                     ObjectMapper objectMapper,
+                     KnowledgeContextProvider knowledgeContextProvider,
+                     SchemaDrivenAgentPlanner schemaDrivenAgentPlanner,
+                     SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner,
+                     UnifiedAgentPlanner unifiedAgentPlanner
+    ) {
+        this(chatModelClient, chatProperties, agentDefinitionMapper, sessionMapper, messageMapper,
+                objectMapper, knowledgeContextProvider, schemaDrivenAgentPlanner,
+                schemaDrivenReadToolPlanner, unifiedAgentPlanner, null);
+    }
+
+    AgentChatService(ChatModelClient chatModelClient,
+                     AgentChatProperties chatProperties,
+                     AgentDefinitionMapper agentDefinitionMapper,
+                     AgentSessionMapper sessionMapper,
+                     AgentMessageMapper messageMapper,
+                     ObjectMapper objectMapper,
+                     KnowledgeContextProvider knowledgeContextProvider,
+                     SchemaDrivenAgentPlanner schemaDrivenAgentPlanner,
+                     SchemaDrivenReadToolPlanner schemaDrivenReadToolPlanner,
+                     UnifiedAgentPlanner unifiedAgentPlanner,
+                     AgentPendingActionStore pendingActionStore
+    ) {
         this.chatModelClient = chatModelClient;
         this.chatProperties = chatProperties == null ? new AgentChatProperties() : chatProperties;
         this.agentDefinitionMapper = agentDefinitionMapper;
@@ -212,6 +260,8 @@ public class AgentChatService {
                 this.knowledgeContextProvider);
         this.schemaDrivenAgentPlanner = schemaDrivenAgentPlanner;
         this.schemaDrivenReadToolPlanner = schemaDrivenReadToolPlanner;
+        this.unifiedAgentPlanner = unifiedAgentPlanner;
+        this.pendingActionStore = pendingActionStore;
     }
 
     /**
@@ -220,11 +270,11 @@ public class AgentChatService {
     @Transactional
     public AgentSession createSession(AgentSessionCreateRequest request) {
         Integer agentId = request != null && request.getAgentId() != null ? request.getAgentId() : DEFAULT_AGENT_ID;
-        ensureAgentDefinition(agentId);
+        AgentDefinition agent = ensureAgentDefinition(agentId);
 
         // 组装新会话的持久化字段，标题为空时使用“新会话”作为默认标题。
         AgentSession session = new AgentSession();
-        session.setAgentId(agentId);
+        session.setAgentId(agent.getId());
         session.setUserId(currentUserId(request));
         session.setTitle(firstNotBlank(request == null ? null : request.getTitle(), "新会话"));
         session.setStatus(ACTIVE_STATUS);
@@ -302,10 +352,41 @@ public class AgentChatService {
         AgentSession session = ensureSession(sessionId);
         AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
         String content = request.getContent().trim();
+        long deadlineNanos = System.nanoTime()
+                + Duration.ofSeconds(chatProperties.getRequestTimeoutSeconds()).toNanos();
 
-        Optional<AgentDirectActionReply> directReply = schemaDrivenAgentPlanner == null
-                ? Optional.empty()
-                : schemaDrivenAgentPlanner.tryPlan(agent, content);
+        Optional<AgentDirectActionReply> directReply = Optional.empty();
+        String selectedToolContext = "";
+        try {
+            if (canUseAgentTools()) {
+                if (unifiedAgentPlanner != null) {
+                    AgentPlanningOutcome outcome = unifiedAgentPlanner.plan(agent, content);
+                    directReply = Optional.ofNullable(outcome.getDirectReply());
+                    selectedToolContext = outcome.getToolContext() == null ? "" : outcome.getToolContext();
+                } else {
+                    directReply = schemaDrivenAgentPlanner == null
+                            ? Optional.empty()
+                            : schemaDrivenAgentPlanner.tryPlan(agent, content);
+                    if (directReply.isEmpty()) {
+                        selectedToolContext = schemaDrivenReadToolPlanner == null
+                                ? ""
+                                : schemaDrivenReadToolPlanner.planToolContext(agent, content);
+                    }
+                }
+            }
+        } catch (AgentPlanningException e) {
+            AgentMessage userMessage = setMessage(sessionId, "user", content);
+            ensureSessionTitle(session, content);
+            AgentMessage assistantMessage = setMessage(sessionId, "assistant", e.getUserMessage());
+            touchSession(sessionId);
+            log.warn("Agent planning stopped with user-facing feedback: sessionId={}, attempts={}, errors={}, message={}",
+                    sessionId, e.getAttempts(), e.getValidationErrors(), e.getMessage());
+            return toChatResponse(sessionId, userMessage.getId(), assistantMessage);
+        } catch (Exception e) {
+            AgentMessage userMessage = setMessage(sessionId, "user", content);
+            ensureSessionTitle(session, content);
+            throw recordModelFailure(sessionId, userMessage.getId(), e);
+        }
 
         if (directReply.isPresent()) {
             AgentDirectActionReply reply = directReply.get();
@@ -318,10 +399,6 @@ public class AgentChatService {
 
         applyProviderModelCompatibility(agent);
 
-        String selectedToolContext = schemaDrivenReadToolPlanner == null
-                ? ""
-                : schemaDrivenReadToolPlanner.planToolContext(agent, content);
-
         // 构造包含系统提示词、知识库/工具上下文和历史消息的模型 Prompt，并先落库用户消息。
         Prompt prompt = promptAssembler.buildPrompt(agent, loadMessages(sessionId), content, selectedToolContext);
         AgentMessage userMessage = setMessage(sessionId, "user", content);
@@ -330,7 +407,7 @@ public class AgentChatService {
         // 调用模型失败时记录一条兜底助手消息，便于前端和历史记录展示失败轨迹。
         ChatResponse chatResponse;
         try {
-            chatResponse = chatModelClient.call(prompt);
+            chatResponse = chatModelClient.call(prompt, remainingTimeout(deadlineNanos));
         } catch (Exception e) {
             throw recordModelFailure(sessionId, userMessage.getId(), e);
         }
@@ -359,7 +436,7 @@ public class AgentChatService {
 
         // 构建最小 Prompt，适合不需要会话、知识库和工具上下文的轻量调用。
         List<Message> messages = List.of(
-                new SystemMessage(SYSTEM_PROMPT),
+                new SystemMessage(SYSTEM_PROMPT + "\n\n" + AgentPromptAssembler.CONCISE_RESPONSE_RULES),
                 new UserMessage(content.trim())
         );
 
@@ -381,21 +458,27 @@ public class AgentChatService {
      * 记录模型调用失败的助手消息，再抛出异常，让事务保留这次失败轨迹。
      */
     private AgentModelCallException recordModelFailure(Integer sessionId, Integer userMessageId, Exception cause) {
-        AgentMessage assistantMessage = setMessage(sessionId, "assistant", MODEL_FAILURE_CONTENT);
-        touchSession(sessionId);
-        AgentModelCallException exception;
+        AgentModelDiagnostics diagnostics;
+        Throwable exceptionCause = cause;
         if (cause instanceof AgentModelCallException agentException) {
-            AgentModelDiagnostics diagnostics = agentException.getDiagnostics() == null
+            diagnostics = agentException.getDiagnostics() == null
                     ? AgentModelDiagnostics.from(chatModelClient.provider(), chatModelClient.configuredModel(), agentException)
                     : agentException.getDiagnostics();
-            exception = modelFailure(sessionId,
-                    userMessageId,
-                    assistantMessage.getId(),
-                    diagnostics,
-                    agentException.getCause());
+            exceptionCause = agentException.getCause();
         } else {
-            exception = modelFailure(sessionId, userMessageId, assistantMessage.getId(), cause);
+            diagnostics = AgentModelDiagnostics.from(chatModelClient.provider(), chatModelClient.configuredModel(), cause);
         }
+        String userMessage = modelFailureContent(diagnostics);
+        AgentMessage assistantMessage = setMessage(sessionId, "assistant", userMessage);
+        touchSession(sessionId);
+        AgentModelCallException exception = new AgentModelCallException(
+                userMessage,
+                sessionId,
+                userMessageId,
+                assistantMessage.getId(),
+                diagnostics,
+                exceptionCause
+        );
         log.warn("Agent model call failed: provider={}, model={}, category={}, sessionId={}, userMessageId={}, root={}",
                 exception.getDiagnostics() == null ? "unknown" : exception.getDiagnostics().provider(),
                 exception.getDiagnostics() == null ? "unknown" : exception.getDiagnostics().model(),
@@ -444,12 +527,26 @@ public class AgentChatService {
                                                  Integer assistantMessageId,
                                                  AgentModelDiagnostics diagnostics,
                                                  Throwable cause) {
-        return new AgentModelCallException(MODEL_FAILURE_CONTENT,
+        return new AgentModelCallException(modelFailureContent(diagnostics),
                 sessionId,
                 userMessageId,
                 assistantMessageId,
                 diagnostics,
                 cause);
+    }
+
+    private String modelFailureContent(AgentModelDiagnostics diagnostics) {
+        String category = diagnostics == null ? "UNKNOWN" : diagnostics.category();
+        return switch (category) {
+            case "AUTHENTICATION", "PERMISSION", "INVALID_REQUEST" ->
+                    "Agent 模型配置异常，请联系管理员。";
+            case "RATE_LIMIT" -> "当前请求较多，请稍后再试。";
+            case "TIMEOUT" -> "Agent 响应超时，请重新发送。";
+            case "NETWORK" -> "暂时无法连接模型服务，请稍后再试。";
+            case "PROVIDER_ERROR" -> "模型服务暂时异常，请稍后再试。";
+            case AgentModelDiagnostics.EMPTY_RESPONSE -> "模型没有返回内容，请重新发送。";
+            default -> MODEL_FAILURE_CONTENT;
+        };
     }
 
     private AgentModelCallException emptyModelResponseFailure(Integer sessionId,
@@ -480,10 +577,15 @@ public class AgentChatService {
             throw new BusinessException("agentId 不能为空");
         }
         AgentDefinition agent = agentDefinitionMapper.selectById(agentId);
+        if (agent == null && Integer.valueOf(DEFAULT_AGENT_ID).equals(agentId)) {
+            agent = agentDefinitionMapper.selectOne(
+                    new QueryWrapper<AgentDefinition>().eq("code", DEFAULT_AGENT_CODE));
+        }
         if (agent == null || !Integer.valueOf(ACTIVE_STATUS).equals(agent.getStatus())) {
             throw new BusinessException("Agent 不存在或已停用");
         }
         applyDefaultAgentTools(agent);
+        applyRoleCapabilities(agent);
         return agent;
     }
 
@@ -493,36 +595,28 @@ public class AgentChatService {
         }
         if (isBlank(agent.getEnabledTools())) {
             agent.setEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
-            return;
         }
-        mergeMissingDefaultAgentTools(agent);
     }
 
-    private void mergeMissingDefaultAgentTools(AgentDefinition agent) {
-        try {
-            AgentConfigurationParser configurationParser = new AgentConfigurationParser(objectMapper);
-            List<String> currentTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
-            List<String> defaultTools = configurationParser.parseEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
-            Set<String> merged = new LinkedHashSet<>();
-            if (currentTools != null) {
-                for (String tool : currentTools) {
-                    if (!isBlank(tool)) {
-                        merged.add(tool.trim());
-                    }
-                }
-            }
-            boolean changed = false;
-            for (String tool : defaultTools) {
-                if (!isBlank(tool) && merged.add(tool.trim())) {
-                    changed = true;
-                }
-            }
-            if (changed) {
-                agent.setEnabledTools(objectMapper.writeValueAsString(new ArrayList<>(merged)));
-            }
-        } catch (Exception e) {
-            log.warn("Failed to merge default agent tools, fallback to configured tools: {}", e.getMessage());
+    private void applyRoleCapabilities(AgentDefinition agent) {
+        if (agent == null) {
+            return;
         }
+        if ("student".equals(UserContext.getCurrentRoleCode())) {
+            agent.setEnabledTools(NO_AGENT_TOOLS);
+        }
+    }
+
+    private boolean canUseAgentTools() {
+        return !"student".equals(UserContext.getCurrentRoleCode());
+    }
+
+    private Duration remainingTimeout(long deadlineNanos) {
+        long remainingNanos = deadlineNanos - System.nanoTime();
+        if (remainingNanos <= 0) {
+            throw new ChatModelTimeoutException("Agent 请求已超过总时间预算", null);
+        }
+        return Duration.ofNanos(remainingNanos);
     }
 
     private boolean isDefaultAgent(AgentDefinition agent) {
@@ -625,13 +719,20 @@ public class AgentChatService {
      */
     private AgentMessageResponse toMessageResponse(AgentMessage message) {
         AgentMessageResponse response = new AgentMessageResponse();
+        AgentPendingActionResponse pendingAction = readPendingAction(message);
         response.setId(message.getId());
         response.setSessionId(message.getSessionId());
         response.setRole(message.getRole());
-        response.setContent(message.getContent());
-        response.setPendingAction(readPendingAction(message));
+        response.setContent(isPendingActionMessage(message) && pendingAction == null
+                ? "动作已结束"
+                : message.getContent());
+        response.setPendingAction(pendingAction);
         response.setCreateTime(message.getCreateTime());
         return response;
+    }
+
+    private boolean isPendingActionMessage(AgentMessage message) {
+        return message != null && "pending_action".equals(message.getToolName());
     }
 
     private AgentPendingActionResponse readPendingAction(AgentMessage message) {
@@ -641,7 +742,16 @@ public class AgentChatService {
             return null;
         }
         try {
-            return objectMapper.readValue(message.getToolResult(), AgentPendingActionResponse.class);
+            AgentPendingActionResponse response = objectMapper.readValue(
+                    message.getToolResult(), AgentPendingActionResponse.class);
+            if (pendingActionStore == null || isBlank(response.actionId())) {
+                return response;
+            }
+            Optional<AgentPendingAction> stored = pendingActionStore.findById(response.actionId());
+            if (stored.isEmpty() || stored.get().isExpired(LocalDateTime.now())) {
+                return null;
+            }
+            return response;
         } catch (Exception e) {
             log.warn("Failed to read pending action from message history: messageId={}", message.getId(), e);
             return null;

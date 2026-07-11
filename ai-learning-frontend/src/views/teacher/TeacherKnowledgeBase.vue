@@ -13,156 +13,110 @@
     <div class="teacher-kb-layout">
       <div class="kb-left">
         <section class="panel kb-list-panel">
-          <div class="panel-title clickable" @click="sectionOpen.kbList = !sectionOpen.kbList">
+          <div class="panel-title">
             <div>
               <span>知识库列表</span>
               <span class="panel-sub">按课程整理你的教学资料</span>
             </div>
-            <div class="panel-title-right">
-              <el-tag size="small" effect="plain">{{ filteredKbs.length }} 个</el-tag>
-              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.kbList" /><ArrowRight v-else /></el-icon>
-            </div>
+            <el-tag size="small" effect="plain">{{ filteredKbs.length }} 个</el-tag>
           </div>
-          <div v-show="sectionOpen.kbList" class="panel-collapse-body">
-            <div class="kb-search">
-              <el-input v-model="kbSearch" placeholder="搜索知识库名称或描述" clearable />
-              <el-button @click="resetKbSearch">重置</el-button>
-            </div>
-            <div class="panel-body scroll-y" v-loading="kbLoading">
-              <el-empty v-if="filteredKbs.length === 0 && !kbLoading" :description="kbs.length === 0 ? '暂无知识库' : '未找到知识库'">
-                <el-button type="primary" @click="openCreateDialog">新建知识库</el-button>
-              </el-empty>
-              <div v-for="kb in filteredKbs" :key="kb.id"
-                :class="['kb-item', { active: selectedKb?.id === kb.id }]"
-                @click="selectKb(kb)">
-                <div class="kb-item-left">
-                  <span class="kb-name">{{ kb.name }}</span>
-                  <span class="kb-desc">{{ kb.description || '暂无知识库描述' }}</span>
-                </div>
-                <el-tag size="small" effect="plain">{{ kb.knowledge_count || 0 }} 文档</el-tag>
+          <div class="kb-search">
+            <el-input v-model="kbSearch" placeholder="搜索知识库名称或描述" clearable />
+            <el-button @click="resetKbSearch">重置</el-button>
+          </div>
+          <div class="panel-body scroll-y" v-loading="kbLoading">
+            <el-empty v-if="filteredKbs.length === 0 && !kbLoading" :description="kbs.length === 0 ? '暂无知识库' : '未找到知识库'">
+              <el-button type="primary" @click="openCreateDialog">新建知识库</el-button>
+            </el-empty>
+            <div v-for="kb in filteredKbs" :key="kb.id"
+              :class="['kb-item', { active: selectedKb?.id === kb.id }]"
+              @click="selectKb(kb)">
+              <div class="kb-item-left">
+                <span class="kb-name">{{ kb.name }}</span>
+                <span class="kb-desc">{{ kb.description || '暂无知识库描述' }}</span>
               </div>
+              <el-tag size="small" effect="plain">{{ kb.knowledge_count || 0 }} 文档</el-tag>
             </div>
           </div>
         </section>
 
         <section class="panel" v-if="selectedKb">
-          <div class="panel-title clickable" @click="sectionOpen.files = !sectionOpen.files">
+          <div class="panel-title panel-title-stack">
             <div>
               <span>{{ selectedKb.name }}</span>
               <span class="panel-sub">{{ selectedKb.description || '可在此上传文件、查看图谱并继续出题。' }}</span>
             </div>
-            <div class="panel-title-right">
-              <el-tag type="primary" effect="light">{{ selectedKb.knowledge_count || files.length || 0 }} 份资料</el-tag>
-              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.files" /><ArrowRight v-else /></el-icon>
+            <el-tag type="primary" effect="light">{{ selectedKb.knowledge_count || files.length || 0 }} 份资料</el-tag>
+          </div>
+
+          <div class="kb-summary-actions">
+            <div class="action-group primary-actions">
+              <el-upload :auto-upload="false" :limit="1" accept=".pdf,.txt,.md,.doc,.docx"
+                :on-change="e => (uploadFile = e.raw)" :show-file-list="false">
+                <el-button type="primary">上传文件</el-button>
+              </el-upload>
+              <el-button type="success" @click="openGenerateDialog">根据知识库出题</el-button>
+            </div>
+            <div class="action-group secondary-actions">
+              <el-button @click="openEditDialog(selectedKb)">编辑</el-button>
+              <el-button @click="openGraph">知识图谱</el-button>
+              <el-button type="danger" plain @click="handleDeleteKb(selectedKb)">删除KB</el-button>
             </div>
           </div>
 
-          <div v-show="sectionOpen.files" class="panel-collapse-body">
-            <div class="kb-summary-actions">
-              <div class="action-group primary-actions">
-                <el-upload :auto-upload="false" :limit="1" accept=".pdf,.txt,.md,.doc,.docx"
-                  :on-change="e => (uploadFile = e.raw)" :show-file-list="false">
-                  <el-button type="primary">上传文件</el-button>
-                </el-upload>
-                <el-button type="success" @click="openGenerateDialog">根据知识库出题</el-button>
-              </div>
-              <div class="action-group secondary-actions">
-                <el-button @click="openEditDialog(selectedKb)">编辑</el-button>
-                <el-button @click="openGraph">知识图谱</el-button>
-                <el-button type="danger" plain @click="handleDeleteKb(selectedKb)">删除KB</el-button>
-              </div>
+          <div class="upload-bar" v-if="uploadFile">
+            <div class="upload-meta">
+              <el-tag closable @close="uploadFile=null">{{ uploadFile.name }}</el-tag>
+              <span>文件已选择，确认后将上传到当前知识库。</span>
             </div>
+            <el-button type="success" size="small" :loading="uploading" @click="doUpload">确认上传</el-button>
+          </div>
 
-            <div class="upload-bar" v-if="uploadFile">
-              <div class="upload-meta">
-                <el-tag closable @close="uploadFile=null">{{ uploadFile.name }}</el-tag>
-                <span>文件已选择，确认后将上传到当前知识库。</span>
-              </div>
-              <el-button type="success" size="small" :loading="uploading" @click="doUpload">确认上传</el-button>
+          <div class="panel-body scroll-y" v-loading="filesLoading">
+            <div class="section-caption">
+              <span>文件列表</span>
+              <span>{{ files.length }} 份</span>
             </div>
-
-            <div class="panel-body" v-loading="filesLoading">
-              <div class="section-caption">
-                <span>文件列表</span>
-                <span>{{ files.length }} 份</span>
-              </div>
-              <el-empty v-if="files.length === 0 && !filesLoading" description="暂无文件" />
-              <div v-else class="file-list-scroll">
-                <div v-for="f in files" :key="f.id" class="file-item">
-                  <div class="file-main">
-                    <div class="file-title-row">
-                      <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
-                      <el-tag size="small" :type="parseStatusTag(f.parseStatus)" effect="light">{{ parseStatusLabel(f.parseStatus) }}</el-tag>
-                    </div>
-                    <span class="file-meta">{{ f.file_type || f.type || '未知类型' }} · {{ formatSize(f.file_size) }}</span>
-                    <div v-if="normalizeParseStatus(f.parseStatus) === 'parsing'" class="file-progress-row">
-                      <el-progress :percentage="Number(f.parseProgress || 0)" :stroke-width="6" />
-                    </div>
-                    <div v-else-if="normalizeParseStatus(f.parseStatus) === 'failed' && f.errorMessage" class="file-error">{{ f.errorMessage }}</div>
-                  </div>
-                  <el-button size="small" type="danger" :icon="Delete" circle @click.stop="handleDeleteFile(f)" />
+            <el-empty v-if="files.length === 0 && !filesLoading" description="暂无文件" />
+            <div v-for="f in files" :key="f.id" class="file-item">
+              <div class="file-main">
+                <div class="file-title-row">
+                  <span class="file-name">{{ f.title || f.file_name || f.id }}</span>
+                  <el-tag size="small" :type="parseStatusTag(f.parseStatus)" effect="light">{{ parseStatusLabel(f.parseStatus) }}</el-tag>
                 </div>
+                <span class="file-meta">{{ f.file_type || f.type || '未知类型' }} · {{ formatSize(f.file_size) }}</span>
+                <div v-if="normalizeParseStatus(f.parseStatus) === 'parsing'" class="file-progress-row">
+                  <el-progress :percentage="Number(f.parseProgress || 0)" :stroke-width="6" />
+                </div>
+                <div v-else-if="normalizeParseStatus(f.parseStatus) === 'failed' && f.errorMessage" class="file-error">{{ f.errorMessage }}</div>
               </div>
+              <el-button size="small" type="danger" :icon="Delete" circle @click.stop="handleDeleteFile(f)" />
             </div>
           </div>
         </section>
 
         <section class="panel graph-panel" v-if="selectedKb">
-          <div class="panel-title clickable" @click="sectionOpen.graph = !sectionOpen.graph">
+          <div class="panel-title">
             <div>
               <span>知识图谱预览</span>
               <span class="panel-sub">快速预览当前知识库的图谱结构</span>
             </div>
-            <div class="panel-title-right">
-              <el-button size="small" type="primary" link @click.stop="openGraph">查看完整图谱</el-button>
-              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.graph" /><ArrowRight v-else /></el-icon>
-            </div>
+            <el-button size="small" type="primary" link @click="openGraph">查看完整图谱</el-button>
           </div>
-          <div v-show="sectionOpen.graph" class="panel-body">
+          <div class="panel-body">
             <KnowledgeGraphPreview :kb-id="selectedKb.id" :refresh-key="graphRefreshKey" />
           </div>
         </section>
 
-        <section class="panel session-panel" v-if="selectedKb">
-          <div class="panel-title clickable" @click="sectionOpen.sessions = !sectionOpen.sessions">
-            <div>
-              <span>历史对话</span>
-              <span class="panel-sub">当前知识库的历史问答会话</span>
-            </div>
-            <div class="panel-title-right">
-              <el-button size="small" type="primary" link @click.stop="newSession">+ 新建</el-button>
-              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.sessions" /><ArrowRight v-else /></el-icon>
-            </div>
-          </div>
-          <div v-show="sectionOpen.sessions" class="panel-body scroll-y" v-loading="sessionLoading">
-            <el-empty v-if="sessions.length === 0 && !sessionLoading" description="暂无历史对话">
-              <el-button size="small" type="primary" @click="newSession">开始新对话</el-button>
-            </el-empty>
-            <div v-for="s in sessions" :key="s.id"
-              :class="['session-item', { active: currentSessionId === s.id }]"
-              @click="switchSession(s)">
-              <div class="session-main">
-                <span class="session-title">{{ s.title || s.id }}</span>
-                <span class="session-meta">{{ formatTime(s.created_at || s.updated_at) }}</span>
-              </div>
-              <el-tag v-if="s.message_count" size="small" effect="plain">{{ s.message_count }} 轮</el-tag>
-              <el-button size="small" type="danger" :icon="Delete" circle @click.stop="removeSession(s.id)" />
-            </div>
-          </div>
-        </section>
-
         <section class="panel algo-graph-panel" v-if="selectedKb">
-          <div class="panel-title clickable" @click="sectionOpen.algo = !sectionOpen.algo">
+          <div class="panel-title">
             <div>
               <span>算法双语知识图谱</span>
               <span class="panel-sub">算法核心概念，中英双语切换展示</span>
             </div>
-            <div class="panel-title-right">
-              <el-tag size="small" type="primary" effect="plain">中英双语</el-tag>
-              <el-icon class="toggle-icon"><ArrowDown v-if="sectionOpen.algo" /><ArrowRight v-else /></el-icon>
-            </div>
+            <el-tag size="small" type="primary" effect="plain">中英双语</el-tag>
           </div>
-          <div v-show="sectionOpen.algo" class="panel-body">
+          <div class="panel-body">
             <AlgorithmBilingualGraph />
           </div>
         </section>
@@ -371,7 +325,7 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, ArrowDown, ArrowRight } from '@element-plus/icons-vue'
+import { Delete } from '@element-plus/icons-vue'
 import AiChatWidget from '@/components/AiChatWidget.vue'
 import KnowledgeGraphPreview from '@/components/knowledge/KnowledgeGraphPreview.vue'
 import AlgorithmBilingualGraph from '@/components/knowledge/AlgorithmBilingualGraph.vue'
@@ -401,14 +355,6 @@ const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
 const graphRefreshKey = ref(0)
 const statusPollTimer = ref(null)
-const sessions = ref([]); const sessionLoading = ref(false); const currentSessionId = ref(null)
-const sectionOpen = reactive({
-  kbList: true,
-  files: true,
-  graph: true,
-  algo: true,
-  sessions: true
-})
 
 const filteredKbs = computed(() => {
   const keyword = kbSearch.value.trim().toLowerCase()
@@ -499,7 +445,6 @@ function selectKb(kb) {
   selectedKb.value = kb
   uploadFile.value = null
   loadFiles()
-  loadSessions()
 }
 
 async function loadFiles() {
@@ -602,56 +547,6 @@ async function handleDeleteFile(row) {
       void loadFiles()
       void loadKBs()
     } else ElMessage.error(res.msg || '删除失败')
-  } catch { ElMessage.error('删除失败') }
-}
-
-// ========== 历史对话 ==========
-async function loadSessions() {
-  if (!selectedKb.value) return
-  sessionLoading.value = true
-  try {
-    const res = await kbApi.listSessions()
-    if (res.code === '200' && res.data) {
-      const all = unwrapData(res.data) || []
-      const allList = Array.isArray(all) ? all : (all?.items || all?.list || [])
-      sessions.value = allList.filter(s => {
-        const kbId = s.knowledge_base_id || s.knowledgeBaseId
-        return kbId === selectedKb.value.id || s.kb_id === selectedKb.value.id
-      })
-    }
-  } catch { sessions.value = [] } finally { sessionLoading.value = false }
-}
-
-async function newSession() {
-  if (!selectedKb.value) return
-  try {
-    const res = await kbApi.createSession({ knowledgeBaseId: selectedKb.value.id, title: '新对话' })
-    if (res.code === '200' && res.data) {
-      const data = unwrapData(res.data)
-      const id = data?.id || data?.session_id
-      if (id) {
-        sessions.value.unshift({ id, title: '新对话', knowledge_base_id: selectedKb.value.id })
-        currentSessionId.value = id
-        ElMessage.success('已创建新对话')
-      }
-    }
-  } catch { ElMessage.error('创建对话失败') }
-}
-
-function switchSession(s) {
-  currentSessionId.value = s.id
-  ElMessage.info('对话历史仅供查看，可在右侧 AI 助手中继续对话')
-}
-
-async function removeSession(id) {
-  try { await ElMessageBox.confirm('确定删除此对话？', '确认', { type: 'warning' }) } catch { return }
-  try {
-    const res = await kbApi.deleteSession(id)
-    if (res.code === '200') {
-      sessions.value = sessions.value.filter(s => s.id !== id)
-      if (currentSessionId.value === id) currentSessionId.value = null
-      ElMessage.success('已删除')
-    }
   } catch { ElMessage.error('删除失败') }
 }
 
@@ -889,14 +784,6 @@ onBeforeUnmount(stopStatusPolling)
   max-height: 360px;
 }
 
-.panel-collapse-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-}
-
 .panel-title {
   padding: 16px 18px;
   font-weight: 700;
@@ -1044,11 +931,6 @@ onBeforeUnmount(stopStatusPolling)
   min-width: 0;
 }
 
-.file-list-scroll {
-  max-height: 280px;
-  overflow-y: auto;
-}
-
 .file-name {
   display: block;
   font-size: 13px;
@@ -1066,32 +948,12 @@ onBeforeUnmount(stopStatusPolling)
   color: var(--text-muted);
 }
 
-.file-title-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.file-progress-row { margin-top: 6px; }
-.file-error { color: #ef4444; font-size: 12px; margin-top: 4px; }
-
-.panel-title.clickable { cursor: pointer; user-select: none; transition: background .15s; }
-.panel-title.clickable:hover { background: var(--bg-subtle); }
-.panel-title-right { display: flex; align-items: center; gap: 8px; }
-.toggle-icon { font-size: 14px; color: var(--text-muted); transition: transform .2s ease; }
-
-.session-panel .panel-body.scroll-y { max-height: 260px; }
-.session-item {
-  padding: 12px 14px; border-radius: 12px; cursor: pointer;
-  display: flex; align-items: center; gap: 10px;
-  transition: all .18s ease; border: 1px solid transparent;
-}
-.session-item + .session-item { margin-top: 6px; }
-.session-item:hover { background: var(--bg-subtle); border-color: var(--border-color); }
-.session-item.active { background: var(--primary-color-soft); border-color: var(--primary-color-light); }
-.session-main { flex: 1; min-width: 0; }
-.session-title { display: block; font-size: 13px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.session-meta { display: block; margin-top: 3px; font-size: 11px; color: var(--text-muted); }
-
-.algo-graph-panel .panel-body { padding: 12px; }
-
 .graph-panel :deep(.preview-shell) {
   min-height: 260px;
+}
+
+.algo-graph-panel .panel-body {
+  padding: 12px;
 }
 
 .gen-steps {

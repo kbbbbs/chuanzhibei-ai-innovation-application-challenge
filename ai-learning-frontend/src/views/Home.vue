@@ -245,6 +245,7 @@ import request from '@/utils/request'
 import ScoreTrendChart from '@/components/charts/ScoreTrendChart.vue'
 import GradeDistributionChart from '@/components/charts/GradeDistributionChart.vue'
 import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
+import { openAgentAssistant } from '@/utils/agentAssistant'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -526,6 +527,10 @@ const workspaceSideMetrics = computed(() => isAdmin.value
     ])
 
 function go(path) {
+  if (path === '/agent-chat') {
+    openAgentAssistant()
+    return
+  }
   router.push(path)
 }
 

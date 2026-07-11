@@ -1,14 +1,12 @@
 package com.cupk.aiacademy.controller;
 
 import com.cupk.aiacademy.common.Result;
-import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.dto.PaperMarkUpdateRequest;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.service.ArxivSearchService;
 import com.cupk.aiacademy.service.OpenAlexSearchService;
 import com.cupk.aiacademy.service.PaperLocalService;
-import com.cupk.aiacademy.service.PaperMarkGenerationService;
 import com.cupk.aiacademy.service.PaperMarkService;
 import com.cupk.aiacademy.service.PaperRecommendService;
 import com.cupk.aiacademy.service.PaperSearchService;
@@ -17,7 +15,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -44,9 +41,6 @@ public class PaperSearchController {
 
     @Autowired
     private CourseMapper courseMapper;
-
-    @Autowired
-    private PaperMarkGenerationService paperMarkGenerationService;
 
     @GetMapping("/search")
     public Result search(@RequestParam String keyword,
@@ -138,25 +132,5 @@ public class PaperSearchController {
     public Result deleteMark(@PathVariable String paperId) {
         paperMarkService.deleteMark(paperId);
         return Result.success();
-    }
-
-    @PostMapping("/generate-marks")
-    public Result generateMarks() {
-        Integer userId = UserContext.getCurrentUserId();
-        String roleCode = UserContext.getCurrentRoleCode();
-        if (userId == null) {
-            return Result.error("请先登录");
-        }
-        return Result.success(paperMarkGenerationService.generateForUser(userId, roleCode));
-    }
-
-    @PostMapping("/generate-marks-batch")
-    public Result generateMarksBatch() {
-        String roleCode = UserContext.getCurrentRoleCode();
-        if (!"admin".equals(roleCode)) {
-            return Result.error("仅管理员可执行批量生成");
-        }
-        Map<String, Object> result = paperMarkGenerationService.batchGenerateAllUsers();
-        return Result.success(result);
     }
 }

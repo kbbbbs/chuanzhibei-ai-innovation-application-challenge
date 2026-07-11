@@ -35,7 +35,7 @@ function buildOption() {
       bottom: 0,
       textStyle: { fontSize: 11 }
     },
-    grid: { left: 50, right: 30, top: 20, bottom: 40 },
+    grid: { left: 50, right: 30, top: 20, bottom: 72 },
     xAxis: {
       type: 'category',
       data: names,
@@ -76,13 +76,17 @@ function initChart() {
   }
 }
 
+function resizeChart() {
+  chartInstance?.resize()
+}
+
 onMounted(() => {
   chartRef.value.style.height = props.height
   initChart()
-  window.addEventListener('resize', () => chartInstance?.resize())
+  window.addEventListener('resize', resizeChart)
 })
 onBeforeUnmount(() => {
-  window.removeEventListener('resize', () => chartInstance?.resize())
+  window.removeEventListener('resize', resizeChart)
   chartInstance?.dispose()
 })
 watch(() => props.data, () => nextTick(() => initChart()), { deep: true })

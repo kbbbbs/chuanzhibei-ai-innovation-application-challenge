@@ -8,7 +8,9 @@ import org.springframework.stereotype.Component;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @Data
@@ -55,7 +57,7 @@ public class ActionSchemaPromptBuilder {
 
                 actionSchemas：
                 %s
-                """.formatted(currentTime(), userText, toJson(specs.stream().map(AgentActionSpec::toData).toList()));
+                """.formatted(currentTime(), userText, toJson(scopedSchemas(specs)));
     }
 
     public String buildRepairPrompt(String userText,
@@ -89,7 +91,22 @@ public class ActionSchemaPromptBuilder {
                 actionSchemas：
                 %s
                 """.formatted(currentTime(), userText, toJson(previous), toJson(errors),
-                toJson(specs.stream().map(AgentActionSpec::toData).toList()));
+                toJson(scopedSchemas(specs)));
+    }
+
+    private List<Map<String, Object>> scopedSchemas(List<AgentActionSpec> specs) {
+        if (specs == null) {
+            return List.of();
+        }
+        return specs.stream().map(spec -> {
+            Map<String, Object> data = new LinkedHashMap<>();
+            data.put("actionCode", spec.actionCode());
+            data.put("summary", spec.summary());
+            data.put("parameters", spec.parameterSchema());
+            data.put("requiredAnyOf", spec.requiredAnyOf());
+            data.put("additionalProperties", false);
+            return data;
+        }).toList();
     }
 
     private String currentTime() {
