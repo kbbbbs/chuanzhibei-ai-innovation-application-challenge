@@ -37,7 +37,7 @@ export function renderMarkdown(text) {
   html = html.replace(/^---$/gm, '<hr>')
 
   // 6. tables — pipe-delimited or tab-delimited (3+ columns)
-  // first: convert tab-separated tables to pipes
+  // Normalize tab-separated tables before Markdown parsing.
   const lines = html.split('\n')
   for (let i = 0; i < lines.length; i++) {
     const tabs = lines[i].split('\t')

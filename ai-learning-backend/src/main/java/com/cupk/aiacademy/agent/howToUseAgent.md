@@ -167,7 +167,7 @@ Result result = weKnoraService.search(
 代码含义：
 
 - `knowledgeBaseIds` 来自 Agent 定义里的 `knowledgeBaseIds`。
-- `currentUserContent.trim()` 是用户本轮问题。
+- `currentUserContent.trim()` 是用户当前的问题。
 - 检索失败不会中断聊天，只会跳过知识库上下文。
 
 ### 4.2 项目内调试接口

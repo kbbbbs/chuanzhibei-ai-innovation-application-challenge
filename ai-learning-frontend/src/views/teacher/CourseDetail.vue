@@ -397,14 +397,11 @@ const loadChapters = async () => {
     const res = await request.get(`/courses/${courseId.value}/chapters`)
     if (res.code === '200') {
       chapters.value = res.data
-      console.log('Loaded chapters:', chapters.value)
-      // Load lessons for each chapter
       for (const chapter of chapters.value) {
         try {
           const lessonsRes = await request.get(`/chapters/${chapter.id}/lessons`, { silentError: true })
           if (lessonsRes.code === '200') {
             chapter.lessons = lessonsRes.data
-            console.log(`Loaded ${lessonsRes.data.length} lessons for chapter ${chapter.id}`)
           } else {
             console.warn(`Failed to load lessons for chapter ${chapter.id}: ${lessonsRes.msg}`)
             chapter.lessons = []
@@ -542,9 +539,7 @@ const handleSaveLesson = async () => {
     const url = lessonForm.id ? `/lessons/${lessonForm.id}` : '/lessons'
     const method = lessonForm.id ? 'put' : 'post'
     const payload = buildLessonPayload()
-    console.log('Saving lesson payload:', payload)
     const res = await request[method](url, payload)
-    console.log('Save response:', res)
     if (res.code === '200') {
       const savedLesson = res.data || lessonForm
       if (lessonForm.resourceType === 'video_url') {

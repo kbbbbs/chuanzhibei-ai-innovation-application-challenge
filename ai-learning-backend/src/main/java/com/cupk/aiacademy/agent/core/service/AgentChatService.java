@@ -341,7 +341,7 @@ public class AgentChatService {
     }
 
     /**
-     * 普通非流式聊天入口：保存用户消息、调用模型、保存助手回复，并返回本轮问答的消息 ID 和内容。
+     * 普通非流式聊天入口：保存用户消息、调用模型、保存助手回复，并返回当前问答的消息 ID 和内容。
      */
     @Transactional(noRollbackFor = AgentModelCallException.class)
     public AgentChatResponse chat(Integer sessionId, AgentChatRequest request) {

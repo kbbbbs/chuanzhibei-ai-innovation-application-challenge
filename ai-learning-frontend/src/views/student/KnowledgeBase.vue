@@ -841,10 +841,6 @@ const askAbout = (result) => {
   sendMessage()
 }
 
-function onIframeLoad() {
-  console.log('PDF iframe loaded')
-}
-
 function onIframeError() {
   console.error('PDF iframe failed to load')
   pdfLoadError.value = true

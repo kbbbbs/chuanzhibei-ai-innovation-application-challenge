@@ -206,13 +206,13 @@ const studentPassRate = computed(() => { const r = studentRecords.value; return 
 
 const overviewStudents = computed(() => {
   const map = new Map()
-  // First: seed from FULL class roster so every enrolled student appears
+  // 以完整班级名单初始化，确保未参加考试的学生也会显示。
   students.value.forEach(s => {
     const sid = String(s.studentId)
     if (!sid) return
     map.set(sid, { studentId: sid, studentName: s.studentName, examScores: {}, scoresList: [] })
   })
-  // Then: fill scores from exam submissions
+  // 合并考试提交成绩。
   classExams.value.forEach(exam => {
     (exam.studentScores || []).forEach(s => {
       const id = String(s.studentId)
