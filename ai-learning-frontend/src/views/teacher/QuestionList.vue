@@ -334,11 +334,13 @@ const buildRequestDTO = () => {
       answerContent: String.fromCharCode(65 + idx),
       sortOrder: i + 1
     }))
-  } else {
+  } else if (type === 'short_answer') {
     dto.answers = [{
       answerContent: (form.referenceAnswer || '').trim() || '暂无参考答案',
       sortOrder: 1
     }]
+  } else {
+    dto.answers = []
   }
 
   return dto

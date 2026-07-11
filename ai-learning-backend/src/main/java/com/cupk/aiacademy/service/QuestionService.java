@@ -744,7 +744,8 @@ public class QuestionService {
         if (request.getType() == null) {
             throw new BusinessException("题目类型不能为空");
         }
-        if (request.getAnswers() == null || request.getAnswers().isEmpty()) {
+        if (request.getType() != QuestionType.FILE_UPLOAD
+                && (request.getAnswers() == null || request.getAnswers().isEmpty())) {
             throw new BusinessException("题目必须包含标准答案");
         }
         boolean isChoiceType = request.getType() == QuestionType.SINGLE_CHOICE

@@ -634,11 +634,13 @@ const buildInlineQuestion = () => {
       answerContent: customQuestion.referenceAnswer.trim(),
       sortOrder: 1
     }]
-  } else {
+  } else if (type === 'short_answer') {
     answers = [{
       answerContent: customQuestion.referenceAnswer.trim() || '暂无参考答案',
       sortOrder: 1
     }]
+  } else {
+    answers = []
   }
 
   if (hasCustomQuestionOptions.value && options.length < 2) {
@@ -666,7 +668,7 @@ const addCustomQuestionToPaper = async () => {
 
   const inlineQuestion = buildInlineQuestion()
   if (!inlineQuestion) {
-    ElMessage.warning('请补全有效选项和正确答案')
+    ElMessage.warning('请补全题目必填信息')
     return
   }
 
