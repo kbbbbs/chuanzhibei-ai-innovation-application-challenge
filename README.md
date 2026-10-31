@@ -64,7 +64,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts/competition/start-lo
 ```powershell
 Set-Location ai-learning-frontend
 npm ci
-npm run dev
+npm run dev -- --host 127.0.0.1
 ```
 
 浏览器打开 **http://localhost:24678**，也可按终端实际输出访问。前端 `/api` 代理到本机 8080。两个终端分别按 Ctrl+C 停止服务，停止不会自动删除演示资料。

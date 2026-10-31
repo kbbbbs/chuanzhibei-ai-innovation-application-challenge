@@ -49,5 +49,11 @@
     "Logs do not automatically establish three complete contest prompt chains or eligibility.",
     "Later appends, including the export itself and final reply, require a subsequent refresh."
   ],
-  "records_sha256": "ff7065f6bf0a310dab081ea79a151f48f9dc5419ccfec1681ddada66b37d6e67"
+  "records_sha256": "ad58b36be50db94c4e17b5b57623b5b21981b22b0104d9256d580007a716879c",
+  "publication_redaction_update": {
+    "at": "2026-10-31T11:44:39.479493+00:00",
+    "operation": "Removal-only filtering of opaque transport/platform metadata and correction of legacy stored-byte checksum; no events or raw-source content added.",
+    "sourceSnapshotPreserved": true,
+    "originalEventTimesPreserved": true
+  }
 }

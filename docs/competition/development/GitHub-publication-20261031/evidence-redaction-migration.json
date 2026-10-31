@@ -1,5 +1,5 @@
 {
-  "migratedAt": "2026-10-31T11:39:52.970752+00:00",
+  "migratedAt": "2026-10-31T11:49:00.179610+00:00",
   "scope": "Publication redaction cleanup of historical already-redacted record artifacts. No original private session files are copied.",
   "historicalHashNote": "Older verification hash lists remain historical snapshots. This ledger explains removal-only byte changes for published record artifacts.",
   "delegationNote": "Some collaboration tool arguments are opaque platform transport. Ciphertext is omitted; actual visible delegation text is preserved in each child first input_text envelope.",
@@ -351,6 +351,30 @@
     "docs/competition/development/agent-records/2026-10-28-k02-formulas/root/records.md": {
       "previousSha256": "3273a9ee072a70a719998c22fbe5afd332cd14180b841c68ec161d883fb594f2",
       "publishedSha256": "3273a9ee072a70a719998c22fbe5afd332cd14180b841c68ec161d883fb594f2"
+    },
+    "docs/competition/development/agent-records/2026-10-27-k02-formula-audit/root/records.jsonl": {
+      "previousSha256": "e17cd46db72702123266b0bbb21c46a9483796becb6464aa343a737ac2716367",
+      "publishedSha256": "ad58b36be50db94c4e17b5b57623b5b21981b22b0104d9256d580007a716879c"
+    },
+    "docs/competition/development/agent-records/2026-10-27-k02-formula-audit/root/manifest.json": {
+      "previousSha256": "34ec5a358af0e36b48c84508f4a4074f09206b01845c27476afbac1cdc7d6153",
+      "publishedSha256": "48f1b8dc08e61fe49061ee9a68330d96d826b215f217775e6c1a8f09c59a28c9"
+    },
+    "docs/competition/development/agent-records/2026-10-27-k02-formula-audit/root/records.md": {
+      "previousSha256": "1805dcbd3fd5aeb21ed4a42c0756b7e40448e1b5fab167237d98aa390309b662",
+      "publishedSha256": "1805dcbd3fd5aeb21ed4a42c0756b7e40448e1b5fab167237d98aa390309b662"
+    },
+    "docs/competition/development/agent-records/2026-10-27-formula-industry-review/root/records.jsonl": {
+      "previousSha256": "1a0e7e6aad2c6d8d953bb350e7f170a2a150a6d2150e2747d8c3459430af1991",
+      "publishedSha256": "e3fce53f8e7fafc88f53132f8c036c29ad370aa43f1116ef6bd2626bd2213bea"
+    },
+    "docs/competition/development/agent-records/2026-10-27-formula-industry-review/root/manifest.json": {
+      "previousSha256": "d7d5b51285981e5f4c8dca5514ce78dfc94307d72f718de7d9fe618d7ea5d255",
+      "publishedSha256": "1a59c299fda7e76e5a6505a568db86f74dcf1254f50e86f1194232aea56e0de7"
+    },
+    "docs/competition/development/agent-records/2026-10-27-formula-industry-review/root/records.md": {
+      "previousSha256": "341a09c6fdca26c211514525c1eed843065fcec788b91c662f8a8a0806914881",
+      "publishedSha256": "341a09c6fdca26c211514525c1eed843065fcec788b91c662f8a8a0806914881"
     }
   }
 }
