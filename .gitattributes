@@ -1,0 +1,2 @@
+# Evidence manifests hash the exact archived bytes. Preserve these on every OS.
+docs/competition/** -text

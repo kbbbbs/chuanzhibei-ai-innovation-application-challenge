@@ -1,0 +1,18 @@
+
+Running 10 tests using 1 worker
+
+
+
+(node:47368) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[1/10] e2e\k02-processing-ui.spec.js:95:1 › queued upload shows background work and cancellation never means parsed successfully
+[2/10] e2e\k02-processing-ui.spec.js:109:1 › partial processing preserves missing pages and authenticates page review before forcing OCR
+[3/10] e2e\k02-processing-ui.spec.js:129:1 › parse retry is separate from vector rebuilding and does not hide a partial state
+[4/10] e2e\k02-processing-ui.spec.js:139:1 › text sources display character positions and do not fabricate PDF pages or previews
+[5/10] e2e\k02-processing-ui.spec.js:150:1 › replacement review reads the pending source version instead of the previously active original
+[6/10] e2e\native-rag-ui.spec.js:44:1 › native retrieval displays actual hit, authenticated source and final stream citations
+[7/10] e2e\native-rag-ui.spec.js:65:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access
+[8/10] e2e\native-rag-ui.spec.js:73:1 › stop generation terminates the request and marks incomplete response
+[9/10] e2e\native-rag-ui.spec.js:84:1 › no evidence clearly refuses and does not invent a source
+[10/10] e2e\native-rag-ui.spec.js:93:1 › filtered evidence retains the original citation number in the answer
+  10 passed (23.4s)

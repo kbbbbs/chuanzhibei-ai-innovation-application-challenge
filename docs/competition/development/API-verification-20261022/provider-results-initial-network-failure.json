@@ -1,0 +1,38 @@
+[
+  {
+    "role": "embedding-model-list",
+    "status": "FAIL",
+    "reason": "URLError",
+    "latencyMs": 10063
+  },
+  {
+    "role": "ocr-model-list",
+    "status": "FAIL",
+    "reason": "URLError",
+    "latencyMs": 5015
+  },
+  {
+    "role": "embedding-single",
+    "status": "FAIL",
+    "reason": "URLError",
+    "latencyMs": 10000
+  },
+  {
+    "role": "embedding-list",
+    "status": "FAIL",
+    "reason": "URLError",
+    "latencyMs": 5016
+  },
+  {
+    "role": "embedding-dimensions",
+    "status": "FAIL",
+    "reason": "URLError",
+    "latencyMs": 10000
+  },
+  {
+    "role": "ocr-synthetic-image",
+    "status": "FAIL",
+    "reason": "URLError",
+    "latencyMs": 10000
+  }
+]

@@ -1,0 +1,92 @@
+{
+  "archivedAt": "2026-10-31T11:39:49.693558+00:00",
+  "repository": "https://github.com/kbbbbs/ai-learning-collaboration",
+  "visibility": "private",
+  "verifiedRemoteSnapshotAtArchive": {
+    "repository": "https://github.com/kbbbbs/ai-learning-collaboration",
+    "private": true,
+    "defaultBranch": "main",
+    "commit": "e697f2f102eece66231ed046d49b140485ff4150",
+    "remoteFiles": 1724,
+    "treeNamesMatch": true,
+    "allBlobIdsMatch": true,
+    "excludedContentPresent": false,
+    "originalRemotePreserved": "https://github.com/QingYingZero/ai-learning.git"
+  },
+  "backend": {
+    "total": 397,
+    "passed": 382,
+    "skipped": 15,
+    "failures": 0,
+    "errors": 0,
+    "package": "PASS"
+  },
+  "frontend": {
+    "npmCi": "PASS",
+    "productionBuild": "PASS",
+    "nodeRenderTestsPassed": 8,
+    "browserPageTestsRerunThisTask": false
+  },
+  "pythonToolsPassed": 22,
+  "startup": {
+    "status": "PASS",
+    "scope": "Fresh publication tree, no private env file or imported user data. Isolated H2 startup/login/keyword API smoke; not K02 OCR or K03 semantic acceptance.",
+    "teacherLoginPassed": true,
+    "studentLoginPassed": true,
+    "emptyNativeLibraryApiPassed": true,
+    "createNativeLibraryPassed": true,
+    "emptyIndexActualMode": "NONE",
+    "privateLibraryStudentDenied": true,
+    "ownedServerStopped": true
+  },
+  "records": [
+    {
+      "name": "github_readme_setup",
+      "source": "rollout-2026-10-31T18-59-32-01a1919d-5e20-7c43-abd2-6348a7a1fb14.jsonl",
+      "startLine": 380,
+      "records": 39,
+      "range": [
+        386,
+        535
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "collaboration_validation_doc",
+      "source": "rollout-2026-10-31T18-59-54-01a1919d-b4c4-7fb1-b4d7-49ae1329f19b.jsonl",
+      "startLine": 383,
+      "records": 37,
+      "range": [
+        389,
+        526
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "github_upload_audit",
+      "source": "rollout-2026-10-31T19-00-10-01a1919d-f4f0-7b20-8335-7b72e87d2769.jsonl",
+      "startLine": 386,
+      "records": 52,
+      "range": [
+        392,
+        576
+      ],
+      "unlinkedOutputs": []
+    }
+  ],
+  "manualAcceptanceStatus": "NOT_RUN: independent K02/K03 matrix intentionally pending; semantic quality remains FAIL 33/40.",
+  "realIteration": [
+    "Launcher Java stderr handling and selected JDK propagation: genuine RED then GREEN.",
+    "Opaque repr/tool-argument/escaped transport filtering: fixture typo preserved separately from genuine RED, then GREEN."
+  ],
+  "networkNotes": [
+    "First push used a stale global Git proxy and failed; per-process API proxy succeeded; global settings unchanged.",
+    "Two remote clone attempts ended in TLS truncation. Full remote tree/blob IDs were verified using GitHub API.",
+    "Permanent collaboration clone created locally from that identical verified commit; origin points to the new GitHub repository."
+  ],
+  "limits": [
+    "Private credentials, imported user data and teaching originals not uploaded.",
+    "No human outcomes fabricated; no collaborator invitations without names.",
+    "Explicit redacted snapshots only; final upload and final reply can fall after the recorded snapshot."
+  ]
+}

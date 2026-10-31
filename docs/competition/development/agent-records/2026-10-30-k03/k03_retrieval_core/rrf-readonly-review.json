@@ -1,0 +1,41 @@
+{
+  "createdAt": "2026-10-30T11:27:34.228936+00:00",
+  "scope": "Read-only generic RRF implementation/configuration audit; no original acceptance question text or per-question outcomes read.",
+  "sourceFilesRead": [
+    "RagRetrievalService.java",
+    "JdbcRagVectorStore.java",
+    "IndexVersionService.java",
+    "NativeRagService.java",
+    "RagBm25.java",
+    "application.yml"
+  ],
+  "testCodeRead": "Only constructor/configuration call lines found with rg in K03RetrievalLiveTest.java; no frozen question file or individual acceptance result opened.",
+  "findings": [
+    {
+      "kind": "Configuration boundary",
+      "evidence": "RagRetrievalService two-argument convenience constructor fixes k=60/candidates=100; NativeRagService constructor uses that path. Spring configureRetrieval setter replaces it with the @Value-configured bean. Live test manually constructs NativeRagService and currently has no setter/configuration call.",
+      "impact": "Changing environment variables/properties alone does not tune that non-Spring fixture. Parameterized service must be explicitly constructed/injected. Production Spring configuration is wired."
+    },
+    {
+      "kind": "No generic mathematical implementation defect found",
+      "evidence": "Vector matches are descending cosine with stable id ties; positive BM25 and vector rank lists are separately capped, absent channel contributes zero, final score equals reciprocal-rank sum and sorted descending.",
+      "limits": "Not a claim RRF improves this corpus, nor a semantic quality acceptance."
+    },
+    {
+      "kind": "Expected consensus bias with large candidate pools and k",
+      "evidence": "For k=60 and at most 50 rows present in both lists, minimum double-channel score 2/(60+50)=0.0181818 exceeds best single-channel score 1/61=0.0163934. Broad positive cosine candidates and weak lexical overlap can therefore outrank a strong match present in only one channel.",
+      "impact": "Candidate size above a small corpus is effectively no truncation. RRF discards raw BM25/cosine magnitude; this is an algorithm tradeoff, not a wrong sum or missing-rank bug.",
+      "limits": "Synthetic arithmetic examples are not recommended tuned values; choose parameters only on frozen tuning questions."
+    },
+    {
+      "kind": "Missing lexical terms",
+      "evidence": "Lexical score<=0 means no BM25 contribution; semantic-only candidates remain allowed. Empty/stopword-only query intentionally returns NONE before provider call."
+    },
+    {
+      "kind": "No answerability cutoff",
+      "evidence": "Positive cosine is a candidate condition, not proof a source supports the answer; RRF scores are not confidence. No-answer candidate return rates must be reported separately."
+    }
+  ],
+  "codeChanged": false,
+  "calibrationRestrictions": "No original acceptance per-question inspection, no acceptance-driven parameter selection, no change to frozen questions."
+}

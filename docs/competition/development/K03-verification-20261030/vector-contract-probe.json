@@ -1,0 +1,51 @@
+{
+  "httpStatus": 200,
+  "inputCount": 32,
+  "charactersTotal": 7756,
+  "elapsedMs": 6031,
+  "vectorCount": 32,
+  "indices": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "dimensions": [
+    4096
+  ],
+  "nonFiniteVectors": 0,
+  "nonPositiveNormVectors": 0,
+  "itemFieldNames": [
+    "embedding",
+    "index",
+    "object"
+  ]
+}

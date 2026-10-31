@@ -1,0 +1,54 @@
+{
+  "format_version": 1,
+  "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+  "since": "2026-10-31T10:57:54.852Z",
+  "source_file": "rollout-2026-10-08T15-13-08-01a11a5b-d413-7b51-aaf0-7320ae85ce4a.jsonl",
+  "source_sha256": "8db5c5ec8b8c5adb885cd2dc8d2dcc07b22be6c869640dc520056ab3dbac210f",
+  "source_size_bytes": 66613276,
+  "source_total_lines": 9047,
+  "source_start_line": 8477,
+  "session_kind": "root_or_user",
+  "fork_inherited_prefix_omitted": null,
+  "fork_boundary_selection": null,
+  "source_line_range": [
+    8477,
+    9046
+  ],
+  "event_timestamp_range": [
+    "2026-10-31T10:57:54.852Z",
+    "2026-10-31T11:39:46.363Z"
+  ],
+  "record_count": 136,
+  "event_counts": {
+    "agent_message": 14,
+    "message": 11,
+    "tool_call": 56,
+    "tool_output": 55
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 8,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 1,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "f100c0c71cc8f476133acf7055b861c59b5f3fce814ba8a48ad00a1fd5001c3d"
+}

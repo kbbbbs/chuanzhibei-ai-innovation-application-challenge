@@ -1,0 +1,29 @@
+....F.......F..
+======================================================================
+FAIL: test_forked_parent_metadata_cannot_relabel_the_child_manifest_or_records (test_export_agent_development_records.DevelopmentRecordExportTest.test_forked_parent_metadata_cannot_relabel_the_child_manifest_or_records)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ai-learning\scripts\competition\tests\test_export_agent_development_records.py", line 230, in test_forked_parent_metadata_cannot_relabel_the_child_manifest_or_records
+    self.assertEqual("actual-child",manifest["session_id"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'actual-child' != 'later-inherited-parent'
+- actual-child
++ later-inherited-parent
+
+
+======================================================================
+FAIL: test_root_identity_stays_with_its_first_metadata_across_later_metadata (test_export_agent_development_records.DevelopmentRecordExportTest.test_root_identity_stays_with_its_first_metadata_across_later_metadata)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ai-learning\scripts\competition\tests\test_export_agent_development_records.py", line 244, in test_root_identity_stays_with_its_first_metadata_across_later_metadata
+    self.assertEqual("actual-root",manifest["session_id"])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'actual-root' != 'other-replayed-session'
+- actual-root
++ other-replayed-session
+
+
+----------------------------------------------------------------------
+Ran 15 tests in 0.463s
+
+FAILED (failures=2)

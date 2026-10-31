@@ -1,0 +1,35 @@
+Backend: http://127.0.0.1:8080. Start the frontend in another terminal: npm run dev.
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-10-31T19:24:33.802+08:00  INFO 41312 --- [ai-academy] [           main] c.cupk.aiacademy.AiAcademyApplication    : Starting AiAcademyApplication v0.0.1-SNAPSHOT using Java 24 with PID 41312 (D:\ai-learning\.codex_tmp\github-collaboration-20261031\publication\ai-learning-backend\target\Final_exam_question_bank-0.0.1-SNAPSHOT.jar started by KBS-ROG in D:\ai-learning\.codex_tmp\github-collaboration-20261031\publication\ai-learning-backend)
+2026-10-31T19:24:33.804+08:00  INFO 41312 --- [ai-academy] [           main] c.cupk.aiacademy.AiAcademyApplication    : The following 1 profile is active: "contest-demo"
+2026-10-31T19:24:36.530+08:00  INFO 41312 --- [ai-academy] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 18080 (http)
+2026-10-31T19:24:36.552+08:00  INFO 41312 --- [ai-academy] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-10-31T19:24:36.553+08:00  INFO 41312 --- [ai-academy] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-10-31T19:24:36.623+08:00  INFO 41312 --- [ai-academy] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-10-31T19:24:36.623+08:00  INFO 41312 --- [ai-academy] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2528 ms
+2026-10-31T19:24:36.837+08:00  INFO 41312 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-10-31T19:24:37.205+08:00  INFO 41312 --- [ai-academy] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:D:/ai-learning/.codex_tmp/github-collaboration-20261031/isolated-startup/academy user=SA
+2026-10-31T19:24:37.207+08:00  INFO 41312 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.12 
+2026-10-31T19:24:43.942+08:00  INFO 41312 --- [ai-academy] [           main] m.e.s.MybatisPlusApplicationContextAware : Register ApplicationContext instances org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@4cf8b2dc
+2026-10-31T19:24:44.125+08:00  INFO 41312 --- [ai-academy] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 18080 (http) with context path '/'
+2026-10-31T19:24:44.144+08:00  INFO 41312 --- [ai-academy] [           main] c.cupk.aiacademy.AiAcademyApplication    : Started AiAcademyApplication in 10.964 seconds (process running for 11.646)
+2026-10-31T19:24:44.375+08:00  INFO 41312 --- [ai-academy] [.1-18080-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-10-31T19:24:44.376+08:00  INFO 41312 --- [ai-academy] [.1-18080-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-10-31T19:24:44.377+08:00  INFO 41312 --- [ai-academy] [.1-18080-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::arrayBaseOffset has been called by com.alibaba.fastjson2.util.JDKUtils (jar:nested:/D:/ai-learning/.codex_tmp/github-collaboration-20261031/publication/ai-learning-backend/target/Final_exam_question_bank-0.0.1-SNAPSHOT.jar/!BOOT-INF/lib/fastjson2-2.0.57.jar!/)
+WARNING: Please consider reporting this to the maintainers of class com.alibaba.fastjson2.util.JDKUtils
+WARNING: sun.misc.Unsafe::arrayBaseOffset will be removed in a future release

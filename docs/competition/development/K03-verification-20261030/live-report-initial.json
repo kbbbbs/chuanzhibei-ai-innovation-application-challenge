@@ -1,0 +1,1172 @@
+{
+  "status" : "FAIL",
+  "datasetSha256" : "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+  "questions" : [ ],
+  "excludedPages" : [ {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 2
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 35
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 40
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 41
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 42
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 44
+  }, {
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 46
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 2
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "CAPTURED_FORMULA_NOT_STRUCTURED",
+    "sourcePage" : 14
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第2章-机器学习概述-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 34
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "CAPTURED_FORMULA_NOT_STRUCTURED",
+    "sourcePage" : 14
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37
+  }, {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "CAPTURED_FORMULA_NOT_STRUCTURED",
+    "sourcePage" : 14
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36
+  }, {
+    "sourceFile" : "第6章-循环神经网络-okk.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 2
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 40
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 41
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 42
+  }, {
+    "sourceFile" : "第7章-深度生成模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 44
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 2
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 40
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 41
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 42
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 43
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 44
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 45
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 46
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 47
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 48
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 49
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 50
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 51
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 52
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 53
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 54
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 55
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 56
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 57
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 58
+  }, {
+    "sourceFile" : "第9章 人工智能-语言模型.pdf",
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 59
+  } ],
+  "scope" : "Original PDF single-page copies. Safe native pages plus captured actual K02 OCR; missing OCR pages excluded. Copy page=1 mapped to original page explicitly.",
+  "noAnswerPolicy" : "Retrieval observations only; no K04 abstention or answer-model accuracy claimed.",
+  "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+  "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6",
+  "sourcePageCount" : 45,
+  "historicalOcrPages" : 11,
+  "elapsedMs" : 12609,
+  "realEmbeddingFacadeCalls" : 0,
+  "realEmbeddingInputs" : 0,
+  "reusedExactRealVectors" : 0
+}

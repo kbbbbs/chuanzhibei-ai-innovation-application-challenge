@@ -1,0 +1,58 @@
+
+Running 5 tests using 1 worker
+
+(node:45484) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\k02-processing-ui.spec.js:95:1 › queued upload shows background work and cancellation never means parsed successfully (2.3s)
+  ok 2 e2e\k02-processing-ui.spec.js:109:1 › partial processing preserves missing pages and authenticates page review before forcing OCR (2.3s)
+  ok 3 e2e\k02-processing-ui.spec.js:129:1 › parse retry is separate from vector rebuilding and does not hide a partial state (2.3s)
+  ok 4 e2e\k02-processing-ui.spec.js:139:1 › text sources display character positions and do not fabricate PDF pages or previews (2.0s)
+  x  5 e2e\k02-processing-ui.spec.js:150:1 › replacement review reads the pending source version instead of the previously active original (12.2s)
+
+
+  1) e2e\k02-processing-ui.spec.js:150:1 › replacement review reads the pending source version instead of the previously active original 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('document-page-review')
+    Expected substring: "PENDING_VERSION_CONTENT"
+    Received string:    "原页与提取结果刷新处理结果逐项对照原文。处理完成不代表文字、表格或公式已经核验。第 1 页已提取第 1 页图中文字识别此处需要人工核验。原始页面用于检索的文本OLD_VERSION_CONTENT服务未提供置信度文字层原文未提取到文字层文本重试此页强制识别本页"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for getByTestId('document-page-review')
+        15 × locator resolved to <section data-v-43ae9247="" data-v-22f9593e="" class="document-page-review" data-testid="document-page-review">…</section>
+           - unexpected value "原页与提取结果刷新处理结果逐项对照原文。处理完成不代表文字、表格或公式已经核验。第 1 页已提取第 1 页图中文字识别此处需要人工核验。原始页面用于检索的文本OLD_VERSION_CONTENT服务未提供置信度文字层原文未提取到文字层文本重试此页强制识别本页"
+        - locator resolved to <section data-v-43ae9247="" data-v-22f9593e="" class="document-page-review" data-testid="document-page-review">…</section>
+        - unexpected value "原页与提取结果刷新处理结果逐项对照原文。处理完成不代表文字、表格或公式已经核验。"
+        7 × locator resolved to <section data-v-43ae9247="" data-v-22f9593e="" class="document-page-review" data-testid="document-page-review">…</section>
+          - unexpected value "原页与提取结果刷新处理结果逐项对照原文。处理完成不代表文字、表格或公式已经核验。第 1 页已提取第 1 页图中文字识别此处需要人工核验。原始页面用于检索的文本OLD_VERSION_CONTENT服务未提供置信度文字层原文未提取到文字层文本重试此页强制识别本页"
+
+
+      152 |   await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+      153 |   const review = page.getByTestId('document-page-review')
+    > 154 |   await expect(review).toContainText('PENDING_VERSION_CONTENT')
+          |                        ^
+      155 |   await expect(review).not.toContainText('OLD_VERSION_CONTENT')
+      156 |   await expect(review.getByAltText('原始页面预览')).toBeVisible()
+      157 |   const pageRequests = calls.filter(call => call.path.endsWith('/pages') || call.path.endsWith('/preview'))
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:154:24
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-replacem-2312f--previously-active-original\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-replacem-2312f--previously-active-original\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-replacem-2312f--previously-active-original\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-replacem-2312f--previously-active-original\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\k02-processing-ui.spec.js:150:1 › replacement review reads the pending source version instead of the previously active original 
+  4 passed (23.6s)

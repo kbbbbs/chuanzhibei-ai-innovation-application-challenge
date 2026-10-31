@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Agent 总流程图</title>
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body { padding: 32px; font-family: "Microsoft YaHei", sans-serif; }
+    .mermaid { display: flex; justify-content: center; }
+    .mermaid svg { max-width: none !important; height: auto; }
+  </style>
+</head>
+<body>
+  <pre class="mermaid">
+flowchart TD
+    START([用户登录]) --> MOUNT[MainLayout 挂载 Agent 悬浮助手]
+    MOUNT --> ROLE{当前角色}
+    ROLE -->|学生| ST[仅开放会话与普通问答&lt;br/&gt;enabledTools = 空]
+    ROLE -->|教师| TE[聊天 + 本人范围 READ / WRITE&lt;br/&gt;待确认与单轮调试]
+    ROLE -->|管理员| AD[教师能力 + 全局权限&lt;br/&gt;Agent / 知识库管理]
+
+    ST --> OPEN[打开可拖动悬浮窗]
+    TE --> OPEN
+    AD --> OPEN
+
+    OPEN --> SEL{是否框选课时正文?}
+    SEL -->|是| CTX[加入课程名、课时名和选文&lt;br/&gt;最多 1500 字]
+    SEL -->|否| SESSION
+    CTX --> SESSION[选择 Agent&lt;br/&gt;新建 / 切换 / 改名 / 删除个人会话]
+    SESSION --> SEND[输入问题并发送]
+
+    SEND --> API[POST /api/agent/sessions/:id/chat]
+    API --> VERIFY[校验 Token、会话归属和 Agent 状态&lt;br/&gt;加载历史与补参草稿]
+    VERIFY --> IS_STUDENT{是否学生?}
+
+    IS_STUDENT -->|是| PROMPT
+    IS_STUDENT -->|否| DRAFT{存在有效补参草稿?}
+    DRAFT -->|取消| CANCEL[取消本次未完成操作]
+    DRAFT -->|继续补充| WPLAN
+    DRAFT -->|无草稿 / 新问题| INTENT{CHAT / READ / WRITE}
+
+    INTENT -->|CHAT| PROMPT
+    INTENT -->|READ| RPLAN[固定一个已启用读工具&lt;br/&gt;提取参数并进行 Schema 校验]
+    RPLAN --> RVALID{参数有效?}
+    RVALID -->|否| RFAIL[生成明确的未查询说明]
+    RVALID -->|是| REXEC[执行只读平台工具]
+    RFAIL --> PROMPT
+    REXEC --> PROMPT
+
+    INTENT -->|WRITE| WPLAN[固定 actionCode&lt;br/&gt;参数规划、校验与有限修复]
+    WPLAN --> WVALID{参数完整合法?}
+    WVALID -->|否| SAVEDRAFT[保存 action_clarification 草稿]
+    SAVEDRAFT --> ASK[回复：请补充必要信息]
+    ASK --> SEND
+    WVALID -->|是| PENDING[写入 t_agent_pending_action&lt;br/&gt;返回真实 actionId 和 pendingAction]
+
+    PROMPT[组装最终 Prompt&lt;br/&gt;System Prompt + 历史 + 当前选文&lt;br/&gt;+ WeKnora 知识库 + READ 结果] --> MODEL[调用普通聊天模型]
+    MODEL --> GUARD[拦截模型伪称已生成待确认动作]
+    GUARD --> SAVEMSG[保存用户和助手消息]
+    CANCEL --> SAVEMSG
+    SAVEMSG --> REPLY([显示回复])
+
+    PENDING --> TOOLMSG[助手消息保存结构化 pendingAction]
+    TOOLMSG --> AUTO[前端立即自动弹出确认页]
+    TE -.手动入口.-> LIST[当前用户未过期待确认列表]
+    AD -.手动入口.-> LIST
+    LIST --> AUTO
+
+    AUTO --> DETAIL[根据 actionId 重新读取动作详情]
+    DETAIL --> EXPIRED{动作存在且未过期?}
+    EXPIRED -->|否| ENDMSG([提示已处理或已过期])
+    EXPIRED -->|是| FORM[展示并允许修正结构化参数]
+    FORM --> CONFIRM{用户确认?}
+    CONFIRM -->|否| HOLD[关闭窗口&lt;br/&gt;动作保留到再次确认或过期]
+    CONFIRM -->|是| CHECK[校验 teacher / admin、confirmed、创建人&lt;br/&gt;actionCode、Schema、实体解析与业务归属]
+    CHECK --> RISK{高风险动作?}
+    RISK -->|是| TEXT[校验精确 confirmationText]
+    RISK -->|否| EXEC
+    TEXT --> EXEC[调用具体 ActionExecutor]
+    EXEC --> RESULT{执行结果}
+    RESULT -->|失败| ERROR[事务回滚&lt;br/&gt;确认页保留并显示错误]
+    ERROR --> FORM
+    RESULT -->|成功| AUDIT[写入业务数据库和 t_operation_log]
+    AUDIT --> REMOVE[删除 pendingAction]
+    REMOVE --> DONE([确认页关闭，消息显示动作已完成])
+
+    AD -.配置.-> CONFIG[维护 System Prompt、模型、温度&lt;br/&gt;enabledTools、状态和 knowledgeBaseIds]
+    CONFIG --> KB[上传 Markdown 到 WeKnora 并绑定知识库]
+    TE -.只读查看.-> CONFIG
+    CONFIG -.影响可用工具.-> INTENT
+    KB -.检索上下文.-> PROMPT
+
+    classDef start fill:#eff6ff,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+    classDef action fill:#ffffff,stroke:#94a3b8,color:#0f172a,stroke-width:1.5px;
+    classDef decision fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-width:1.5px;
+    classDef write fill:#fffbeb,stroke:#d97706,color:#0f172a,stroke-width:1.5px;
+    classDef read fill:#eef2ff,stroke:#4f46e5,color:#0f172a,stroke-width:1.5px;
+    classDef success fill:#ecfdf5,stroke:#059669,color:#0f172a,stroke-width:1.5px;
+    classDef error fill:#fff7ed,stroke:#ea580c,color:#0f172a,stroke-width:1.5px;
+    classDef admin fill:#f5f3ff,stroke:#7c3aed,color:#0f172a,stroke-width:1.5px;
+
+    class START,REPLY,DONE,ENDMSG start;
+    class MOUNT,ST,TE,OPEN,CTX,SESSION,SEND,API,VERIFY,CANCEL,PROMPT,MODEL,GUARD,SAVEMSG,ASK,TOOLMSG,AUTO,LIST,DETAIL,FORM,HOLD,CHECK,TEXT,EXEC action;
+    class ROLE,SEL,IS_STUDENT,DRAFT,INTENT,RVALID,WVALID,EXPIRED,CONFIRM,RISK,RESULT decision;
+    class RPLAN,RFAIL,REXEC read;
+    class WPLAN,SAVEDRAFT,PENDING write;
+    class AUDIT,REMOVE success;
+    class ERROR error;
+    class AD,CONFIG,KB admin;
+  </pre>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#ffffff',
+        fontFamily: 'Microsoft YaHei, sans-serif',
+        fontSize: '17px',
+        primaryColor: '#ffffff',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#94a3b8',
+        lineColor: '#64748b',
+        secondaryColor: '#f8fafc',
+        tertiaryColor: '#eff6ff',
+        edgeLabelBackground: '#ffffff'
+      },
+      flowchart: { curve: 'linear', nodeSpacing: 38, rankSpacing: 48, htmlLabels: true }
+    });
+  </script>
+</body>
+</html>

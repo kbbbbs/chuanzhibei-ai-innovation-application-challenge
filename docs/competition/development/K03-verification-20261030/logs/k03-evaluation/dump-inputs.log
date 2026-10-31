@@ -1,0 +1,24 @@
+19:03:00.356 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:00.382 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:00.644 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:00.653 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:00.769 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:01.756 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:01.763 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:02.590 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:02.598 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:02.653 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:02.661 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:02.939 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:02.953 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:03.629 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:03.640 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:03.665 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:04.414 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:04.426 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:04.804 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:05.299 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:05.325 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:05.370 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+19:03:05.373 [main] WARN org.apache.fontbox.ttf.CmapSubtable -- Format 14 cmap table is not supported and will be ignored
+DUMP_METADATA {"sources":45,"inputs":104,"maximumCharacters":885}

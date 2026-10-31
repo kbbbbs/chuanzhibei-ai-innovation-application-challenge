@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Agent 简化流程图（第 1 页）</title>
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body { padding: 36px; font-family: "Microsoft YaHei", sans-serif; }
+    .mermaid { display: flex; justify-content: center; align-items: flex-start; }
+    .mermaid svg { display: block; margin: 0 auto; max-width: none !important; height: auto; }
+  </style>
+</head>
+<body>
+  <pre class="mermaid">
+flowchart TB
+    A([登录并打开 Agent 悬浮助手]) --> B[打开或新建会话]
+    B --> C{是否携带课时选文?}
+    C -->|是| D[附加选中文字作为上下文]
+    C -->|否| E[直接输入问题]
+    D --> F[发送问题]
+    E --> F
+
+    F --> G[Agent 入口&lt;br/&gt;识别请求类型并校验角色权限]
+    G --> H{CHAT / READ / WRITE}
+
+    H -->|WRITE| W([进入 WRITE 流程&lt;br/&gt;见第 2 页])
+    H -->|CHAT| J[普通对话]
+    H -->|READ| R[调用只读工具&lt;br/&gt;查询平台数据]
+
+    J --> K[构建回答上下文]
+    R --> K
+    K --> L[调用大模型生成回答]
+    L --> S([显示回复并保存会话])
+
+    classDef start fill:#eff6ff,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+    classDef action fill:#ffffff,stroke:#94a3b8,color:#0f172a,stroke-width:1.5px;
+    classDef decision fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-width:1.5px;
+    classDef gateway fill:#f5f3ff,stroke:#7c3aed,color:#0f172a,stroke-width:1.5px;
+    classDef write fill:#fffbeb,stroke:#d97706,color:#0f172a,stroke-width:1.5px;
+    classDef model fill:#ede9fe,stroke:#6d28d9,color:#0f172a,stroke-width:2.5px;
+
+    class A,S start;
+    class B,D,E,F,J,R,K action;
+    class C,H decision;
+    class G gateway;
+    class W write;
+    class L model;
+  </pre>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#ffffff',
+        fontFamily: 'Microsoft YaHei, sans-serif',
+        fontSize: '18px',
+        primaryColor: '#ffffff',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#94a3b8',
+        lineColor: '#64748b',
+        secondaryColor: '#f8fafc',
+        tertiaryColor: '#eff6ff',
+        edgeLabelBackground: '#ffffff'
+      },
+      flowchart: { curve: 'linear', nodeSpacing: 64, rankSpacing: 58, htmlLabels: true }
+    });
+  </script>
+</body>
+</html>

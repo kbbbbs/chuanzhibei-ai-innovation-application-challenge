@@ -1,0 +1,365 @@
+{
+  "createdAt": "2026-10-20T19:00:09.420954+08:00",
+  "baseline": {
+    "branch": "dev",
+    "head": "8a59b50dbad18688270f8bb3274940a57a678e06",
+    "existingWorktreeChanges": 128,
+    "privateBaseline": ".codex_tmp/k00/baseline.json"
+  },
+  "scope": "K00 backend model configuration and capability contract",
+  "normalRegression": {
+    "tests": 133,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 3,
+    "passed": 130
+  },
+  "newK00LocalTests": {
+    "tests": 46,
+    "passed": 46,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "explicitLiveFinal": {
+    "tests": 2,
+    "passed": 2,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "liveObservations": {
+    "initial": {
+      "generation": {
+        "role": "generation",
+        "status": "FAIL",
+        "checks": [
+          {
+            "name": "TEXT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1158,
+            "testedCharacters": 0
+          },
+          {
+            "name": "JSON_OBJECT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1179,
+            "testedCharacters": 0
+          },
+          {
+            "name": "STREAM",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1254,
+            "testedCharacters": 0
+          },
+          {
+            "name": "CONTEXT_SAMPLE",
+            "status": "FAIL",
+            "detail": "UNEXPECTED_RESPONSE",
+            "latencyMs": 1777,
+            "testedCharacters": 2432
+          }
+        ]
+      },
+      "planning": {
+        "role": "planning",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "TEXT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1741,
+            "testedCharacters": 0
+          },
+          {
+            "name": "JSON_OBJECT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1244,
+            "testedCharacters": 0
+          },
+          {
+            "name": "STREAM",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1121,
+            "testedCharacters": 0
+          },
+          {
+            "name": "CONTEXT_SAMPLE",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1578,
+            "testedCharacters": 2432
+          }
+        ]
+      }
+    },
+    "final": {
+      "generation": {
+        "role": "generation",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "TEXT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 832,
+            "testedCharacters": 0
+          },
+          {
+            "name": "JSON_OBJECT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1428,
+            "testedCharacters": 0
+          },
+          {
+            "name": "STREAM",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1202,
+            "testedCharacters": 0
+          },
+          {
+            "name": "CONTEXT_SAMPLE",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 2110,
+            "testedCharacters": 2432
+          }
+        ]
+      },
+      "planning": {
+        "role": "planning",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "TEXT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1648,
+            "testedCharacters": 0
+          },
+          {
+            "name": "JSON_OBJECT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1256,
+            "testedCharacters": 0
+          },
+          {
+            "name": "STREAM",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1224,
+            "testedCharacters": 0
+          },
+          {
+            "name": "CONTEXT_SAMPLE",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1595,
+            "testedCharacters": 2432
+          }
+        ]
+      }
+    }
+  },
+  "latestClassReports": [
+    {
+      "name": "com.cupk.aiacademy.model.ModelRoutingTest",
+      "tests": "7",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelCapabilitiesTest",
+      "tests": "5",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelConfigurationTest",
+      "tests": "3",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest",
+      "tests": "9",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelPolicyTest",
+      "tests": "19",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagEmbeddingConfigurationTest",
+      "tests": "2",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagEmbeddingTimeoutTest",
+      "tests": "1",
+      "failures": "0",
+      "errors": "0",
+      "skipped": "0"
+    }
+  ],
+  "build": {
+    "command": "mvn -DskipTests package",
+    "status": "PASS",
+    "artifact": "ai-learning-backend/target/Final_exam_question_bank-0.0.1-SNAPSHOT.jar",
+    "sha256": "739be4f555e4598db105127fd2aeab76f0f845d3e6a0cc7697975b6dcdd9f75a"
+  },
+  "changedK00SourceFiles": [
+    {
+      "path": ".env.example",
+      "sha256": "f43b54ba084f5a03c1e454369050865cdc21bcf8eda29ffe35bdda635fb49cdb"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/action/AgentActionSelectionService.java",
+      "sha256": "eb0828d726aa7da71ab96b7d48c44eecc4721f440fdf04c5ceac1056ba90f855"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/action/AgentParameterExtractor.java",
+      "sha256": "46e6cacd5571425a7961bd52cbf93ead0d3e09cf5c79c813f6315ca86c3f16b1"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/controller/AgentExceptionHandler.java",
+      "sha256": "e4df185f8776ffaff423928d9a3eb19b0bd7787fe7f86f951d015d9d3eef455c"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/controller/AgentModelController.java",
+      "sha256": "51fcff546eb1e78381fbd0d309119c1b6d835190c482ac2af1524bbcfdc9ec11"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/llm/AgentModelDiagnostics.java",
+      "sha256": "e8ca9b9e3e275a9578f2ef34e008e93744d1f6dd9fd4c98c8d56b8a478f4ff9c"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/llm/ChatModelClient.java",
+      "sha256": "b8bbc50aef791c685794dc53aaeddf55d909ff836a5a9619e872d3fbfe26ecea"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/llm/SpringAiChatModelClient.java",
+      "sha256": "104a3ffdaeddf0d04de6771fd4b641598e46dd17c4e07761dd17f63b655d15d7"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/service/AgentChatService.java",
+      "sha256": "e9503a9299185f00c7773a645dc9072bcf2d9a74c1cdd9f0d2bcece0c816fda2"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/planner/PlannerModelClient.java",
+      "sha256": "00a9871b6f2cab179c2d3457598d10b9ac074b7317008446d21a1ff57b3c07d5"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/GuardedChatModel.java",
+      "sha256": "b1fd00b33fa4126a8fbdac31883edf178441ea4561c44ef9a75f849920112c4c"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/ModelConfigurationException.java",
+      "sha256": "e5a92fcf5b05f2361ac4ab83a71309e50d9fdd04cca0485e443b5b96f97ad5c4"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/ModelInvocationException.java",
+      "sha256": "40b718f8a2f732df3b1c46474e9fa10d0ceb7f0d503abd0b2bbb3185c6757005"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/RuntimeModelCapabilityService.java",
+      "sha256": "e2059df0b9cea68670c7dc64861e0de1696dc46d8385cb5c5095827afd296525"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/RuntimeModelConfiguration.java",
+      "sha256": "8443a98a4dd4fedb50407e69d071e4aad164728b546e1e89d08de7db1a7e64c9"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/RuntimeModelController.java",
+      "sha256": "901dbe7eac2b457cb1c4d79fcb1bd1272afdcfec6199780897f3da5b91093f1d"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/RuntimeModelPolicy.java",
+      "sha256": "e7fcda40fcac0e0e2a460dfaadfd299f954b7879ec8999c638c131e96c5bc742"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/RuntimeModelProperties.java",
+      "sha256": "e4bda633713f399afc757f7d3468272e617087808afc5db7f402f43828284e6f"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagEmbeddingClient.java",
+      "sha256": "7abd55622f5554e1f0b1bc75dc518167d130da6549f05a5692e000795ac30e91"
+    },
+    {
+      "path": "ai-learning-backend/src/main/resources/application.yml",
+      "sha256": "5888d00c19039ebdd46ad0268f04856dd831c3e974c655f7d616b64c7cb5faca"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/ModelRoutingTest.java",
+      "sha256": "aa2f564517338d9014cde995f2b83f5b371058ecdc62c56352f0cf7becb6f70c"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelCapabilitiesTest.java",
+      "sha256": "84dca7a4b814f6fe1295b4c26f3d18e805a8ca32c67ba747253de68f6bcd5f2e"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelConfigurationTest.java",
+      "sha256": "8d07e5ae4074c8ab8ccfd9a04a767172865af8a60155685f3e58cf03981e91ae"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java",
+      "sha256": "e50ab345077cb6ee0e29c704e6185c79957c1efa5238f42bdbb41307b20574ad"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelLiveTest.java",
+      "sha256": "456e8052c45253d893c631443a8e951628fab2ec4ad78a704f2e7ea9f4335d88"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelPolicyTest.java",
+      "sha256": "61585443be78cbde8fa784004384d9306759b0fafef61e288f857c6f4a5ee5a4"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/RagEmbeddingConfigurationTest.java",
+      "sha256": "4cfd72794055365bf02fdc42707fe592977a1bee36b59e2cadc5056202049fb5"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/RagEmbeddingTimeoutTest.java",
+      "sha256": "00be03f1d812103f729e35cfc1e8c6d0b4bc920af981a4c4b06a92bc2056da63"
+    }
+  ],
+  "limitations": [
+    "No maximum context-window or teaching-quality claim",
+    "OCR model intentionally unconfigured; adapter remains K02",
+    "Embedding external service not configured or quality-validated",
+    "Initial generation context sample failed; final repeat passed without changing prompt or assertion"
+  ],
+  "logs": {
+    "red": ".codex_tmp/k00/red-test.log",
+    "redReview": ".codex_tmp/k00/red-review-findings.log",
+    "finalRegression": ".codex_tmp/k00/regression-final.log",
+    "liveInitial": ".codex_tmp/k00/live-check.log",
+    "liveFinal": ".codex_tmp/k00/live-final.log",
+    "package": ".codex_tmp/k00/package-final.log"
+  }
+}

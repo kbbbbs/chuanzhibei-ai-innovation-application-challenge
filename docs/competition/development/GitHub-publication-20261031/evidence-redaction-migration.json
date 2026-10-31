@@ -1,0 +1,356 @@
+{
+  "migratedAt": "2026-10-31T11:39:52.970752+00:00",
+  "scope": "Publication redaction cleanup of historical already-redacted record artifacts. No original private session files are copied.",
+  "historicalHashNote": "Older verification hash lists remain historical snapshots. This ledger explains removal-only byte changes for published record artifacts.",
+  "delegationNote": "Some collaboration tool arguments are opaque platform transport. Ciphertext is omitted; actual visible delegation text is preserved in each child first input_text envelope.",
+  "files": {
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/collaboration_validation_doc/records.jsonl": {
+      "previousSha256": "4e1f168940fdfe3f4dc126863cfd09c1ee03da9d3adc14b9b7c981b044d90d2b",
+      "publishedSha256": "a3edaf1e7544fe0af91e8fa3eb3f72f7b2965d110696056d63886e436230f928"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/collaboration_validation_doc/manifest.json": {
+      "previousSha256": "6c74748539b791f6965865d6985586c1b8dbb956aa28e48d57de3088d7e318cf",
+      "publishedSha256": "89613a0d1ddc480c7a7f96f3258346f8e577a6d43413363eb6013fd6259c0b25"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/collaboration_validation_doc/records.md": {
+      "previousSha256": "37ac71202e36a8903bc4fc4cb21e9f8a9f8e9dc777b3e6543c9f90d0dc198dde",
+      "publishedSha256": "d2b9258d65ec260a7c0f48e27842fa25f55c76723bd9c68dd84a4ccc72014f11"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/github_readme_setup/records.jsonl": {
+      "previousSha256": "4acf1880a7cebe53bed5f954de71b8d93fe781d639ce84c03dc5313302f94b10",
+      "publishedSha256": "adbb9681910538bec347d2e2796146dda52d19f4c5a55261fbade6c4deaf0e3c"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/github_readme_setup/manifest.json": {
+      "previousSha256": "7a50c540a2a43358c3dac991ff25bd9b66fd4d51538da5e364cbf6e1be9ff924",
+      "publishedSha256": "bd83a9caacb289af4143c5ff5a00d7c418e3ff6991e1a183350a00fb0b1e19a5"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/github_readme_setup/records.md": {
+      "previousSha256": "e3abe3ac834b06305fb449249490200ff32d390ac9b54aad2f273ed46b096bcd",
+      "publishedSha256": "b7ee0347bd8964427d9f0b26df33c3565824ad5cf19ae10888f2a54ba1daf584"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/github_upload_audit/records.jsonl": {
+      "previousSha256": "82873bcb16a840c4986e2daac7b9dc4a0d2995fef4fd55d49048544f236ab927",
+      "publishedSha256": "47950e66d94fe1c422b76a7c8bd84409d43d6d7edbd93aaeca328a89aed50016"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/github_upload_audit/manifest.json": {
+      "previousSha256": "b1f0f3e52e276482f7a3b558b7eb8e4e2200783f2414a5b9135bfe3c4cbf8cef",
+      "publishedSha256": "2f4e2c4add3eaccc7812db24a8cbc1f470f834e81c2a838e6695c0ec5e214bdb"
+    },
+    "docs/competition/development/agent-records/2026-10-31-github-collaboration/github_upload_audit/records.md": {
+      "previousSha256": "f4d5e9156923a5a5f3ccc43ebf0fd77a2a86ceebe51f7910de3c76192e7b1ed6",
+      "publishedSha256": "59ec101b2c51567951d791d2bb0d9444096602fbde1d267f438c142870fa96f0"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_evaluation/records.jsonl": {
+      "previousSha256": "c5ed7292c0230272982bf25401da3ea8a66a9837b5d435ca8c188b57ec3b813c",
+      "publishedSha256": "097f648b2b8a560851dce49ad17e191937811c345649fe41d3625ee73f357621"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_evaluation/manifest.json": {
+      "previousSha256": "754dcf98cec205620102b7a012d6ed27c94f87ae25fe9c693bc0406ee81a34fa",
+      "publishedSha256": "5831563bbdb450b70a9e447383f6652fc44ce7a2ea573b2d5b2e71488fb2dc93"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_evaluation/records.md": {
+      "previousSha256": "e63e2eb6c0704b99d79d704352761d10125e24bb87afe9cb1182cfd391684848",
+      "publishedSha256": "d866e509543897654fe12d2443159e817267ba9ec67cb509531fb62321540e76"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_record_audit/records.jsonl": {
+      "previousSha256": "207015be9e109633f77e576699842fc4db017613d25b99682765fddd255c61f8",
+      "publishedSha256": "a65c4b7ee3af9028a60131c0f909832c3a4dffc0d927b222c1ab284550646211"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_record_audit/manifest.json": {
+      "previousSha256": "21b2dd89a48f3c6a131697cf8372e7ffc8aad2ed90c70d438bd76f64b254b300",
+      "publishedSha256": "db28d25e12af21ef923f077672a49703f9b1297c51ca8e6c27e03f1e23aac969"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_record_audit/records.md": {
+      "previousSha256": "74777eb3988c41f6f334836dc5a1279dc6b92263c753a043973fb6f6fa527e78",
+      "publishedSha256": "ca5e390ae062942dbf05c101cb3be794615798a0e5374870a95f6d0318cea2ba"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_restart_proof/records.jsonl": {
+      "previousSha256": "f9bb6afbf92ea207242e8c69f440b8b4cd071b7d0b9eec9261752b34105a6ede",
+      "publishedSha256": "2aa50d82dd6bbf45f225c5706f84aa3024ebb9adcbf9a440c9dd2508393485ad"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_restart_proof/manifest.json": {
+      "previousSha256": "4fb7e3f94e44ec9c3ce50e69140d8bcf9563a5f3121b377b5cc7b6238bb73d6d",
+      "publishedSha256": "52ad422912792af32f7bdc71987e1c74abdc38091130db71289b239202e7b1e6"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_restart_proof/records.md": {
+      "previousSha256": "65f119f601bba6038055929e63e9d22e80ad9dfd906a944ba49a4b53238c79d3",
+      "publishedSha256": "f046fc5dc7de5a33f63c9b6f3bd9ec12df28634b5a1773629e2b52d72d99ee2a"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_retrieval_core/records.jsonl": {
+      "previousSha256": "39bd90009cff3f33c0140ce8b93d8af2c4f91e71f1f3c18e4ac00b45886ada2b",
+      "publishedSha256": "8ef17acd4a49233ed553189b5068446234b6bf51e7bf461b6a0ed5567536903b"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_retrieval_core/manifest.json": {
+      "previousSha256": "58a97617f4ac427084f32033640efe443be0e21ea572ab1348a468c06f8b1c52",
+      "publishedSha256": "d883982c6e82757e45781f03331f140d9fde22955acabbde911b2d7bb0bcd885"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_retrieval_core/records.md": {
+      "previousSha256": "ab6e4db5a511574dbba4b57d172681a9cf014225a64057b3afe4afc6fb1e2908",
+      "publishedSha256": "5ef3a31dbcb2967b385cf5f60e228676f2d5b90b60a70e18244d635dcfe16c34"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/records.jsonl": {
+      "previousSha256": "503a364369d10471edb1ecca5049f66c6543a068955d5af1bb155efe6fbc4370",
+      "publishedSha256": "f4353100c642857ce12e4b148f8d4450bfb7d00e9cf9ce5c30c2cc5aed852fa8"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/manifest.json": {
+      "previousSha256": "37e5b7621bf8786ed6462f086c5ccda3a0cdd1d660646341f23755b76bfc7795",
+      "publishedSha256": "1e2dd119c2dda9f27ecaae3d2c646d57083e0217f9fb29e6aa825b52f83ebe02"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/records.md": {
+      "previousSha256": "56ebf415cc24555a06f9f040c4b58e615326d45f5a61bc28800aed88e1c50b51",
+      "publishedSha256": "a85a92d04af26719aec148c3fdaa54ca26fbdc64a4749684c5888f4ce5d93675"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_ui/records.jsonl": {
+      "previousSha256": "d0bf37fddc2fe2475a114dde70ff5dfc479d5cb2cdf1155ca5930ae89f792b71",
+      "publishedSha256": "9ad00aa94ba412323c847ca25bff2ecb991342d48255ce16bb735862e0aab22b"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_ui/manifest.json": {
+      "previousSha256": "ef84a1cbea217ac7aae74434d92c958dc57f4e48334e67e6cc96798579bd71dc",
+      "publishedSha256": "37e4b5f4891e10411d171a3851700b4bf46e7015a7091dce0f78b79142fad4b8"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_ui/records.md": {
+      "previousSha256": "a98506c31285c251ff59e754fab0ad1b10a6d6224fc27e96c13e3dbffec1fc73",
+      "publishedSha256": "f3cdc1ed6a5df9626c88d162ebdc573752f73eeccc2f2870aadda1e90a572a55"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_ui_finish/records.jsonl": {
+      "previousSha256": "60c6076715484c77d1654ca3182c7c18901af5ec9a9df936c14b4ca7a2878542",
+      "publishedSha256": "0191a4c6c7a79b739776f883f7be9611e1ad51491df0dcf32639eb89625545f4"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_ui_finish/manifest.json": {
+      "previousSha256": "a945b56bd5a436e629f413fc89d87bd8b71e4d1eb12ea3e7912546386e6f1b50",
+      "publishedSha256": "0a2758c53d5ec6d32f032444408bed9ff5ec41a6c5603f643218072856f99cbc"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_ui_finish/records.md": {
+      "previousSha256": "3061657ee97cd5a3d6c87c168270958eb652dc8b02844df3842c5fd129ed810c",
+      "publishedSha256": "d9671c0fbff844683f7871a565e22c0734eec271b30f8797b13399067d1707fc"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/root/records.jsonl": {
+      "previousSha256": "d1f50de01c3b9904bada6f022f5a6893b0302b570f2a71cff49526b61d92e3f2",
+      "publishedSha256": "862f53ab9a54cf780a8811d0d18bba7d0c516ecc8203523752d7bc2d6edcd5ed"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/root/manifest.json": {
+      "previousSha256": "28189e79889fbb9f701a95b92c42e12e9a1ef16a658fb2b1181b6018eec99af7",
+      "publishedSha256": "a64d71cdfdc68f37d03311c54905d73a62a052760ef7f6a54ae8e7ebb4d0e61b"
+    },
+    "docs/competition/development/agent-records/2026-10-30-k03/root/records.md": {
+      "previousSha256": "d5c89bffe4089daa673f8a21be0e81a75bb4ded74354bf3550d9d70aa71b8705",
+      "publishedSha256": "5ee097d28dcf71b54ebd46a0e62296327e040005664c23d971b7c25ee3d7a6cd"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_chat/records.jsonl": {
+      "previousSha256": "f62e4920f97d43eaa0225e93420260d204d97b5f71eda4e19f13daeb558be620",
+      "publishedSha256": "1b7d29581917ae46acd2fd1e58fbcdb8a6c6fde20401c95d65aec6c46bb8131a"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_chat/manifest.json": {
+      "previousSha256": "a045c453de78137d408c1c8f1f32118a90cde36b126014e6568afca3ffb4a31f",
+      "publishedSha256": "d429b6858b9d0affc33c9f71526a5a4cc307270edf951d2cf2e11e37b1be109a"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_chat/records.md": {
+      "previousSha256": "53be95a191bd918cd1071c9b4da5d2a25cd63d4b0c832c0a476bcf0e80a157c4",
+      "publishedSha256": "a601c501f92ec647dad31f80763d1ea3f7a90f4aeb1ca3f6dc0f4e5e1cf092fb"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_layout/records.jsonl": {
+      "previousSha256": "1dd25049e2fd112d5ae3ea9cf46c217f5c0c0a42f739047973c82b097b81547e",
+      "publishedSha256": "35c9478e72b5b567d8802cf60148fc298a85dc560feb721d3b983cb7c96d6f84"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_layout/manifest.json": {
+      "previousSha256": "95acaf840f228536a98581f6f14b09cd8a51cd36bfb2989240d1ff66570e4519",
+      "publishedSha256": "c1e80d10325d3683eb2f61d42c0b0000457b476b8c9cc3f4c601354498907588"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_layout/records.md": {
+      "previousSha256": "d9d518d4d7e97826e43ced11142600d727c07104cfc41c30940021284e317e03",
+      "publishedSha256": "a99140e31cfff5937f66be95090b7eede1c93a588003109b8ead71af5b266e1e"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_ui/records.jsonl": {
+      "previousSha256": "8e028ea4ccef70f763caf216f1f3d80680a1ef12adb7ad5f29ada92df57fe765",
+      "publishedSha256": "02b65f9d1ecd07c29ddf2d319c1e4c80f68a31cfccac7c11f7e6211d02f062ca"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_ui/manifest.json": {
+      "previousSha256": "a8352aec8214ab64b5ae7321aa043cc2b4fa88aef7900dd42467c79aa4dd27ad",
+      "publishedSha256": "39de1ac8a9d4eb3070d0db4f9fcbefdab60406d8f0f05b360909826fd7fcb74f"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/k02_visual_ui/records.md": {
+      "previousSha256": "e90fcd0b726da2921da14ed47e45512576b86949f1d8781efde562bf9c971cb6",
+      "publishedSha256": "dbd37909c082a875a35481ac9183ee62e5dc180ae3ee041b3bb2821cce8763b6"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/root/records.jsonl": {
+      "previousSha256": "b8f2aa8ac3f4beb424ea266d9f98032697d85faa827545a0cbc4bb1dd96ab1e4",
+      "publishedSha256": "45ab4048dbc434dcb35fa3d818e889cb63353e22b7dee1549aee11d7d3e65d39"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/root/manifest.json": {
+      "previousSha256": "916ba6b59f8445c9969d9644c923b134ef6c090fe098ee0148e02fd6cca5fa1a",
+      "publishedSha256": "ee468c1fae36684d0e3489a770ea59e6eebd1aa536afafbb024aaddb67deb9e4"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-visuals/root/records.md": {
+      "previousSha256": "a97dd6d94e21a586e1522bfd20e1823a698d1266901e4645da84851e66d821b6",
+      "publishedSha256": "549dfb6d86541029977ae28e38d5f3743e65a5b0588ae3de85bd07ee44ec3a13"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_job_persistence/records.jsonl": {
+      "previousSha256": "affede25cb8309384446fff335a059e7ffa874e4f17e69d622a61b8d8b6fbc1b",
+      "publishedSha256": "27ac31cb85b7f4be09d892daad41e238f4a8f0ef833a456c1fa9c4a18126bcd8"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_job_persistence/manifest.json": {
+      "previousSha256": "a2ea6c1c978486909cffe99f62f45b886ca24416b27af0a5e941d10c5567510a",
+      "publishedSha256": "3045e239ab5e2264ff800c9163d3cd6e4a1ff8b884196310ce1a2a087b1d3f48"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_job_persistence/records.md": {
+      "previousSha256": "c4d4d8b00698b5030c2a1bab3b08b32f67056041f583e56dc5451dcf4b067617",
+      "publishedSha256": "b360b72010cfc6500ae22ad0e41e6f0f2be68f4b2bac2f54277ba41c8d96282d"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_page_pipeline/records.jsonl": {
+      "previousSha256": "485b91aa06eb1424a7d00dae92abf9bd98b5212ee3cd3727af751ffaabc3f6b4",
+      "publishedSha256": "91e07cd5956cf3327e06a97913ff27d33de1990ee2e51f73a5e7d3fcdf273517"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_page_pipeline/manifest.json": {
+      "previousSha256": "1ff373c0d7ed68497e184d946bb5d52b3510fc63eac2ca894b2ad72d9f23da42",
+      "publishedSha256": "3d5566daafd9e15fef9d15aff651fc2001bc88dbd1306e5092d954b052182b8a"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_page_pipeline/records.md": {
+      "previousSha256": "b9e87891a66f6059ab5c37cc5ea89cd7460c4fd82b66f24cf60d4e99b3244a5a",
+      "publishedSha256": "2cf1014eb270c9278e6f95748a9fe5f13de29ad6f2e103d29ba2551ce1c68e06"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_processing_ui/records.jsonl": {
+      "previousSha256": "a8626eb79576bbe23ca216044f0366748c6fd70b6a2bf17757276893c46f979f",
+      "publishedSha256": "d654cd74870eeb6c5130237a7a95c34b92fa7646a7dbcf2876b04ececefb58c7"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_processing_ui/manifest.json": {
+      "previousSha256": "a3ca1ddb0c3893d09843c754933e69a2c43723e0f3f167cc9b80b0fdfd1fa7ee",
+      "publishedSha256": "af194bca9bd64ef8cd9cd3eca48bf6c1cd8f12161769ffaae1704a58c9d34c92"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/k02_processing_ui/records.md": {
+      "previousSha256": "20326551ef6939896d62b7be0c315f16f2dda703cc1efdf291d2cfb79617fb8a",
+      "publishedSha256": "fc09b88b03878f8cada9feb050ab2891fca8eb7b6ac814ffc6348272c7bfb462"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/root/records.jsonl": {
+      "previousSha256": "9d6cd97c8a60a5545c720cbacfb20b75dcf4006332a16f69d84be11b8ee41350",
+      "publishedSha256": "417ec6b7999d96a424b072f1b82ac2798ff0fceaba8af555592816560739b441"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/root/manifest.json": {
+      "previousSha256": "e04c20ef53f441c28dea5a5455454385365afe04e46f5c5c2cf6b4571a4c1c16",
+      "publishedSha256": "2997333307810edbf6da650f3a8ea3ca2a016830b88bb96c0c581dc02fcd94a7"
+    },
+    "docs/competition/development/agent-records/2026-10-25-k02/root/records.md": {
+      "previousSha256": "0a0e3a73de431bbb68d5685b005a6f03936f4270d6b5a9d43cb1d3be1b59f7af",
+      "publishedSha256": "79329e9430617860d00f2e6694c4ec0a367e1591bc63b68e5749e71f6283f2b5"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_authorization_audit/records.jsonl": {
+      "previousSha256": "b622481025468a58335c1a6e450c79d5b5985c8f8dd2bd31b513ad66b085e6e9",
+      "publishedSha256": "e5d4b589e2904bb562cdd9b84f0c84332ce4df176c21e42160e861588555a672"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_authorization_audit/manifest.json": {
+      "previousSha256": "1467b7df8a36278ba70a6f872fbe95019e280eee07dacdd6be0bb2fce7d8570d",
+      "publishedSha256": "c1200b0dc07e36c63e83de99d72c620c93d1242544f00f7252685d050a9285d9"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_authorization_audit/records.md": {
+      "previousSha256": "918b8b4aa59061f0582fd41f5cb6231700c27250126d222fcba6115f843e2790",
+      "publishedSha256": "3c192854ec40456e07b727636b730563d36c1a36f906581277e98363cd867939"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_data_audit/records.jsonl": {
+      "previousSha256": "77ab06b1c34d0451266f243c0a8703fd04aa7dcefafa59d8c74c1e5fd856f988",
+      "publishedSha256": "289b804502aecdc4c5b9c1bc7ee6bdc245489010d48f440281ecef403c5cb6bc"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_data_audit/manifest.json": {
+      "previousSha256": "e8f196f087a40b03658eb2440a551bd0aeaef0b51a83440b4e864282ebc53c97",
+      "publishedSha256": "cdd52a111a4bf5b7aedadc7c273da6d409be86683c05172e51b663aace46cbd6"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_data_audit/records.md": {
+      "previousSha256": "16eb28aa1c6f00f794561bfb0b80e75a59b2f669671af0e99651954fb7525dc7",
+      "publishedSha256": "fbee8f217f36891e07beddd1f6c882e80097fb3b60de9d8f0ac2e3e6d8fb7e89"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_file_store/records.jsonl": {
+      "previousSha256": "f02d8daf5e4b758c8b6b651a50e2017bb128529e75aca0d6414b3549163eb4d3",
+      "publishedSha256": "8d2828140b45fa3a9db2190d5f18f4cb197bd0e230bdf281baf6f0008fe48cbd"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_file_store/manifest.json": {
+      "previousSha256": "7b87a5dbc559cc027c5d1626b7602d2f668336dfcc67190caef11cb44e651cd0",
+      "publishedSha256": "bb1ec9a9b309200ad0db1c9dc8809dc33c13223d094bbcbbf97ecbfd5903d9bc"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/k01_file_store/records.md": {
+      "previousSha256": "48b68dcce7acce35e499bbfc4f3b0c678dd440537f27f9b546af8870675f1de3",
+      "publishedSha256": "b61079524a0996440b925163d2b394376cf2de714afba1f8df3a8a2076971a1d"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/root/records.jsonl": {
+      "previousSha256": "8fccfff75aac0f4481ccc8c24203b7b427ca2be0a682fdbe0471b77ce7b1e063",
+      "publishedSha256": "9f2ad8ac7349b98dc7e3b140e28d0fad2ea0a3e618b44d35a98a8332a1ad44ee"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/root/manifest.json": {
+      "previousSha256": "e109e87cedfac7da4dbee0cc75076df7f34ae2a1bf1f340d5444eb23adf5a944",
+      "publishedSha256": "d1d6c412f8d9e9f0051c94c3c35f0d5a77c1fd77e6ef70be7e5a72891ec1a8e7"
+    },
+    "docs/competition/development/agent-records/2026-10-22-k01/root/records.md": {
+      "previousSha256": "e525c1facff3cf3815397697e410bc082aa51c35b8299bc813a157ae55c690b8",
+      "publishedSha256": "c3c4c0b93cac1cf5087aa462c1ca58aecd87dc3826e8cce0a0207cd61e99b23b"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/api_client_audit/records.jsonl": {
+      "previousSha256": "19dd3a962296b9b2492d5e819bd8f54c4d7ebc167a7fdeac7feb62cd843b8d89",
+      "publishedSha256": "f19ded56e38003600f387cb95f2413051be7d9bcc468c7c26fb1e6246e174917"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/api_client_audit/manifest.json": {
+      "previousSha256": "7b36c5a5526e4817c17abc4bf0b6774581d8a2d172e300284039ffda7e4068f3",
+      "publishedSha256": "fe8220d448926ed45e2a3439b2556513429a4b7738bd8b120a25f4a5a97f61a5"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/api_client_audit/records.md": {
+      "previousSha256": "9edb42b71091573ae88d292d4170d505ee5aaa464ba83b6a8dbe3b242f7490c7",
+      "publishedSha256": "c181808fefdb47818809a9a059aeef1f3e6889269d7099b8c3912c2eb10db112"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/ocr_http_client/records.jsonl": {
+      "previousSha256": "0953ce3cad3c7e255d3830b12a4e87731fe4e131e044680a0c2f436e3da7e654",
+      "publishedSha256": "c800c5a2101a0931cf663a6ed176d83c684cafe6f4e0cf725919ebc75f0f9911"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/ocr_http_client/manifest.json": {
+      "previousSha256": "823811dbc8223a0fe7181187fe82dd3fd260951f4adf278538f531b819a9b625",
+      "publishedSha256": "37038878c3a132f4c7354339696001cb8f77ce0a1a462eed517ea297d77c3467"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/ocr_http_client/records.md": {
+      "previousSha256": "3b2374b60c0e739a7610c342cc2bf3448a7afa3bf8d60796f8c204ded81305d5",
+      "publishedSha256": "c9d8afbd7b2847cfdba963c858e90025b6b598faba8782fd469b7afb1b59e0e1"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/root/records.jsonl": {
+      "previousSha256": "3968b9ce918cba747d94b80d6279e43a66b01c86a4fd36fcf242660f27f40950",
+      "publishedSha256": "199e0dc9f5c2f64a2f7ed49b611fd0ecc94f6db8c62ea0bfbbdbdc02a38b089e"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/root/manifest.json": {
+      "previousSha256": "873ea08cf30fe4e2434dc2ec2bb2525217d47ccc5226d93a39222d996c3c332a",
+      "publishedSha256": "36ecd10e0a136ec7c5dc103666a47b26001ef148b2026897db55c2acb69675a2"
+    },
+    "docs/competition/development/agent-records/2026-10-22-api-verification/root/records.md": {
+      "previousSha256": "709dc1c0d02a6869b672eac0fdb80c05550eb436ceb6ab4138265e1634075e2a",
+      "publishedSha256": "2e4db1c78733d6752af045791022a9aeea470d32841fed3209b0f45e2f304d5e"
+    },
+    "docs/competition/development/agent-records/2026-10-21-siliconflow-configuration/development_recording/records.jsonl": {
+      "previousSha256": "14afa853aea9fa7b6d3f63cbf8383fe88a8dd9a96ada23ddc692b312106a2291",
+      "publishedSha256": "bd5887a28853fdaad76ec2edda8e89281b5e1f325958c1de723912a6f189ef3b"
+    },
+    "docs/competition/development/agent-records/2026-10-21-siliconflow-configuration/development_recording/manifest.json": {
+      "previousSha256": "b7b8f5163c3f5ad95f4ee030c152fa82689412dd07fad5852eadaa17ea97da88",
+      "publishedSha256": "da1fd8b4097b8abd85440933f5973a1612e2fbf60e53e48b7516913cd1b8e643"
+    },
+    "docs/competition/development/agent-records/2026-10-21-siliconflow-configuration/development_recording/records.md": {
+      "previousSha256": "c204ce0a40b91aafc4210f604ef3845039f2e3c61e787aafbdad581b9e840d51",
+      "publishedSha256": "9cb49adf4f3e3757294d937ff12e5583f07be16d46216ca54734e7a449bbb9b9"
+    },
+    "docs/competition/development/agent-records/2026-10-21-siliconflow-configuration/root/records.jsonl": {
+      "previousSha256": "2860209956d46c0dad5928f57ca0d207287bb495531f8d6486761814cf202804",
+      "publishedSha256": "23536d33359d2f56022504ee4c4f63c487a495af3a426e7a6dc4c5ce21fc824d"
+    },
+    "docs/competition/development/agent-records/2026-10-21-siliconflow-configuration/root/manifest.json": {
+      "previousSha256": "93cd74c08f1b228c027a6bcfd28e41aaf8c47858cc07b4671e791db07534b1ae",
+      "publishedSha256": "a439934c5e3b30526e6341a2a320182068f1bf914efd810b2cb670d8dfcb84ba"
+    },
+    "docs/competition/development/agent-records/2026-10-21-siliconflow-configuration/root/records.md": {
+      "previousSha256": "86cbdb28c26a0fad3773a379f89e92d15f52a500486f3c7f81b1ff93b85e3bb7",
+      "publishedSha256": "7a419093a4b108170b82b287192a0b8a2725dc3ea114d24c4cf02dd13697bc03"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-formulas/root/records.jsonl": {
+      "previousSha256": "0c8e8c73ddba99f7531fbfe929b25c07351def257976da609ac0b6160677f441",
+      "publishedSha256": "12fece6ef1237b70fdf3d14941ab96779640c9808127c513b1bb924ea6735801"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-formulas/root/manifest.json": {
+      "previousSha256": "c5b3fd6c1af3940bfaa5ead1a96a565b22ba0a8c7cc4691d6520a424763b37dd",
+      "publishedSha256": "2bd527048a7ea808e3d559dc34e6e021ca18df5eecdfbc6c8d771df927b462e7"
+    },
+    "docs/competition/development/agent-records/2026-10-28-k02-formulas/root/records.md": {
+      "previousSha256": "3273a9ee072a70a719998c22fbe5afd332cd14180b841c68ec161d883fb594f2",
+      "publishedSha256": "3273a9ee072a70a719998c22fbe5afd332cd14180b841c68ec161d883fb594f2"
+    }
+  }
+}

@@ -1,0 +1,99 @@
+{
+  "archivedAt": "2026-10-30T10:57:00.683044+00:00",
+  "scope": "K03 UI contracts with controlled HTTP and SSE fixtures; no live retrieval/model quality acceptance",
+  "actualTaskStart": {
+    "line": 432,
+    "timestamp": "2026-10-30T10:40:11.501Z",
+    "delegationLine": 438,
+    "inheritedPrefixOmitted": true
+  },
+  "initialRed": {
+    "tests": 6,
+    "failed": 6,
+    "log": "logs/red-retrieval-ui.log"
+  },
+  "followupCompatibilityTests": {
+    "tests": 2,
+    "note": "Added after implementation to verify partial HYBRID coverage and absence of stale legacy metadata; not claimed as additional REDs."
+  },
+  "final": {
+    "pageTestsPassed": 29,
+    "newK03Tests": 8,
+    "previousPageRegressionTests": 21,
+    "nodeTestsPassed": 8,
+    "build": "PASS",
+    "diffCheck": "PASS"
+  },
+  "features": [
+    "Actual server mode takes priority over legacy mode",
+    "Stable degradation reasons shown clearly",
+    "NONE never presented as hybrid work",
+    "New or failed searches clear earlier retrieval metadata",
+    "Returned answer metadata reaches mode display without inventing missing fields",
+    "Document/parse/index source version can be inspected",
+    "Index change rejects newer content as an old citation",
+    "Fresh legacy source does not inherit cached version claims",
+    "Partial vector coverage remains HYBRID with a limitation notice"
+  ],
+  "visualReview": {
+    "observer": "development Agent",
+    "syntheticFixtures": true,
+    "screenshots": [
+      "screenshots/keyword-degradation-review.png",
+      "screenshots/hybrid-source-review.png"
+    ],
+    "result": "Reviewed mode/degradation visibility and source drawer. Improved low contrast score tag. No overlap or clipped snapshot observed at 1280x720."
+  },
+  "limitations": [
+    "Existing agent-chat responses that do not supply a retrieval mode retain only their warning/status; no mode is fabricated.",
+    "RRF rank scores are displayed only as ranking information, never probability or correctness percentage.",
+    "The first recording command used the frontend working directory and failed to find the helper; corrected from workspace root. No product change resulted."
+  ],
+  "finalFilesSha256": {
+    "ai-learning-frontend/src/utils/retrievalStatus.js": "b261510f9d5987f03432696801b3fe473ae544182df7f76ceef83e47295a6da6",
+    "ai-learning-frontend/src/components/knowledge/RagAnswerStatus.vue": "1fecdd80150236f3f0e6ef60c480eb5af5b3da4538c4a3c15eff8eeb436a89e3",
+    "ai-learning-frontend/src/components/knowledge/NativeKnowledgeWorkspace.vue": "9896f71d0ffdf3489c337b13848b69d70486dd210a4c3d1480bb059e5a48bd43",
+    "ai-learning-frontend/src/components/knowledge/RagCitations.vue": "54a4e118606952efacd62a8bded47a7360af3543479097e0558437e471308743",
+    "ai-learning-frontend/src/composables/useNativeRag.js": "1dd2ff2cd007513074eafaffed1007a69c9cc73c764756ddb91fa03cbb3d1748",
+    "ai-learning-frontend/src/components/AiChatWidget.vue": "ba719bce68c0072b7e60b967c4dae94e8c620684e2802e9726e523a4b60a077b",
+    "ai-learning-frontend/e2e/k03-retrieval-ui.spec.js": "4ddb3dfb1455ad93dab6405380c69305eb026241f5d2b93b20a759477bbd361d"
+  },
+  "readOnlyFollowup": {
+    "checkedAt": "2026-10-30T11:29:34.800453+00:00",
+    "scope": "Read-only contract/status review; no frozen acceptance case scores inspected.",
+    "contract": "RagSearchResponse/RagChatResult actualMode,degradedReason,indexVersions match search/SSE/history wiring. RagSearchHit source version fields survive prepare/readVisuals/finish.",
+    "findings": [
+      {
+        "id": "K03_UI_CANCEL",
+        "severity": "P2",
+        "file": "ai-learning-frontend/src/components/knowledge/NativeKnowledgeWorkspace.vue",
+        "observedLines": [
+          75,
+          135,
+          269,
+          279
+        ],
+        "description": "Cancelling a pending search left searched=true/hits=[]; after finally cleared searching, empty-result UI could claim a completed no-hit search.",
+        "status": "Root authorized a focused RED-test-first fix after this read-only finding."
+      },
+      {
+        "id": "K03_UI_LEGACY_WARNING",
+        "severity": "P3",
+        "file": "ai-learning-frontend/src/utils/retrievalStatus.js",
+        "description": "New backend BM25 warning omits whitespace; the older exact warning translation only handled the spaced version.",
+        "status": "Root authorized compatible presentation repair; actual retrieval mode remains correct."
+      }
+    ],
+    "productCodeChangedDuringReadOnlyInspection": false,
+    "testsRunDuringReadOnlyInspection": false,
+    "existingArtifacts": {
+      "pageRegression": "logs/green-all-ui-final.log",
+      "node": "logs/formula-node.log",
+      "build": "logs/frontend-build-final.log",
+      "screenshots": [
+        "screenshots/keyword-degradation-review.png",
+        "screenshots/hybrid-source-review.png"
+      ]
+    }
+  }
+}

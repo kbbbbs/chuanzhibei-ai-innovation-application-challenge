@@ -1,0 +1,25 @@
+{
+  "syntheticContent": true,
+  "requestMocks": false,
+  "modelMocks": false,
+  "restartPreparation": {
+    "status": "PUBLISHED",
+    "courseId": 1,
+    "sourceCount": 1
+  },
+  "kbQuestionGeneration": {
+    "success": true,
+    "count": 1,
+    "references": true,
+    "message": "OK"
+  },
+  "agent": {
+    "success": true,
+    "status": "ANSWERED",
+    "mode": "bm25",
+    "citations": 1,
+    "sourceMatches": true,
+    "historySources": true,
+    "revokedHistoryRejected": true
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "dataset": "K03-evaluation-dataset.json",
+  "sha256": "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+  "frozenAt": "2026-10-30T10:47:57.901133+00:00",
+  "firstRealRetrievalRunStarted": false,
+  "questionCount": 60
+}

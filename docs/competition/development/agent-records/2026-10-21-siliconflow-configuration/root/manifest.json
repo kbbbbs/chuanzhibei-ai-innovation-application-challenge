@@ -1,0 +1,60 @@
+{
+  "format_version": 1,
+  "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+  "since": "2026-10-21T00:00:00+08:00",
+  "source_file": "rollout-2026-10-08T15-13-08-01a11a5b-d413-7b51-aaf0-7320ae85ce4a.jsonl",
+  "source_sha256": "37bef67c9ef85329071d45cf321c83accf41a825b6f01e00245753cecc42cdaa",
+  "source_size_bytes": 42216636,
+  "source_total_lines": 2711,
+  "source_start_line": 1,
+  "session_kind": "root_or_user",
+  "fork_inherited_prefix_omitted": null,
+  "fork_boundary_selection": null,
+  "source_line_range": [
+    2472,
+    2708
+  ],
+  "event_timestamp_range": [
+    "2026-10-21T12:48:16.804Z",
+    "2026-10-21T14:16:37.028Z"
+  ],
+  "record_count": 64,
+  "event_counts": {
+    "agent_message": 6,
+    "message": 11,
+    "tool_call": 24,
+    "tool_output": 23
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 6,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 1,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "23536d33359d2f56022504ee4c4f63c487a495af3a426e7a6dc4c5ce21fc824d",
+  "publication_redaction_update": {
+    "at": "2026-10-31T11:36:16.780015+00:00",
+    "operation": "Removal-only filtering of opaque transport and platform metadata in already-redacted exports; no events or raw-source content added.",
+    "sourceSnapshotPreserved": true,
+    "originalEventTimesPreserved": true
+  }
+}

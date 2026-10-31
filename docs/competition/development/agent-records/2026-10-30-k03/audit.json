@@ -1,0 +1,86 @@
+{
+  "task": "K03",
+  "archivedAt": "2026-10-31T05:58:53.672180+00:00",
+  "rootStartLine": 7025,
+  "rootStart": "2026-10-30T10:36:27.471Z",
+  "children": [
+    {
+      "name": "k03_retrieval_core",
+      "startLine": 426,
+      "records": 89,
+      "sourceRange": [
+        432,
+        756
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_evaluation",
+      "startLine": 429,
+      "records": 166,
+      "sourceRange": [
+        435,
+        1069
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_ui",
+      "startLine": 432,
+      "records": 67,
+      "sourceRange": [
+        438,
+        710
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_tuning_finish",
+      "startLine": 113,
+      "records": 120,
+      "sourceRange": [
+        119,
+        518
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_ui_finish",
+      "startLine": 116,
+      "records": 47,
+      "sourceRange": [
+        122,
+        277
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_record_audit",
+      "startLine": 129,
+      "records": 49,
+      "sourceRange": [
+        135,
+        307
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_restart_proof",
+      "startLine": 2,
+      "records": 53,
+      "sourceRange": [
+        8,
+        165
+      ],
+      "unlinkedOutputs": []
+    }
+  ],
+  "knownSecretHits": 0,
+  "results": "../../K03-verification-20261030/results.json",
+  "hashes": "../../K03-verification-20261030/final-file-hashes.json",
+  "limits": [
+    "Explicit exports only, not automatic hooks.",
+    "No original private JSONL copied.",
+    "Only until each manifest snapshot."
+  ]
+}

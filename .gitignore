@@ -1,0 +1,58 @@
+# Logs
+logs/
+*.log
+*.bak
+~$*
+*.inspect.ndjson
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Java
+target/
+*.class
+
+# Node
+node_modules/
+dist/
+dist-ssr/
+test-results/
+playwright-report/
+
+# Local settings
+.env
+.env.*
+!.env.example
+*.local
+.codex_tmp/
+**/data/native-rag/
+**/data/contest-demo/
+ai-learning-backend/uploads/
+/uploads/
+.omx/
+
+# IDE and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.iml
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+.apifox-run/
+
+# Reviewed, redacted development evidence belongs in the collaboration repository.
+!docs/competition/**/logs/
+!docs/competition/**/logs/**/
+!docs/competition/**/*.log
+
+# Browser profiles are machine-local credentials/caches, never project assets.
+**/chrome-profile*/
+
+# Local instance dumps may contain user identities and learning records.
+/database/ai_academy_export.sql
+/database/ai_academy_content_seed.sql

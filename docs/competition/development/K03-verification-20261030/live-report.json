@@ -1,0 +1,1613 @@
+{
+  "status" : "FAIL",
+  "datasetSha256" : "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+  "questions" : [ {
+    "id" : "T-ai-history",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p22", "第1章-课程介绍-绪论-okk-p45", "第1章-课程介绍-绪论-okk-p6" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p22", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p9" ]
+  }, {
+    "id" : "A-ai-history-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p16", "第1章-课程介绍-绪论-okk-p45", "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p33", "第1章-课程介绍-绪论-okk-p6" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p33", "第1章-课程介绍-绪论-okk-p16", "第4章-前馈神经网络-okk-p3", "第4章-前馈神经网络-okk-p34" ]
+  }, {
+    "id" : "A-ai-history-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p16", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p26", "第4章-前馈神经网络-okk-p3", "第2章-机器学习概述-okk-p36" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p43", "第1章-课程介绍-绪论-okk-p23", "第4章-前馈神经网络-okk-p3", "第2章-机器学习概述-okk-p36" ]
+  }, {
+    "id" : "A-ai-history-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p16", "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p23" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p9", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p24" ]
+  }, {
+    "id" : "A-ai-history-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p16", "第1章-课程介绍-绪论-okk-p11", "第1章-课程介绍-绪论-okk-p33", "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p26" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p24", "第1章-课程介绍-绪论-okk-p33", "第1章-课程介绍-绪论-okk-p22", "第1章-课程介绍-绪论-okk-p43" ]
+  }, {
+    "id" : "T-learning-elements",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第2章-机器学习概述-okk-p14", "第2章-机器学习概述-okk-p35", "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p45", "第2章-机器学习概述-okk-p36" ],
+    "bm25Sources" : [ "第2章-机器学习概述-okk-p14", "第2章-机器学习概述-okk-p35", "第2章-机器学习概述-okk-p36", "第3章-线性模型-okk-p21", "第1章-课程介绍-绪论-okk-p43" ]
+  }, {
+    "id" : "A-learning-elements-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p45", "第1章-课程介绍-绪论-okk-p12", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p32", "第1章-课程介绍-绪论-okk-p6" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p14", "第1章-课程介绍-绪论-okk-p24", "第7章-深度生成模型-p34", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p32" ]
+  }, {
+    "id" : "A-learning-elements-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第2章-机器学习概述-okk-p14", "第1章-课程介绍-绪论-okk-p6", "第2章-机器学习概述-okk-p35", "第1章-课程介绍-绪论-okk-p45", "第1章-课程介绍-绪论-okk-p12" ],
+    "bm25Sources" : [ "第2章-机器学习概述-okk-p14", "第1章-课程介绍-绪论-okk-p6", "第2章-机器学习概述-okk-p35", "第2章-机器学习概述-okk-p6", "第1章-课程介绍-绪论-okk-p24" ]
+  }, {
+    "id" : "A-learning-elements-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第2章-机器学习概述-okk-p14", "第2章-机器学习概述-okk-p35", "第3章-线性模型-okk-p14", "第1章-课程介绍-绪论-okk-p6", "第3章-线性模型-okk-p40" ],
+    "bm25Sources" : [ "第2章-机器学习概述-okk-p14", "第2章-机器学习概述-okk-p35", "第2章-机器学习概述-okk-p6", "第1章-课程介绍-绪论-okk-p33", "第2章-机器学习概述-okk-p36" ]
+  }, {
+    "id" : "A-learning-elements-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第2章-机器学习概述-okk-p14", "第1章-课程介绍-绪论-okk-p45", "第4章-前馈神经网络-okk-p2", "第6章-循环神经网络-okk-p4", "第1章-课程介绍-绪论-okk-p6" ],
+    "bm25Sources" : [ "第2章-机器学习概述-okk-p14", "第1章-课程介绍-绪论-okk-p45", "第1章-课程介绍-绪论-okk-p24", "第4章-前馈神经网络-okk-p3", "第4章-前馈神经网络-okk-p34" ]
+  }, {
+    "id" : "T-cross-entropy",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p9" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第2章-机器学习概述-okk-p6", "第2章-机器学习概述-okk-p36" ]
+  }, {
+    "id" : "A-cross-entropy-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p9", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p21" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p14", "第2章-机器学习概述-okk-p36", "第3章-线性模型-okk-p21", "第3章-线性模型-okk-p23", "第5章-卷积神经网络-okk-p32" ]
+  }, {
+    "id" : "A-cross-entropy-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p9", "第3章-线性模型-okk-p23", "第4章-前馈神经网络-okk-p18", "第4章-前馈神经网络-okk-p23" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p14", "第5章-卷积神经网络-okk-p15", "第3章-线性模型-okk-p9", "第3章-线性模型-okk-p23", "第2章-机器学习概述-okk-p6" ]
+  }, {
+    "id" : "A-cross-entropy-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p14", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p21", "第2章-机器学习概述-okk-p36" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p14", "第2章-机器学习概述-okk-p6", "第3章-线性模型-okk-p21", "第5章-卷积神经网络-okk-p32" ]
+  }, {
+    "id" : "A-cross-entropy-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p23", "第4章-前馈神经网络-okk-p18", "第1章-课程介绍-绪论-okk-p32", "第3章-线性模型-okk-p9" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p14", "第1章-课程介绍-绪论-okk-p14", "第3章-线性模型-okk-p23", "第1章-课程介绍-绪论-okk-p16", "第5章-卷积神经网络-okk-p15" ]
+  }, {
+    "id" : "T-memory-network",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p12", "第6章-循环神经网络-okk-p4", "第1章-课程介绍-绪论-okk-p23", "第6章-循环神经网络-okk-p23" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p14", "第6章-循环神经网络-okk-p4", "第6章-循环神经网络-okk-p23", "第4章-前馈神经网络-okk-p15", "第1章-课程介绍-绪论-okk-p22" ]
+  }, {
+    "id" : "A-memory-network-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p12", "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p32", "第4章-前馈神经网络-okk-p6", "第1章-课程介绍-绪论-okk-p6" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p12", "第6章-循环神经网络-okk-p9", "第4章-前馈神经网络-okk-p13", "第9章 人工智能-语言模型-p14" ]
+  }, {
+    "id" : "A-memory-network-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p14", "第6章-循环神经网络-okk-p4", "第1章-课程介绍-绪论-okk-p12", "第1章-课程介绍-绪论-okk-p32", "第4章-前馈神经网络-okk-p6" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p14", "第4章-前馈神经网络-okk-p13", "第4章-前馈神经网络-okk-p15", "第6章-循环神经网络-okk-p23", "第6章-循环神经网络-okk-p4" ]
+  }, {
+    "id" : "A-memory-network-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p12", "第4章-前馈神经网络-okk-p14", "第4章-前馈神经网络-okk-p15", "第1章-课程介绍-绪论-okk-p32", "第6章-循环神经网络-okk-p4" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p15", "第4章-前馈神经网络-okk-p14", "第4章-前馈神经网络-okk-p13", "第6章-循环神经网络-okk-p4", "第1章-课程介绍-绪论-okk-p12" ]
+  }, {
+    "id" : "A-memory-network-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p12", "第6章-循环神经网络-okk-p23", "第1章-课程介绍-绪论-okk-p32", "第6章-循环神经网络-okk-p4" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p14", "第6章-循环神经网络-okk-p23", "第4章-前馈神经网络-okk-p15", "第1章-课程介绍-绪论-okk-p12", "第4章-前馈神经网络-okk-p18" ]
+  }, {
+    "id" : "T-cnn-depth",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p12", "第5章-卷积神经网络-okk-p16", "第5章-卷积神经网络-okk-p4", "第5章-卷积神经网络-okk-p34", "第1章-课程介绍-绪论-okk-p32" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p14", "第5章-卷积神经网络-okk-p16", "第5章-卷积神经网络-okk-p34", "第5章-卷积神经网络-okk-p4", "第5章-卷积神经网络-okk-p3" ]
+  }, {
+    "id" : "A-cnn-depth-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p12", "第5章-卷积神经网络-okk-p34", "第1章-课程介绍-绪论-okk-p32", "第5章-卷积神经网络-okk-p4", "第4章-前馈神经网络-okk-p3" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p14", "第5章-卷积神经网络-okk-p34", "第4章-前馈神经网络-okk-p13", "第4章-前馈神经网络-okk-p14", "第4章-前馈神经网络-okk-p3" ]
+  }, {
+    "id" : "A-cnn-depth-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p9", "第1章-课程介绍-绪论-okk-p12", "第7章-深度生成模型-p34", "第4章-前馈神经网络-okk-p6", "第1章-课程介绍-绪论-okk-p32" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p14", "第7章-深度生成模型-p34", "第4章-前馈神经网络-okk-p6", "第3章-线性模型-okk-p9", "第4章-前馈神经网络-okk-p7" ]
+  }, {
+    "id" : "A-cnn-depth-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p32", "第1章-课程介绍-绪论-okk-p12", "第5章-卷积神经网络-okk-p16", "第1章-课程介绍-绪论-okk-p6" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p14", "第5章-卷积神经网络-okk-p16", "第2章-机器学习概述-okk-p6", "第1章-课程介绍-绪论-okk-p23", "第1章-课程介绍-绪论-okk-p32" ]
+  }, {
+    "id" : "A-cnn-depth-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p6", "第7章-深度生成模型-p31", "第5章-卷积神经网络-okk-p16", "第7章-深度生成模型-p19", "第7章-深度生成模型-p34" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p14", "第5章-卷积神经网络-okk-p16", "第5章-卷积神经网络-okk-p15", "第7章-深度生成模型-p21", "第7章-深度生成模型-p14" ]
+  }, {
+    "id" : "T-rnn-segmentation",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第6章-循环神经网络-okk-p14", "第6章-循环神经网络-okk-p4", "第4章-前馈神经网络-okk-p14", "第6章-循环神经网络-okk-p9", "第6章-循环神经网络-okk-p23" ],
+    "bm25Sources" : [ "第6章-循环神经网络-okk-p14", "第6章-循环神经网络-okk-p2", "第6章-循环神经网络-okk-p9", "第6章-循环神经网络-okk-p12", "第6章-循环神经网络-okk-p4" ]
+  }, {
+    "id" : "A-rnn-segmentation-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第6章-循环神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p26", "第6章-循环神经网络-okk-p4", "第1章-课程介绍-绪论-okk-p16", "第6章-循环神经网络-okk-p9" ],
+    "bm25Sources" : [ "第6章-循环神经网络-okk-p14", "第6章-循环神经网络-okk-p9", "第1章-课程介绍-绪论-okk-p26", "第5章-卷积神经网络-okk-p34", "第4章-前馈神经网络-okk-p18" ]
+  }, {
+    "id" : "A-rnn-segmentation-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第6章-循环神经网络-okk-p14", "第4章-前馈神经网络-okk-p23", "第4章-前馈神经网络-okk-p18", "第5章-卷积神经网络-okk-p34", "第7章-深度生成模型-p43" ],
+    "bm25Sources" : [ "第6章-循环神经网络-okk-p14", "第5章-卷积神经网络-okk-p34", "第7章-深度生成模型-p43", "第4章-前馈神经网络-okk-p23", "第4章-前馈神经网络-okk-p18" ]
+  }, {
+    "id" : "A-rnn-segmentation-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第6章-循环神经网络-okk-p14", "第3章-线性模型-okk-p14", "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p26", "第3章-线性模型-okk-p23" ],
+    "bm25Sources" : [ "第6章-循环神经网络-okk-p14", "第2章-机器学习概述-okk-p6", "第9章 人工智能-语言模型-p14", "第3章-线性模型-okk-p21", "第1章-课程介绍-绪论-okk-p23" ]
+  }, {
+    "id" : "A-rnn-segmentation-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第6章-循环神经网络-okk-p14", "第6章-循环神经网络-okk-p9", "第6章-循环神经网络-okk-p4", "第4章-前馈神经网络-okk-p14", "第2章-机器学习概述-okk-p36" ],
+    "bm25Sources" : [ "第6章-循环神经网络-okk-p9", "第6章-循环神经网络-okk-p14", "第6章-循环神经网络-okk-p12", "第6章-循环神经网络-okk-p4", "第5章-卷积神经网络-okk-p34" ]
+  }, {
+    "id" : "T-attention",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第9章 人工智能-语言模型-p14", "第4章-前馈神经网络-okk-p15", "第6章-循环神经网络-okk-p4", "第4章-前馈神经网络-okk-p6", "第1章-课程介绍-绪论-okk-p32" ],
+    "bm25Sources" : [ "第9章 人工智能-语言模型-p14", "第4章-前馈神经网络-okk-p15", "第4章-前馈神经网络-okk-p6", "第1章-课程介绍-绪论-okk-p33", "第1章-课程介绍-绪论-okk-p22" ]
+  }, {
+    "id" : "A-attention-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p12", "第1章-课程介绍-绪论-okk-p32", "第9章 人工智能-语言模型-p14", "第1章-课程介绍-绪论-okk-p26", "第4章-前馈神经网络-okk-p14" ],
+    "bm25Sources" : [ "第9章 人工智能-语言模型-p14", "第6章-循环神经网络-okk-p23", "第4章-前馈神经网络-okk-p14", "第6章-循环神经网络-okk-p4", "第5章-卷积神经网络-okk-p34" ]
+  }, {
+    "id" : "A-attention-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第9章 人工智能-语言模型-p14", "第4章-前馈神经网络-okk-p23", "第4章-前馈神经网络-okk-p18", "第4章-前馈神经网络-okk-p15", "第5章-卷积神经网络-okk-p32" ],
+    "bm25Sources" : [ "第9章 人工智能-语言模型-p14", "第4章-前馈神经网络-okk-p15", "第4章-前馈神经网络-okk-p18", "第7章-深度生成模型-p21", "第5章-卷积神经网络-okk-p32" ]
+  }, {
+    "id" : "A-attention-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第9章 人工智能-语言模型-p14", "第1章-课程介绍-绪论-okk-p12", "第6章-循环神经网络-okk-p4", "第2章-机器学习概述-okk-p14", "第6章-循环神经网络-okk-p23" ],
+    "bm25Sources" : [ "第9章 人工智能-语言模型-p14", "第6章-循环神经网络-okk-p23", "第6章-循环神经网络-okk-p4", "第6章-循环神经网络-okk-p2", "第5章-卷积神经网络-okk-p4" ]
+  }, {
+    "id" : "A-attention-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p23", "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p32", "第9章 人工智能-语言模型-p14", "第1章-课程介绍-绪论-okk-p16" ],
+    "bm25Sources" : [ "第9章 人工智能-语言模型-p14", "第5章-卷积神经网络-okk-p2", "第7章-深度生成模型-p35", "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p16" ]
+  }, {
+    "id" : "T-dense-image-limit",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p26", "第4章-前馈神经网络-okk-p6", "第5章-卷积神经网络-okk-p4", "第4章-前馈神经网络-okk-p15", "第4章-前馈神经网络-okk-p3" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p3", "第4章-前馈神经网络-okk-p15", "第4章-前馈神经网络-okk-p3", "第5章-卷积神经网络-okk-p4", "第4章-前馈神经网络-okk-p6" ]
+  }, {
+    "id" : "A-dense-image-limit-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p18", "第4章-前馈神经网络-okk-p6", "第5章-卷积神经网络-okk-p4", "第7章-深度生成模型-p31", "第4章-前馈神经网络-okk-p14" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p3", "第7章-深度生成模型-p31", "第4章-前馈神经网络-okk-p6", "第4章-前馈神经网络-okk-p15", "第4章-前馈神经网络-okk-p18" ]
+  }, {
+    "id" : "A-dense-image-limit-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第7章-深度生成模型-p19", "第1章-课程介绍-绪论-okk-p32", "第6章-循环神经网络-okk-p4", "第4章-前馈神经网络-okk-p18", "第4章-前馈神经网络-okk-p3" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p3", "第4章-前馈神经网络-okk-p3", "第7章-深度生成模型-p19", "第1章-课程介绍-绪论-okk-p32", "第7章-深度生成模型-p35" ]
+  }, {
+    "id" : "A-dense-image-limit-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p16", "第7章-深度生成模型-p19", "第7章-深度生成模型-p34", "第2章-机器学习概述-okk-p36" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p3", "第5章-卷积神经网络-okk-p32", "第7章-深度生成模型-p19", "第7章-深度生成模型-p34", "第1章-课程介绍-绪论-okk-p16" ]
+  }, {
+    "id" : "A-dense-image-limit-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第5章-卷积神经网络-okk-p4", "第4章-前馈神经网络-okk-p15", "第1章-课程介绍-绪论-okk-p26", "第4章-前馈神经网络-okk-p3", "第4章-前馈神经网络-okk-p6" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p3", "第5章-卷积神经网络-okk-p14", "第4章-前馈神经网络-okk-p13", "第5章-卷积神经网络-okk-p4", "第4章-前馈神经网络-okk-p3" ]
+  }, {
+    "id" : "T-softmax-rule",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p9", "第2章-机器学习概述-okk-p14" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第3章-线性模型-okk-p9", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p40" ]
+  }, {
+    "id" : "A-softmax-rule-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p14", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p9", "第4章-前馈神经网络-okk-p23" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第5章-卷积神经网络-okk-p32", "第2章-机器学习概述-okk-p6", "第4章-前馈神经网络-okk-p18" ]
+  }, {
+    "id" : "A-softmax-rule-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第4章-前馈神经网络-okk-p18", "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p21", "第3章-线性模型-okk-p9" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第4章-前馈神经网络-okk-p18", "第7章-深度生成模型-p31", "第3章-线性模型-okk-p9" ]
+  }, {
+    "id" : "A-softmax-rule-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p14", "第4章-前馈神经网络-okk-p23", "第4章-前馈神经网络-okk-p18", "第1章-课程介绍-绪论-okk-p26" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p23", "第4章-前馈神经网络-okk-p18", "第7章-深度生成模型-p34", "第2章-机器学习概述-okk-p6", "第3章-线性模型-okk-p14" ]
+  }, {
+    "id" : "A-softmax-rule-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p21", "第2章-机器学习概述-okk-p14", "第4章-前馈神经网络-okk-p18" ],
+    "bm25Sources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p21", "第2章-机器学习概述-okk-p6", "第2章-机器学习概述-okk-p14", "第3章-线性模型-okk-p14" ]
+  }, {
+    "id" : "T-activation-variants",
+    "split" : "tuning",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p23", "第1章-课程介绍-绪论-okk-p32", "第4章-前馈神经网络-okk-p18", "第4章-前馈神经网络-okk-p10", "第5章-卷积神经网络-okk-p4" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p10", "第5章-卷积神经网络-okk-p4", "第5章-卷积神经网络-okk-p14", "第5章-卷积神经网络-okk-p32", "第4章-前馈神经网络-okk-p23" ]
+  }, {
+    "id" : "A-activation-variants-1",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p23", "第2章-机器学习概述-okk-p14", "第4章-前馈神经网络-okk-p7", "第3章-线性模型-okk-p9" ],
+    "bm25Sources" : [ "第5章-卷积神经网络-okk-p32", "第4章-前馈神经网络-okk-p7", "第3章-线性模型-okk-p40", "第3章-线性模型-okk-p2", "第4章-前馈神经网络-okk-p34" ]
+  }, {
+    "id" : "A-activation-variants-2",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第3章-线性模型-okk-p9", "第4章-前馈神经网络-okk-p14", "第4章-前馈神经网络-okk-p7", "第2章-机器学习概述-okk-p14", "第4章-前馈神经网络-okk-p18" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p6", "第4章-前馈神经网络-okk-p13", "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p32", "第4章-前馈神经网络-okk-p7" ]
+  }, {
+    "id" : "A-activation-variants-3",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : true,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p23", "第3章-线性模型-okk-p9", "第4章-前馈神经网络-okk-p7", "第4章-前馈神经网络-okk-p10", "第4章-前馈神经网络-okk-p18" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p10", "第4章-前馈神经网络-okk-p7", "第4章-前馈神经网络-okk-p6", "第7章-深度生成模型-p34", "第3章-线性模型-okk-p9" ]
+  }, {
+    "id" : "A-activation-variants-4",
+    "split" : "acceptance",
+    "answerable" : true,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : true,
+    "hybridSources" : [ "第3章-线性模型-okk-p14", "第2章-机器学习概述-okk-p14", "第1章-课程介绍-绪论-okk-p23", "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p26" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p10", "第3章-线性模型-okk-p14", "第2章-机器学习概述-okk-p6", "第7章-深度生成模型-p19", "第4章-前馈神经网络-okk-p14" ]
+  }, {
+    "id" : "N-01",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第2章-机器学习概述-okk-p14", "第3章-线性模型-okk-p9", "第7章-深度生成模型-p19", "第3章-线性模型-okk-p14", "第3章-线性模型-okk-p23" ],
+    "bm25Sources" : [ "第2章-机器学习概述-okk-p6", "第3章-线性模型-okk-p9", "第2章-机器学习概述-okk-p14", "第7章-深度生成模型-p19", "第4章-前馈神经网络-okk-p6" ]
+  }, {
+    "id" : "N-02",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p12", "第1章-课程介绍-绪论-okk-p26", "第3章-线性模型-okk-p14", "第1章-课程介绍-绪论-okk-p11" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p14" ]
+  }, {
+    "id" : "N-03",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p3", "第1章-课程介绍-绪论-okk-p43", "第3章-线性模型-okk-p14", "第1章-课程介绍-绪论-okk-p11", "第2章-机器学习概述-okk-p36" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p43", "第4章-前馈神经网络-okk-p3" ]
+  }, {
+    "id" : "N-04",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p32", "第2章-机器学习概述-okk-p36", "第7章-深度生成模型-p34", "第4章-前馈神经网络-okk-p15" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p14", "第2章-机器学习概述-okk-p36", "第1章-课程介绍-绪论-okk-p43", "第7章-深度生成模型-p35", "第4章-前馈神经网络-okk-p13" ]
+  }, {
+    "id" : "N-05",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p16", "第7章-深度生成模型-p19", "第7章-深度生成模型-p18", "第6章-循环神经网络-okk-p14", "第7章-深度生成模型-p43" ],
+    "bm25Sources" : [ "第6章-循环神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p16", "第7章-深度生成模型-p43", "第7章-深度生成模型-p19", "第7章-深度生成模型-p18" ]
+  }, {
+    "id" : "N-06",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p16", "第4章-前馈神经网络-okk-p3", "第3章-线性模型-okk-p14", "第2章-机器学习概述-okk-p14", "第4章-前馈神经网络-okk-p23" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p16", "第4章-前馈神经网络-okk-p3" ]
+  }, {
+    "id" : "N-07",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p32", "第2章-机器学习概述-okk-p36", "第7章-深度生成模型-p35", "第4章-前馈神经网络-okk-p13", "第3章-线性模型-okk-p14" ],
+    "bm25Sources" : [ "第7章-深度生成模型-p35", "第2章-机器学习概述-okk-p36", "第4章-前馈神经网络-okk-p13", "第1章-课程介绍-绪论-okk-p32" ]
+  }, {
+    "id" : "N-08",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第4章-前馈神经网络-okk-p3", "第3章-线性模型-okk-p14", "第2章-机器学习概述-okk-p14", "第1章-课程介绍-绪论-okk-p26", "第1章-课程介绍-绪论-okk-p11" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p3" ]
+  }, {
+    "id" : "N-09",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第2章-机器学习概述-okk-p36", "第1章-课程介绍-绪论-okk-p6", "第3章-线性模型-okk-p14", "第4章-前馈神经网络-okk-p14", "第4章-前馈神经网络-okk-p7" ],
+    "bm25Sources" : [ "第4章-前馈神经网络-okk-p13", "第4章-前馈神经网络-okk-p14", "第1章-课程介绍-绪论-okk-p22", "第2章-机器学习概述-okk-p36", "第1章-课程介绍-绪论-okk-p6" ]
+  }, {
+    "id" : "N-10",
+    "split" : "acceptance",
+    "answerable" : false,
+    "hybridKnownSourceTop5" : false,
+    "bm25KnownSourceTop5" : false,
+    "hybridSources" : [ "第1章-课程介绍-绪论-okk-p6", "第3章-线性模型-okk-p9", "第1章-课程介绍-绪论-okk-p22", "第1章-课程介绍-绪论-okk-p24", "第7章-深度生成模型-p43" ],
+    "bm25Sources" : [ "第1章-课程介绍-绪论-okk-p6", "第1章-课程介绍-绪论-okk-p22", "第1章-课程介绍-绪论-okk-p24", "第1章-课程介绍-绪论-okk-p9", "第7章-深度生成模型-p43" ]
+  } ],
+  "excludedPages" : [ {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 2,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 5,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 10,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 20,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 31,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 35,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 40,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 41,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 42,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 44,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 46,
+    "sourceFile" : "第1章-课程介绍-绪论-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 2,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 34,
+    "sourceFile" : "第2章-机器学习概述-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39,
+    "sourceFile" : "第3章-线性模型-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38,
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37,
+    "sourceFile" : "第6章-循环神经网络-okk.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 2,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 40,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 41,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 42,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 44,
+    "sourceFile" : "第7章-深度生成模型.pdf"
+  }, {
+    "reason" : "INSUFFICIENT_OR_INVALID_TEXT",
+    "sourcePage" : 1,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 2,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 3,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 4,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 5,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 6,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 7,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 8,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 9,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 10,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 11,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 12,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 13,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 15,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 16,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 17,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 18,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 19,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 20,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 21,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 22,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 23,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 24,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 25,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 26,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 27,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 28,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 29,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 30,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 31,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 32,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 33,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 34,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 35,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 36,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 37,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 38,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 39,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 40,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 41,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 42,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 43,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 44,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 45,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 46,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 47,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 48,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 49,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 50,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 51,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 52,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 53,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 54,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 55,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 56,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 57,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 58,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  }, {
+    "reason" : "OCR_NOT_IN_CAPTURED_SAMPLE",
+    "sourcePage" : 59,
+    "sourceFile" : "第9章 人工智能-语言模型.pdf"
+  } ],
+  "scope" : "Original PDF single-page copies. Safe native pages plus captured actual K02 OCR; missing OCR pages excluded. Copy page=1 mapped to original page explicitly.",
+  "noAnswerPolicy" : "Retrieval observations only; no K04 abstention or answer-model accuracy claimed.",
+  "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+  "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6",
+  "sourcePageCount" : 59,
+  "historicalOcrPages" : 12,
+  "missingPreparedGoldSources" : [ ],
+  "realPrimeInputs" : 118,
+  "failedSourceCopies" : [ ],
+  "indexedDocuments" : 59,
+  "indexedChunks" : 59,
+  "persistedDimensions" : [ 4096 ],
+  "acceptanceAnswerable" : 40,
+  "hybridTop5Hits" : 25,
+  "bm25Top5Hits" : 37,
+  "hybridTop5Rate" : 0.625,
+  "bm25Top5Rate" : 0.925,
+  "noAnswerQueriesWithCandidates" : 10,
+  "directProductionHttpQueryPassed" : true,
+  "providerFailureDegradedExplicitly" : true,
+  "wrongDimensionsIsolated" : true,
+  "wrongModelIsolated" : true,
+  "realEmbeddingFacadeCalls" : 2,
+  "realEmbeddingInputs" : 119,
+  "reusedExactRealVectors" : 119,
+  "persistedRestartPassed" : true,
+  "elapsedMs" : 60897
+}

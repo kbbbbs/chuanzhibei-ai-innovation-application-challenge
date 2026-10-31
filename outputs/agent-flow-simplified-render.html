@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Agent 简化流程图</title>
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body { padding: 32px; font-family: "Microsoft YaHei", sans-serif; }
+    .mermaid { display: flex; justify-content: center; }
+    .mermaid svg { max-width: none !important; height: auto; }
+  </style>
+</head>
+<body>
+  <pre class="mermaid">
+flowchart TD
+    A([登录并打开 Agent 悬浮助手]) --> B[选择 Agent / 会话&lt;br/&gt;可携带课时选文]
+    B --> C[发送问题]
+    C --> E{请求类型与角色权限}
+
+    E -->|学生或 CHAT| H[CHAT 普通问答]
+    E -->|教师 / 管理员 READ| R[调用已启用读工具&lt;br/&gt;查询平台数据]
+    R --> H
+
+    E -->|教师 / 管理员 WRITE| W[参数规划与 Schema 校验]
+    W --> P{参数完整合法?}
+    P -->|否| Q[保存补参草稿&lt;br/&gt;提示用户补充]
+    Q -->|补充后继续| W
+    P -->|是| PA[生成真实 pendingAction]
+    PA --> AU[自动弹出确认页]
+    AU --> CF{用户确认?}
+    CF -->|否| HOLD[保留待确认动作&lt;br/&gt;等待再次确认或过期]
+    CF -->|是| EX[校验角色、归属、风险与业务规则]
+    EX --> RS{执行结果}
+    RS -->|成功| OK[写入业务数据和审计日志&lt;br/&gt;删除 pendingAction]
+    RS -->|失败| ER[事务回滚并显示错误]
+    ER --> AU
+
+    H --> M[模型生成回答]
+    M --> S([显示回复并保存会话])
+    OK --> DONE([动作完成])
+
+    classDef start fill:#eff6ff,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+    classDef action fill:#ffffff,stroke:#94a3b8,color:#0f172a,stroke-width:1.5px;
+    classDef decision fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-width:1.5px;
+    classDef write fill:#fffbeb,stroke:#d97706,color:#0f172a,stroke-width:1.5px;
+    classDef success fill:#ecfdf5,stroke:#059669,color:#0f172a,stroke-width:1.5px;
+    classDef error fill:#fff7ed,stroke:#ea580c,color:#0f172a,stroke-width:1.5px;
+
+    class A,S,DONE start;
+    class B,C,H,E,R,W,Q,PA,AU,HOLD,EX,M action;
+    class E,P,CF,RS decision;
+    class W,Q,PA,AU,EX write;
+    class OK success;
+    class ER error;
+  </pre>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: 'base',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#ffffff',
+        fontFamily: 'Microsoft YaHei, sans-serif',
+        fontSize: '18px',
+        primaryColor: '#ffffff',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#94a3b8',
+        lineColor: '#64748b',
+        secondaryColor: '#f8fafc',
+        tertiaryColor: '#eff6ff',
+        edgeLabelBackground: '#ffffff'
+      },
+      flowchart: { curve: 'linear', nodeSpacing: 42, rankSpacing: 52, htmlLabels: true }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "schema": "codex_k01_8d02ef26e0ab48d2b328d880405e9d2c",
+  "server": "127.0.0.1:3306",
+  "status": "PASS",
+  "input": "synthetic text only; no model API calls",
+  "legacyDataAndOriginalPreserved": true,
+  "repeatMigrationPreserved": true,
+  "vectorColumn": "LONGTEXT",
+  "storedVectorCharacters": 87294,
+  "dimensions": 4096,
+  "versionSwitchAndV1Preserved": true,
+  "deleteCascadeAndFileCleanup": true,
+  "invalidBindingIdentityRetained": true,
+  "ownedTestSchemaDropped": true,
+  "phase": "COMPLETE"
+}

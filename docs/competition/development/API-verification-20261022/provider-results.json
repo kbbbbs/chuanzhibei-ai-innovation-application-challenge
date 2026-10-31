@@ -1,0 +1,101 @@
+[
+  {
+    "role": "embedding-model-list",
+    "status": "PASS",
+    "http": 200,
+    "latencyMs": 297,
+    "traceId": "ti_7c50j86nnt8fhbb2et",
+    "selectedModelListed": true
+  },
+  {
+    "role": "ocr-model-list",
+    "status": "PASS",
+    "http": 200,
+    "latencyMs": 344,
+    "traceId": "ai-learning-20261022-ocr-model-list",
+    "selectedModelListed": true
+  },
+  {
+    "role": "embedding-single",
+    "status": "PASS",
+    "http": 200,
+    "latencyMs": 516,
+    "traceId": "ti_4jusjvnbrra4pvqgvu",
+    "model": "Qwen/Qwen3-VL-Embedding-8B",
+    "vectorCount": 1,
+    "dimensions": [
+      4096
+    ],
+    "indices": [
+      0
+    ],
+    "distinctVectors": true,
+    "usage": {
+      "prompt_tokens": 22,
+      "completion_tokens": 0,
+      "total_tokens": 22,
+      "image_tokens": 0
+    }
+  },
+  {
+    "role": "embedding-list",
+    "status": "PASS",
+    "http": 200,
+    "latencyMs": 968,
+    "traceId": "ai-learning-20261022-embedding-list",
+    "model": "Qwen/Qwen3-VL-Embedding-8B",
+    "vectorCount": 2,
+    "dimensions": [
+      4096,
+      4096
+    ],
+    "indices": [
+      0,
+      1
+    ],
+    "distinctVectors": true,
+    "usage": {
+      "prompt_tokens": 53,
+      "completion_tokens": 0,
+      "total_tokens": 53,
+      "image_tokens": 0
+    }
+  },
+  {
+    "role": "embedding-dimensions",
+    "status": "PASS",
+    "http": 200,
+    "latencyMs": 391,
+    "traceId": "ti_vyq8na9obzrbbh341j",
+    "model": "Qwen/Qwen3-VL-Embedding-8B",
+    "vectorCount": 1,
+    "dimensions": [
+      1024
+    ],
+    "indices": [
+      0
+    ],
+    "distinctVectors": true,
+    "usage": {
+      "prompt_tokens": 20,
+      "completion_tokens": 0,
+      "total_tokens": 20,
+      "image_tokens": 0
+    }
+  },
+  {
+    "role": "ocr-synthetic-image",
+    "status": "PASS",
+    "http": 200,
+    "latencyMs": 672,
+    "traceId": "ti_atang8bdhnjui8v3ia",
+    "model": "deepseek-ai/DeepSeek-OCR",
+    "recognizedExpectedText": true,
+    "contentCharacters": 64,
+    "usage": {
+      "prompt_tokens": 591,
+      "completion_tokens": 21,
+      "total_tokens": 612
+    }
+  }
+]

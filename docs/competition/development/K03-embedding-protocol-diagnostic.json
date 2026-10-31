@@ -1,0 +1,41 @@
+{
+  "observedDate": "2026-10-30",
+  "model": "Qwen/Qwen3-VL-Embedding-8B",
+  "officialDocumentation": "https://docs.siliconflow.cn/docs/api/embeddings-post",
+  "documentationClaim": "The official VL endpoint accepts strings and content lists. The documentation does not establish the observed eight-item index-reset behavior as a guaranteed or universal limit.",
+  "initialFailure": "Production Java rejected a batch while strictly checking returned vector indices; no acceptance queries had been scored.",
+  "observed32": {
+    "httpStatus": 200,
+    "vectors": 32,
+    "dimensions": 4096,
+    "indices": "0..7 repeated four times",
+    "nonFiniteVectors": 0,
+    "nonPositiveNormVectors": 0
+  },
+  "observed8": {
+    "httpStatus": 200,
+    "vectors": 8,
+    "dimensions": 4096,
+    "indices": "0..7 exactly once",
+    "nonFiniteVectors": 0,
+    "nonPositiveNormVectors": 0
+  },
+  "safeCompensation": "Limit this selected model to eight inputs per request; preserve strict uniqueness/completeness/index mapping. Never renumber embeddings by arrival order.",
+  "isRetrievalParameterTuning": false,
+  "isUniversalProviderBatchLimitClaim": false,
+  "safeProbeFiles": [
+    "target/k03-retrieval/embedding-protocol-probe.json",
+    "target/k03-retrieval/actual-batch-probe.json",
+    "target/k03-retrieval/vector-contract-probe.json",
+    "target/k03-retrieval/vector-contract-eight-probe.json"
+  ],
+  "sourceCoverageDiagnostic": {
+    "missingFrozenSourcesBeforeRepair": ["learning-elements", "memory-network", "rnn-segmentation"],
+    "actualSymbolFontTriggers": ["U+F0A8", "U+F0B7"],
+    "visualObservation": "The production-rendered source pages show diamond and round list markers at those positions, not mathematical formula content.",
+    "supplementalDocumentOcr": "All three source pages were rendered by the production Java renderer and passed an actual DeepSeek-OCR document request with HTTP200/finish_reason=stop. Complete raw responses remain private under target.",
+    "safeStatistics": ["target/k03-retrieval/math-font-trigger-statistics.json", "target/k03-retrieval/supplemental-ocr-statistics.json"],
+    "datasetChanged": false,
+    "formulaProtectionBypassed": false
+  }
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>Agent WRITE 流程图（第 2 页）</title>
+  <style>
+    html, body { margin: 0; background: #fff; }
+    body { padding: 36px; font-family: "Microsoft YaHei", sans-serif; }
+    .mermaid { display: flex; justify-content: center; align-items: flex-start; }
+    .mermaid svg { display: block; margin: 0 auto; max-width: none !important; height: auto; }
+  </style>
+</head>
+<body>
+  <pre class="mermaid">
+flowchart TB
+    A([来自第 1 页的 WRITE 请求]) --> B[调用大模型识别写入意图&lt;br/&gt;规划 actionCode 与参数]
+    B --> C[参数规范化与 Schema 校验]
+    C --> D{参数完整合法?}
+
+    D -->|否| E[保存补参草稿&lt;br/&gt;提示用户补充]
+    E -->|用户补充参数&lt;br/&gt;重新规划| B
+    D -->|是| G[生成真实 pendingAction]
+    D --> DB1[占位]
+    DB1 --> DB2[占位]
+    G --> H[自动弹出动作确认页]
+    H --> I{用户编辑 / 修改&lt;br/&gt;并确认动作?}
+
+    I -->|否| J([保留待确认动作&lt;br/&gt;等待再次确认、取消或过期])
+    I -->|是| K[再次校验角色、归属、风险&lt;br/&gt;及业务规则]
+    I --> IB[占位]
+    K --> L[调用 ActionExecutor 执行动作]
+    L --> M{执行结果}
+
+    M --> MB[占位]
+    M -->|成功| N[写入业务数据和审计日志&lt;br/&gt;删除 pendingAction]
+    N --> O([动作完成])
+
+    M -->|失败| P[事务回滚并显示错误&lt;br/&gt;保留或刷新待确认动作]
+    P --> H
+
+    classDef start fill:#eff6ff,stroke:#2563eb,color:#0f172a,stroke-width:2px;
+    classDef action fill:#ffffff,stroke:#94a3b8,color:#0f172a,stroke-width:1.5px;
+    classDef decision fill:#f8fafc,stroke:#475569,color:#0f172a,stroke-width:1.5px;
+    classDef model fill:#f5f3ff,stroke:#7c3aed,color:#0f172a,stroke-width:1.5px;
+    classDef write fill:#fffbeb,stroke:#d97706,color:#0f172a,stroke-width:1.5px;
+    classDef success fill:#ecfdf5,stroke:#059669,color:#0f172a,stroke-width:1.5px;
+    classDef error fill:#fff7ed,stroke:#ea580c,color:#0f172a,stroke-width:1.5px;
+    classDef hidden fill:transparent,stroke:transparent,color:transparent;
+
+    class A,J,O start;
+    class B model;
+    class C,E,G,H,K,L action;
+    class D,I,M decision;
+    class G,H,K,L write;
+    class N success;
+    class P error;
+    class DB1,DB2,IB,MB hidden;
+    linkStyle 6,7,12,15 stroke:transparent,fill:none;
+  </pre>
+  <script type="module">
+    import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+    mermaid.initialize({
+      startOnLoad: true,
+      layout: 'elk',
+      theme: 'base',
+      securityLevel: 'loose',
+      themeVariables: {
+        background: '#ffffff',
+        fontFamily: 'Microsoft YaHei, sans-serif',
+        fontSize: '18px',
+        primaryColor: '#ffffff',
+        primaryTextColor: '#0f172a',
+        primaryBorderColor: '#94a3b8',
+        lineColor: '#64748b',
+        secondaryColor: '#f8fafc',
+        tertiaryColor: '#eff6ff',
+        edgeLabelBackground: '#ffffff'
+      },
+      flowchart: { curve: 'linear', nodeSpacing: 70, rankSpacing: 58, htmlLabels: true }
+    });
+  </script>
+</body>
+</html>

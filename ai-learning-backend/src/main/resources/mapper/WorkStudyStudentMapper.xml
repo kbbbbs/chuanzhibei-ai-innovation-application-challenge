@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.cupk.aiacademy.mapper.WorkStudyStudentMapper">
+
+    <resultMap id="BaseResultMap" type="com.cupk.aiacademy.pojo.WorkStudyStudent">
+        <id column="id" property="id"/>
+        <result column="work_study_id" property="workStudyId"/>
+        <result column="student_id" property="studentId"/>
+        <result column="work_month" property="workMonth"/>
+        <result column="work_hours" property="workHours"/>
+        <result column="hourly_rate" property="hourlyRate"/>
+        <result column="total_amount" property="totalAmount"/>
+        <result column="status" property="status"/>
+        <result column="apply_time" property="applyTime"/>
+        <result column="audit_status" property="auditStatus"/>
+        <result column="auditor_id" property="auditorId"/>
+        <result column="audit_time" property="auditTime"/>
+        <result column="reject_reason" property="rejectReason"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="student_name" property="studentName"/>
+        <result column="job_name" property="jobName"/>
+    </resultMap>
+
+    <select id="selectPageWithJoin" resultMap="BaseResultMap">
+        SELECT
+            wss.*,
+            u.nickname AS student_name,
+            ws.job_name AS job_name
+        FROM t_work_study_student wss
+        LEFT JOIN t_user u ON wss.student_id = u.id
+        LEFT JOIN t_work_study ws ON wss.work_study_id = ws.id
+        <where>
+            <if test="workStudyId != null">
+                AND wss.work_study_id = #{workStudyId}
+            </if>
+            <if test="studentId != null">
+                AND wss.student_id = #{studentId}
+            </if>
+            <if test="workMonth != null and workMonth != ''">
+                AND wss.work_month = #{workMonth}
+            </if>
+            <if test="auditStatus != null">
+                AND wss.audit_status = #{auditStatus}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    CAST(wss.student_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.username LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR ws.job_name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY wss.create_time DESC
+    </select>
+
+    <select id="selectListForExport" resultMap="BaseResultMap">
+        SELECT
+            wss.*,
+            u.nickname AS student_name,
+            ws.job_name AS job_name
+        FROM t_work_study_student wss
+        LEFT JOIN t_user u ON wss.student_id = u.id
+        LEFT JOIN t_work_study ws ON wss.work_study_id = ws.id
+        <where>
+            <if test="workStudyId != null">
+                AND wss.work_study_id = #{workStudyId}
+            </if>
+            <if test="studentId != null">
+                AND wss.student_id = #{studentId}
+            </if>
+            <if test="workMonth != null and workMonth != ''">
+                AND wss.work_month = #{workMonth}
+            </if>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    CAST(wss.student_id AS CHAR) LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.username LIKE CONCAT('%', #{keyword}, '%')
+                    OR u.nickname LIKE CONCAT('%', #{keyword}, '%')
+                    OR ws.job_name LIKE CONCAT('%', #{keyword}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY wss.create_time DESC
+    </select>
+
+</mapper>

@@ -1,0 +1,70 @@
+{
+  "task": "K02 formula increment",
+  "archivedAt": "2026-10-28T02:18:01.238255+00:00",
+  "backend": {
+    "total": 326,
+    "passed": 313,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 13
+  },
+  "skipReasons": {
+    "K00LiveModelOptIn": 5,
+    "courseCorpusLiveOptIn": 1,
+    "formulaLiveOptInRunSeparately": 1,
+    "mysqlLiveOptInRunSeparately": 1,
+    "legacyWeKnoraOptIn": 1,
+    "windowsSymlinkPrivilege": 4
+  },
+  "frontendMath": {
+    "passed": 6
+  },
+  "uiMockHttp": {
+    "passed": 13
+  },
+  "frontendBuild": "PASS",
+  "realOcr": {
+    "status": "PASS",
+    "ready": 12,
+    "total": 12,
+    "formulaPages": 10,
+    "elapsedMs": 278551,
+    "embeddingEnabled": false,
+    "scope": "6 selected original pages and their scanned copies; not the full 334-page corpus"
+  },
+  "realMySql": {
+    "status": "PASS",
+    "formulaMetadataPersisted": true,
+    "migrationIdempotent": true,
+    "isolatedSchemaDropped": true
+  },
+  "visual": {
+    "originalPagesRendered": 6,
+    "formulaBlocksRendered": 39,
+    "renderErrors": 0,
+    "mathematicalAccuracyMeasured": false,
+    "teacherApproval": false
+  },
+  "lateChangesAfterLiveOcr": [
+    "bounded following-definition chunk context",
+    "retain original response on resolution retry HTTP failure"
+  ],
+  "lateChangesVerification": "16 focused tests and final 326-test regression; paid 12-page OCR not repeated for those branches",
+  "failureEvidence": {
+    "firstLiveReady": 11,
+    "secondLiveReady": 9,
+    "finalLiveReady": 12,
+    "firstLiveLog": "Initial report and session tool outputs retained; standalone live-formula.log was overwritten on rerun.",
+    "browserEnvironmentFailures": [
+      "red-citation-render.log",
+      "ui-final.log"
+    ],
+    "functionalCitationRed": "red-citation-render-functional.log"
+  },
+  "subagentsUsed": false,
+  "scopeExclusions": [
+    "K03 retrieval quality acceptance",
+    "teacher formula edit/approval workflow",
+    "math correctness proof"
+  ]
+}

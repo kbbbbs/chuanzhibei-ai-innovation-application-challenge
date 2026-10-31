@@ -1,0 +1,53 @@
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:18: 错误: 程序包K03TuningSupport不存在
+  Path file=temp.resolve("cache.json");var first=new K03TuningSupport.RealCache(provider,json,file,2);
+                                                                     ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:20: 错误: 程序包K03TuningSupport不存在
+  var replayProvider=provider("fp","model");var replay=new K03TuningSupport.RealCache(replayProvider,json,file,2);
+                                                                           ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:28: 错误: 程序包K03TuningSupport不存在
+  Path file=temp.resolve("cache.json");new K03TuningSupport.RealCache(provider,json,file,2).prime(List.of("q"));
+                                                           ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:30: 错误: 程序包K03TuningSupport不存在
+   var cache=new K03TuningSupport.RealCache(other,json,file,2);assertEquals(0,cache.loadedVectors);assertTrue(cache.incompatibleDiskCache);
+                                 ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:32: 错误: 程序包K03TuningSupport不存在
+  var dimension=new K03TuningSupport.RealCache(provider,json,file,3);assertEquals(0,dimension.loadedVectors);assertTrue(dimension.incompatibleDiskCache);
+                                    ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:36: 错误: 程序包K03TuningSupport不存在
+  assertThrows(IllegalStateException.class,()->new K03TuningSupport.RealCache(provider("fp","model"),json,file,2));
+                                                                   ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:41: 错误: 找不到符号
+  assertEquals(List.of("t"),K03TuningSupport.tuningQueries(data,plan).stream().map(q->q.path("id").asText()).toList());
+                            ^
+  符号:   变量 K03TuningSupport
+  位置: 类 K03EvaluationSupportTest
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:43: 错误: 找不到符号
+  assertThrows(IllegalArgumentException.class,()->K03TuningSupport.tuningQueries(data,invalid));
+                                                  ^
+  符号:   变量 K03TuningSupport
+  位置: 类 K03EvaluationSupportTest
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:46: 错误: 程序包K03TuningSupport不存在
+  var best=new K03TuningSupport.Score(10,5,8,6,.7);
+                               ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:47: 错误: 程序包K03TuningSupport不存在
+  var tied=new K03TuningSupport.Score(60,10,8,6,.7);
+                               ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:48: 错误: 程序包K03TuningSupport不存在
+  var lowerTop5=new K03TuningSupport.Score(1,5,7,7,.7);
+                                    ^
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:49: 错误: 找不到符号
+  assertSame(best,K03TuningSupport.select(List.of(lowerTop5,tied,best)));
+                  ^
+  符号:   变量 K03TuningSupport
+  位置: 类 K03EvaluationSupportTest
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:54: 错误: 找不到符号
+  var narrow=K03TuningSupport.configure(nativeService,provider,json,10,1);
+             ^
+  符号:   变量 K03TuningSupport
+  位置: 类 K03EvaluationSupportTest
+D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\rag\K03EvaluationSupportTest.java:58: 错误: 找不到符号
+  var wider=K03TuningSupport.configure(nativeService,provider,json,10,2);
+            ^
+  符号:   变量 K03TuningSupport
+  位置: 类 K03EvaluationSupportTest
+14 个错误

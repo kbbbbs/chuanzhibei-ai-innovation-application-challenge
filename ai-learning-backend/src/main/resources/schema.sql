@@ -1,0 +1,4 @@
+-- MySQL initialization is maintained in ../../database/ai_academy_export.sql.
+-- Integration tests load src/test/resources/test-schema.sql explicitly.
+-- Keep this file non-destructive so enabling Spring SQL init cannot create
+-- an outdated partial exam schema by accident.

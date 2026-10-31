@@ -1,0 +1,239 @@
+{
+  "samples" : [ {
+    "tag" : "ch3-p14",
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "sourceSha256" : "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d",
+    "sourcePage" : 14,
+    "copyPage" : 1,
+    "scanned" : false,
+    "inputSha256" : "1e4745b5d8ed63fc28614b130a4b787cb07530ad997a1b178ae08bc01152902d",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 2,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 19977,
+      "initialOcrMode" : "IMAGE_TEXT",
+      "initialOcrLatencyMs" : 6443
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch3-p14",
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "sourceSha256" : "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d",
+    "sourcePage" : 14,
+    "copyPage" : 1,
+    "scanned" : true,
+    "inputSha256" : "fad18def8df54f8f3213329a229aae131532b1237b004ca4c26153cd33c927a9",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 2,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 5608,
+      "initialOcrMode" : "IMAGE_TEXT",
+      "initialOcrLatencyMs" : 13222
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch3-p23",
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "sourceSha256" : "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d",
+    "sourcePage" : 23,
+    "copyPage" : 1,
+    "scanned" : false,
+    "inputSha256" : "3e3e86470f4cd52f38ac419cd320f8968bbede8aec2419cdc29cd5c635c8e7c6",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 9,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 12930
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch3-p23",
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "sourceSha256" : "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d",
+    "sourcePage" : 23,
+    "copyPage" : 1,
+    "scanned" : true,
+    "inputSha256" : "7d38429c4a5c20b8764f2c7ae5cb9dba64a62d18d94ea9ffea21734fa271a59d",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 8,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 16889,
+      "initialOcrMode" : "IMAGE_TEXT",
+      "initialOcrLatencyMs" : 6719
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch4-p10",
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 10,
+    "copyPage" : 1,
+    "scanned" : false,
+    "inputSha256" : "bf283ed7ddfc3a4e08b196c183fde0f0d4688a3d9e4f4e90b0fc72d73b68386c",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 6,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 22413
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch4-p10",
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 10,
+    "copyPage" : 1,
+    "scanned" : true,
+    "inputSha256" : "f86bda8ed042d33088ba3f404a3f6d02f299bd6dd364b8f72abbbe2955d33d81",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 6,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 6572,
+      "initialOcrMode" : "IMAGE_TEXT",
+      "initialOcrLatencyMs" : 23300
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch4-p18",
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 18,
+    "copyPage" : 1,
+    "scanned" : false,
+    "inputSha256" : "53bc1a8f163221be41946661e4b0a1b6bc92c497f667234bee8c919737e78f41",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 13,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 10421
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch4-p18",
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 18,
+    "copyPage" : 1,
+    "scanned" : true,
+    "inputSha256" : "4ce74e9902e14fb7b93b6d3312470bc3eddaab10a9544c84bcf50191a8af9abe",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 13,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 15719,
+      "initialOcrMode" : "IMAGE_TEXT",
+      "initialOcrLatencyMs" : 58857
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch4-p23",
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 23,
+    "copyPage" : 1,
+    "scanned" : false,
+    "inputSha256" : "bd3b6293f805e6dd645d760270a998d1da298db42ac36541606b1fb32e6b21cf",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 9,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 9890
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch4-p23",
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 23,
+    "copyPage" : 1,
+    "scanned" : true,
+    "inputSha256" : "7ce967962da40ac9b895b5aa1d3a5fb87e2d617c510751b51fa70de88febbde4",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 9,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "DOCUMENT_MARKDOWN",
+      "latencyMs" : 7298,
+      "initialOcrMode" : "IMAGE_TEXT",
+      "initialOcrLatencyMs" : 6437
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch5-p14",
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "sourceSha256" : "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e",
+    "sourcePage" : 14,
+    "copyPage" : 1,
+    "scanned" : false,
+    "inputSha256" : "92d4147c72cabb3fa031b2dc62b09bd14a128419cc1d0b579c221621a44221af",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 0,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "IMAGE_TEXT",
+      "latencyMs" : 17738
+    },
+    "chunks" : 1
+  }, {
+    "tag" : "ch5-p14",
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "sourceSha256" : "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e",
+    "sourcePage" : 14,
+    "copyPage" : 1,
+    "scanned" : true,
+    "inputSha256" : "dfb4177b9c24ed4d33984e65dddfdba355b2f474490a5c455dc62c2043efc696",
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "needsReview" : true,
+    "formulaCount" : 0,
+    "structuralIssues" : [ ],
+    "location" : {
+      "ocrMode" : "IMAGE_TEXT",
+      "latencyMs" : 10302
+    },
+    "chunks" : 1
+  } ],
+  "status" : "PASS",
+  "embeddingEnabled" : false,
+  "accuracyClaim" : "Structural checks do not establish mathematical accuracy.",
+  "ocrModel" : "deepseek-ai/DeepSeek-OCR",
+  "ready" : 12,
+  "total" : 12,
+  "formulaPages" : 10,
+  "elapsedMs" : 278551
+}

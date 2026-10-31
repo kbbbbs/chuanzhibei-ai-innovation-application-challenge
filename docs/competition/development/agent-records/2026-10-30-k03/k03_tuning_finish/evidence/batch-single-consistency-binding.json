@@ -1,0 +1,23 @@
+{
+  "createdAt": "2026-10-31T05:46:14.837328+00:00",
+  "model": "Qwen/Qwen3-VL-Embedding-8B",
+  "embeddingFingerprint": "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6",
+  "requestProtocol": "plain-text/v1",
+  "normalization": "L2",
+  "dimensions": 4096,
+  "inputSha256": [
+    "49e11a1bdea498d03fc3eafd3da9a8aa1e2e4d15d53c129318232b36e3f63e3a",
+    "3a1c5247776e911d733ea542d69200275ccc2973dfd059e459c553d59bc19094",
+    "6afc912770f751e822d157136e960a571b27259aeae794a46cfd61da3db7aa25",
+    "7991a71e748f58822e42a20504c0ebdc8fa2d71147329fc73d6ddd4efb96ca5b",
+    "5c4847d00bc5130c42e2ef1603823dedeef3916905101e9403dfb9c181a4be1b",
+    "be286ec100e33096be427916eb695b47ea9ed8dfb88f05f395815c85a88cdcc3",
+    "5a5ba64e61099a8587aee7144605b97170ae76a6f55dd31a67b0bb26e4212033",
+    "2de5fbf6bd56d5ac4d511d37f9e7f555ec7191a2f246254d62bfcbeb9111a2b1"
+  ],
+  "diagnosticSha256": "0e67fd78e97b4394160e22316b05cc25d25517128b7390c96fe075e277106717",
+  "privateCacheSha256": "38a9465e296a0f35dfb04791d08b9b667e4ad16490e365e970d0a278bf197b0f",
+  "allDiagnosticInputsInCache": true,
+  "scope": "Metadata binding only. Private vectors and source text are not copied.",
+  "privateCacheSnapshot": "target/k03-retrieval/real-vectors-before-followup-private.json"
+}

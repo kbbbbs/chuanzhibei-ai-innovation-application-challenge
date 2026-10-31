@@ -1,0 +1,122 @@
+{
+  "checkedAt": "2026-10-31T11:12:49.748554+00:00",
+  "scope": "README, environment template and configuration reference only; publishing and clone startup validation belong to root",
+  "actualStartLine": 380,
+  "sourceFile": "rollout-2026-10-31T18-59-32-01a1919d-5e20-7c43-abd2-6348a7a1fb14.jsonl",
+  "sourceTaskTimestamp": "2026-10-31T10:59:32.405Z",
+  "forkInheritedPrefixOmitted": [
+    2,
+    379
+  ],
+  "checks": {
+    "files": {
+      "README.md": {
+        "sha256": "8891822a6af6368e74bf76df1f0d3d7d350b139bcd416e16b42c831cab9eb2e8",
+        "lines": 149
+      },
+      ".env.example": {
+        "sha256": "5842d567e315fd26104da4cb7f0aa5d5ec2957b24c230f91bc65e8224ead41da",
+        "lines": 60
+      },
+      "docs/CONFIGURATION.md": {
+        "sha256": "c3f155130a49ca78a10552056d69ba98ab3496cef3dd7d891611c547d9d1f82b",
+        "lines": 155
+      }
+    },
+    "localLinks": [
+      {
+        "from": "README.md",
+        "target": "docs/CONFIGURATION.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/K02-manual-verification.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/K02-formula-manual-verification.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/K02-visual-manual-verification.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/K03-test-report.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/K03-manual-verification.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/agent-records/index.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/CONFIGURATION.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/competition/development/K03-test-report.md"
+      },
+      {
+        "from": "docs/CONFIGURATION.md",
+        "target": "../README.md#本机启动推荐隔离演示库"
+      },
+      {
+        "from": "docs/CONFIGURATION.md",
+        "target": "competition/development/K03-test-report.md"
+      }
+    ],
+    "pendingCollaborationLinks": [
+      {
+        "from": "README.md",
+        "target": "docs/COLLABORATION_AND_VALIDATION.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/COLLABORATION_AND_VALIDATION.md"
+      },
+      {
+        "from": "README.md",
+        "target": "docs/COLLABORATION_AND_VALIDATION.md"
+      },
+      {
+        "from": "docs/CONFIGURATION.md",
+        "target": "COLLABORATION_AND_VALIDATION.md"
+      }
+    ],
+    "brokenLinks": [],
+    "nodeEngine": "^20.19.0 || >=22.12.0",
+    "environmentKeysMatchedToConfig": 32,
+    "noLiveSecretsInTemplate": true
+  },
+  "functionalTests": {
+    "run": false,
+    "reason": "Pure documentation/template changes; source consistency, links and placeholders checked instead. No model requests."
+  },
+  "implementationFailure": "Initial apply_patch rejected delete+add to the same path in one patch; nothing changed. Backed up previous README/template privately, then applied valid patches.",
+  "finalFilesSha256": {
+    "README.md": "8891822a6af6368e74bf76df1f0d3d7d350b139bcd416e16b42c831cab9eb2e8",
+    ".env.example": "5842d567e315fd26104da4cb7f0aa5d5ec2957b24c230f91bc65e8224ead41da",
+    "docs/CONFIGURATION.md": "c3f155130a49ca78a10552056d69ba98ab3496cef3dd7d891611c547d9d1f82b"
+  },
+  "sourceEvidenceSha256": {
+    "AGENTS.md": "c9b2eb6e2000720ee4ffba26aa0a6615ff30644e02353cceb9a8a8295cfded9a",
+    "scripts/competition/start-local.ps1": "6fe3b670d1e14b577615d938006188d379825ac9085119bdff7497c816a95eb8",
+    "ai-learning-backend/src/main/resources/application.yml": "d0d0f5ee869f01390a3e75867b89dc8cae32d5c9e28b123660dcfa8f4e6450b0",
+    "ai-learning-backend/src/main/resources/application-contest-demo.yml": "f2957eddb20cd1375fe0eff1e6810a76daf190c0cbcd15b76a6b1a1929707f69",
+    "ai-learning-frontend/package-lock.json": "0c29ea2b40131a4c5ef0d57d89e915d58eb10a49ca2d50a1630542c339426c1e",
+    "ai-learning-frontend/vite.config.js": "ab271f29601c3e1074bcf9f4de1c9863bfa70050a390b227a7563febec1ccdc1",
+    "ai-learning-frontend/playwright.config.js": "73905912002654e22b4db46cd05a4859af8fa833aa18f99f535aff4a1f03b224",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/model/RuntimeModelPolicy.java": "e7fcda40fcac0e0e2a460dfaadfd299f954b7879ec8999c638c131e96c5bc742",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagPageExtractor.java": "702aee85684ba4fb1bb82becf36b3311384febd1138b20249da97c0c52dc2194"
+  },
+  "limits": [
+    "Local collaborator handoff document is being written by another agent; four links must be rechecked once it exists.",
+    "New repository URL is agreed with root; this child has not created or fetched it.",
+    "No private configuration or uploaded course files copied.",
+    "Explicit JSONL snapshot, not automatic logging. Final message requires root refresh."
+  ]
+}

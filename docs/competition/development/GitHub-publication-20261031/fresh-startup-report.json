@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "scope": "Fresh publication tree, no private env file or imported user data. Isolated H2 startup/login/keyword API smoke; not K02 OCR or K03 semantic acceptance.",
+  "teacherLoginPassed": true,
+  "studentLoginPassed": true,
+  "emptyNativeLibraryApiPassed": true,
+  "createNativeLibraryPassed": true,
+  "emptyIndexActualMode": "NONE",
+  "privateLibraryStudentDenied": true,
+  "ownedServerStopped": true
+}

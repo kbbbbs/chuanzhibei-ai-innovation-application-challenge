@@ -1,0 +1,102 @@
+{
+  "task": "K02 retrieved image reading for grounded answers",
+  "recordedAt": "2026-10-28T06:06:58.257045+00:00",
+  "sourceSession": "01a180fc-a548-7e71-bc7e-1cd3eb023f8f",
+  "actualTaskStartedLine": 135,
+  "actualTaskStartedAt": "2026-10-28T05:30:05.239Z",
+  "forkPrefixOmitted": true,
+  "red": "Root red-visual-chat.log: missing class/method compilation. Root red-visual-boundaries.log: active-chunk replacement and direct-read cancellation functional failures; unrelated-asset case initially had Mockito fixture NPE, fixed using doReturn. Not counted as product failure.",
+  "green": {
+    "rootLog": ".codex_tmp/k02-visuals-20261028/backend-full-final.log",
+    "total": 360,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 14,
+    "relevantClasses": {
+      "NativeRagChatServiceTest": 9,
+      "NativeRagVisualChatTest": 4,
+      "RagVisualReaderTest": 12,
+      "OcrModelClientTest": 16
+    },
+    "overlap": "Relevant classes are subsets of the 360-test root regression; skipped live checks are not passes."
+  },
+  "behavior": [
+    "Default OCR Parse the figure on retrieved private images",
+    "Opt-in direct model PNG media",
+    "Two unique images and 2 MB total bytes",
+    "15-second configurable per-image deadline",
+    "Pre/post active chunk and asset linkage checks",
+    "Cancellation interrupts actual OCR future",
+    "Warnings and metadata-only image citations retained in sync and streaming history",
+    "Chart numeric-table extraction is rejected and falls back to visible labels only with explicit no-quantitative-reading warning"
+  ],
+  "liveProbe": {
+    "result": "URLError without HTTP status in 10309 ms",
+    "scope": "One independent Python HTTP prompt probe; no conclusion about OCR model correctness or Java production path; no retry",
+    "statistics": "ai-learning-backend/target/k02-visual-chat/figure-probe-statistics.json"
+  },
+  "limitations": [
+    "Direct VLM path is controlled-test verified only; no vision-capable generation model selected by this child",
+    "OCR image observations can be incorrect and retain review warnings",
+    "General RAG image read remains owner-only; course grants are handled in explicit course contexts",
+    "Reader two OCR concurrency slots are separate from ingestion adapter slots",
+    "Record export is an explicit snapshot; child final reply requires later refresh",
+    "HTML/Markdown numeric-table guard is not mathematical correctness verification; arbitrary prose or other formats may still be wrong.",
+    "OCR labels are not a claim of understanding graph relations or reading curve values."
+  ],
+  "files": {
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/chat/NativeRagChatService.java": "d05c72e0529f91b20c52fcc09da54d077a01ad79d75f53300c294bf7d99c110e",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ocr/OcrModelClient.java": "89e64b463d5872b505336fa06b2930ed400e8469ae8cc98ec0d5409b14b0700e",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/visual/RagVisualReader.java": "98d8f234ad838995bf47b8b6c991f403f2bb5f5be65eb11ef785586f8bb64dd2",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/chat/NativeRagVisualChatTest.java": "58afc80ab76c559b6986f78a6cc913545d2198599d635abdff5db8aba76bc76c",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/visual/RagVisualReaderTest.java": "4009928439dcb184f1e5e74f05b0f443d406a4edcef42e091d2393cce84a973b",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ocr/OcrModelClientTest.java": "28e2605276ad6488d383d0b488d11782ae05634c65398953969468c971207772"
+  },
+  "initialGreen": {
+    "rootLog": ".codex_tmp/k02-visuals-20261028/green-visual-final-focused.log",
+    "total": 67,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "relevantClasses": {
+      "NativeRagChatServiceTest": 9,
+      "NativeRagVisualChatTest": 4,
+      "RagVisualReaderTest": 10,
+      "OcrModelClientTest": 16
+    },
+    "overlap": "Class counts are subsets of the 67-test root run; not additional tests."
+  },
+  "chartContentFailure": {
+    "observedSource": "Actual private cropped ch4-p10-visual-1.png viewed; root live Parse-the-figure output reported ReLU numeric table inconsistent with source curve.",
+    "alternativeDiagnostic": "Describe-this-image returned 2810 characters with invented derivative panels and paper source; rejected, not enabled.",
+    "visibleOcrDiagnostic": "Grounded OCR returned 508 characters retaining the four visible legend labels and ticks; used only as visible-text fallback.",
+    "diagnosticStatistics": [
+      {
+        "mode": "describe",
+        "model": "deepseek-ai/DeepSeek-OCR",
+        "scope": "Independent live prompt diagnostic on actual private cropped chart; not mathematical accuracy score",
+        "httpStatus": 200,
+        "finishReason": "stop",
+        "characters": 2810,
+        "hasHtmlTable": false,
+        "hasMarkdownTable": false,
+        "elapsedMs": 4711
+      },
+      {
+        "mode": "visible-ocr",
+        "model": "deepseek-ai/DeepSeek-OCR",
+        "scope": "Independent live prompt diagnostic on actual private cropped chart; not mathematical accuracy score",
+        "httpStatus": 200,
+        "finishReason": "stop",
+        "characters": 508,
+        "hasHtmlTable": false,
+        "hasMarkdownTable": false,
+        "elapsedMs": 1212
+      }
+    ],
+    "redLog": ".codex_tmp/k02-visuals-20261028/red-chart-numeric-evidence.log",
+    "redResult": "12 tests, 2 actual functional failures before the fix",
+    "fix": "Detect HTML/Markdown numeric tables from figure parsing; run visible-text OCR under same image timeout; discard still-table fallback; only nonnumeric visible lines enter explicitly limited observations. Do not treat chart estimation as source quantitative data.",
+    "verification": "RagVisualReaderTest 12/12 and final root 360-test regression passed; final production live retest owned by root."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "eventDate": "2026-10-25",
+  "archivedAt": "2026-10-25T16:23:01.957513+08:00",
+  "sourceReport": "ai-learning-backend/target/k02-live/course-materials-initial.json",
+  "sourceReportSha256": "585c746bbcd0152e2a53481dbb8265ec2b41ab6da44442e20080eb2114f53737",
+  "status": "FAIL",
+  "phase": "ORIGINAL_PDF_PROCESSING",
+  "elapsedMs": 562256,
+  "model": "deepseek-ai/DeepSeek-OCR",
+  "originalFiles": 8,
+  "expectedPages": 334,
+  "persistedCheckpoints": 334,
+  "textReadyPages": 102,
+  "ocrReadyPages": 3,
+  "failedPages": 229,
+  "activeDocuments": 7,
+  "failureCodes": [
+    "OCR_EMPTY_RESULT"
+  ],
+  "notReached": [
+    "20-page scanned copy",
+    "mixed 3-page copy",
+    "live invalid/size/page-limit checks"
+  ],
+  "accuracyPercentage": null,
+  "cause": "OCR_EMPTY_RESULT observed; request/prompt/output contract investigation is ongoing; no final cause asserted",
+  "publicArtifacts": "Statistics and source hashes only; no original PDF, page image, OCR body, credentials, or API response body copied",
+  "eventFinishedAt": "2026-10-25T16:06:22+08:00"
+}

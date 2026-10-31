@@ -1,0 +1,18 @@
+[
+  {
+    "path": "research.json",
+    "sha256": "f622b39afbf7999e618b2ca062db74c420d53f31a43a75b0721ad425924a5ce4"
+  },
+  {
+    "path": "root/manifest.json",
+    "sha256": "d7d5b51285981e5f4c8dca5514ce78dfc94307d72f718de7d9fe618d7ea5d255"
+  },
+  {
+    "path": "root/records.jsonl",
+    "sha256": "1a0e7e6aad2c6d8d953bb350e7f170a2a150a6d2150e2747d8c3459430af1991"
+  },
+  {
+    "path": "root/records.md",
+    "sha256": "341a09c6fdca26c211514525c1eed843065fcec788b91c662f8a8a0806914881"
+  }
+]

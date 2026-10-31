@@ -1,0 +1,21 @@
+F
+======================================================================
+FAIL: test_explicit_java_home_is_passed_to_maven_not_only_to_runtime (test_start_local.StartLocalJavaTests.test_explicit_java_home_is_passed_to_maven_not_only_to_runtime)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ai-learning\scripts\competition\tests\test_start_local.py", line 39, in test_explicit_java_home_is_passed_to_maven_not_only_to_runtime
+    self.assertEqual(0, result.returncode, result.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 0 != 1 : java.exe : openjdk version "24" 2025-03-18
+At C:\Users\KBS-ROG\AppData\Local\Temp\tmp6xx4if3y\scripts\competition\start-local.ps1:31 char:17
++ $versionText = (& $javaExecutable -version 2>&1 | Out-String)
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (openjdk version "24" 2025-03-18:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+
+
+----------------------------------------------------------------------
+Ran 1 test in 0.566s
+
+FAILED (failures=1)

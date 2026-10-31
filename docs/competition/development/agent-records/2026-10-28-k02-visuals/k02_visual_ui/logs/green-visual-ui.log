@@ -1,0 +1,56 @@
+
+Running 5 tests using 1 worker
+
+(node:42652) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\visual-rag-ui.spec.js:59:1 › page review associates private figures with original question text beside formulas and releases switched images (3.1s)
+  x  2 e2e\visual-rag-ui.spec.js:82:1 › search citations show authenticated figure and discard its object URL on drawer close or lost access (2.6s)
+(node:44180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 e2e\visual-rag-ui.spec.js:102:1 › failed image authorization clears previous content and explains unavailable figure (2.9s)
+  ok 4 e2e\visual-rag-ui.spec.js:113:1 › old parsing results require image reparse instead of claiming no image exists (2.3s)
+  ok 5 e2e\visual-rag-ui.spec.js:119:1 › unsafe visual identifiers never become network paths (2.3s)
+
+
+  1) e2e\visual-rag-ui.spec.js:82:1 › search citations show authenticated figure and discard its object URL on drawer close or lost access 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.el-drawer')
+    Expected substring: "资料访问权限已改变"
+    Error: strict mode violation: locator('.el-drawer') resolved to 3 elements:
+        1) <div role="dialog" aria-modal="true" aria-label="资料核验" class="el-drawer rtl" aria-describedby="el-id-5895-25">…</div> aka getByLabel('资料核验')
+        2) <div role="dialog" aria-modal="true" aria-label="原文出处" class="el-drawer rtl" aria-describedby="el-id-5895-27">…</div> aka locator('#app').getByLabel('原文出处')
+        3) <div role="dialog" aria-modal="true" aria-label="原文出处" class="el-drawer rtl open" aria-describedby="el-id-5895-42">…</div> aka getByRole('dialog', { name: '原文出处' })
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.el-drawer')
+
+
+       96 |   state.denyChunk = true
+       97 |   await source.click()
+    >  98 |   await expect(page.locator('.el-drawer')).toContainText('资料访问权限已改变')
+          |                                            ^
+       99 |   await expect(page.locator('.el-drawer').getByAltText('资料插图 1')).toHaveCount(0)
+      100 | })
+      101 |
+        at D:\ai-learning\ai-learning-frontend\e2e\visual-rag-ui.spec.js:98:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\visual-rag-ui-search-citat-12b4c-drawer-close-or-lost-access\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\visual-rag-ui-search-citat-12b4c-drawer-close-or-lost-access\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\visual-rag-ui-search-citat-12b4c-drawer-close-or-lost-access\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\visual-rag-ui-search-citat-12b4c-drawer-close-or-lost-access\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\visual-rag-ui.spec.js:82:1 › search citations show authenticated figure and discard its object URL on drawer close or lost access 
+  4 passed (16.0s)

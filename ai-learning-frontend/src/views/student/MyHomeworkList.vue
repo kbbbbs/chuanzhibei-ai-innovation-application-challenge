@@ -1,0 +1,397 @@
+<template>
+  <div class="my-homework">
+    <el-card v-loading="loading">
+      <template #header>
+        <span>我的作业</span>
+      </template>
+
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+        <el-tab-pane label="待完成" name="pending">
+          <el-table :data="pendingHomework" border stripe>
+            <template #empty><AppEmpty /></template>
+            <el-table-column prop="title" label="作业标题" />
+            <el-table-column label="截止时间" width="180">
+              <template #default="{ row }">
+                {{ row.deadline ? new Date(row.deadline).toLocaleString() : '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column prop="fullScore" label="总分" width="100" />
+            <el-table-column label="操作" width="150">
+              <template #default="{ row }">
+                <el-button size="small" type="primary" @click="handleSubmit(row)">提交作业</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination
+            class="pagination"
+            v-model:current-page="pendingPagination.pageNum"
+            v-model:page-size="pendingPagination.pageSize"
+            :total="allPendingHomework.length"
+            :page-sizes="[5, 10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handlePendingSizeChange"
+          />
+        </el-tab-pane>
+
+        <el-tab-pane label="已提交" name="submitted">
+          <el-table :data="submittedHomework" border stripe>
+            <template #empty><AppEmpty /></template>
+            <el-table-column prop="title" label="作业标题" />
+            <el-table-column label="提交时间" width="180">
+              <template #default="{ row }">
+                {{ row.submitTime ? new Date(row.submitTime).toLocaleString() : '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="得分" width="100">
+              <template #default="{ row }">
+                {{ row.score != null ? `${row.score}/${row.fullScore}` : '待批改' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="附件" width="90">
+              <template #default="{ row }">
+                <el-link v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" type="primary">查看</el-link>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" width="100">
+              <template #default="{ row }">
+                <el-tag v-if="isHomeworkGraded(row)" type="success">已批改</el-tag>
+                <el-tag v-else type="warning">待批改</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="120">
+              <template #default="{ row }">
+                <el-button size="small" @click="handleView(row)">查看</el-button>
+              </template>
+            </el-table-column>
+          </el-table>
+          <el-pagination
+            class="pagination"
+            v-model:current-page="submittedPagination.pageNum"
+            v-model:page-size="submittedPagination.pageSize"
+            :total="allSubmittedHomework.length"
+            :page-sizes="[5, 10, 20, 50]"
+            layout="total, sizes, prev, pager, next, jumper"
+            @size-change="handleSubmittedSizeChange"
+          />
+        </el-tab-pane>
+      </el-tabs>
+    </el-card>
+
+    <!-- Submit Dialog -->
+    <el-dialog v-model="submitDialogVisible" title="提交作业" width="600px">
+      <el-descriptions :column="1" border class="dialog-info">
+        <el-descriptions-item label="作业标题">{{ currentHomework.title }}</el-descriptions-item>
+        <el-descriptions-item label="作业内容">{{ currentHomework.content }}</el-descriptions-item>
+        <el-descriptions-item label="截止时间">
+          {{ currentHomework.deadline ? new Date(currentHomework.deadline).toLocaleString() : '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="附件" v-if="currentHomework.attachmentUrl">
+          <el-link :href="currentHomework.attachmentUrl" target="_blank">查看附件</el-link>
+        </el-descriptions-item>
+      </el-descriptions>
+
+      <el-form :model="submitForm" label-width="100px">
+        <el-form-item label="作业内容">
+          <el-input v-model="submitForm.content" type="textarea" :rows="6" placeholder="请输入作业内容，或上传附件作为答案" />
+        </el-form-item>
+        <el-form-item label="上传附件">
+          <div class="attachment-uploader">
+            <el-upload
+              ref="submitUploadRef"
+              action="#"
+              :auto-upload="false"
+              :limit="1"
+              :disabled="attachmentUploading"
+              :on-change="handleAttachmentChange"
+              :on-remove="handleAttachmentRemove"
+              :on-exceed="handleAttachmentExceed"
+            >
+              <el-button :loading="attachmentUploading">
+                <el-icon><Upload /></el-icon>
+                选择文件
+              </el-button>
+              <template #tip>
+                <div class="el-upload__tip">支持文档、表格、压缩包、图片和视频，单个文件不超过 100MB</div>
+              </template>
+            </el-upload>
+            <el-link v-if="submitForm.attachmentUrl" :href="submitForm.attachmentUrl" target="_blank" type="success">
+              {{ submitAttachmentName || '查看已上传附件' }}
+            </el-link>
+          </div>
+        </el-form-item>
+      </el-form>
+
+      <template #footer>
+        <el-button @click="submitDialogVisible = false">取消</el-button>
+        <el-button type="primary" :loading="loading" @click="handleSubmitHomework">提交</el-button>
+      </template>
+    </el-dialog>
+
+    <!-- View Dialog -->
+    <el-dialog v-model="viewDialogVisible" title="作业详情" width="600px">
+      <el-descriptions :column="1" border>
+        <el-descriptions-item label="作业标题">{{ currentSubmission.title }}</el-descriptions-item>
+        <el-descriptions-item label="提交时间">
+          {{ currentSubmission.submitTime ? new Date(currentSubmission.submitTime).toLocaleString() : '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="我的答案">{{ currentSubmission.submitContent }}</el-descriptions-item>
+        <el-descriptions-item label="附件" v-if="currentSubmission.attachmentUrl">
+          <el-link :href="currentSubmission.attachmentUrl" target="_blank">查看附件</el-link>
+        </el-descriptions-item>
+        <el-descriptions-item label="得分" v-if="currentSubmission.score != null">
+          {{ currentSubmission.score }} / {{ currentSubmission.fullScore }}
+        </el-descriptions-item>
+        <el-descriptions-item label="批改意见" v-if="currentSubmission.feedback">
+          {{ currentSubmission.feedback }}
+        </el-descriptions-item>
+      </el-descriptions>
+    </el-dialog>
+  </div>
+</template>
+
+<script setup>
+import { computed, ref, reactive, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { Upload } from '@element-plus/icons-vue'
+import { useUserStore } from '@/store/user'
+import { useConfirm } from '@/composables/useConfirm'
+import AppEmpty from '@/components/AppEmpty.vue'
+import { uploadHomeworkAttachment } from '@/api/homework'
+import { currentUserId, formatLocalDateTime, getRecords, paginateRecords } from '@/utils/apiHelpers'
+import request from '@/utils/request'
+
+const userStore = useUserStore()
+const { confirmSubmit } = useConfirm()
+const route = useRoute()
+const router = useRouter()
+
+const activeTab = ref('pending')
+const allPendingHomework = ref([])
+const allSubmittedHomework = ref([])
+const pendingPagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const submittedPagination = reactive({
+  pageNum: 1,
+  pageSize: 10
+})
+const pendingHomework = computed(() => paginateRecords(allPendingHomework.value, pendingPagination.pageNum, pendingPagination.pageSize))
+const submittedHomework = computed(() => paginateRecords(allSubmittedHomework.value, submittedPagination.pageNum, submittedPagination.pageSize))
+
+const submitDialogVisible = ref(false)
+const viewDialogVisible = ref(false)
+const currentHomework = ref({})
+const currentSubmission = ref({})
+const loading = ref(false)
+const attachmentUploading = ref(false)
+const submitUploadRef = ref(null)
+const submitAttachmentName = ref('')
+
+const submitForm = reactive({
+  content: '',
+  attachmentUrl: ''
+})
+
+const isHomeworkGraded = (row) => {
+  return row.gradeStatus === 1 || row.gradeStatus === 2 || row.score != null
+}
+
+const uniqueById = (items) => {
+  const byId = new Map()
+  for (const item of items) {
+    if (item?.id != null) byId.set(item.id, item)
+  }
+  return Array.from(byId.values())
+}
+
+const loadHomework = async () => {
+  loading.value = true
+  try {
+    const classRes = await request.get(`/class-students/student/${userStore.userId}`)
+    if (classRes.code !== '200') return
+
+    const classIds = getRecords(classRes.data)
+      .map(c => Number(c.classId))
+      .filter(id => Number.isFinite(id) && id > 0)
+
+    if (classIds.length === 0) {
+      allPendingHomework.value = []
+      allSubmittedHomework.value = []
+      return
+    }
+
+    const homeworkResults = await Promise.all(
+      classIds.map(classId => request.get('/homeworks', {
+        params: { classId, pageSize: 200 },
+        silentError: true
+      }).catch(() => null))
+    )
+    const allHomework = uniqueById(homeworkResults.flatMap(res => res?.code === '200' ? getRecords(res.data) : []))
+
+    const subRes = await request.get('/homework-submits', {
+      params: { studentId: userStore.userId, pageSize: 500 },
+      silentError: true
+    })
+    const mySubmissions = subRes.code === '200' ? getRecords(subRes.data) : []
+    const homeworkById = new Map(allHomework.map(hw => [hw.id, hw]))
+    const submittedIds = new Set(mySubmissions.map(s => s.homeworkId))
+
+    allPendingHomework.value = allHomework.filter(hw => !submittedIds.has(hw.id) && hw.status === 1)
+    allSubmittedHomework.value = mySubmissions.map(sub => {
+      const hw = homeworkById.get(sub.homeworkId)
+      return { ...sub, title: hw?.title || sub.title || `作业${sub.homeworkId}`, fullScore: hw?.fullScore }
+    })
+    normalizePage(pendingPagination, allPendingHomework.value.length)
+    normalizePage(submittedPagination, allSubmittedHomework.value.length)
+    openHomeworkFromQuery()
+  } catch (e) {
+    // 全局异常已由 request.js 提示
+  } finally {
+    loading.value = false
+  }
+}
+
+const normalizePage = (pagination, total) => {
+  const maxPage = Math.max(1, Math.ceil(total / pagination.pageSize))
+  if (pagination.pageNum > maxPage) {
+    pagination.pageNum = maxPage
+  }
+}
+
+const handlePendingSizeChange = () => {
+  pendingPagination.pageNum = 1
+}
+
+const handleSubmittedSizeChange = () => {
+  submittedPagination.pageNum = 1
+}
+
+const handleTabChange = () => {
+  if (activeTab.value === 'pending') {
+    normalizePage(pendingPagination, allPendingHomework.value.length)
+  } else {
+    normalizePage(submittedPagination, allSubmittedHomework.value.length)
+  }
+}
+
+const handleSubmit = (row) => {
+  currentHomework.value = row
+  submitForm.content = ''
+  submitForm.attachmentUrl = ''
+  submitAttachmentName.value = ''
+  submitUploadRef.value?.clearFiles()
+  submitDialogVisible.value = true
+}
+
+const openHomeworkFromQuery = () => {
+  const homeworkId = Number(route.query.homeworkId)
+  if (!Number.isFinite(homeworkId) || homeworkId <= 0 || submitDialogVisible.value) return
+  const homework = allPendingHomework.value.find(item => item.id === homeworkId)
+  if (!homework) return
+  activeTab.value = 'pending'
+  handleSubmit(homework)
+}
+
+const handleSubmitHomework = async () => {
+  if (!submitForm.content.trim() && !submitForm.attachmentUrl) {
+    ElMessage.warning('请填写作业内容或上传附件')
+    return
+  }
+  if (attachmentUploading.value) {
+    ElMessage.warning('附件仍在上传，请稍候')
+    return
+  }
+
+  const confirmed = await confirmSubmit('确认提交作业？')
+  if (!confirmed) return
+
+  loading.value = true
+  try {
+    const data = {
+      homeworkId: currentHomework.value.id,
+      studentId: currentUserId(userStore),
+      submitContent: submitForm.content.trim(),
+      attachmentUrl: submitForm.attachmentUrl,
+      submitTime: formatLocalDateTime(new Date()),
+      gradeStatus: 0
+    }
+
+    const res = await request.post('/homework-submits', data)
+    if (res.code === '200') {
+      ElMessage.success('提交成功')
+      submitDialogVisible.value = false
+      if (route.query.homeworkId) {
+        router.replace({ path: route.path, query: {} })
+      }
+      loadHomework()
+    }
+  } catch (e) {
+    // 全局异常已由 request.js 提示
+  } finally {
+    loading.value = false
+  }
+}
+
+const handleAttachmentChange = async (file) => {
+  if (!file?.raw) return
+  attachmentUploading.value = true
+  try {
+    const res = await uploadHomeworkAttachment(file.raw)
+    if (res.code === '200' && res.data?.url) {
+      submitForm.attachmentUrl = res.data.url
+      submitAttachmentName.value = res.data.originalName || file.name || '已上传附件'
+      ElMessage.success('附件上传成功')
+    } else {
+      handleAttachmentRemove()
+      ElMessage.error(res.msg || '附件上传失败')
+    }
+  } catch (e) {
+    handleAttachmentRemove()
+  } finally {
+    attachmentUploading.value = false
+  }
+}
+
+const handleAttachmentRemove = () => {
+  submitForm.attachmentUrl = ''
+  submitAttachmentName.value = ''
+}
+
+const handleAttachmentExceed = () => {
+  ElMessage.warning('每次只能上传一个附件')
+}
+
+const handleView = (row) => {
+  currentSubmission.value = row
+  viewDialogVisible.value = true
+}
+
+onMounted(() => {
+  loadHomework()
+})
+
+watch(() => route.query.homeworkId, () => {
+  openHomeworkFromQuery()
+})
+</script>
+
+<style scoped>
+.dialog-info {
+  margin-bottom: 20px;
+}
+
+.attachment-uploader {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.pagination {
+  margin-top: 16px;
+  justify-content: center;
+}
+</style>

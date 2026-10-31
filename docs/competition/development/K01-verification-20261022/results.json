@@ -1,0 +1,380 @@
+{
+  "task": "K01",
+  "recordedAt": "2026-10-22T15:24:49.656198+08:00",
+  "finalRegression": {
+    "tests": 252,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 11,
+    "passed": 241
+  },
+  "skippedTests": [
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "planningCapabilities",
+      "reason": "paid model opt-in disabled in ordinary regression; one RAG method separately passed this turn"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "generationCapabilities",
+      "reason": "paid model opt-in disabled in ordinary regression; one RAG method separately passed this turn"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "embeddingCapabilities",
+      "reason": "paid model opt-in disabled in ordinary regression; one RAG method separately passed this turn"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "ocrCapabilities",
+      "reason": "paid model opt-in disabled in ordinary regression; one RAG method separately passed this turn"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "actualEmbeddingIsPersistedAndUsedInNativeRagRetrieval",
+      "reason": "paid model opt-in disabled in ordinary regression; one RAG method separately passed this turn"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest",
+      "test": "isolatedMySqlPreservesLegacyDataVersionsAndOriginalsAcrossMigrationAndDeletion",
+      "reason": "isolated MySQL opt-in disabled in ordinary regression; separately enabled and passed"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "rejectsASymbolicLinkAtAnObjectKeyForReadAndDelete",
+      "reason": "Windows account cannot create symbolic links"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "stagingRecoveryRejectsSymbolicLinksWithoutTouchingTheirTargets",
+      "reason": "Windows account cannot create symbolic links"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "rechecksRootLinksWhenAReadyDirectoryIsReplaced",
+      "reason": "Windows account cannot create symbolic links"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "refusesASymbolicLinkAsPrivateRootOrItsAncestor",
+      "reason": "Windows account cannot create symbolic links"
+    },
+    {
+      "class": "com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest",
+      "test": "retrievesContextFromRunningWeKnora",
+      "reason": "legacy WeKnora integration deliberately disabled"
+    }
+  ],
+  "suites": [
+    {
+      "name": "com.cupk.aiacademy.agent.core.service.AgentChatServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.agent.definition.service.AgentDefinitionServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProviderTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.common.AuthUtilsAssignedRoleTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.config.AuthInterceptorAsyncTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.controller.NoticeControllerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.model.ModelRoutingTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelCapabilitiesTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelConfigurationTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 5
+    },
+    {
+      "name": "com.cupk.aiacademy.model.RuntimeModelPolicyTest",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.preparation.PreparationModelGatewayTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.preparation.PreparationNativeKnowledgeTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.K01AuthorizationBoundaryTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.K01DocumentLifecycleTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.K01RevocationDuringIoTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.NativeRagVectorMigrationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.NativeRagVectorStorageTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.ocr.OcrModelClientTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagAuthorizationServiceTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagDocumentParserTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagEmbeddingConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagEmbeddingProtocolTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagEmbeddingTimeoutTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagSchemaMigratorTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.repository.RagIndexVersionRepositoryTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.HomeCourseRecommendationServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.ImportServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.PermissionServiceRagActorTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.QuestionServiceKnowledgeGenerationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.RelatedNoticeServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "liveEmbeddingRag": {
+    "tests": 1,
+    "passed": 1,
+    "result": {
+      "dimensions": 4096,
+      "storage": "isolated H2 MySQL mode",
+      "searchMode": "hybrid",
+      "hitCount": 1,
+      "sourceMatches": true,
+      "storedJsonCharacters": 87723,
+      "status": "PASS"
+    }
+  },
+  "liveIsolatedMySql": {
+    "tests": 1,
+    "passed": 1,
+    "result": {
+      "schema": "codex_k01_8d02ef26e0ab48d2b328d880405e9d2c",
+      "server": "127.0.0.1:3306",
+      "status": "PASS",
+      "input": "synthetic text only; no model API calls",
+      "legacyDataAndOriginalPreserved": true,
+      "repeatMigrationPreserved": true,
+      "vectorColumn": "LONGTEXT",
+      "storedVectorCharacters": 87294,
+      "dimensions": 4096,
+      "versionSwitchAndV1Preserved": true,
+      "deleteCascadeAndFileCleanup": true,
+      "invalidBindingIdentityRetained": true,
+      "ownedTestSchemaDropped": true,
+      "phase": "COMPLETE"
+    }
+  },
+  "existingBusinessDatabaseModified": false,
+  "privateCourseDocumentsUploaded": false,
+  "userWorktreeChangesPreserved": true,
+  "limits": [
+    "Scanned PDF OCR workers and durable task execution remain K02.",
+    "Full course/lesson scope resolution remains K05; historical-title and full streaming evidence permission handling remains K04.",
+    "Four symlink cases are unverified on this Windows account, not counted as passed.",
+    "File publication requires hard-link support; stale staging recovery runs at startup after a ten-minute grace period, not via a scheduler.",
+    "Live checks retain their event times; final regression covers later I/O revocation and staging-cleanup corrections.",
+    "No course-scale OCR/retrieval/generation quality or frontend end-to-end benchmark was performed."
+  ]
+}

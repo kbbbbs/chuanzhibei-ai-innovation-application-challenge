@@ -1,0 +1,74 @@
+{
+  "version": 1,
+  "registeredAt": "2026-10-30T11:26:49.107627+00:00",
+  "originalDataset": "K03-evaluation-dataset.json",
+  "originalDatasetSha256": "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+  "allowedQuestionIds": [
+    "T-ai-history",
+    "T-learning-elements",
+    "T-cross-entropy",
+    "T-memory-network",
+    "T-cnn-depth",
+    "T-rnn-segmentation",
+    "T-attention",
+    "T-dense-image-limit",
+    "T-softmax-rule",
+    "T-activation-variants"
+  ],
+  "questionCount": 10,
+  "grid": {
+    "rrfK": [
+      1,
+      10,
+      60
+    ],
+    "candidateLimit": [
+      5,
+      10,
+      20,
+      40,
+      100
+    ],
+    "combinationCount": 15,
+    "requestedTopK": 5
+  },
+  "selectionOrder": [
+    {
+      "metric": "knownSourceTop5Hits",
+      "direction": "descending"
+    },
+    {
+      "metric": "mrrAt5",
+      "direction": "descending"
+    },
+    {
+      "metric": "knownSourceTop1Hits",
+      "direction": "descending"
+    },
+    {
+      "parameter": "candidateLimit",
+      "direction": "ascending"
+    },
+    {
+      "parameter": "rrfK",
+      "direction": "ascending"
+    }
+  ],
+  "controls": {
+    "embeddingModel": "Qwen/Qwen3-VL-Embedding-8B",
+    "embeddingInputProtocol": "Existing plain strings for both query and document; no prompt changes in this grid.",
+    "corpus": "Same production-extracted and ingested original-page copies as original K03 acceptance, with SHA checked actual OCR replay.",
+    "bm25": "Disabled embedding client; identical corpus/query/Top5.",
+    "parameterInjection": "Construct RagRetrievalService explicitly with (rrfK,candidateLimit) and configureRetrieval on every NativeRagService instance; environment alone is not effective for manual fixture construction.",
+    "cache": "Exact UTF-8 input SHA + model + endpoint/model fingerprint + dimensions; real production HTTP vectors only, persisted under ignored target. Report real calls/inputs versus persisted reuse.",
+    "stableTies": "Production chunk ID tie ordering retained. Reuse a single ingested index for all grid cells.",
+    "excluded": "Original acceptance question results and new follow-up questions must not be read/evaluated by grid scoring."
+  },
+  "subsequentVerification": {
+    "dataset": "K03-evaluation-followup-dataset.json",
+    "sha256": "facc23e61b3592a37ca3599fe25b7961bd758f734a4376efac1c0176469d3766",
+    "runCount": 1,
+    "boundary": "Same-source developer continuation, not independent teacher blind test."
+  },
+  "tuningRunStartedAtRegistration": false
+}

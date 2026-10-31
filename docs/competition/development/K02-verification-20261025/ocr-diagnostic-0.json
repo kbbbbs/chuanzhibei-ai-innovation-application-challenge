@@ -1,0 +1,10 @@
+{
+  "promptNumber": 0,
+  "rawLength": 1290,
+  "normalizedLength": 0,
+  "cjkCharacters": 160,
+  "finishReason": "stop",
+  "refCount": 20,
+  "refContentsOnlyKnownLabels": false,
+  "knownRefLabels": []
+}

@@ -1,0 +1,537 @@
+
+Running 13 tests using 1 worker
+
+
+(node:41928) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[1/13] e2e\k02-processing-ui.spec.js:103:1 › queued upload shows background work and cancellation never means parsed successfully
+
+e2e\k02-processing-ui.spec.js:103:1 › queued upload shows background work and cancellation never means parsed successfully
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  1) e2e\k02-processing-ui.spec.js:103:1 › queued upload shows background work and cancellation never means parsed successfully 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:104:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-queued-u-e9418-r-means-parsed-successfully\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-queued-u-e9418-r-means-parsed-successfully\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-queued-u-e9418-r-means-parsed-successfully\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-queued-u-e9418-r-means-parsed-successfully\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:41324) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[2/13] e2e\k02-processing-ui.spec.js:117:1 › partial processing preserves missing pages and authenticates page review before forcing OCR
+
+e2e\k02-processing-ui.spec.js:117:1 › partial processing preserves missing pages and authenticates page review before forcing OCR
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  2) e2e\k02-processing-ui.spec.js:117:1 › partial processing preserves missing pages and authenticates page review before forcing OCR 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:118:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-partial--7ec3a-e-review-before-forcing-OCR\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-partial--7ec3a-e-review-before-forcing-OCR\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-partial--7ec3a-e-review-before-forcing-OCR\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-partial--7ec3a-e-review-before-forcing-OCR\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:36564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[3/13] e2e\k02-processing-ui.spec.js:137:1 › parse retry is separate from vector rebuilding and does not hide a partial state
+
+e2e\k02-processing-ui.spec.js:137:1 › parse retry is separate from vector rebuilding and does not hide a partial state
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  3) e2e\k02-processing-ui.spec.js:137:1 › parse retry is separate from vector rebuilding and does not hide a partial state 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:138:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-parse-re-74bca-es-not-hide-a-partial-state\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-parse-re-74bca-es-not-hide-a-partial-state\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-parse-re-74bca-es-not-hide-a-partial-state\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-parse-re-74bca-es-not-hide-a-partial-state\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:37800) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+
+(Use `node --trace-warnings ...` to show where the warning was created)
+[4/13] e2e\k02-processing-ui.spec.js:147:1 › text sources display character positions and do not fabricate PDF pages or previews
+
+e2e\k02-processing-ui.spec.js:147:1 › text sources display character positions and do not fabricate PDF pages or previews
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  4) e2e\k02-processing-ui.spec.js:147:1 › text sources display character positions and do not fabricate PDF pages or previews 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:148:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-text-sou-a0ba2-icate-PDF-pages-or-previews\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-text-sou-a0ba2-icate-PDF-pages-or-previews\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-text-sou-a0ba2-icate-PDF-pages-or-previews\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-text-sou-a0ba2-icate-PDF-pages-or-previews\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:25728) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[5/13] e2e\k02-processing-ui.spec.js:158:1 › replacement review reads the pending source version instead of the previously active original
+
+e2e\k02-processing-ui.spec.js:158:1 › replacement review reads the pending source version instead of the previously active original
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  5) e2e\k02-processing-ui.spec.js:158:1 › replacement review reads the pending source version instead of the previously active original 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:159:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-replacem-2312f--previously-active-original\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-replacem-2312f--previously-active-original\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-replacem-2312f--previously-active-original\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-replacem-2312f--previously-active-original\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:41580) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[6/13] e2e\k02-processing-ui.spec.js:170:1 › formula review shows local math rendering, provenance and incomplete source without claiming correctness
+
+e2e\k02-processing-ui.spec.js:170:1 › formula review shows local math rendering, provenance and incomplete source without claiming correctness
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  6) e2e\k02-processing-ui.spec.js:170:1 › formula review shows local math rendering, provenance and incomplete source without claiming correctness 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:171:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-formula--a7112-ithout-claiming-correctness\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-formula--a7112-ithout-claiming-correctness\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-formula--a7112-ithout-claiming-correctness\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-formula--a7112-ithout-claiming-correctness\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:34172) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[7/13] e2e\k02-processing-ui.spec.js:184:1 › legacy parsing results visibly require a new formula check
+
+e2e\k02-processing-ui.spec.js:184:1 › legacy parsing results visibly require a new formula check
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  7) e2e\k02-processing-ui.spec.js:184:1 › legacy parsing results visibly require a new formula check 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+       96 |     return ok([])
+       97 |   })
+    >  98 |   await page.goto('/teacher-knowledge-base')
+          |              ^
+       99 |   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+      100 |   return calls
+      101 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:98:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\k02-processing-ui.spec.js:185:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-legacy-p-8ec75-require-a-new-formula-check\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k02-processing-ui-legacy-p-8ec75-require-a-new-formula-check\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k02-processing-ui-legacy-p-8ec75-require-a-new-formula-check\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k02-processing-ui-legacy-p-8ec75-require-a-new-formula-check\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:42072) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[8/13] e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations
+
+e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  8) e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+      38 |     return ok([])
+      39 |   })
+    > 40 |   await page.goto('/teacher-knowledge-base')
+         |              ^
+      41 |   await expect(page.getByRole('tab',{name:'资料与出处'})).toBeVisible()
+      42 |   return calls
+      43 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:40:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:46:17
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\native-rag-ui-native-retri-66627--and-final-stream-citations\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\native-rag-ui-native-retri-66627--and-final-stream-citations\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\native-rag-ui-native-retri-66627--and-final-stream-citations\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\native-rag-ui-native-retri-66627--and-final-stream-citations\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:23628) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[9/13] e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access
+
+e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  9) e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+      38 |     return ok([])
+      39 |   })
+    > 40 |   await page.goto('/teacher-knowledge-base')
+         |              ^
+      41 |   await expect(page.getByRole('tab',{name:'资料与出处'})).toBeVisible()
+      42 |   return calls
+      43 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:40:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:67:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\native-rag-ui-read-only-kn-0c1c7-y-shared-flags-grant-access\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\native-rag-ui-read-only-kn-0c1c7-y-shared-flags-grant-access\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\native-rag-ui-read-only-kn-0c1c7-y-shared-flags-grant-access\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\native-rag-ui-read-only-kn-0c1c7-y-shared-flags-grant-access\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:42676) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[10/13] e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response
+
+e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  10) e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+      38 |     return ok([])
+      39 |   })
+    > 40 |   await page.goto('/teacher-knowledge-base')
+         |              ^
+      41 |   await expect(page.getByRole('tab',{name:'资料与出处'})).toBeVisible()
+      42 |   return calls
+      43 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:40:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:75:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\native-rag-ui-stop-generat-63160-d-marks-incomplete-response\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\native-rag-ui-stop-generat-63160-d-marks-incomplete-response\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\native-rag-ui-stop-generat-63160-d-marks-incomplete-response\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\native-rag-ui-stop-generat-63160-d-marks-incomplete-response\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+(node:41776) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+[11/13] e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source
+
+e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  11) e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source ────
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+      38 |     return ok([])
+      39 |   })
+    > 40 |   await page.goto('/teacher-knowledge-base')
+         |              ^
+      41 |   await expect(page.getByRole('tab',{name:'资料与出处'})).toBeVisible()
+      42 |   return calls
+      43 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:40:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:86:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\native-rag-ui-no-evidence--9b940-nd-does-not-invent-a-source\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\native-rag-ui-no-evidence--9b940-nd-does-not-invent-a-source\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\native-rag-ui-no-evidence--9b940-nd-does-not-invent-a-source\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\native-rag-ui-no-evidence--9b940-nd-does-not-invent-a-source\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:11300) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[12/13] e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer
+
+e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  12) e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+      38 |     return ok([])
+      39 |   })
+    > 40 |   await page.goto('/teacher-knowledge-base')
+         |              ^
+      41 |   await expect(page.getByRole('tab',{name:'资料与出处'})).toBeVisible()
+      42 |   return calls
+      43 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:40:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:95:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\native-rag-ui-filtered-evi-d6b71-tation-number-in-the-answer\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\native-rag-ui-filtered-evi-d6b71-tation-number-in-the-answer\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\native-rag-ui-filtered-evi-d6b71-tation-number-in-the-answer\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\native-rag-ui-filtered-evi-d6b71-tation-number-in-the-answer\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+(node:42968) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[13/13] e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view
+
+e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view
+UI runtime error: Failed to read the 'localStorage' property from 'Window': Access is denied for this document.
+  13) e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view 
+
+    Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:5173/teacher-knowledge-base
+    Call log:
+      - navigating to "http://127.0.0.1:5173/teacher-knowledge-base", waiting until "load"
+
+
+      38 |     return ok([])
+      39 |   })
+    > 40 |   await page.goto('/teacher-knowledge-base')
+         |              ^
+      41 |   await expect(page.getByRole('tab',{name:'资料与出处'})).toBeVisible()
+      42 |   return calls
+      43 | }
+        at fixture (D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:40:14)
+        at D:\ai-learning\ai-learning-frontend\e2e\native-rag-ui.spec.js:105:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\native-rag-ui-answer-and-a-fc491-ula-with-a-source-code-view\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\native-rag-ui-answer-and-a-fc491-ula-with-a-source-code-view\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\native-rag-ui-answer-and-a-fc491-ula-with-a-source-code-view\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\native-rag-ui-answer-and-a-fc491-ula-with-a-source-code-view\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+  13 failed
+    e2e\k02-processing-ui.spec.js:103:1 › queued upload shows background work and cancellation never means parsed successfully 
+    e2e\k02-processing-ui.spec.js:117:1 › partial processing preserves missing pages and authenticates page review before forcing OCR 
+    e2e\k02-processing-ui.spec.js:137:1 › parse retry is separate from vector rebuilding and does not hide a partial state 
+    e2e\k02-processing-ui.spec.js:147:1 › text sources display character positions and do not fabricate PDF pages or previews 
+    e2e\k02-processing-ui.spec.js:158:1 › replacement review reads the pending source version instead of the previously active original 
+    e2e\k02-processing-ui.spec.js:170:1 › formula review shows local math rendering, provenance and incomplete source without claiming correctness 
+    e2e\k02-processing-ui.spec.js:184:1 › legacy parsing results visibly require a new formula check 
+    e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations 
+    e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access 
+    e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response 
+    e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source ──────
+    e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer 
+    e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view 

@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:11876) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\k03-retrieval-ui.spec.js:121:1 › stopping a pending search is shown as incomplete instead of a completed empty result (12.0s)
+
+
+  1) e2e\k03-retrieval-ui.spec.js:121:1 › stopping a pending search is shown as incomplete instead of a completed empty result 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('已停止检索，本次未完成。', { exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByText('已停止检索，本次未完成。', { exact: true })
+
+
+      123 |   await search(page)
+      124 |   await page.getByRole('button', { name: '停止检索', exact: true }).click()
+    > 125 |   await expect(page.getByText('已停止检索，本次未完成。', { exact: true })).toBeVisible()
+          |                                                                 ^
+      126 |   await expect(page.getByText('未检索到相关资料，请调整关键词或上传资料', { exact: true })).toHaveCount(0)
+      127 |   await expect(page.getByTestId('retrieval-mode')).toHaveCount(0)
+      128 |   await expect(page.locator('.search-hit')).toHaveCount(0)
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:125:65
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-stopping--f0cdb-of-a-completed-empty-result\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-stopping--f0cdb-of-a-completed-empty-result\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-stopping--f0cdb-of-a-completed-empty-result\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-stopping--f0cdb-of-a-completed-empty-result\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\k03-retrieval-ui.spec.js:121:1 › stopping a pending search is shown as incomplete instead of a completed empty result 

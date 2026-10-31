@@ -1,0 +1,95 @@
+{
+  "task": "K02 visual increment",
+  "archivedAt": "2026-10-28T06:12:27.880946+00:00",
+  "backend": {
+    "total": 360,
+    "passed": 346,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 14
+  },
+  "skipReasons": {
+    "K00LiveModelOptIn": 5,
+    "fullCourseOcrOptIn": 1,
+    "formulaOcrOptIn": 1,
+    "visualOcrOptInRunSeparately": 1,
+    "mysqlOptInRunSeparately": 1,
+    "legacyWeKnoraOptIn": 1,
+    "windowsSymlinkPrivilege": 4
+  },
+  "frontend": {
+    "pageTests": 21,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 0,
+    "mathNodeTestsPassed": 8,
+    "build": "PASS"
+  },
+  "realMySql": {
+    "status": "PASS",
+    "syntheticImageBlobPersisted": true,
+    "idempotentMigration": true,
+    "deleteCascade": true,
+    "isolatedSchemaDropped": true
+  },
+  "realVisualOcr": {
+    "status": "PASS",
+    "pages": 3,
+    "readableImages": 3,
+    "localFigures": 1,
+    "pageFallbacks": 2,
+    "elapsedMs": 82400,
+    "numericTableFallbacks": 2,
+    "liveAnswerModelTested": false,
+    "directVlmTestedLive": false,
+    "mathematicalOrGraphAccuracyMeasured": false
+  },
+  "qualityIssues": {
+    "initialChartDigitization": "Parse figure returned demonstrably wrong ReLU values; not accepted as source data.",
+    "descriptionDiagnostic": "Invented multiple panels and paper attribution; not deployed.",
+    "finalChart": "Only visible non-numeric legend labels provided with explicit unread quantitative warning.",
+    "limitations": [
+      "Conservative numeric-table check can also restrict real numeric table observations.",
+      "General diagram semantics and direct VLM remain unaccepted.",
+      "Course-context student integration remains a later scoped task."
+    ]
+  },
+  "sourceScope": "3 original course pages, not full 334 pages or prior 20 scan set; original hashes unchanged",
+  "recordSnapshots": [
+    {
+      "name": "k02_visual_layout",
+      "sourceStartLine": 132,
+      "records": 119,
+      "sourceRange": [
+        138,
+        557
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k02_visual_chat",
+      "sourceStartLine": 135,
+      "records": 138,
+      "sourceRange": [
+        141,
+        632
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k02_visual_ui",
+      "sourceStartLine": 138,
+      "records": 98,
+      "sourceRange": [
+        144,
+        516
+      ],
+      "unlinkedOutputs": []
+    }
+  ],
+  "nonFunctionalFailureLogs": [
+    "red-visual-association-checkpoint.log (live-test source parenthesis typo)",
+    "red-visual-boundaries.log (one Mockito restubbing fixture error, separately from functional REDs)",
+    "frontend/green-visual-ui.log (drawer locator ambiguity)"
+  ]
+}

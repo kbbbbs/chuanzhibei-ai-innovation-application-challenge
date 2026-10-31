@@ -1,0 +1,124 @@
+{
+  "command": "mvn -q clean verify",
+  "totals": {
+    "tests": 85,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 1
+  },
+  "suites": [
+    {
+      "name": "com.cupk.aiacademy.agent.core.service.AgentChatServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.agent.definition.service.AgentDefinitionServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProviderTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.config.AuthInterceptorAsyncTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.controller.NoticeControllerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.preparation.PreparationModelGatewayTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.preparation.PreparationNativeKnowledgeTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.rag.RagDocumentParserTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.HomeCourseRecommendationServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.ImportServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.QuestionServiceKnowledgeGenerationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.service.RelatedNoticeServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    },
+    {
+      "name": "com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1
+    },
+    {
+      "name": "com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest",
+      "tests": 18,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0
+    }
+  ],
+  "models": "Mock engineering tests; real model integration is reported separately."
+}

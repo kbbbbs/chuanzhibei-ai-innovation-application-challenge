@@ -1,0 +1,118 @@
+{
+  "archivedAt": "2026-10-31T05:50:00.163502+00:00",
+  "scope": "K03 evaluation support, original ten-question preregistered tuning, and exactly one same-source followup run; no product code changes",
+  "source": {
+    "file": "rollout-2026-10-31T13-32-40-01a19072-2017-7391-b61a-73bdf2fb5122.jsonl",
+    "actualStartLine": 113,
+    "delegationLine": 119,
+    "inheritedPrefixOmitted": true
+  },
+  "tests": {
+    "supportCurrentBeforeMyChange": {
+      "passed": 6
+    },
+    "newCacheProtocolRed": "red-cache-contract.log genuine failure, protocol/normalization boundary not validated",
+    "intermediateFailedGreenNamedLog": "green-support.log failed because old invalid-vector fixture lacked new cache protocol header; not counted as pass",
+    "finalSupport": {
+      "total": 8,
+      "passed": 7,
+      "skipped": 1,
+      "skipReason": "real model opt-in disabled"
+    }
+  },
+  "realTuning": {
+    "status": "PASS",
+    "questionCount": 10,
+    "gridCount": 15,
+    "selected": {
+      "rrfK": 1,
+      "candidateLimit": 20,
+      "knownSourceTop5Hits": 10,
+      "knownSourceTop1Hits": 7,
+      "mrrAt5": 0.85
+    },
+    "model": "Qwen/Qwen3-VL-Embedding-8B",
+    "realEmbeddingInputs": 0,
+    "loadedRealVectors": 68,
+    "reuseCount": 209
+  },
+  "initialDiagnosticFailure": "Uncalibrated cosine>0.999 developer assumption; prior failed report and log retained. Real repeat-single chunk cosine .990519 makes this invalid as a provider contract. No product protocol change or renumbering.",
+  "identityDiagnostic": {
+    "positionsCorrectlyNearest": 8,
+    "positions": 8,
+    "minimumCorrespondingVsOtherMargin": 0.321298026277526,
+    "independentTeacherTest": false
+  },
+  "limits": [
+    "Original acceptance observed previously; not used by grid scoring. Root previously printed a few old acceptance IDs accidentally; no independent blindness claim.",
+    "Real vectors and course OCR depend on private ignored target evidence; mvn clean destroys these prerequisites unless privately restored.",
+    "Paid runtime product model is Qwen embedding; GPT only development.",
+    "One Python diagnostic attempt failed SSL EOF before any result, then used direct no-proxy TLS with certificate verification.",
+    "One tool output printed session metadata and encrypted payload incidentally; root record audit is filtering platform metadata before public export.",
+    "persistedRestartPassed in the raw live report is only service-instance reconstruction on the same jdbc:h2:mem database; it is not a file reopen or second JVM restart.",
+    "Top5 uses incomplete known-source labels, not exhaustive relevance judgement. One hybrid-only versus three BM25-only cases does not establish semantic superiority. No further tuning or reruns of the observed followup set were performed."
+  ],
+  "files": {
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03TuningSupport.java": "2de912082356ee8a83ac87168ad43e0deec96c9cdd58842aa478c9e3e72ff351",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03EvaluationSupportTest.java": "7a72c344d0ce9477091579f9457c79121455861b8b9e0420aaed6742dbcd803c",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03RetrievalLiveTest.java": "ddf7e7150d0753187a412a513be479cf4df20569be063b5795bca33543d0d9ae",
+    "docs/competition/development/K03-retrieval-tuning-plan.json": "ca836418c838c610930fa8d05e1d7d18eeaff5a8f434f8677844ce54a1c44e0e",
+    "docs/competition/development/K03-evaluation-followup-freeze.json": "d1084a50329db911301572443b0be8a17f4506db8c36986b3a2116d183685b74",
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/evidence/tuning-report.json": "29dc38d11e1f98b98be77f8ea67ff7a3f3c2f02014846caf0e8c0c1e8e389e09",
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/evidence/tuning-report-before-consistency-repair.json": "b9db717477b6929f213c7793fb4bfe35b805e0c13ec6e79ed3602a10cefc2ab6",
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/evidence/followup-report.json": "4eb7e89bf57a488c39832e76e4acd01cdaea7e1dd4dc6e775f5e81f71bd2193d",
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/evidence/metrics-followup.json": "786b097227fd4835d35de9b8e4872acba9a929b230777104503de5b08ce63be0",
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/evidence/batch-single-consistency.json": "0e67fd78e97b4394160e22316b05cc25d25517128b7390c96fe075e277106717",
+    "docs/competition/development/agent-records/2026-10-30-k03/k03_tuning_finish/evidence/batch-single-consistency-binding.json": "c9491920f6fabc90665060970d2a42974afb51fea194ba1ed548d671721f2348"
+  },
+  "finalFollowup": {
+    "status": "FAIL",
+    "datasetSha256": "facc23e61b3592a37ca3599fe25b7961bd758f734a4376efac1c0176469d3766",
+    "parameters": {
+      "rrfK": 1,
+      "explicitlyInjected": true,
+      "candidateLimit": 20
+    },
+    "acceptanceAnswerable": 40,
+    "hybridTop5Hits": 33,
+    "bm25Top5Hits": 35,
+    "hybridTop5Rate": 0.825,
+    "bm25Top5Rate": 0.875,
+    "hybridTop1Hits": 25,
+    "bm25Top1Hits": 28,
+    "hybridMrrAt5": 0.7070833333333333,
+    "bm25MrrAt5": 0.755,
+    "hybridOnlyTop5Hits": 1,
+    "bm25OnlyTop5Hits": 3,
+    "noAnswerQueriesWithCandidates": 10,
+    "directProductionHttpQueryPassed": true,
+    "providerFailureDegradedExplicitly": true,
+    "wrongDimensionsIsolated": true,
+    "wrongModelIsolated": true,
+    "realEmbeddingInputs": 51,
+    "realEmbeddingFacadeCalls": 2,
+    "persistedCachedVectorsLoaded": 68,
+    "persistedCachedVectorReuses": 59,
+    "elapsedMs": 26377,
+    "knownSourceGoal": 0.85,
+    "goalMet": false,
+    "runCount": 1,
+    "report": "target/k03-retrieval/followup-report.json",
+    "log": "logs/live-followup.log"
+  },
+  "manualReproduction": {
+    "stage": "K03_LIVE_RETRIEVAL_CHECK=true; K03_RETRIEVAL_RUN=tuning or followup",
+    "runner": ".codex_tmp/k03-tuning-finish/run_live.py",
+    "dependencies": [
+      "D:/PPT/人工智能 original PDF hashes",
+      "target/k02-live/scan-page-results-private.json",
+      "target/k02-formulas/formula-live-private.json",
+      "target/k03-retrieval/supplemental-ocr-cache-private.json",
+      "target/k03-retrieval/batch-single-consistency.json",
+      "private model environment configuration"
+    ],
+    "cleanWarning": "mvn clean removes required ignored evidence; private restoration/reconstruction is necessary before repetition",
+    "oneShot": "An existing followup-report.json intentionally rejects reexecution before model calls. Observe preserved report instead of deleting it to retry."
+  },
+  "knownSecretHits": 0
+}

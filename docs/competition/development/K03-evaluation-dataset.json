@@ -1,0 +1,598 @@
+{
+  "version": 1,
+  "frozenAt": "2026-10-30T10:47:57.901133+00:00",
+  "scope": "Author-written retrieval questions grounded in actual provided course pages; not teacher-approved QA or answer correctness benchmark.",
+  "protocol": {
+    "tuningCount": 10,
+    "acceptanceAnswerable": 40,
+    "acceptanceNoAnswer": 10,
+    "targetKnownSourceTop5": 0.85,
+    "noAnswerPolicy": "Report retrieval behavior only; K03 ranking does not claim K04 abstention.",
+    "heldOutRule": "Freeze before first real embedding/retrieval result. Do not select thresholds or RRF parameters using acceptance results.",
+    "corpus": "All safely native-extractable page copies plus listed actual captured OCR pages; noncovered OCR pages excluded and counted. Source-page mapping explicit; copied PDFs have page 1."
+  },
+  "sources": [
+    {
+      "id": "ai-history",
+      "sourceFile": "第1章-课程介绍-绪论-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "700c3affe3d69465b13d59c53f5b57b133223a6099cc2b19951ef727741614f1"
+    },
+    {
+      "id": "learning-elements",
+      "sourceFile": "第2章-机器学习概述-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f"
+    },
+    {
+      "id": "cross-entropy",
+      "sourceFile": "第3章-线性模型-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d"
+    },
+    {
+      "id": "memory-network",
+      "sourceFile": "第4章-前馈神经网络-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7"
+    },
+    {
+      "id": "cnn-depth",
+      "sourceFile": "第5章-卷积神经网络-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e"
+    },
+    {
+      "id": "rnn-segmentation",
+      "sourceFile": "第6章-循环神经网络-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "839bb240a887eed021a4e3ac8d6108c25d120bee241e708f3ea56166468f97a5"
+    },
+    {
+      "id": "attention",
+      "sourceFile": "第9章 人工智能-语言模型.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "cf0a6ede33f14c151ad1467143881d551ddbbb106be657e4bc45308ecdd3a1dd"
+    },
+    {
+      "id": "dense-image-limit",
+      "sourceFile": "第5章-卷积神经网络-okk.pdf",
+      "sourcePage": 3,
+      "sourceSha256": "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e"
+    },
+    {
+      "id": "softmax-rule",
+      "sourceFile": "第3章-线性模型-okk.pdf",
+      "sourcePage": 23,
+      "sourceSha256": "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d"
+    },
+    {
+      "id": "activation-variants",
+      "sourceFile": "第4章-前馈神经网络-okk.pdf",
+      "sourcePage": 10,
+      "sourceSha256": "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7"
+    }
+  ],
+  "questions": [
+    {
+      "id": "T-ai-history",
+      "split": "tuning",
+      "query": "人工智能这一名称最初是在什么会议上确立的？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "A-ai-history-1",
+      "split": "acceptance",
+      "query": "把机器智能作为一个正式学科名称的标志事件是什么？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "A-ai-history-2",
+      "split": "acceptance",
+      "query": "AI这个研究领域是在上世纪哪次学术聚会中被命名的？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "A-ai-history-3",
+      "split": "acceptance",
+      "query": "哪位人工智能奠基人后来获得了图灵奖？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "A-ai-history-4",
+      "split": "acceptance",
+      "query": "让机器表现出类似人的智能行为，这个研究领域属于计算机科学的哪一支？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "T-learning-elements",
+      "split": "tuning",
+      "query": "机器学习中模型、学习准则和优化算法分别属于什么基本要素？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "A-learning-elements-1",
+      "split": "acceptance",
+      "query": "设计一个学习系统时，需要同时确定表达形式、评价标准和更新方法，课件如何概括它们？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "A-learning-elements-2",
+      "split": "acceptance",
+      "query": "把数据也算进去时，机器学习的基本组成可以概括成哪四项？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "A-learning-elements-3",
+      "split": "acceptance",
+      "query": "用损失函数衡量学习效果，属于机器学习的哪一个基本组成部分？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "A-learning-elements-4",
+      "split": "acceptance",
+      "query": "随机或小批量梯度下降在学习系统里承担哪一种角色？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "T-cross-entropy",
+      "split": "tuning",
+      "query": "三类分类示例怎样用预测概率计算交叉熵？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "A-cross-entropy-1",
+      "split": "acceptance",
+      "query": "用真实类别上的预测概率取负对数来惩罚分类错误，这页讲的是什么损失？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "A-cross-entropy-2",
+      "split": "acceptance",
+      "query": "真实标签为第三类，而输出概率为0.3、0.3、0.4，教材的损失示例在哪里？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "A-cross-entropy-3",
+      "split": "acceptance",
+      "query": "把每个类别标签与预测概率的对数相乘再求和取负，对应什么训练目标？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "A-cross-entropy-4",
+      "split": "acceptance",
+      "query": "负对数似然和交叉熵在这个分类示例中是如何联系起来的？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "T-memory-network",
+      "split": "tuning",
+      "query": "记忆网络为什么会受到历史状态影响？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "A-memory-network-1",
+      "split": "acceptance",
+      "query": "同样的输入在不同时刻可能产生不同输出，是哪类网络状态在起作用？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "A-memory-network-2",
+      "split": "acceptance",
+      "query": "一个神经元既接收其他单元的信息又接收自身以前的信息，课件把这种结构称为什么？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "A-memory-network-3",
+      "split": "acceptance",
+      "query": "能够保留历史信息的网络，在图结构上可以怎样表示信息传播？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "A-memory-network-4",
+      "split": "acceptance",
+      "query": "Hopfield网络和玻尔兹曼机在这里被归入哪一类有记忆的网络？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "T-cnn-depth",
+      "split": "tuning",
+      "query": "多个卷积核如何形成具有深度的特征表示？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "A-cnn-depth-1",
+      "split": "acceptance",
+      "query": "为何只用一个卷积核会限制图像表示能力？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "A-cnn-depth-2",
+      "split": "acceptance",
+      "query": "把边缘、角点和纹理等不同响应叠在一起，怎样得到三维数据块？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "A-cnn-depth-3",
+      "split": "acceptance",
+      "query": "特征映射的深度增大，在这张示意图里代表什么含义？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "A-cnn-depth-4",
+      "split": "acceptance",
+      "query": "灰度图和彩色RGB图在通道深度上有什么差别？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "T-rnn-segmentation",
+      "split": "tuning",
+      "query": "循环网络如何把中文分词改写为序列标注？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "A-rnn-segmentation-1",
+      "split": "acceptance",
+      "query": "给句子里的每个位置打上词边界标签，可以把哪种中文处理任务转成序列问题？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "A-rnn-segmentation-2",
+      "split": "acceptance",
+      "query": "中文切词示意图里，单字词、词首和词尾分别用哪些字母标记？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "A-rnn-segmentation-3",
+      "split": "acceptance",
+      "query": "对于“他说的确实在理”这样的歧义片段，课件用什么网络处理逐位置标签？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "A-rnn-segmentation-4",
+      "split": "acceptance",
+      "query": "让网络对齐输入字符与输出边界标签，属于哪一种序列到序列应用？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "T-attention",
+      "split": "tuning",
+      "query": "注意力机制怎样减少大量输入带来的计算负担？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "A-attention-1",
+      "split": "acceptance",
+      "query": "神经网络只挑与当前处理相关的输入片段，是借鉴了哪种人类信息选择机制？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "A-attention-2",
+      "split": "acceptance",
+      "query": "最大汇聚只关注最显著的元素，这里被近似看成哪类注意力？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "A-attention-3",
+      "split": "acceptance",
+      "query": "门控机制为什么也可近似归入基于显著性的自下而上选择？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "A-attention-4",
+      "split": "acceptance",
+      "query": "不把整篇文章都交给后续网络，而只挑相关片段的focus方式有什么计算意义？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "T-dense-image-limit",
+      "split": "tuning",
+      "query": "全连接网络处理图像时为什么存在参数与不变性问题？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "A-dense-image-limit-1",
+      "split": "acceptance",
+      "query": "图像输入与每个隐藏神经元独立相连，为何会让网络参数迅速膨胀？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "A-dense-image-limit-2",
+      "split": "acceptance",
+      "query": "隐藏单元增加后，训练效率低且容易过拟合，课件把原因归结为什么连接方式？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "A-dense-image-limit-3",
+      "split": "acceptance",
+      "query": "图像经过平移、旋转或尺度变化语义仍相近，这是什么性质？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "A-dense-image-limit-4",
+      "split": "acceptance",
+      "query": "为什么普通全连接前馈结构难以提取自然图像的局部不变性特征？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "T-softmax-rule",
+      "split": "tuning",
+      "query": "Softmax回归使用什么准则学习参数矩阵？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "A-softmax-rule-1",
+      "split": "acceptance",
+      "query": "多类别标签如何写成由指示函数构成的独热向量？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "A-softmax-rule-2",
+      "split": "acceptance",
+      "query": "Softmax分类的训练风险为什么会对样本和类别分别求和？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "A-softmax-rule-3",
+      "split": "acceptance",
+      "query": "参数矩阵和样本向量经过什么变换得到各类别的后验概率？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "A-softmax-rule-4",
+      "split": "acceptance",
+      "query": "把真实独热标签与预测对数概率结合起来学习W，是哪一页的Softmax学习准则？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "T-activation-variants",
+      "split": "tuning",
+      "query": "课件列出的ReLU变体和Softplus分别有什么形式？",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "A-activation-variants-1",
+      "split": "acceptance",
+      "query": "在负半轴保留一小段非零斜率的整流函数是什么？",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "A-activation-variants-2",
+      "split": "acceptance",
+      "query": "哪个整流函数变体允许不同神经元的负半轴系数参与学习？",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "A-activation-variants-3",
+      "split": "acceptance",
+      "query": "负半轴使用指数表达式的激活函数，在这组ReLU变体中叫什么？",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "A-activation-variants-4",
+      "split": "acceptance",
+      "query": "教材把哪一个对数指数形式称为Rectifier的平滑版本？",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "N-01",
+      "split": "acceptance",
+      "query": "Marmousi2地震反演中弹性模量的真实测试集误差是多少？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-02",
+      "split": "acceptance",
+      "query": "如何填写某件中国发明专利的申请号和法律状态？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-03",
+      "split": "acceptance",
+      "query": "这组教材是否给出了2026年某家公司的季度利润数字？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-04",
+      "split": "acceptance",
+      "query": "Vue项目中的Pinia状态仓库应怎样定义具体的用户登录接口？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-05",
+      "split": "acceptance",
+      "query": "WireGuard服务器的私钥轮换命令在资料哪个位置？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-06",
+      "split": "acceptance",
+      "query": "哪个章节给出了OAuth2授权码交换的完整HTTP报文？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-07",
+      "split": "acceptance",
+      "query": "课件有没有列出某种药物针对儿童的具体给药剂量？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-08",
+      "split": "acceptance",
+      "query": "这套资料中是否给出了东疆地区某口井的孔隙率测井曲线？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-09",
+      "split": "acceptance",
+      "query": "教材中的哪张表列出了比特币未来一个月的准确价格？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "N-10",
+      "split": "acceptance",
+      "query": "这些课程是否记录了本项目比赛报名成功后的队伍编号？",
+      "answerable": false,
+      "goldSourceIds": []
+    }
+  ]
+}

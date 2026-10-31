@@ -1,0 +1,134 @@
+%%{init: {
+  "theme": "base",
+  "themeVariables": {
+    "fontFamily": "Microsoft YaHei, PingFang SC, sans-serif",
+    "fontSize": "18px",
+    "lineColor": "#64748b",
+    "primaryTextColor": "#0f172a"
+  },
+  "flowchart": {
+    "curve": "stepAfter",
+    "nodeSpacing": 22,
+    "rankSpacing": 54,
+    "padding": 12,
+    "htmlLabels": false
+  }
+}}%%
+
+flowchart LR
+    ROOT(["AI智慧教学平台"])
+
+    ROOT --> SYS["系统基础管理"]
+    ROOT --> COURSE["课程教学管理"]
+    ROOT --> AI["智能教学服务"]
+    ROOT --> STUDENT["学生事务管理"]
+
+    SYS --> SYS_USER["用户与权限管理"]
+    SYS_USER --> SYS_LOGIN["用户注册与登录"]
+    SYS_USER --> SYS_ROLE["用户及角色管理"]
+    SYS_USER --> SYS_AUDIT["教师申请审核"]
+    SYS_USER --> SYS_PROFILE["个人资料管理"]
+    SYS --> SYS_PORTAL["门户与首页管理"]
+    SYS_PORTAL --> SYS_PUBLIC_HOME["公共首页"]
+    SYS_PORTAL --> SYS_DASHBOARD["角色控制台"]
+    SYS_PORTAL --> SYS_NAV["全局导航与异常页面"]
+    SYS --> SYS_COMMON["公共服务管理"]
+    SYS_COMMON --> SYS_NOTICE["通知公告"]
+    SYS_COMMON --> SYS_FILE["文件上传与删除"]
+    SYS --> SYS_RUNTIME["系统运行管理"]
+    SYS_RUNTIME --> SYS_LOG["操作日志"]
+    SYS_RUNTIME --> SYS_STATS["运行数据统计"]
+
+    COURSE --> COURSE_BASE["课程基础管理"]
+    COURSE_BASE --> COURSE_CATEGORY["课程分类"]
+    COURSE_BASE --> COURSE_INFO["课程信息"]
+    COURSE_BASE --> COURSE_CREATE["课程创建与启用"]
+    COURSE --> COURSE_CONTENT["课程内容管理"]
+    COURSE_CONTENT --> CHAPTER["章节管理"]
+    CHAPTER --> LESSON["课时管理"]
+    LESSON --> RESOURCE["教学资源"]
+    LESSON --> VIDEO["视频资源"]
+    COURSE --> COURSE_ORG["教学组织管理"]
+    COURSE_ORG --> TEACH_CLASS["教学班管理"]
+    TEACH_CLASS --> TEACH_CLASS_STUDENT["教学班学生"]
+    COURSE_ORG --> ADMIN_CLASS["行政班管理"]
+    ADMIN_CLASS --> ADMIN_CLASS_STUDENT["行政班学生"]
+    COURSE --> LEARNING["学习过程管理"]
+    LEARNING --> MY_CLASS["我的班级与课程学习"]
+    LEARNING --> PROGRESS["学习进度"]
+    LEARNING --> PATH["学习路线"]
+    PATH --> MAP["学习地图"]
+    LEARNING --> NOTE["学习笔记"]
+    LEARNING --> COMMENT["课时评论"]
+    LEARNING --> CODE_LAB["互动学习与代码实验"]
+    COURSE --> ASSESSMENT["考核评价管理"]
+    ASSESSMENT --> QUESTION_BANK["题库管理"]
+    QUESTION_BANK --> QUESTION_EDIT["题目维护"]
+    QUESTION_BANK --> QUESTION_AI["AI与知识库生成题目"]
+    ASSESSMENT --> EXAM_PAPER["试卷管理"]
+    EXAM_PAPER --> EXAM_COMPOSE["试卷组卷"]
+    EXAM_PAPER --> EXAM_PUBLISH["试卷发布"]
+    ASSESSMENT --> EXAM["考试管理"]
+    EXAM --> EXAM_RELEASE["考试发布"]
+    EXAM --> EXAM_ANSWER["学生答题"]
+    EXAM --> EXAM_MARK["考试批改"]
+    EXAM --> EXAM_RESULT["考试结果"]
+    ASSESSMENT --> HOMEWORK["作业管理"]
+    HOMEWORK --> HOMEWORK_PAPER["作业题卷"]
+    HOMEWORK --> HOMEWORK_RELEASE["作业发布"]
+    HOMEWORK --> HOMEWORK_ANSWER["作业答题"]
+    HOMEWORK --> HOMEWORK_MARK["作业批改"]
+    ASSESSMENT --> GRADE["成绩管理"]
+    GRADE --> GRADE_RECORD["成绩记录"]
+    GRADE --> GRADE_IMPORT["成绩导入"]
+    GRADE --> GRADE_ANALYSIS["成绩分析"]
+    ASSESSMENT --> ASSESS_TOOL["考核数据工具"]
+    ASSESS_TOOL --> TEMPLATE_DOWNLOAD["模板下载"]
+    ASSESS_TOOL --> DATA_IMPORT["数据预览与导入"]
+    ASSESS_TOOL --> DATA_EXPORT["数据导出"]
+
+    AI --> AGENT["Agent智能助手"]
+    AGENT --> AGENT_DEF["Agent定义"]
+    AGENT --> AGENT_CHAT["会话与消息"]
+    AGENT --> AGENT_OPERATION["自然语言业务操作"]
+    AGENT_OPERATION --> AGENT_CONFIRM["待确认动作"]
+    AI --> PREP["AI智能备课"]
+    PREP --> PREP_PROJECT["备课项目"]
+    PREP --> PREP_UPLOAD["教学资料上传"]
+    PREP --> PREP_OUTLINE["提纲生成"]
+    PREP --> PREP_CONTENT["课时与题目生成"]
+    PREP --> PREP_PUBLISH["课程发布"]
+    AI --> KNOWLEDGE["知识库服务"]
+    KNOWLEDGE --> KB_MANAGE["知识库管理"]
+    KNOWLEDGE --> KB_FILE["知识文件管理"]
+    KNOWLEDGE --> KB_QA["知识库问答"]
+    KNOWLEDGE --> KB_GRAPH["知识图谱与Wiki"]
+    AI --> PAPER["学术论文服务"]
+    PAPER --> PAPER_SEARCH["多来源论文检索"]
+    PAPER --> PAPER_IMPORT["论文详情与导入"]
+    PAPER --> PAPER_FAVORITE["论文收藏与笔记"]
+    PAPER --> PAPER_RECOMMEND["论文推荐"]
+    AI --> RECOMMEND["智能推荐"]
+    RECOMMEND --> COURSE_RECOMMEND["课程推荐"]
+    RECOMMEND --> LESSON_RECOMMEND["课时推荐"]
+    RECOMMEND --> PRACTICE_RECOMMEND["练习与试卷推荐"]
+    RECOMMEND --> REASON["推荐分数与理由"]
+
+    STUDENT --> WORK_STUDY["勤工俭学管理"]
+    WORK_STUDY --> JOB["岗位管理"]
+    WORK_STUDY --> EMPLOYMENT["学生用工管理"]
+    EMPLOYMENT --> JOB_APPLY["岗位申请"]
+    EMPLOYMENT --> JOB_AUDIT["申请审核"]
+    EMPLOYMENT --> WORK_HOURS["工时记录"]
+    EMPLOYMENT --> LABOR_FEE["劳务费管理"]
+    EMPLOYMENT --> LIST_IO["名单导入导出"]
+
+    classDef rootNode fill:#0f3d67,stroke:#0f3d67,color:#ffffff,font-weight:bold,font-size:24px;
+    classDef top fill:#dbeafe,stroke:#2563eb,color:#1e3a8a,font-weight:bold,font-size:21px;
+    classDef level2 fill:#eff6ff,stroke:#60a5fa,color:#172554,font-weight:bold;
+    classDef leaf fill:#ffffff,stroke:#94a3b8,color:#0f172a;
+
+    class ROOT rootNode;
+    class SYS,COURSE,AI,STUDENT top;
+    class SYS_USER,SYS_PORTAL,SYS_COMMON,SYS_RUNTIME,COURSE_BASE,COURSE_CONTENT,COURSE_ORG,LEARNING,ASSESSMENT,AGENT,PREP,KNOWLEDGE,PAPER,RECOMMEND,WORK_STUDY level2;
+    class SYS_LOGIN,SYS_ROLE,SYS_AUDIT,SYS_PROFILE,SYS_PUBLIC_HOME,SYS_DASHBOARD,SYS_NAV,SYS_NOTICE,SYS_FILE,SYS_LOG,SYS_STATS,COURSE_CATEGORY,COURSE_INFO,COURSE_CREATE,CHAPTER,LESSON,RESOURCE,VIDEO,TEACH_CLASS,TEACH_CLASS_STUDENT,ADMIN_CLASS,ADMIN_CLASS_STUDENT,MY_CLASS,PROGRESS,PATH,MAP,NOTE,COMMENT,CODE_LAB,QUESTION_BANK,QUESTION_EDIT,QUESTION_AI,EXAM_PAPER,EXAM_COMPOSE,EXAM_PUBLISH,EXAM,EXAM_RELEASE,EXAM_ANSWER,EXAM_MARK,EXAM_RESULT,HOMEWORK,HOMEWORK_PAPER,HOMEWORK_RELEASE,HOMEWORK_ANSWER,HOMEWORK_MARK,GRADE,GRADE_RECORD,GRADE_IMPORT,GRADE_ANALYSIS,ASSESS_TOOL,TEMPLATE_DOWNLOAD,DATA_IMPORT,DATA_EXPORT,AGENT_DEF,AGENT_CHAT,AGENT_OPERATION,AGENT_CONFIRM,PREP_PROJECT,PREP_UPLOAD,PREP_OUTLINE,PREP_CONTENT,PREP_PUBLISH,KB_MANAGE,KB_FILE,KB_QA,KB_GRAPH,PAPER_SEARCH,PAPER_IMPORT,PAPER_FAVORITE,PAPER_RECOMMEND,COURSE_RECOMMEND,LESSON_RECOMMEND,PRACTICE_RECOMMEND,REASON,JOB,EMPLOYMENT,JOB_APPLY,JOB_AUDIT,WORK_HOURS,LABOR_FEE,LIST_IO leaf;

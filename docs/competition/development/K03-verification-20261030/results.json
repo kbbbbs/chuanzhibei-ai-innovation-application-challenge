@@ -1,0 +1,288 @@
+{
+  "task": "K03",
+  "archivedAt": "2026-10-31T05:58:53.672180+00:00",
+  "overallStatus": "IMPLEMENTED_QUALITY_ACCEPTANCE_FAILED",
+  "backend": {
+    "total": 397,
+    "passed": 382,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 15
+  },
+  "skipDetails": [
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "planningCapabilities",
+      "reason": "Environment variable [K00_LIVE_MODEL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "generationCapabilities",
+      "reason": "Environment variable [K00_LIVE_MODEL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "embeddingCapabilities",
+      "reason": "Environment variable [K00_LIVE_MODEL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "ocrCapabilities",
+      "reason": "Environment variable [K00_LIVE_MODEL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "actualEmbeddingIsPersistedAndUsedInNativeRagRetrieval",
+      "reason": "Environment variable [K00_LIVE_MODEL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.ingestion.K02CourseMaterialLiveTest",
+      "test": "originalCoursePdfsScannedCopiesAndMixedPagesHaveRealPersistedOcrCheckpoints",
+      "reason": "Environment variable [K02_LIVE_OCR_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.ingestion.K02FormulaLiveTest",
+      "test": "realFormulaPagesAndTheirScannedCopiesKeepStructuredEvidence",
+      "reason": "Environment variable [K02_FORMULA_LIVE_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.ingestion.K02VisualLiveTest",
+      "test": "realCourseFiguresAreStoredAndReadFromTheActualRetrievedSource",
+      "reason": "Environment variable [K02_VISUAL_LIVE_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest",
+      "test": "isolatedMySqlPreservesLegacyDataVersionsAndOriginalsAcrossMigrationAndDeletion",
+      "reason": "Environment variable [K01_MYSQL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.K03RetrievalLiveTest",
+      "test": "frozenCourseQuestionsUseRealBatchedEmbeddingsAndPersistedHybridRetrieval",
+      "reason": "Environment variable [K03_LIVE_RETRIEVAL_CHECK] does not exist"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "rejectsASymbolicLinkAtAnObjectKeyForReadAndDelete",
+      "reason": ""
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "stagingRecoveryRejectsSymbolicLinksWithoutTouchingTheirTargets",
+      "reason": ""
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "rechecksRootLinksWhenAReadyDirectoryIsReplaced",
+      "reason": ""
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "test": "refusesASymbolicLinkAsPrivateRootOrItsAncestor",
+      "reason": ""
+    },
+    {
+      "class": "com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest",
+      "test": "retrievesContextFromRunningWeKnora",
+      "reason": "Environment variable [WEKNORA_INTEGRATION] does not exist"
+    }
+  ],
+  "frontend": {
+    "pageTestsPassed": 30,
+    "newK03Tests": 9,
+    "previousPageRegressionTests": 21,
+    "nodeTestsPassed": 8,
+    "build": "PASS",
+    "diffCheck": "PASS"
+  },
+  "mysql": {
+    "schema": "codex_k01_c4c28ca8737f45eca51b5ac9e357dea4",
+    "server": "127.0.0.1:3306",
+    "status": "PASS",
+    "input": "synthetic text/vector/image fixtures only; no model API calls",
+    "legacyDataAndOriginalPreserved": true,
+    "repeatMigrationPreserved": true,
+    "vectorColumn": "LONGTEXT",
+    "storedVectorCharacters": 87294,
+    "dimensions": 4096,
+    "versionSwitchAndV1Preserved": true,
+    "deleteCascadeAndFileCleanup": true,
+    "invalidBindingIdentityRetained": true,
+    "k02FormulaMetadataPersisted": true,
+    "k02FormulaMigrationIdempotent": true,
+    "k03ParserProvenancePersisted": true,
+    "k03MigrationIdempotent": true,
+    "k02VisualBlobPersisted": true,
+    "k02VisualMigrationIdempotent": true,
+    "k02SelectedRetry": true,
+    "k02VisualDeleteCascade": true,
+    "k02DurableQueue": true,
+    "k02LeaseTimestampMapped": true,
+    "k02ExpiredLeaseFenced": true,
+    "ownedTestSchemaDropped": true,
+    "phase": "COMPLETE"
+  },
+  "retrievalReports": [
+    "live-report-default-rrf.json",
+    "tuning-report.json",
+    "followup-report.json",
+    "live-report.json"
+  ],
+  "recordSnapshots": [
+    {
+      "name": "k03_retrieval_core",
+      "startLine": 426,
+      "records": 89,
+      "sourceRange": [
+        432,
+        756
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_evaluation",
+      "startLine": 429,
+      "records": 166,
+      "sourceRange": [
+        435,
+        1069
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_ui",
+      "startLine": 432,
+      "records": 67,
+      "sourceRange": [
+        438,
+        710
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_tuning_finish",
+      "startLine": 113,
+      "records": 120,
+      "sourceRange": [
+        119,
+        518
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_ui_finish",
+      "startLine": 116,
+      "records": 47,
+      "sourceRange": [
+        122,
+        277
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_record_audit",
+      "startLine": 129,
+      "records": 49,
+      "sourceRange": [
+        135,
+        307
+      ],
+      "unlinkedOutputs": []
+    },
+    {
+      "name": "k03_restart_proof",
+      "startLine": 2,
+      "records": 53,
+      "sourceRange": [
+        8,
+        165
+      ],
+      "unlinkedOutputs": []
+    }
+  ],
+  "qualityAcceptance": {
+    "status": "FAIL",
+    "datasetSha256": "facc23e61b3592a37ca3599fe25b7961bd758f734a4376efac1c0176469d3766",
+    "acceptanceAnswerable": 40,
+    "hybridTop5Hits": 33,
+    "bm25Top5Hits": 35,
+    "hybridTop5Rate": 0.825,
+    "bm25Top5Rate": 0.875,
+    "hybridTop1Hits": 25,
+    "bm25Top1Hits": 28,
+    "hybridMrrAt5": 0.7070833333333333,
+    "bm25MrrAt5": 0.755,
+    "hybridOnlyTop5Hits": 1,
+    "bm25OnlyTop5Hits": 3,
+    "noAnswerQueriesWithCandidates": 10
+  },
+  "qualityTarget": 0.85,
+  "qualityAccepted": false,
+  "secondJvmPersistence": {
+    "status": "PASS",
+    "evidenceType": "SYNTHETIC_PERSISTENCE_ONLY",
+    "limitation": "Synthetic normalized vectors verify H2 file/second JVM persistence and authorization, not provider relevance or a MySQL server restart.",
+    "childPid": 41012,
+    "parentPid": 38864,
+    "actualMode": "HYBRID",
+    "degradedReason": null,
+    "sourceSha256": "852dcff1d9a666e2bcd5093e4039e6babf1c63ca48925f91fd6bfc4819629e9d",
+    "persistedActiveVectors": 2,
+    "queryEmbeddingBatches": 1,
+    "documentEmbeddingBatches": 0,
+    "lexicalMatches": 0,
+    "authorizedScopeVerified": true,
+    "diskRowsUnchanged": true,
+    "snapshot": {
+      "documentId": "09c9867b-c8e4-4b10-a4ac-dc5a4f47e2da",
+      "indexVersion": "5ff462b6-2207-45b9-9573-e65ebdc968ae",
+      "documentVersion": 1,
+      "parseRevision": 1,
+      "embeddingModel": "Qwen/Qwen3-VL-Embedding-8B",
+      "dimensions": 4,
+      "normalized": true,
+      "chunkRevision": "native-chunker-v1",
+      "parserRevision": "legacy-unverified",
+      "embeddingFingerprint": "3562ffd205b7582910015ea11fda40f49378c477eafd76362ca120251e50d150"
+    },
+    "rowMetadata": [
+      {
+        "id": "cbff2188-2ba3-4806-9168-74385c687ff4",
+        "document_id": "09c9867b-c8e4-4b10-a4ac-dc5a4f47e2da",
+        "kb_id": "bb543c3d-f4f8-4767-a277-b49d53d90979",
+        "page_number": 1,
+        "ordinal_number": 1,
+        "index_version": "5ff462b6-2207-45b9-9573-e65ebdc968ae",
+        "document_version": 1,
+        "parse_revision": 1,
+        "source_type": "DOCUMENT",
+        "vector_model": "3562ffd205b7582910015ea11fda40f49378c477eafd76362ca120251e50d150",
+        "contentSha256": "3dade06cc16103d19f5d88093b3587e7ba0725b7d94b284db08a35ae63235e95",
+        "vectorSha256": "809e753c419d3e50b08b0c1d83ef5cc898d1d01ebf0424db60ab44f6518c3fcb"
+      },
+      {
+        "id": "51775f69-8f03-453a-83b2-26e0c88bd8d7",
+        "document_id": "09c9867b-c8e4-4b10-a4ac-dc5a4f47e2da",
+        "kb_id": "bb543c3d-f4f8-4767-a277-b49d53d90979",
+        "page_number": 2,
+        "ordinal_number": 2,
+        "index_version": "5ff462b6-2207-45b9-9573-e65ebdc968ae",
+        "document_version": 1,
+        "parse_revision": 1,
+        "source_type": "DOCUMENT",
+        "vector_model": "3562ffd205b7582910015ea11fda40f49378c477eafd76362ca120251e50d150",
+        "contentSha256": "db2a6ac42a42de1924820e7d8876c7cc907398006bc498012862cfb5a9eafc37",
+        "vectorSha256": "809e753c419d3e50b08b0c1d83ef5cc898d1d01ebf0424db60ab44f6518c3fcb"
+      }
+    ],
+    "verifiedAt": "2026-10-31T05:55:48.873541300Z",
+    "parentDatabaseShutdownBeforeChild": true,
+    "diskDatabasePresentBeforeChild": true
+  },
+  "limits": [
+    "No K04 answerability acceptance.",
+    "Developer-authored same-source questions; no teacher blind test.",
+    "Corpus is a verified subset, not all 334 course pages.",
+    "Live course persistedRestartPassed means same H2-memory DB service reconstruction; separate second-JVM synthetic persistence regression is reported separately.",
+    "Snapshots are explicit exports; final reply requires a later refresh."
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "dimensions": 4096,
+  "storage": "isolated H2 MySQL mode",
+  "searchMode": "hybrid",
+  "hitCount": 1,
+  "sourceMatches": true,
+  "storedJsonCharacters": 87723,
+  "status": "PASS"
+}

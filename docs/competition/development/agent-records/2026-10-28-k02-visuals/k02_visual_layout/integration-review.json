@@ -1,0 +1,51 @@
+{
+  "agent": "/root/k02_visual_layout",
+  "scope": "Follow-up read-only integration audit and separately authorized anchor-only repair",
+  "archivedAt": "2026-10-28T05:54:37.168418+00:00",
+  "sourceSnapshotSha256": {
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/visual/RagVisualService.java": "0b8fdfc4cac82fc5e52c82101f81fee59ad0affa208d9bfe288e9b8d9b69de14",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/visual/RagVisualController.java": "b93f2f96bff669848a13a5b71ce770ce1f03443413fca05d535fba5b494e2b40",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagIngestionService.java": "78b4300a5773f5d403d8ef8ef2ae2c5d4ce437f0bda87af096adf6473571fed5",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/NativeRagService.java": "67dd8b07ed6957918b8735f9a402abfd56836fdbf4355c10a6a5a4d1612dcb14",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02VisualIngestionTest.java": "8c347495048a6db8e6143a87b1756b7021022f887d426d634ddf2470010df341"
+  },
+  "findings": [
+    {
+      "id": "VISUAL_ASSOCIATION_HEADER",
+      "severity": "P1",
+      "evidenceAtDiscovery": "RagVisualService.java:122-125 anchor; 87-89 retrieval range filter",
+      "trigger": "Two long questions and two uncaptioned figures under a common page title; both figures anchor to the title, later question chunks return no figure.",
+      "redEvidence": ".codex_tmp/k02-visuals-20261028/red-visual-association-checkpoint-functional.log",
+      "repairScope": "Only anchor() and its call site plus an appended multi-question ingestion test; parent authorized after RED.",
+      "repair": "Use an unambiguous question start-to-next-question continuous range; otherwise unique source caption, else page association.",
+      "status": "GREEN: all 5 K02VisualIngestionTest cases passed, including the new multi-question/multi-chunk regression.",
+      "greenEvidence": ".codex_tmp/k02-visuals-20261028/red-quota-green-associations.log; its overall failure was a separate quota test."
+    },
+    {
+      "id": "VISUAL_CHECKPOINT_REUSE",
+      "severity": "P2",
+      "evidenceAtDiscovery": "RagVisualService.java:23 early exists return; RagIngestionService.java:164-171 failed page recovery",
+      "trigger": "Same revision failed page gets recognized again after restart, but previous visual_page prevents refreshing old derived pictures and associations.",
+      "status": "Parent source-fingerprint repair verified by K02VisualCheckpointTest 1 pass in red-quota-green-associations.log."
+    },
+    {
+      "id": "VISUAL_REFERENCE_WITHOUT_PIXELS",
+      "severity": "P1",
+      "evidenceAtDiscovery": "RagIngestionService.java:263-267 image-only promotion; RagVisualService quota branch formerly line38; publish formerly line291",
+      "trigger": "OCR_EMPTY_RESULT with grounded image promotes a reference to OCR_READY, but storage quota or later rendering/cropping may save zero images; synthetic reference must not become usable evidence.",
+      "status": "Parent added a failing quota regression and is verifying its repair; no repair by this child."
+    }
+  ],
+  "codeObservations": [
+    "forHit resolves the actual active chunk row for page/version/revision and rejects forged document mismatch.",
+    "imageForActor checks private ownership before and after reading image bytes, verifies size/hash; controller sends private/no-store PNG.",
+    "Page and image capture are in the fenced checkpoint transaction, followed by authorizeJob; publication rechecks lease/document/index before activation.",
+    "Document deletion cascades image records; retained older revision assets remain owner-private.",
+    "Ordinary FAILED page text is excluded from publication; separately reported visual-reference promotion is the zero-pixel exception."
+  ],
+  "limitations": [
+    "Static source review plus parent-run controlled regression; not a live concurrency/security proof.",
+    "Shared source files can change after this snapshot; parent final manifest is authoritative."
+  ],
+  "followUpAt": "2026-10-28T05:59:13.950659+00:00"
+}

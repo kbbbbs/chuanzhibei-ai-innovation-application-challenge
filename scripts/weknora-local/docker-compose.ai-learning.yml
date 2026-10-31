@@ -1,0 +1,10 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.app
+      target: builder
+    entrypoint: ["/bin/bash", "-c"]
+    command: ["mkdir -p /data/files /go/pkg/mod/github.com/yanyiwu && cp -a /app/yanyiwu/. /go/pkg/mod/github.com/yanyiwu/ && exec ./WeKnora"]
+    volumes:
+      - ./config/builtin_models.yaml:/app/config/builtin_models.yaml:ro

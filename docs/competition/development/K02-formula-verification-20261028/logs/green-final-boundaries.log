@@ -1,0 +1,109 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.example:Final_exam_question_bank >----------------
+[INFO] Building Final exam question bank 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Final_exam_question_bank ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 18 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ Final_exam_question_bank ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 535 source files with javac [debug parameters release 21] to target\classes
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action 中的 com.cupk.aiacademy.agent.action.AgentActionSelectionService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query 中的 com.cupk.aiacademy.agent.query.NaturalLanguageQueryService 已过时, 且标记为待删除
+[INFO] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/action/AgentParameterExtractor.java: 某些输入文件使用或覆盖了已过时的 API。
+[INFO] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/action/AgentParameterExtractor.java: 有关详细信息, 请使用 -Xlint:deprecation 重新编译。
+[INFO] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/weknora/service/impl/WeKnoraServiceImpl.java: D:\ai-learning\ai-learning-backend\src\main\java\com\cupk\aiacademy\weknora\service\impl\WeKnoraServiceImpl.java使用了未经检查或不安全的操作。
+[INFO] /D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/weknora/service/impl/WeKnoraServiceImpl.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ Final_exam_question_bank ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ Final_exam_question_bank ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 52 source files with javac [debug parameters release 21] to target\test-classes
+[WARNING] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.SpyBean 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.SpyBean 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.SpyBean 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.SpyBean 已过时, 且标记为待删除
+[WARNING] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito 中的 org.springframework.boot.test.mock.mockito.SpyBean 已过时, 且标记为待删除
+[INFO] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/service/HomeCourseRecommendationServiceTest.java: D:\ai-learning\ai-learning-backend\src\test\java\com\cupk\aiacademy\service\HomeCourseRecommendationServiceTest.java使用了未经检查或不安全的操作。
+[INFO] /D:/ai-learning/ai-learning-backend/src/test/java/com/cupk/aiacademy/service/HomeCourseRecommendationServiceTest.java: 有关详细信息, 请使用 -Xlint:unchecked 重新编译。
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ Final_exam_question_bank ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.cupk.aiacademy.rag.ingestion.FormulaContractTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 s -- in com.cupk.aiacademy.rag.ingestion.FormulaContractTest
+[INFO] Running com.cupk.aiacademy.rag.ocr.OcrPipelineContractTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\KBS-ROG\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+OpenJDK 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.950 s -- in com.cupk.aiacademy.rag.ocr.OcrPipelineContractTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  31.906 s
+[INFO] Finished at: 2026-10-28T10:09:45+08:00
+[INFO] ------------------------------------------------------------------------

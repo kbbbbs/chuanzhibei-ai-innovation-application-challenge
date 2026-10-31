@@ -1,0 +1,271 @@
+{
+  "recordedAt": "2026-10-22T13:13:36.317391+08:00",
+  "userAuthorizedPaidCalls": true,
+  "inputScope": "synthetic text and generated image only; no private course PDFs",
+  "providerDirect": [
+    {
+      "role": "embedding-model-list",
+      "status": "PASS",
+      "http": 200,
+      "latencyMs": 297,
+      "traceId": "ti_7c50j86nnt8fhbb2et",
+      "selectedModelListed": true
+    },
+    {
+      "role": "ocr-model-list",
+      "status": "PASS",
+      "http": 200,
+      "latencyMs": 344,
+      "traceId": "ai-learning-20261022-ocr-model-list",
+      "selectedModelListed": true
+    },
+    {
+      "role": "embedding-single",
+      "status": "PASS",
+      "http": 200,
+      "latencyMs": 516,
+      "traceId": "ti_4jusjvnbrra4pvqgvu",
+      "model": "Qwen/Qwen3-VL-Embedding-8B",
+      "vectorCount": 1,
+      "dimensions": [
+        4096
+      ],
+      "indices": [
+        0
+      ],
+      "distinctVectors": true,
+      "usage": {
+        "prompt_tokens": 22,
+        "completion_tokens": 0,
+        "total_tokens": 22,
+        "image_tokens": 0
+      }
+    },
+    {
+      "role": "embedding-list",
+      "status": "PASS",
+      "http": 200,
+      "latencyMs": 968,
+      "traceId": "ai-learning-20261022-embedding-list",
+      "model": "Qwen/Qwen3-VL-Embedding-8B",
+      "vectorCount": 2,
+      "dimensions": [
+        4096,
+        4096
+      ],
+      "indices": [
+        0,
+        1
+      ],
+      "distinctVectors": true,
+      "usage": {
+        "prompt_tokens": 53,
+        "completion_tokens": 0,
+        "total_tokens": 53,
+        "image_tokens": 0
+      }
+    },
+    {
+      "role": "embedding-dimensions",
+      "status": "PASS",
+      "http": 200,
+      "latencyMs": 391,
+      "traceId": "ti_vyq8na9obzrbbh341j",
+      "model": "Qwen/Qwen3-VL-Embedding-8B",
+      "vectorCount": 1,
+      "dimensions": [
+        1024
+      ],
+      "indices": [
+        0
+      ],
+      "distinctVectors": true,
+      "usage": {
+        "prompt_tokens": 20,
+        "completion_tokens": 0,
+        "total_tokens": 20,
+        "image_tokens": 0
+      }
+    },
+    {
+      "role": "ocr-synthetic-image",
+      "status": "PASS",
+      "http": 200,
+      "latencyMs": 672,
+      "traceId": "ti_atang8bdhnjui8v3ia",
+      "model": "deepseek-ai/DeepSeek-OCR",
+      "recognizedExpectedText": true,
+      "contentCharacters": 64,
+      "usage": {
+        "prompt_tokens": 591,
+        "completion_tokens": 21,
+        "total_tokens": 612
+      }
+    }
+  ],
+  "liveProject": {
+    "tests": 5,
+    "passed": 5,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "results": {
+      "generation": {
+        "role": "generation",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "TEXT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 883,
+            "testedCharacters": 0
+          },
+          {
+            "name": "JSON_OBJECT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1100,
+            "testedCharacters": 0
+          },
+          {
+            "name": "STREAM",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1393,
+            "testedCharacters": 0
+          },
+          {
+            "name": "CONTEXT_SAMPLE",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1615,
+            "testedCharacters": 2432
+          }
+        ]
+      },
+      "planning": {
+        "role": "planning",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "TEXT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1448,
+            "testedCharacters": 0
+          },
+          {
+            "name": "JSON_OBJECT",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1145,
+            "testedCharacters": 0
+          },
+          {
+            "name": "STREAM",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1330,
+            "testedCharacters": 0
+          },
+          {
+            "name": "CONTEXT_SAMPLE",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 1172,
+            "testedCharacters": 2432
+          }
+        ]
+      },
+      "embedding": {
+        "role": "embedding",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "EMBEDDING",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 835,
+            "testedCharacters": 0
+          }
+        ]
+      },
+      "ocr": {
+        "role": "ocr",
+        "status": "PASS",
+        "checks": [
+          {
+            "name": "OCR_IMAGE",
+            "status": "PASS",
+            "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+            "latencyMs": 741,
+            "testedCharacters": 0
+          }
+        ]
+      },
+      "native-rag": {
+        "storedJsonCharacters": 87724,
+        "status": "PASS",
+        "dimensions": 4096,
+        "storage": "isolated H2 MySQL mode",
+        "searchMode": "hybrid",
+        "hitCount": 1,
+        "sourceMatches": true
+      }
+    }
+  },
+  "finalRegression": {
+    "tests": 178,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 6,
+    "passed": 172
+  },
+  "skippedTests": [
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "planningCapabilities",
+      "reason": "live opt-in disabled in regression"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "generationCapabilities",
+      "reason": "live opt-in disabled in regression"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "embeddingCapabilities",
+      "reason": "live opt-in disabled in regression"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "ocrCapabilities",
+      "reason": "live opt-in disabled in regression"
+    },
+    {
+      "class": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "test": "actualEmbeddingIsPersistedAndUsedInNativeRagRetrieval",
+      "reason": "live opt-in disabled in regression"
+    },
+    {
+      "class": "com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest",
+      "test": "retrievesContextFromRunningWeKnora",
+      "reason": "legacy WeKnora integration deliberately excluded"
+    }
+  ],
+  "developmentRecordExporterTests": {
+    "tests": 11,
+    "passed": 11
+  },
+  "startScriptSyntaxErrors": 0,
+  "actualMySqlTouched": false,
+  "limits": [
+    "OCR image transport verified; scanned PDF page pipeline is pending K02.",
+    "Only the 2432-character generation/planning sample was tested; no maximum-window claim.",
+    "Native RAG uses isolated H2 MySQL mode; real MySQL migration uses mocked JDBC metadata tests.",
+    "No course-level OCR or retrieval quality benchmark and no frontend end-to-end run.",
+    "Live checks preceded the final metadata exact-match-only correction; final regression covers that correction.",
+    "Charges are accepted by user; exact billed amount is not available from these response fields."
+  ]
+}

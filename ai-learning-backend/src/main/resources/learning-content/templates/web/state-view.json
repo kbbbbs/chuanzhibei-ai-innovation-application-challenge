@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "key": "web.state-view",
+  "title": "前端状态：事件如何驱动视图",
+  "subject": "Web 前端",
+  "summary": "把一次点击拆成事件、状态更新、视图反馈和错误提示。",
+  "estimatedMinutes": 25,
+  "blocks": [
+    {
+      "type": "markdown",
+      "title": "学习目标",
+      "content": "## 页面为什么会变\n\n用户看到的页面不是静态图片。点击按钮、输入表单、接口返回，都会改变状态；状态一变，视图就应该给出对应反馈。\n\n本节你要掌握：\n\n- 事件负责触发动作。\n- 状态保存页面记忆。\n- 视图根据状态重新显示。\n- 错误提示要告诉用户如何修正。"
+    },
+    {
+      "type": "experiment",
+      "title": "状态驱动视图",
+      "description": "点击加减按钮观察数值变化，理解状态如何驱动页面。",
+      "kind": "state",
+      "defaults": {
+        "count": 1
+      }
+    },
+    {
+      "type": "markdown",
+      "title": "核心讲解",
+      "content": "## 一条交互链\n\n一次“点击学习”可以拆成：\n\n1. 用户点击按钮。\n2. 事件函数运行。\n3. 状态 `clicks` 加一。\n4. 页面重新显示新的次数。\n\n表单错误也一样：错误不是弹一句“失败”就结束，而是要告诉用户具体哪里需要改。例如“请输入课程名称”比“提交失败”更有用。"
+    },
+    {
+      "type": "ide",
+      "title": "JavaScript：模拟状态和校验",
+      "description": "运行代码，观察状态对象如何记录点击次数和错误信息。",
+      "language": "javascript",
+      "starterCode": "const state = { clicks: 0, error: '' };\n\nfunction clickLearn() {\n  state.clicks += 1;\n  return `已点击 ${state.clicks} 次`;\n}\n\nfunction validateCourseName(name) {\n  state.error = name.trim() ? '' : '请输入课程名称';\n  return state.error || '可以提交';\n}\n\nconsole.log(clickLearn());\nconsole.log(clickLearn());\nconsole.log(validateCourseName(''));\nconsole.log(validateCourseName('Amazing Teaching'));",
+      "expectedOutputHint": "应该看到两次点击次数、一次明确错误和一次成功提示。"
+    },
+    {
+      "type": "challenge",
+      "title": "体验题：错误提示放在哪里？",
+      "prompt": "表单某个字段没填时，提示应该离用户当前操作远还是近？为什么？",
+      "answer": "应该靠近出错字段，并说明如何修正，用户不需要猜哪里错了。"
+    },
+    {
+      "type": "checkpoint",
+      "title": "完成检查",
+      "items": [
+        "我能画出事件→状态→视图链路。",
+        "我能写出一个明确的表单错误提示。",
+        "我能解释状态字段服务哪个界面反馈。"
+      ]
+    }
+  ]
+}

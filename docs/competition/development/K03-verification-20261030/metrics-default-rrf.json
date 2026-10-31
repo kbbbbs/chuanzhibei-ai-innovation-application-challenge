@@ -1,0 +1,41 @@
+{
+  "datasetSha256": "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+  "abstentionEvaluated": false,
+  "interpretation": "Known annotated source-page presence in returned top5; not full relevance annotation or answer accuracy.",
+  "tuning": {
+    "answerable": 10,
+    "unanswerable": 0,
+    "hybrid": {
+      "knownSourceTop5Hits": 7,
+      "knownSourceTop5Rate": 0.7,
+      "knownSourceTop1Hits": 6,
+      "mrrAt5": 0.625
+    },
+    "bm25": {
+      "knownSourceTop5Hits": 10,
+      "knownSourceTop5Rate": 1.0,
+      "knownSourceTop1Hits": 10,
+      "mrrAt5": 1.0
+    },
+    "noAnswerQueriesWithHybridCandidates": 0,
+    "noAnswerQueriesWithBm25Candidates": 0
+  },
+  "acceptance": {
+    "answerable": 40,
+    "unanswerable": 10,
+    "hybrid": {
+      "knownSourceTop5Hits": 25,
+      "knownSourceTop5Rate": 0.625,
+      "knownSourceTop1Hits": 19,
+      "mrrAt5": 0.5333333333333333
+    },
+    "bm25": {
+      "knownSourceTop5Hits": 37,
+      "knownSourceTop5Rate": 0.925,
+      "knownSourceTop1Hits": 34,
+      "mrrAt5": 0.8875
+    },
+    "noAnswerQueriesWithHybridCandidates": 10,
+    "noAnswerQueriesWithBm25Candidates": 10
+  }
+}

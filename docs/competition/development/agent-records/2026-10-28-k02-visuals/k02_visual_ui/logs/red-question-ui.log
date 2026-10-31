@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:944) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\visual-rag-ui.spec.js:179:1 › question review preserves original options and formulas while showing association counts and pending verification (13.9s)
+
+
+  1) e2e\visual-rag-ui.spec.js:179:1 › question review preserves original options and formulas while showing association counts and pending verification 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('document-page-review').getByTestId('question-review')
+    Expected substring: "按题号整理（待核验）"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for getByTestId('document-page-review').getByTestId('question-review')
+
+
+      181 | })
+      182 |
+    > 183 | test('question review preserves original options and formulas while showing association counts and pending verification', async ({ page }) => {
+          |                           ^
+      184 |   await fixture(page, { questions: true })
+      185 |   const external = []
+      186 |   page.on('request', request => { if (request.url().includes('untrusted.invalid')) external.push(request.url()) })
+        at D:\ai-learning\ai-learning-frontend\e2e\visual-rag-ui.spec.js:183:27
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\visual-rag-ui-question-rev-845e3-ts-and-pending-verification\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\visual-rag-ui-question-rev-845e3-ts-and-pending-verification\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\visual-rag-ui-question-rev-845e3-ts-and-pending-verification\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\visual-rag-ui-question-rev-845e3-ts-and-pending-verification\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\visual-rag-ui.spec.js:179:1 › question review preserves original options and formulas while showing association counts and pending verification 

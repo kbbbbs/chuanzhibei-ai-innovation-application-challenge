@@ -1,0 +1,38 @@
+✔ renders inline and display math without destroying braces, subscripts or ampersands (10.6394ms)
+✔ supports parenthesis and bracket delimiters with fraction markup (1.0428ms)
+✔ leaves code samples and escaped dollars literal (0.2132ms)
+✔ unrenderable or incomplete formula has visible source and no fabricated math (0.4091ms)
+✔ untrusted math cannot emit executable links or HTML (1.0109ms)
+✔ formulas and code inside Markdown tables restore their protected content (0.55ms)
+✖ source-only rendering keeps formulas but does not load remote Markdown images (1.2516ms)
+ℹ tests 7
+ℹ suites 0
+ℹ pass 6
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 212.0245
+
+✖ failing tests:
+
+test at e2e\formula-rendering.test.mjs:43:1
+✖ source-only rendering keeps formulas but does not load remote Markdown images (1.2516ms)
+  AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /<img\b/. Input:
+  
+  '<p>题干 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> <img src="https://untrusted.invalid/image.png" alt="配图" style="max-width:100%"></p>'
+  
+      at TestContext.<anonymous> (file:///D:/ai-learning/ai-learning-frontend/e2e/formula-rendering.test.mjs:46:10)
+      at Test.runInAsyncScope (node:async_hooks:214:14)
+      at Test.run (node:internal/test_runner/test:1103:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:785:18)
+      at Test.postRun (node:internal/test_runner/test:1232:19)
+      at Test.run (node:internal/test_runner/test:1160:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:785:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '<p>题干 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>x</mi><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">x^2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="katex-base"><span class="katex-strut" style="height:0.8141em;"></span><span class="mord"><span class="mord mathnormal">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8141em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="katex-sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span> <img src="https://untrusted.invalid/image.png" alt="配图" style="max-width:100%"></p>',
+    expected: /<img\b/,
+    operator: 'doesNotMatch',
+    diff: 'simple'
+  }

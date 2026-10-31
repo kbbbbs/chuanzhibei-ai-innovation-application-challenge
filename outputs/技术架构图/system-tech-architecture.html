@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <title>AI智慧教学平台系统技术架构图</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1800px; height: 1705px; background: #fff; }
+    body { font-family: "Microsoft YaHei", "PingFang SC", sans-serif; color: #17324d; }
+    .canvas { position: relative; width: 1800px; height: 1705px; padding: 42px 150px 84px 24px; }
+    .title { text-align: center; font-size: 34px; font-weight: 700; letter-spacing: 2px; color: #17324d; margin: 0 0 28px 116px; }
+    .layer { display: grid; grid-template-columns: 190px 1fr; gap: 24px; margin-bottom: 22px; }
+    .label { display: flex; align-items: center; justify-content: center; text-align: center; color: #fff; font-size: 26px; font-weight: 700; line-height: 1.45; border: 3px solid; }
+    .content { border: 3px solid; padding: 17px 22px; display: grid; gap: 15px; background: #fff; }
+    .cards { display: grid; gap: 14px; }
+    .card { min-height: 74px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 10px 12px; border: 3px solid; text-align: center; font-size: 21px; font-weight: 700; line-height: 1.35; background: #fff; }
+    .card small { display: block; margin-top: 5px; font-size: 16px; font-weight: 500; color: #475569; }
+
+    .green .label { background: #27bf77; border-color: #13975a; }
+    .green .content, .green .card { border-color: #25b66f; }
+    .green .content { background: #eefbf5; }
+    .green .card { color: #14804d; }
+
+    .magenta .label { background: #d94bd5; border-color: #ae2baa; }
+    .magenta .content, .magenta .card { border-color: #cf37ca; }
+    .magenta .content { background: #fff1fe; }
+    .magenta .card { color: #8f238d; }
+
+    .blue .label { background: #5d9fd9; border-color: #327dbd; }
+    .blue .content, .blue .card { border-color: #4d95d2; }
+    .blue .content { background: #edf6ff; }
+    .blue .card { color: #26699f; }
+
+    .purple .label { background: #a968df; border-color: #8240ba; }
+    .purple .content, .purple .card { border-color: #a45bdc; }
+    .purple .content { background: #faf2ff; }
+    .purple .card { color: #7630a8; }
+
+    .lime .label { background: #9bcf3c; border-color: #72a918; }
+    .lime .content, .lime .card { border-color: #91c632; }
+    .lime .content { background: #f7fce9; }
+    .lime .card { color: #57870b; }
+
+    .orange .label { background: #ef9a37; border-color: #d67d16; }
+    .orange .content, .orange .card { border-color: #e89532; }
+    .orange .content { background: #fff8ed; }
+    .orange .card { color: #a65b09; }
+
+    .users { height: 126px; }
+    .entry { height: 176px; }
+    .pages { height: 286px; }
+    .components { height: 196px; }
+    .api { height: 230px; }
+    .backend { height: 404px; }
+    .users .content { grid-template-columns: repeat(3, 1fr); }
+    .entry .content { grid-template-columns: repeat(6, 1fr); }
+    .pages .content { grid-template-columns: repeat(4, 1fr); }
+    .components .content { grid-template-columns: repeat(4, 1fr); }
+    .api .content { grid-template-columns: repeat(5, 1fr); }
+    .backend .content { grid-template-columns: repeat(5, 1fr); }
+    .backend .wide { grid-column: span 2; }
+    .pill { display: inline-block; border-radius: 18px; padding: 3px 12px; margin-bottom: 6px; color: #fff; font-size: 15px; }
+    .pages .pill { background: #4d95d2; }
+    .backend .pill { background: #e89532; }
+    .side-arrow { position: absolute; right: 35px; width: 72px; display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; font-weight: 700; writing-mode: vertical-rl; letter-spacing: 8px; }
+    .side-arrow::before, .side-arrow::after { content: ""; position: absolute; left: 10px; border-left: 26px solid transparent; border-right: 26px solid transparent; }
+    .frontend { top: 112px; height: 1026px; background: #25b6a9; }
+    .frontend::before { top: -32px; border-bottom: 34px solid #25b6a9; }
+    .frontend::after { bottom: -32px; border-top: 34px solid #25b6a9; }
+    .backend-arrow { top: 1200px; height: 382px; background: #f28c55; }
+    .backend-arrow::before { top: -32px; border-bottom: 34px solid #f28c55; }
+    .backend-arrow::after { bottom: -32px; border-top: 34px solid #f28c55; }
+    .flow { position: absolute; right: 112px; width: 24px; border-top: 5px solid #25b6a9; }
+    .flow::after { content: ""; position: absolute; right: -1px; top: -10px; border-left: 15px solid #25b6a9; border-top: 8px solid transparent; border-bottom: 8px solid transparent; }
+    .f1 { top: 174px; } .f2 { top: 395px; } .f3 { top: 694px; } .f4 { top: 929px; } .f5 { top: 1138px; }
+    .foot { position: absolute; left: 240px; right: 150px; bottom: 28px; text-align: center; color: #64748b; font-size: 16px; }
+  </style>
+</head>
+<body>
+<main class="canvas">
+  <h1 class="title">AI智慧教学平台系统技术架构图</h1>
+
+  <section class="layer green users">
+    <div class="label">用户层</div>
+    <div class="content">
+      <div class="card">管理员<small>系统配置、用户与教学事务管理</small></div>
+      <div class="card">教师<small>课程建设、考核评价与智能备课</small></div>
+      <div class="card">学生<small>课程学习、考试作业与智能学伴</small></div>
+    </div>
+  </section>
+
+  <section class="layer magenta entry">
+    <div class="label">入口与<br>权限层</div>
+    <div class="content">
+      <div class="card">main.js<small>Vue 3 / Vite 启动入口</small></div>
+      <div class="card">App.vue<small>应用根组件</small></div>
+      <div class="card">Vue Router<small>路由配置与导航守卫</small></div>
+      <div class="card">MainLayout<small>统一布局与菜单</small></div>
+      <div class="card">Pinia Store<small>用户与登录状态</small></div>
+      <div class="card">JWT + RBAC<small>身份认证与角色授权</small></div>
+    </div>
+  </section>
+
+  <section class="layer blue pages">
+    <div class="label">页面功能层</div>
+    <div class="content">
+      <div class="card"><span class="pill">公共门户</span>登录注册、公共首页<br>个人设置、通知与日志</div>
+      <div class="card"><span class="pill">管理员端</span>用户与教师审核<br>分类、行政班、勤工俭学</div>
+      <div class="card"><span class="pill">教师端</span>课程与教学班<br>题库、试卷、考试、作业、成绩</div>
+      <div class="card"><span class="pill">学生端</span>课程学习与学习路线<br>考核、推荐、论文、知识库</div>
+    </div>
+  </section>
+
+  <section class="layer purple components">
+    <div class="label">组件与<br>组合逻辑层</div>
+    <div class="content">
+      <div class="card">Element Plus<small>表单、表格、弹窗与导航</small></div>
+      <div class="card">业务组件<small>视频播放器、学习页、笔记与评论</small></div>
+      <div class="card">可视化与智能组件<small>ECharts、Vue Flow、知识图谱、Agent</small></div>
+      <div class="card">Composables / Utils<small>useAsync、useConfirm、Markdown、上下文</small></div>
+    </div>
+  </section>
+
+  <section class="layer lime api">
+    <div class="label">接口访问层</div>
+    <div class="content">
+      <div class="card">Axios 请求封装<small>Vite /api 代理至 8080</small></div>
+      <div class="card">请求拦截器<small>Bearer Token / Content-Type</small></div>
+      <div class="card">响应处理<small>统一 R&lt;code, msg, data&gt;</small></div>
+      <div class="card">教学业务 API<small>课程 / 班级 / 学习 / 考核 / 成绩</small></div>
+      <div class="card">智能与事务 API<small>Agent / 备课 / WeKnora / 论文 / 勤工俭学</small></div>
+    </div>
+  </section>
+
+  <section class="layer orange backend">
+    <div class="label">后端服务与<br>数据层</div>
+    <div class="content">
+      <div class="card"><span class="pill">接入层</span>Spring Boot 3<small>REST Controller / 参数校验 / 全局异常</small></div>
+      <div class="card"><span class="pill">基础服务</span>认证与用户<small>/auth、/users、角色、教师审核</small></div>
+      <div class="card"><span class="pill">教学服务</span>课程与班级<small>课程、章节、课时、资源、教学班</small></div>
+      <div class="card"><span class="pill">考核服务</span>考试与作业<small>题库、组卷、答题、批改、成绩分析</small></div>
+      <div class="card"><span class="pill">学习服务</span>学习过程<small>进度、路线、笔记、评论、推荐</small></div>
+      <div class="card"><span class="pill">智能服务</span>Agent 与智能备课<small>Spring AI / DeepSeek 兼容接口</small></div>
+      <div class="card"><span class="pill">知识服务</span>WeKnora RAG<small>知识库、文件问答、知识图谱</small></div>
+      <div class="card"><span class="pill">学术服务</span>论文检索<small>OpenAlex / arXiv / 本地收藏</small></div>
+      <div class="card"><span class="pill">事务服务</span>勤工俭学<small>岗位、申请、工时与劳务费</small></div>
+      <div class="card"><span class="pill">持久层</span>MyBatis-Plus + MySQL<small>Mapper / Entity / 业务数据表</small></div>
+    </div>
+  </section>
+
+  <div class="side-arrow frontend">浏览器前端</div>
+  <div class="side-arrow backend-arrow">服务端</div>
+  <i class="flow f1"></i><i class="flow f2"></i><i class="flow f3"></i><i class="flow f4"></i><i class="flow f5"></i>
+  <div class="foot">前后端通过 HTTP/JSON REST API 交互，JWT 承载登录身份与角色权限</div>
+</main>
+</body>
+</html>

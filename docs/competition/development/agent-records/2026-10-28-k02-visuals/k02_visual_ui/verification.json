@@ -1,0 +1,71 @@
+{
+  "archivedAt": "2026-10-28T06:01:38.639606+00:00",
+  "scope": "K02 visual UI; synthetic API contract fixtures only, not real OCR or visual understanding acceptance",
+  "red": {
+    "visualTests": 5,
+    "failed": 5,
+    "log": "logs/red-visual-ui.log"
+  },
+  "intermediate": {
+    "passed": 4,
+    "failed": 1,
+    "reason": "Test locator .el-drawer matched three drawers; fixed to .open. This is not counted as a product defect.",
+    "log": "logs/green-visual-ui.log"
+  },
+  "additionalRed": {
+    "failed": 1,
+    "reason": "Fresh chunk without visuals field retained cached citation image list; fixed by replacing the list from the fresh response.",
+    "log": "logs/red-cached-visuals.log"
+  },
+  "questionFollowup": {
+    "newUiRed": 1,
+    "newNodeRed": 2,
+    "scope": "Read-only heuristic numbered-question review, options and math, associated image count, no internal IDs; remote Markdown images disabled for this view.",
+    "visualFidelityIssue": "Visual review found question 2 renumbered as 1 and following options collapsed. Red Node regression reproduced this; preserve list start and option line breaks."
+  },
+  "final": {
+    "pageTests": 21,
+    "passed": 21,
+    "failed": 0,
+    "skipped": 0,
+    "mathNodeTestsPassed": 8,
+    "build": "PASS"
+  },
+  "features": [
+    "question and nearby source text association",
+    "formula and figure same page",
+    "private Bearer PNG fetch by UUID",
+    "full-page fallback explicitly identified",
+    "old parsing reparse guidance",
+    "abort and object URL release on switch/close/unmount/auth change",
+    "403 removes prior images",
+    "ignore untrusted imageUrl and reject unsafe IDs",
+    "retrieval has-image tag and source drawer"
+  ],
+  "visualReview": {
+    "observer": "development Agent",
+    "syntheticDiagram": true,
+    "pageCard": "PASS",
+    "citationDrawer": "PASS; body scrolls on small viewport",
+    "maliciousCaption": "Literal escaped text; no injected image executes"
+  },
+  "fileSha256": {
+    "ai-learning-frontend/src/api/rag.js": "34cb97898f31c60774a750bc68549037e2e6973fecb7e9ab9be5ce0460581136",
+    "ai-learning-frontend/src/components/knowledge/VisualEvidence.vue": "b5d75ecf3d2b6d578683c2a0f18f4f031cf636abadffd07daebeda786cb9ddbf",
+    "ai-learning-frontend/src/components/knowledge/DocumentPageReview.vue": "32c9f71aa9bfae7c40792e6094cea57e8baa86680d7d6140a909b30c803f6357",
+    "ai-learning-frontend/src/components/knowledge/RagCitations.vue": "800eac2ce390d6da76a5b5196e00594ac51ff643ffa72fce0e34d55872d433a8",
+    "ai-learning-frontend/src/components/knowledge/NativeKnowledgeWorkspace.vue": "5f31b6a1b953c64bb72fa9a5849294950494d64277b3c75d00fe48fe730028b4",
+    "ai-learning-frontend/e2e/visual-rag-ui.spec.js": "6d02adc7dc9590bd2cb6f48e5a41081ce807d6708bf24f7cbdae28a955d9ec38",
+    "ai-learning-frontend/src/utils/markdown.js": "31f735a2b77568f5a2f3ec5cbf5faee8e93f4cf4e1a5ce104098fd9d149da6d2",
+    "ai-learning-frontend/e2e/formula-rendering.test.mjs": "4e2e67c4ed25dbed894f0bbaadd776c65d958513aba4b06f90df754c2ba3f0aa"
+  },
+  "recordBoundary": {
+    "sourceStartLine": 138,
+    "timestamp": "2026-10-28T05:30:29.547Z",
+    "parentReplayOmitted": true
+  },
+  "limitations": [
+    "Explicit session snapshot, no permanent hook.",
+    "Actual backend image and model flow owned by root and other child tasks."
+  ]
+}

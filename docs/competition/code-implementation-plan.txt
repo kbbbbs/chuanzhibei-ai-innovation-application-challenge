@@ -1,0 +1,467 @@
+AI智学平台代码实施方案
+
+基于已确认需求的模块 文件 顺序与验收
+
+2026年10月20日  |  版本 1.0  |  代码实施方案
+
+本方案把已确认的D01至D10转成可执行代码任务。在现有Vue与Spring Boot基座上，自建资料处理和检索链，接入独立OCR及非GPT运行模型，完成教师备课到学生学习的流程。每项代码任务均以当前文件为依据；候选代码可以审查复用，须通过本版验收后才记为完成。
+
+1 已确认的需求基线
+
+编号 | 决定 | 本版实施边界
+
+D01 | 课时资料覆盖 | 未配置课时资料时继承课程；显式覆盖时仅用课时资料，不合并。显式空集合表示不使用外部资料，失效或无权限不自动回退。
+
+D02 | 按默认授权范围 | 学生使用已发布且允许学习的课时与明确授权的课程学习资料。首版按课程范围授权，原件下载单独开放；私有备课库不自动公开。
+
+D03 | 语义检索本版必做 | 真实向量检索和关键词融合列为亮点；关键词降级可用，但不能代替语义功能的正式验收。
+
+D04 | 扫描件 OCR 本版必做 | 接入独立 OCR 模型，模型名称留空，不使用 GPT；完成逐页识别、持久化、重试、来源与质量验证。
+
+D05 | 个人知识库暂缓 | 学生个人知识库列增强，不纳入本版。课程资料阅读与个人笔记仍保留。
+
+D06 | 即时 AI 练习暂缓 | 本版使用教师核验题库及既有作业考试；学生即时 AI 出题不实现。教师资料出题仍属本版。
+
+D07 | 开放通用解释模式 | 资料不足先说明不足；用户明确切换通用解释，不能自动切换或附伪资料引用。
+
+D08 | 格式与容量确定 | PDF含扫描件、UTF-8 TXT、MD、DOCX、PPTX；单文件20 MB，PDF/PPTX最多200页。旧DOC/PPT不列本版验收。
+
+D09 | GPT仅用于开发 | 产品运行的生成、规划、向量和OCR使用非GPT服务；各自配置，OCR模型留空，无GPT默认或回退调用。
+
+D10 | 演示使用课程 PDF | 使用D:\PPT\人工智能中的8份PDF；按真实内容制作教师备课、学生答疑和评测，沿用已同意的初始质量目标。
+
+
+
+本轮交付方案与修订后的需求文档；应用代码尚未进入本轮实施。旧版code-implementation-plan.txt已同步为本方案文本，旧审计和参赛内容计划作为历史依据保留。
+
+2 当前代码复核与建设边界
+
+核对对象为2026年10月20日的本地工作区，包含未提交改动。下面的“存在”只表示源码物理存在，不表示当前测试通过，也不把全部工作区差异归为同一轮开发。
+
+模块 | 当前证据 | 本版处理
+
+教学基座 | 课程、章节、课时、笔记、题库、作业考试、权限及Agent工具已存在。 | 复用；重点补资料范围、正式发布和端到端验证。
+
+原生RAG候选 | rag目录已有文件管理、解析、BM25、Embedding适配、问答和SSE。 | 逐模块审查；保留可用逻辑，拆开职责和持久化任务。
+
+扫描件OCR | RagDocumentParser只提取PDF文字；旧OcrService在weknora包，用Tess4J整本识别。 | 新建独立OCR模型适配与逐页管线，不能仅移动旧类或添加依赖。
+
+容量与格式 | 候选解析器为20 MB、500页，且含DOC/PPT。 | 统一改为20 MB、200页；DOC/PPT不列支持清单，前后端与文案一致。
+
+向量与召回 | 存在向量JSON、批量调用、余弦扫描；最多2万片段，维度上限2048，融合参数写死。 | 真实服务、版本、维度校验与对照评测；参数可配置后校准。
+
+资料权限 | 目前主要为owner或shared=true；没有课程细粒度资料授权。 | 按已发布课程与有效学习资格，过滤到文档和版本。
+
+学生入口 | 快问与笔记默认选择第一个库；快捷Agent写死agentId=1。 | 使用服务端课时有效范围；独立选择Agent；关闭学生个人库写入口。
+
+备课与提题 | 备课导入课程status=2草稿；题目引用追加到analysis。 | 保留草稿到正式发布；生成证据单独保存，不能把私有全文尾注发给学生。
+
+旧服务与模型 | WeKnora启用分支仍在；生成代码使用OpenAiChatModel适配类。 | 移除旧运行分支；核对实际端点和模型，产品不调用GPT。兼容协议类名不等于GPT模型。
+
+
+
+实施范围维持Java 21、Spring Boot、MyBatis、MySQL及Vue 3/Vite。暂不迁移全套框架，不引入海量向量集群；现有334页课程先用可测量的小规模检索。个人知识库、即时AI练习、自动图谱和标准MCP服务器不纳入本版。
+
+3 课程资料与演示设计
+
+演示资料目录为D:\PPT\人工智能。逐页文本抽取共8份、334页，均有文字层；单个文件约1.9至5.0 MiB，页数34至59。低文字量不等于整页没有内容，不能只按整本文字均值判断是否需要OCR。
+
+资料文件 | 页数 | 建议用途
+
+第1章-课程介绍-绪论-okk.pdf | 46 | 课程介绍与导航；保留原章节名称。
+
+第2章-机器学习概述-okk.pdf | 36 | 先行演示：机器学习要素、拟合与优化。
+
+第3章-线性模型-okk.pdf | 40 | 模型与公式类解析验证。
+
+第4章-前馈神经网络-okk.pdf | 38 | 前馈网络与激活函数课时。
+
+第5章-卷积神经网络-okk.pdf | 34 | 图内文字OCR与卷积课时演示。
+
+第6章-循环神经网络-okk.pdf | 37 | 时序内容与跨课时隔离。
+
+第7章-深度生成模型.pdf | 44 | 图示较多的解析边界验证。
+
+第9章 人工智能-语言模型.pdf | 59 | 语义改写与注意力机制答疑。
+
+
+
+先打通“机器学习概述”教师备课和“卷积神经网络”课时覆盖两个片段，再导入全部8份。目录没有第8章文件，不自动补造内容，也不把文件编号直接等同于完整课程顺序。
+
+已目视核对卷积PDF第14页：大量解释写在嵌入图片中，文字层只含少量标题。语言模型PDF第14页则可抽取正文。OCR设计必须覆盖“页面有少量文字、主体仍为图中文字”的混合页；同时提供教师按页强制OCR与原页核验。
+
+验收样本分为原始PDF、从原页栅格化得到的扫描版副本、混合PDF。计划制作至少20页扫描测试副本并记录原文件及页码；它们只用于验证OCR，不冒称原始文件本身就是扫描件。保留源文件不改写。
+
+本地解析工具对部分PDF给出交叉引用或字典警告但仍读出内容；这不证明生产PDFBox已兼容。必须用应用真实解析链逐文件验收，不能用本次文本抽取结果替代。公开材料保留来源说明，教师备课原件不自动进入公开仓库或下载入口。
+
+4 数据模型与公共契约
+
+基础流程：原文件 → 逐页解析或OCR → 可核验页内容 → 分块 → 关键词和向量索引 → 授权范围检索 → 生成与真实来源 → 教师核验发布或学生答疑。权限必须参与每一步；OCR、聊天和Embedding是三类独立模型能力。
+
+数据对象 | 处理方式 | 必要字段与约束
+
+base / document / chunk | 改造候选三表 | 保留owner与原文件散列；增加文档版本、有效索引版本、解析版本、chunk位置与来源类型。停用shared作为课程授权依据。
+
+native_rag_page | 新增 | documentVersion、pageNo、原始文本、OCR文本、chosenText、方法、页状态、可选置信度及位置。没有模型置信度时存空。
+
+native_rag_ingestion_job | 新增 | actorId、文档/目标版本、阶段、进度、lease/heartbeat、重试、取消、错误码；重启可恢复。
+
+native_rag_index_version | 新增 | 解析/分块版本、Embedding服务指纹、模型、维度、状态和完成时间；原子切换active版本。
+
+native_rag_binding_scope | 新增 | courseId或lessonId、用途、INHERIT/OVERRIDE、revision。课时归属必须校验；显式空覆盖可持久化。
+
+native_rag_binding_item | 新增 | scopeId、sourceType、documentId/version或lessonId/revision、顺序。绑定范围到具体文档，不把整个私有库公开。
+
+native_rag_course_grant | 新增 | owner、courseId、documentId、允许版本、readExcerpt、downloadAllowed、撤销时间。只有所有者能开放资料。
+
+native_rag_generation_evidence | 新增 | generationId、actorId、业务ID、mode、实际retrievalMode、query、上下文摘要/散列与来源快照；保护原文。
+
+session / message | 改造候选会话表 | 存course/lesson/模式/绑定revision、请求ID、终态和generationId；历史及引用按最新权限重新校验。
+
+
+
+由版本化增量SQL统一MySQL、演示和测试schema。迁移必须保留原数据；旧shared=true不自动转换为课程授权，需由所有者明确重新发布。唯一约束不用可空lessonId表达“每课程只有一条”，应采用明确scopeType与scopeId。
+
+状态分层：任务QUEUED/PARSING/OCR/CHUNKING/EMBEDDING/COMPLETED/FAILED/CANCELLED；文档标记READY/PARTIAL/FAILED及缺页；索引标记KEYWORD_READY/HYBRID_READY/DEGRADED。部分解析须显示覆盖范围，未经教师确认不作为完整教材发布。
+
+绑定快照与生成快照各有版本；来源撤回后，历史中受限回答正文、摘要、标题和引用都必须受控。已发给用户的数据无法靠撤权追回，但后续请求、流式输出与历史再访问必须停止暴露。
+
+5 OCR 必需代码清单
+
+具体OCR模型：________。接口地址、服务类型和密钥也留待接入配置。先实现统一适配契约与应用管线；供应商协议适配、真实性能和质量在模型确定后完成。开发测试可用明确标记的模拟适配，正式运行禁止静默返回模拟识别文本或GPT兜底。
+
+编号 | 拟新增或改造 | 实现内容和可见结果
+
+O01 | rag/ocr/OcrProvider.java / OcrRequest / OcrResult | 输入单页图像、页码、语言和requestId；返回文本、可选布局块/置信度、模型版本、耗时。屏蔽不同模型响应差异。
+
+O02 | rag/ocr/OcrProperties.java / OcrProviderRegistry.java | 独立provider、baseUrl、model、credentialRef、timeout等；模型为空返回OCR_NOT_CONFIGURED，不回退GPT或自动选Tesseract。
+
+O03 | rag/ingestion/PageAnalysisService.java | 逐页检查文字覆盖、乱码和图片区域；区分正常文字、混合页和扫描页；允许教师指定页强制OCR。规则用本批资料校准。
+
+O04 | rag/ocr/PdfPageRenderer.java | 复用PDFBox，按页渲染、方向校正与合理分辨率；限制像素、内存及并发。避免一次把200页图像全部放入内存。
+
+O05 | rag/ocr/OcrModelAdapter.java | 待模型确定后实现真实调用、鉴权、响应校验、超时、退避与速率控制；缓存键含文件散列/页码/渲染参数/模型版本。
+
+O06 | rag/ocr/OcrResultNormalizer.java | 整理阅读顺序、文字块与表格文本；保存原结果。合并文字层与OCR时去重；公式不完整或图意不能识别时标记需核验。
+
+O07 | rag/ingestion/IngestionWorker.java | 逐页保存、失败页重试、断点恢复、取消与幂等；空白页、失败页不把提示文案当检索内容。完成后才更新有效索引。
+
+O08 | DocumentProcessingStatus.vue / DocumentPageReview.vue | 显示进度、OCR页、失败原因和缺页；原页与提取结果核对，可重试选定页或全部；不把“已上传”显示为“已可用”。
+
+
+
+扫描件OCR的本版验收对象为印刷体中文/英文及常见表格文字。保留模型返回的公式表示并允许核验，但不承诺所有复杂公式精确还原或理解任意示意图；这些边界在界面、测试和材料中一致呈现。
+
+OCR实际模型接通后，对扫描副本逐页核对文字、页码和缺失内容，记录文字错误与失败率；对卷积第14页等图内文字单独检查。模型未配置时，普通文字资料仍可处理，必需OCR验收保持未完成。
+
+6 基础任务与真实检索
+
+路径缩写用于下列任务：B = D:\ai-learning\ai-learning-backend\src\main\java\com\cupk\aiacademy；F = D:\ai-learning\ai-learning-frontend\src。以“新增”列出的文件是建议路径，当前不存在不能计作已实现。
+
+K00 固化工作区和模型契约
+
+改造：B/agent/core/llm/ChatModelClient.java、SpringAiChatModelClient.java；B/agent/planner/PlannerModelClient.java；application.yml、.env.example。
+
+新增：docs/competition下的版本与过程索引；运行模型能力检查。
+
+实现：盘点已有及候选改动，记录基线而不覆盖用户工作。统一生成、规划、Embedding、OCR的独立配置；核对所有入口实际服务，避免硬编码GPT默认值或回退。兼容协议适配可继续使用。确定非GPT服务可提供的结构化输出、流式和上下文能力。
+
+验收：没有OpenAI/GPT运行凭据仍可使用已配置的非GPT模型；缺配置给准确状态。模拟与真实调用记录分开。
+
+依赖：无。OCR模型字段保持空值，真实模型验收等待选型。
+
+K01 持久化和授权基础
+
+改造：B/rag/NativeRagService.java；B/service/PermissionService.java；database/native_rag.sql与演示/测试schema。
+
+新增：B/rag/RagAuthorizationService.java、RagFileStore.java及repository/模型；database/migrations下的增量脚本。
+
+实现：落实第4节数据模型、actor身份与文档版本。私有文件不走公开静态目录；去重、删除、事务补偿和索引版本切换。课程grant与绑定分开；学生端拒绝创建、上传、删除个人库的后端请求。
+
+验收：新库初始化、旧库升级和数据保留通过；跨用户和越权文件访问被拒绝；共享开关无法绕过课程授权。
+
+依赖：K00；为OCR与检索提供公共数据层。
+
+K02 逐页解析和 OCR 管线
+
+改造：B/rag/RagDocumentParser.java、NativeRagController.java；F/components/knowledge/NativeKnowledgeWorkspace.vue。
+
+新增：第5节O01至O08，另有文本分块器与持久化任务查询。
+
+实现：统一20 MB/200页限制；PDF按页、PPTX按幻灯片，DOCX/TXT/MD使用章节或字符位置。上传返回documentId/jobId，后台处理；拆分“解析重试”和“向量重建”。
+
+验收：8份原始PDF、扫描副本、混合页、坏文件及超限均有正确状态；重启与重试无重复片段；OCR真实调用后才能完成该项。
+
+依赖：K01；O05真实适配依赖模型接口。
+
+7 语义检索和生成证据
+
+K03 向量与关键词混合检索
+
+改造：B/rag/RagEmbeddingClient.java、RagBm25.java、NativeRagService.java；RagSearchRequest/Response/Hit。
+
+新增：B/rag/RagRetrievalService.java、IndexVersionService.java；可替换的向量存取接口。
+
+实现：按授权文档和有效版本召回；真实批量Embedding和向量持久化。记录服务/模型/维度/归一化/解析/分块指纹。先保留小规模精确余弦扫描，融合策略优先用可配置RRF，再依据调参题选择；取消未经校准的固定0.62阈值和0.7/0.3权重。
+
+验收：同义改写能召回正确页；不同模型/维度不能混用；故障明确显示KEYWORD降级。返回actualMode、indexVersion和degradedReason；真实HYBRID验收通过才可称语义亮点。
+
+依赖：K01、K02；真实非GPT Embedding服务。
+
+K04 资料问答与通用解释
+
+改造：B/rag/chat/NativeRagChatService.java、GroundedAnswer.java、RagChatRequest/Result；NativeRagChatController.java。
+
+新增：B/rag/chat/RagGenerationEvidenceService.java、RagContextResolver.java；必要的会话绑定字段。
+
+实现：请求包含courseId、lessonId、mode、query及独立taskContext。资料模式取服务端授权上下文；无答案、缺资料、索引故障和模型故障分别表示。通用解释由用户主动选择，返回无课程资料支持标识，不拼伪引用。
+
+验收：引用只来自该次实际入模片段；记录截断范围而非宣称全文读取。切课时不继承旧来源；超时、停止、重发终态准确；撤权后正文与引用均被限制。
+
+依赖：K03、K05授权范围；可先以教师私有库联调。
+
+生成模型应复用并适当上移现有ChatModelClient抽象，使RAG、备课与Agent的超时、流式、模型标识一致。无需另建一套复杂模型管理平台。生产必须使用非GPT模型，具体产品模型暂不在本方案替用户决定。
+
+语义亮点的证据为同一真实问题集下BM25、向量及混合检索的对照。测Top5证据命中、引用支持、回答正确性、延迟与调用成本；先锁定调参与验收集合，不能挑单个成功例代替整体结果。
+
+8 课程覆盖与资料权限
+
+K05 服务端有效资料范围
+
+改造：B/controller/CourseController.java、LessonController.java；B/service/CourseResourceService.java、PermissionService.java。
+
+新增：B/rag/binding/CourseKnowledgeBindingService.java、CourseKnowledgeBindingController.java、EffectiveKnowledgeScope.java。
+
+实现：课时没有独立设置时继承课程；显式OVERRIDE只取课时项。允许空覆盖；删除、撤销或无权时返回相应状态，禁止回退整库。生成课时正文可作为LESSON类型来源，按课时发布版本纳入。课程资格、课时锁定、文档grant和版本都由服务端验证。
+
+验收：课程A与B互不串库；同课程不同课时范围准确；伪造courseId/lessonId和直接提交库ID不能越权；student只见已发布且可学习内容。
+
+依赖：K01；文档选择依赖K02。
+
+情况 | 服务端行为 | 必须验证
+
+未配置课时资料 | 继承课程已授权学习资料。 | 返回mode=INHERIT与bindingRevision。
+
+明确配置覆盖 | 只取该课时的明确文档，不合并课程库。 | 课程中无关资料不能被召回。
+
+覆盖为空 | 保持空外部资料；课时正文仍按允许范围处理。 | 不自动选第一个库，不自动退回课程库。
+
+覆盖失效或无权 | 阻止使用失效项，给准确错误/部分状态。 | 不能扩大范围继续生成。
+
+绑定私有备课文档 | 教师须拥有分享权并明确grant给课程。 | 仅绑定不自动开放；原件下载仍单独控制。
+
+撤销资料或退课 | 后续检索、流式输出、写回与历史访问重新授权。 | 来源标题、正文、尾注、题目解析也不泄露。
+
+
+
+公开课程目录不等于资料阅读资格。课程成员资格沿用现有业务规则，资料授权默认课程范围；班级或指定用户授权界面不在本版另建。管理员可维护教务关系，但不能因此绕过教师私有资料授权。
+
+旧WeKnora ID只作为待迁移标记；有原文件则重新导入并显式重绑，无原文件则提示补料。不得用ID格式猜测迁移成功，也不依赖旧服务维持生产资料读取。
+
+9 教师流程与 Agent 接线
+
+K06 备课 核验与发布
+
+改造：B/preparation/PreparationService.java、PreparationModels.java、PreparationModelGateway.java；F/views/teacher/IntelligentResourceGen.vue。
+
+新增：生成证据关联与发布资料校验服务，沿用既有工作流。
+
+实现：接入job状态，资料就绪后生成大纲/课时/题目；每阶段保留实际来源、教师修订和核验。导入课程仍为草稿，正式发布显式确认学习资料grant与课时绑定。禁止把私有参考原文尾注直接复制给学生。资料或大纲改动提醒重新核验下游。
+
+验收：从所给PDF完成一次真实备课到发布；草稿学生不可见，正式发布后课时和授权资料一致；发布课程不自动发布作业。
+
+依赖：K02、K04、K05。
+
+K07 教师提题和资料出题
+
+改造：B/service/QuestionService.java、相关DTO；F/views/teacher/QuestionList.vue及备课题目编辑。
+
+新增：按页/批次的资料读取与证据关联，必要的生成任务状态。
+
+实现：区分提取已有题目与依据知识出题。页面范围进入契约；长文分批处理并显示覆盖，不把首批结果当全文。生成证据存独立字段或表，不继续把原文全部拼到analysis。教师修订后保存核验题库。
+
+验收：指定页可追溯；题型、答案结构正确；学生解析中没有私有原文。通过现有作业/考试获得允许反馈；不增加学生即时AI练习。
+
+依赖：K04、K05、K06来源契约。
+
+K08 Agent与笔记模式
+
+改造：B/agent/knowledge/NativeKnowledgeContextProvider.java、AgentChatService.java、AgentPromptAssembler.java；F/components/ai/AiNoteAssistant.vue。
+
+新增：必要的course/lesson有效范围适配，不另建多Agent平台。
+
+实现：复用工具规划、执行与写动作确认；服务端校验页面上下文。选择助手与资料范围分别生效，移除快捷Agent固定1的行为。笔记总结可只处理本人笔记，无库可用；笔记内容不改变检索权限。
+
+验收：查询和经确认的写动作可用；重复确认不会重复写；切换助手/课程不串范围；笔记总结不要求个人知识库。
+
+依赖：K04、K05；复用原业务工具。
+
+10 前端页面与旧依赖退出
+
+任务 | 文件或入口 | 具体改动
+
+K09 教师资料 | F/components/knowledge/NativeKnowledgeWorkspace.vue / F/views/teacher/TeacherKnowledgeBase.vue | 接上传job、逐页OCR核验、重试和重建；展示实际索引状态；移除全站共享开关，改课程资料授权。
+
+K09 课程资料 | F/views/teacher/CourseDetail.vue、CourseForm.vue / 新增CourseKnowledgeBinding.vue | 课程绑定、课时继承/覆盖、空覆盖、已选资料有效性与下载授权；正式发布时确认。
+
+K10 学生课时 | F/views/student/CourseLearn.vue / F/components/ai/LessonQuickChat.vue | 传courseId/lessonId，读effective接口；显示当前范围；切课取消旧请求并重置来源；不列所有库。
+
+K10 笔记与模式 | F/components/notes/MarkdownNotePanel.vue / F/components/ai/AiNoteAssistant.vue | query与笔记正文分开；本人笔记总结、资料答疑、通用解释边界可辨；不自动选首库。
+
+K10 学生资料页 | F/views/student/KnowledgeBase.vue / F/router/index.js | 改成课程授权资料只读入口；去掉个人库创建、上传、删除。后端同样禁止，不能只藏按钮。
+
+K10 公共问答 | F/composables/useNativeRag.js、F/api/rag.js / RagCitations.vue、RagAnswerStatus.vue | 动态助手、模式、course/lesson、job和请求版本；引用定位；NO_EVIDENCE与错误/降级区分；所有事件防旧响应污染。
+
+K11 后端退出 | B/weknora目录 / B/agent/knowledge/WeKnoraKnowledgeContextProvider.java / WebMvcConfiguration、UsageLogInterceptor | 迁出必要通用逻辑后删除旧客户端、控制器、DTO、配置与启用分支；调整路由拦截和使用日志。
+
+K11 前端与配置退出 | F/api/weknora.js、useWeKnora.js / README、application.yml、启动脚本和旧测试 | 移除运行引用与旧部署说明，保留历史审计为历史。按依赖结果移除无用Tess4J；新OCR不默认沿用它。
+
+
+
+题库/备课等入口也必须统一使用新任务与检索服务；不能只完成知识库页面。旧图谱、百科占位和无效按钮应清理或标为未提供，既有固定教学可视化只作为预设内容呈现。
+
+K09、K10在后端契约稳定后接线；K11在替代链和调用清单核验后执行。验收是完全没有WeKnora运行服务、端点、配置开关或必需网络请求时，核心流程仍通过；不是要求篡改Git历史或删除来源记录。
+
+11 接口与错误状态方案
+
+继续使用现有/api/rag与课程业务接口，避免增加第二套不一致协议。以下新增接口为方案名，实施时固定请求/响应及错误码后再接前端。
+
+接口 | 主要输入与输出 | 约束
+
+POST /api/rag/knowledge-bases/{id}/documents | file → documentId、jobId、status、duplicate | 教师所有者权限；大小/格式校验；及时返回任务，不同步阻塞整本OCR。
+
+GET /api/rag/jobs/{id} / POST /api/rag/jobs/{id}/retry 或 cancel | stage、pagesDone/Total、failedPages、canRetry | 仅授权任务访问；重试幂等；取消区分请求已停止和服务端任务已停止。
+
+GET /api/rag/documents/{id}/pages / POST .../{id}/ocr-retry | 页状态、提取方式、预览；retry页码集合 | OCR重试产生新解析版本；原件/页面预览需当前授权。
+
+POST /api/rag/documents/{id}/reindex | targetModelVersion → jobId | 只重建索引，复用已确认解析；失败不破坏旧有效索引。
+
+PUT /api/courses/{id}/knowledge-bindings / PUT /api/lessons/{id}/knowledge-bindings | purpose、mode、documentItems、expectedRevision | 绑定与grant分别处理；拒绝越权及并发覆盖旧配置。
+
+GET /api/lessons/{id}/effective-knowledge | courseId → mode、revision、允许资料摘要 | 校验课时归属、课程资格与发布；只返回有权看到的元数据。
+
+POST /api/rag/chat 或 chat/stream | mode、query、courseId、lessonId、sessionId、taskContext | 服务端解析范围；客户端库ID不能替代授权；通用解释不自动触发。
+
+GET 来源或下载 | generationId/documentId/page/chunk | 来源版本可追溯；最新权限优先；下载能力独立校验。
+
+
+
+建议错误类别：OCR_NOT_CONFIGURED、OCR_PROVIDER_ERROR、PARSER_FAILED、PARTIAL_DOCUMENT、INDEX_NOT_READY、EMBEDDING_UNAVAILABLE、SCOPE_STALE、SOURCE_REVOKED、NO_EVIDENCE。HTTP状态继续遵循项目约定，同时返回稳定业务码，用户文案不暴露内部路径、密钥或供应商响应。
+
+流式结果应带requestId和scopeRevision；前端所有delta、complete、error均检查当前版本。后台传不可变actor身份并在输出/写回前重验权限。外部模型可能无法立即中止计算时，不将停止接收冒称模型已停止计费。
+
+12 验收清单和已有测试复用
+
+编号 | 必须通过的场景 | 判断依据
+
+V01 | 迁移和持久化 | 新库和旧库；原文件、页结果、索引与会话重启后可恢复；不重复、不丢既有业务数据。
+
+V02 | 真实资料解析 | 8份共334页各自通过生产解析链；报告可用页、OCR页和缺页；不以测试脚本文本抽取替代。
+
+V03 | OCR真实联调 | ≥20页扫描副本、混合图内文字、空白/坏页；记录模型、版本、错误和人工核验。模拟适配通过不算完成。
+
+V04 | 任务故障恢复 | 请求重发、超时、429、服务重启、取消、失败页重试；页结果幂等，失败状态可恢复。
+
+V05 | 真实语义效果 | 真实向量持久化；BM25与向量/混合对照；维度变化、模型重建、断服务降级有明确结果。
+
+V06 | 覆盖与授权 | 继承/覆盖/空覆盖/失效；跨课程、跨用户、伪造ID、锁定课时及下载权限；后端直接请求也受控。
+
+V07 | 教师到学生 | 上传→备课核验→课程草稿→正式发布→当前课时问答→另行发布作业→学生反馈。
+
+V08 | 引用与撤权 | 答案每个引用来自实际入模；撤权后历史正文、标题、片段、尾注和下载都受控。
+
+V09 | 通用解释与笔记 | 无依据后用户主动切换；通用解释无伪引用；无库时本人笔记总结可用。
+
+V10 | 功能范围 | 学生个人知识库写接口与即时AI练习不开放；教师资料出题和核验题库可用。
+
+V11 | 退出旧服务与GPT | 零WeKnora运行依赖；生成/规划/向量/OCR真实请求均为非GPT服务，无隐藏回退。
+
+V12 | 新环境复现 | 以最终仓库和真实配置冷启动主线；环境模板完整；真实模型和模拟测试分别说明。
+
+
+
+复用并扩展已有RagDocumentParserTest、NativeRagServiceIntegrationTest、NativeRagChatServiceTest、PreparationNativeKnowledgeTest、QuestionServiceKnowledgeGenerationTest和Agent测试。新增OCR适配/逐页任务、CourseKnowledgeScope和授权撤回集成用例；复用e2e/native-rag-ui.spec.js与native-rag-real.spec.js覆盖真实教师学生流程。
+
+质量验收沿用既定初始目标：约50道真实课程题，至少10道无答案题；可答题Top5至少命中一项标注依据≥85%，引用支持的可核验断言≥90%，可答题正确率≥85%，无答案识别≥90%。另留调参题，不在验收题上反复选择阈值。OCR文字错误、页覆盖、延迟和成本单独实测。
+
+这是拟实施的验收方案。本轮未运行应用测试、调用OCR/Embedding服务或测出上述成绩；测试文件存在也不代表当前版本通过。
+
+13 实施顺序 工期与模型依赖
+
+建议顺序为K00 → K01 → K02 → K03 → K05 → K04 → K06/K07/K08 → K09/K10 → K11 → V01至V12。页面样式与测试准备可穿插，但同一人的工作量不能因任务分组而重复折算为并行收益。
+
+阶段 | 预估有效工作日 | 结束条件
+
+基线与配置 K00 | 1 | 接口、候选复用、真实开发过程记录建立。
+
+数据与权限 K01 | 2–3 | 增量迁移、原文件生命周期、基础授权可测。
+
+解析与OCR K02 | 3–5 | 逐页任务及真实OCR联调，原始/扫描/混合资料可验。
+
+真实检索 K03 | 2–3 | Embedding真实接通，检索版本、对照和降级成立。
+
+范围与生成 K05/K04 | 2–3 | 覆盖、引用、模式、历史和撤权形成完整契约。
+
+教师与Agent K06–K08 | 2–3 | 备课发布、教师出题与工具确认连通。
+
+前端与退出 K09–K11 | 2–3 | 教师学生入口一致，无旧运行服务依赖。
+
+联测和复现 V01–V12 | 2–3 | 真实资料质量、权限故障及干净环境结果可复查。
+
+
+
+合计约16–24个有效开发日，另留4–5天制作和核验提交材料。按每天6–8小时有效投入估计，包含GPT生成、人工审查、调试和真实联测，不是模型生成代码的纯耗时，也不是已承诺交付日期。供应商接口或资料兼容问题会增加工期。
+
+2026年10月20日复核的官方正文仍列11月18日为省赛作品提交截止，距今29个自然日；个人中心入口与既有日期矛盾仍应在提交前核实。若10月21日开始且周末也投入，可按下表安排；若只按工作日投入，余量较小。
+
+建议日期 | 阶段目标
+
+10月21日至22日 | 基线、数据和接口；尽早取得OCR/Embedding/生成服务协议。
+
+10月23日至27日 | OCR与解析；模型选型和可调用性在本阶段前落实。
+
+10月28日至30日 | 真实语义检索与对照问题集。
+
+10月31日至11月3日 | 课时范围、授权、问答证据与通用模式。
+
+11月4日至7日 | 教师流程、学生界面、Agent与旧依赖退出。
+
+11月8日至11日 | 质量、权限、故障及复现；冻结演示功能。
+
+11月12日至17日 | 两赛PDF、视频、过程材料、版本和格式核验。
+
+
+
+14 开发过程与交付完成条件
+
+每个K任务完成时，交付对应改动、迁移/配置说明、真实验证记录与已知限制。当前候选代码不整包重写；先审查可复用部分，再按任务提交可回溯的增量。不得把全部现有工作区变更一次归为本轮提交。
+
+记录链 | 建议包含的任务 | 应保留的真实证据
+
+P01 OCR资料链 | K01、K02及O01至O08 | 需求、模型接口契约、逐页策略错误、修正、扫描测试与版本；模型留空阶段和真实联调阶段分开。
+
+P02 检索与回答链 | K03、K04 | 语义对照、范围与引用约束、无依据/故障处理、检索参数修改与验证。
+
+P03 教学与权限链 | K05至K10 | 课时覆盖、发布边界、教师私有资料、学生入口、越权失败与修复。
+
+
+
+10039的至少3条完整核心Prompt迭代链应从实际开发开始同步保存；不补造旧对话或提交历史。产品运行不用GPT与开发依靠GPT并不冲突：前者在模型请求记录中证明，后者在真实开发过程材料中证明。
+
+10037展示OCR、真实语义RAG、教师核验工作流和学生课时体验；10039强调需求约束、纠错过程、架构与复现。两赛成品视频仍按5至8分钟、1080p准备，10039包含至少2分钟AI协同过程；技术PDF均不超过30页。详细材料安排沿用参赛内容计划。
+
+OCR或语义尚未真实验收时，本版不能被标为完整完成。模型未选定期间，可完成任务框架、权限、界面和模拟契约测试；需要暂停的仅是真实适配与质量验收。工期不足时先压缩样式、非必要动画和演示章节，不静默删掉已确认的OCR与语义能力。
+
+尚待外部事实确认的是OCR及运行模型配置、真实教学质量核验，以及参赛内容计划Q01至Q05中的资格/旧基座/跨赛复用/时间口径。这些事项不改变本次已确认的产品需求，也不表示已获得主办方资格认可。
+
+依据与版本
+
+本地源码依据：B/rag各核心类；B/weknora/service/OcrService.java；B/preparation/PreparationService.java；B/service/QuestionService.java、PermissionService.java；B/agent/core/llm；F/composables/useNativeRag.js；教师课程与备课页、学生CourseLearn与AI组件；database/native_rag.sql。核对日期2026年10月20日。
+
+需求依据：D:\ai-learning\docs\competition\requirements-review\项目需求文档_需求审阅版.docx，版本1.0；本次用户确认。素材依据：D:\PPT\人工智能中的8份PDF。
+
+10037 官方详情与提交规则
+
+10039 官方详情与提交规则
+
+官网公开接口于2026年10月20日读取成功；两赛正文与此前快照一致。新增代码路径是本方案建议，不代表文件已创建；所有运行质量均以实施后的实际验收记录为准。

@@ -1,0 +1,49 @@
+
+Running 1 test using 1 worker
+
+(node:34216) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\visual-rag-ui.spec.js:164:1 › fresh source metadata replaces the cached image list even when it has no visual field (12.9s)
+
+
+  1) e2e\visual-rag-ui.spec.js:164:1 › fresh source metadata replaces the cached image list even when it has no visual field 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('.el-drawer.open').getByTestId('visual-evidence')
+    Expected: 0
+    Received: 1
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 10000ms
+      - waiting for locator('.el-drawer.open').getByTestId('visual-evidence')
+        23 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      170 |   await page.getByRole('button', { name: /\[1\] 图文课程资料/ }).click()
+      171 |   await expect(page.locator('.el-drawer.open .source-formula')).toBeVisible()
+    > 172 |   await expect(page.locator('.el-drawer.open').getByTestId('visual-evidence')).toHaveCount(0)
+          |                                                                                ^
+      173 |   expect(state.calls.filter(call => call.path.startsWith('/api/rag/visuals/'))).toEqual([])
+      174 | })
+      175 |
+        at D:\ai-learning\ai-learning-frontend\e2e\visual-rag-ui.spec.js:172:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\visual-rag-ui-fresh-source-f7111-when-it-has-no-visual-field\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\visual-rag-ui-fresh-source-f7111-when-it-has-no-visual-field\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\visual-rag-ui-fresh-source-f7111-when-it-has-no-visual-field\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\visual-rag-ui-fresh-source-f7111-when-it-has-no-visual-field\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\visual-rag-ui.spec.js:164:1 › fresh source metadata replaces the cached image list even when it has no visual field 

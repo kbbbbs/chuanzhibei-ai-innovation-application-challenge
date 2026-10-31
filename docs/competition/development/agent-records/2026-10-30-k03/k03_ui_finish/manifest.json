@@ -1,0 +1,63 @@
+{
+  "format_version": 1,
+  "session_id": "01a19072-53ca-77d3-8937-da480742fd15",
+  "since": "2026-10-31T05:32:54.323Z",
+  "source_file": "rollout-2026-10-31T13-32-54-01a19072-53ca-77d3-8937-da480742fd15.jsonl",
+  "source_sha256": "b751a54856fe4881ed098702edbbd1517be0f15858718762e0890abe8f608134",
+  "source_size_bytes": 1206304,
+  "source_total_lines": 280,
+  "source_start_line": 116,
+  "session_kind": "subagent",
+  "fork_inherited_prefix_omitted": [
+    2,
+    115
+  ],
+  "fork_boundary_selection": "Explicit --start-line; caller verifies the actual task boundary",
+  "source_line_range": [
+    122,
+    277
+  ],
+  "event_timestamp_range": [
+    "2026-10-31T05:33:10.189Z",
+    "2026-10-31T05:40:25.964Z"
+  ],
+  "record_count": 47,
+  "event_counts": {
+    "agent_message": 3,
+    "message": 4,
+    "tool_call": 20,
+    "tool_output": 20
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 8,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 1,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "0191a4c6c7a79b739776f883f7be9611e1ad51491df0dcf32639eb89625545f4",
+  "publication_redaction_update": {
+    "at": "2026-10-31T11:36:10.204199+00:00",
+    "operation": "Removal-only filtering of opaque transport and platform metadata in already-redacted exports; no events or raw-source content added.",
+    "sourceSnapshotPreserved": true,
+    "originalEventTimesPreserved": true
+  }
+}

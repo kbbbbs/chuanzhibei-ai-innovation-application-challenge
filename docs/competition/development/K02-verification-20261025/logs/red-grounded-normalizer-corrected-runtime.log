@@ -1,0 +1,3 @@
+Exception in thread "main" com.cupk.aiacademy.model.ModelInvocationException: OCR_EMPTY_RESULT: 运行模型调用未完成，请检查接口状态。
+	at com.cupk.aiacademy.rag.ocr.OcrResultNormalizer.normalize(OcrResultNormalizer.java:22)
+	at NormalizerRed.main(NormalizerRed.java:6)

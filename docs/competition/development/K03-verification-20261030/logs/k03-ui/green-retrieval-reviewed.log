@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:35592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\k03-retrieval-ui.spec.js:46:1 › explicit actual mode wins over legacy mode and gives a clear keyword degradation reason (3.4s)
+  ok 2 e2e\k03-retrieval-ui.spec.js:56:1 › hybrid retrieval retains source version and an inspectable index snapshot (3.9s)
+  ok 3 e2e\k03-retrieval-ui.spec.js:68:1 › no index or empty retrieval never claims hybrid work happened (2.6s)
+  ok 4 e2e\k03-retrieval-ui.spec.js:76:1 › a failed new search clears the previous actual mode and its source snapshot (3.5s)
+  ok 5 e2e\k03-retrieval-ui.spec.js:86:1 › completed answers show only actual returned retrieval mode (3.1s)
+  ok 6 e2e\k03-retrieval-ui.spec.js:95:1 › a citation cannot relabel a newer index as the original retrieved source (2.5s)
+  ok 7 e2e\k03-retrieval-ui.spec.js:103:1 › partial semantic coverage stays hybrid while explaining the keyword contribution (2.8s)
+  ok 8 e2e\k03-retrieval-ui.spec.js:110:1 › a fresh legacy source without version fields does not inherit cached version claims (2.4s)
+
+  8 passed (26.4s)

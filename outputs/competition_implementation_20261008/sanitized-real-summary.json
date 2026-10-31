@@ -1,0 +1,31 @@
+{
+  "kind": "real-service-integration",
+  "syntheticTeachingContent": true,
+  "requestMocks": false,
+  "modelMocks": false,
+  "checks": {
+    "upload": {
+      "status": "success",
+      "chunkCount": 1
+    },
+    "retrieval": {
+      "mode": "bm25",
+      "hitCount": 1,
+      "warning": "当前使用 BM25 关键词检索；未启用语义向量检索。"
+    },
+    "answer": {
+      "status": "ANSWERED",
+      "mode": "bm25",
+      "citationCount": 1,
+      "historyMessageCount": 2
+    },
+    "authenticatedDownload": true,
+    "historyRestoredInUi": true,
+    "sharedRead": true,
+    "sharedWriteDenied": true,
+    "revocationDeniesChunksAndDownload": true,
+    "clientCancellation": true,
+    "noLegacyServiceRequests": true
+  },
+  "success": true
+}

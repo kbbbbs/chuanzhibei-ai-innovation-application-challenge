@@ -1,0 +1,254 @@
+
+Running 6 tests using 1 worker
+
+(node:43920) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\k03-retrieval-ui.spec.js:46:1 › explicit actual mode wins over legacy mode and gives a clear keyword degradation reason (13.2s)
+(node:47684) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 e2e\k03-retrieval-ui.spec.js:55:1 › hybrid retrieval retains source version and an inspectable index snapshot (12.7s)
+(node:39908) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 e2e\k03-retrieval-ui.spec.js:66:1 › no index or empty retrieval never claims hybrid work happened (12.9s)
+(node:39364) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 e2e\k03-retrieval-ui.spec.js:74:1 › a failed new search clears the previous actual mode and its source snapshot (12.7s)
+(node:16256) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 e2e\k03-retrieval-ui.spec.js:84:1 › completed answers show only actual returned retrieval mode (12.7s)
+(node:24872) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 e2e\k03-retrieval-ui.spec.js:93:1 › a citation cannot relabel a newer index as the original retrieved source (12.9s)
+
+
+  1) e2e\k03-retrieval-ui.spec.js:46:1 › explicit actual mode wins over legacy mode and gives a clear keyword degradation reason 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('retrieval-mode')
+    Expected substring: "关键词检索"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for getByTestId('retrieval-mode')
+
+
+      47 |   await fixture(page, { response: { actualMode: 'KEYWORD', degradedReason: 'EMBEDDING_UNAVAILABLE', mode: 'hybrid' } })
+      48 |   await search(page)
+    > 49 |   await expect(page.getByTestId('retrieval-mode')).toContainText('关键词检索')
+         |                                                    ^
+      50 |   await expect(page.getByTestId('retrieval-mode')).not.toContainText('联合')
+      51 |   await expect(page.getByText('语义服务暂不可用，本次按关键词检索。', { exact: true })).toBeVisible()
+      52 |   await expect(page.locator('.search-hit')).not.toContainText('%')
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:49:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-explicit--117d5--keyword-degradation-reason\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-explicit--117d5--keyword-degradation-reason\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-explicit--117d5--keyword-degradation-reason\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-explicit--117d5--keyword-degradation-reason\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) e2e\k03-retrieval-ui.spec.js:55:1 › hybrid retrieval retains source version and an inspectable index snapshot 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('retrieval-mode')
+    Expected substring: "关键词与语义联合检索"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for getByTestId('retrieval-mode')
+
+
+      56 |   await fixture(page, { response: { mode: 'bm25', actualMode: 'HYBRID' } })
+      57 |   await search(page)
+    > 58 |   await expect(page.getByTestId('retrieval-mode')).toContainText('关键词与语义联合检索')
+         |                                                    ^
+      59 |   await expect(page.locator('.search-hit')).toContainText('资料版本 2 · 解析修订 3')
+      60 |   await page.getByRole('button', { name: '[1] K03算法讲义 · 第 3 页', exact: true }).click()
+      61 |   await expect(page.getByTestId('source-version')).toContainText('资料版本 2 · 解析修订 3')
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:58:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-hybrid-re-da13f--inspectable-index-snapshot\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-hybrid-re-da13f--inspectable-index-snapshot\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-hybrid-re-da13f--inspectable-index-snapshot\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-hybrid-re-da13f--inspectable-index-snapshot\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) e2e\k03-retrieval-ui.spec.js:66:1 › no index or empty retrieval never claims hybrid work happened 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator: getByTestId('retrieval-mode')
+    Expected: "本次未执行检索"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toHaveText" with timeout 10000ms
+      - waiting for getByTestId('retrieval-mode')
+
+
+      67 |   await fixture(page, { response: { hits: [], actualMode: 'NONE', mode: 'hybrid', degradedReason: 'EMPTY_INDEX', indexVersions: [] } })
+      68 |   await search(page)
+    > 69 |   await expect(page.getByTestId('retrieval-mode')).toHaveText('本次未执行检索')
+         |                                                    ^
+      70 |   await expect(page.getByText('暂无可用索引，请先完成资料解析。', { exact: true })).toBeVisible()
+      71 |   await expect(page.getByText('关键词与语义联合检索', { exact: false })).toHaveCount(0)
+      72 | })
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:69:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-no-index--43eee-claims-hybrid-work-happened\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-no-index--43eee-claims-hybrid-work-happened\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-no-index--43eee-claims-hybrid-work-happened\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-no-index--43eee-claims-hybrid-work-happened\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) e2e\k03-retrieval-ui.spec.js:74:1 › a failed new search clears the previous actual mode and its source snapshot 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: getByTestId('retrieval-mode')
+    Expected substring: "联合检索"
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for getByTestId('retrieval-mode')
+
+
+      75 |   await fixture(page, { secondFailure: true })
+      76 |   await search(page)
+    > 77 |   await expect(page.getByTestId('retrieval-mode')).toContainText('联合检索')
+         |                                                    ^
+      78 |   await page.getByRole('button', { name: '检索', exact: true }).click()
+      79 |   await expect(page.getByText('本次检索失败', { exact: true })).toBeVisible()
+      80 |   await expect(page.getByTestId('retrieval-mode')).toHaveCount(0)
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:77:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-a-failed--ad80c-ode-and-its-source-snapshot\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-a-failed--ad80c-ode-and-its-source-snapshot\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-a-failed--ad80c-ode-and-its-source-snapshot\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-a-failed--ad80c-ode-and-its-source-snapshot\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) e2e\k03-retrieval-ui.spec.js:84:1 › completed answers show only actual returned retrieval mode 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.chat-message.assistant')
+    Expected substring: "本次检索：关键词与语义联合检索"
+    Received string:    "学习助手每次减半。[1]参考资料[1] K03算法讲义 · 第 3 页"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.chat-message.assistant')
+        23 × locator resolved to <article data-v-22f9593e="" class="chat-message assistant">…</article>
+           - unexpected value "学习助手每次减半。[1]参考资料[1] K03算法讲义 · 第 3 页"
+
+
+      87 |   await page.getByPlaceholder('例如：这节课的核心概念是什么？').fill('二分查找如何工作')
+      88 |   await page.getByRole('button', { name: '发送', exact: true }).click()
+    > 89 |   await expect(page.locator('.chat-message.assistant')).toContainText('本次检索：关键词与语义联合检索')
+         |                                                         ^
+      90 |   await expect(page.locator('.chat-message.assistant')).not.toContainText('本次检索：关键词检索')
+      91 | })
+      92 |
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:89:57
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-completed-9a9dc-ual-returned-retrieval-mode\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-completed-9a9dc-ual-returned-retrieval-mode\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-completed-9a9dc-ual-returned-retrieval-mode\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-completed-9a9dc-ual-returned-retrieval-mode\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) e2e\k03-retrieval-ui.spec.js:93:1 › a citation cannot relabel a newer index as the original retrieved source 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByText('引用对应的索引版本已改变，请重新检索。', { exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByText('引用对应的索引版本已改变，请重新检索。', { exact: true })
+
+
+       95 |   await search(page)
+       96 |   await page.getByRole('button', { name: '[1] K03算法讲义 · 第 3 页', exact: true }).click()
+    >  97 |   await expect(page.getByText('引用对应的索引版本已改变，请重新检索。', { exact: true })).toBeVisible()
+          |                                                                        ^
+       98 |   await expect(page.getByText('NEWER_SOURCE', { exact: true })).toHaveCount(0)
+       99 | })
+      100 |
+        at D:\ai-learning\ai-learning-frontend\e2e\k03-retrieval-ui.spec.js:97:72
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-a-citatio-e83fe-e-original-retrieved-source\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\k03-retrieval-ui-a-citatio-e83fe-e-original-retrieved-source\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\k03-retrieval-ui-a-citatio-e83fe-e-original-retrieved-source\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\k03-retrieval-ui-a-citatio-e83fe-e-original-retrieved-source\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    e2e\k03-retrieval-ui.spec.js:46:1 › explicit actual mode wins over legacy mode and gives a clear keyword degradation reason 
+    e2e\k03-retrieval-ui.spec.js:55:1 › hybrid retrieval retains source version and an inspectable index snapshot 
+    e2e\k03-retrieval-ui.spec.js:66:1 › no index or empty retrieval never claims hybrid work happened 
+    e2e\k03-retrieval-ui.spec.js:74:1 › a failed new search clears the previous actual mode and its source snapshot 
+    e2e\k03-retrieval-ui.spec.js:84:1 › completed answers show only actual returned retrieval mode ─
+    e2e\k03-retrieval-ui.spec.js:93:1 › a citation cannot relabel a newer index as the original retrieved source 

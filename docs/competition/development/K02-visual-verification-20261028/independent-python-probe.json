@@ -1,0 +1,9 @@
+{
+  "source": "ch5-p14 production-rendered page",
+  "model": "deepseek-ai/DeepSeek-OCR",
+  "scope": "Independent live HTTP prompt probe; not a Java service or answer quality acceptance test",
+  "status": "FAIL",
+  "errorType": "URLError",
+  "httpStatus": null,
+  "elapsedMs": 10309
+}

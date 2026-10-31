@@ -1,0 +1,16 @@
+✔ renders inline and display math without destroying braces, subscripts or ampersands (8.9599ms)
+✔ supports parenthesis and bracket delimiters with fraction markup (0.8841ms)
+✔ leaves code samples and escaped dollars literal (0.3244ms)
+✔ unrenderable or incomplete formula has visible source and no fabricated math (0.3924ms)
+✔ untrusted math cannot emit executable links or HTML (0.8492ms)
+✔ formulas and code inside Markdown tables restore their protected content (0.4771ms)
+✔ source-only rendering keeps formulas but does not load remote Markdown images (0.6066ms)
+✔ numbered question excerpts retain the source number and line breaks before options (0.1991ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 100.0147

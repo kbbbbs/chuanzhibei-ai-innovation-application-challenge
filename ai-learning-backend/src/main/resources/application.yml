@@ -1,0 +1,122 @@
+academic:
+  openalex:
+    email: ${OPENALEX_EMAIL:dev@example.com}
+  semantic-scholar:
+    api-key: ${SEMANTIC_SCHOLAR_API_KEY:}
+app:
+  upload:
+    dir: ${UPLOAD_DIR:uploads}
+    max-file-size-bytes: 104857600
+    url-prefix: /uploads
+jwt:
+  expiration: ${JWT_EXPIRATION:86400000}
+  secret: ${JWT_SECRET:}
+ai:
+  openai:
+    base-url: ${runtime.models.generation.base-url}
+    api-key: ${runtime.models.generation.api-key}
+    chat:
+      options:
+        model: ${runtime.models.generation.model}
+runtime:
+  models:
+    generation:
+      base-url: ${AI_GENERATION_BASE_URL:${AI_OPENAI_BASE_URL:${BASE_URL:}}}
+      api-key: ${AI_GENERATION_API_KEY:${AI_OPENAI_API_KEY:${API_KEY:}}}
+      model: ${AI_GENERATION_MODEL:${AI_OPENAI_MODEL:}}
+      timeout-seconds: ${AI_GENERATION_TIMEOUT_SECONDS:${AI_AGENT_MODEL_TIMEOUT_SECONDS:30}}
+      context-window-tokens: ${AI_GENERATION_CONTEXT_WINDOW_TOKENS:0}
+    # Explicit configuration inheritance, never fallback after a failed request.
+    planning:
+      base-url: ${AI_PLANNING_BASE_URL:${runtime.models.generation.base-url}}
+      api-key: ${AI_PLANNING_API_KEY:${runtime.models.generation.api-key}}
+      model: ${AI_PLANNING_MODEL:${AI_AGENT_PLANNER_MODEL:${runtime.models.generation.model}}}
+      timeout-seconds: ${AI_PLANNING_TIMEOUT_SECONDS:10}
+      context-window-tokens: ${AI_PLANNING_CONTEXT_WINDOW_TOKENS:0}
+    embedding:
+      enabled: ${RAG_EMBEDDING_ENABLED:false}
+      base-url: ${RAG_EMBEDDING_BASE_URL:}
+      api-key: ${RAG_EMBEDDING_API_KEY:${RAG_EMBEDDING_APIKEY:${SILICONFLOW_API_KEY:}}}
+      model: ${RAG_EMBEDDING_MODEL:}
+      timeout-seconds: ${RAG_EMBEDDING_TIMEOUT_SECONDS:30}
+    ocr:
+      base-url: ${OCR_BASE_URL:}
+      api-key: ${OCR_API_KEY:${OCR_APIKEY:${SILICONFLOW_API_KEY:}}}
+      model: ${OCR_MODEL:}
+      timeout-seconds: ${OCR_TIMEOUT_SECONDS:60}
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+    map-underscore-to-camel-case: true
+  type-aliases-package: com.cupk.aiacademy.pojo
+server:
+  port: 8080
+spring:
+  # Only the explicitly configured guarded models are created; no SDK GPT defaults.
+  autoconfigure:
+    exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
+  application:
+    name: ai-academy
+  ai:
+    openai:
+      base-url: ${ai.openai.base-url}
+      api-key: ${ai.openai.api-key}
+      chat:
+        options:
+          model: ${ai.openai.chat.options.model}
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    password: ${DB_PASSWORD:}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/ai_academy?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+weknora:
+  enabled: ${WEKNORA_ENABLED:false}
+  base-url: ${WEKNORA_BASE_URL:http://localhost:8090}
+  api-key: ${WEKNORA_API_KEY:}
+  storage-path: ${WEKNORA_STORAGE_PATH:uploads/knowledge}
+
+preparation:
+  model-timeout-seconds: ${AI_PREPARATION_MODEL_TIMEOUT_SECONDS:90}
+  model-max-attempts: ${AI_PREPARATION_MODEL_MAX_ATTEMPTS:2}
+  max-concurrency: ${AI_PREPARATION_MAX_CONCURRENCY:2}
+  max-context-snippets: ${AI_PREPARATION_MAX_CONTEXT_SNIPPETS:10}
+
+agent:
+  model:
+    timeout-seconds: ${AI_AGENT_MODEL_TIMEOUT_SECONDS:15}
+  chat:
+    request-timeout-seconds: ${AI_AGENT_REQUEST_TIMEOUT_SECONDS:25}
+    knowledge-context-max-snippets: ${AI_AGENT_RAG_MAX_SNIPPETS:5}
+    knowledge-context-max-characters: ${AI_AGENT_RAG_MAX_CHARACTERS:4000}
+  planner:
+    enabled: true
+    mode: model_first
+    model: ${runtime.models.planning.model}
+    timeout-seconds: ${AI_AGENT_PLANNER_TIMEOUT_SECONDS:5}
+    parameter-timeout-seconds: ${AI_AGENT_PLANNER_PARAMETER_TIMEOUT_SECONDS:10}
+    max-output-tokens: ${AI_AGENT_PLANNER_MAX_OUTPUT_TOKENS:600}
+    temperature: ${AI_AGENT_PLANNER_TEMPERATURE:0.0}
+    max-repair-rounds: 1
+    min-confidence: 0.6
+
+rag:
+  retrieval:
+    rrf-k: ${RAG_RETRIEVAL_RRF_K:1}
+    candidate-limit: ${RAG_RETRIEVAL_CANDIDATE_LIMIT:20}
+  storage-path: ${RAG_STORAGE_PATH:./data/native-rag}
+  chat-timeout-seconds: ${RAG_CHAT_TIMEOUT_SECONDS:90}
+  chat:
+    attach-images: ${RAG_CHAT_ATTACH_IMAGES:false}
+    visual-timeout-ms: ${RAG_VISUAL_TIMEOUT_MS:15000}
+  embedding:
+    enabled: ${RAG_EMBEDDING_ENABLED:false}
+    base-url: ${RAG_EMBEDDING_BASE_URL:}
+    api-key: ${RAG_EMBEDDING_API_KEY:${RAG_EMBEDDING_APIKEY:${SILICONFLOW_API_KEY:}}}
+    model: ${RAG_EMBEDDING_MODEL:}

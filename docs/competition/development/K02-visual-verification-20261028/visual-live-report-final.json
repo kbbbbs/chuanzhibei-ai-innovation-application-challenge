@@ -1,0 +1,43 @@
+{
+  "status" : "PASS",
+  "samples" : [ {
+    "sourceFile" : "第4章-前馈神经网络-okk.pdf",
+    "sourceSha256" : "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "sourcePage" : 10,
+    "copyPage" : 1,
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "visualCount" : 1,
+    "figures" : 1,
+    "issues" : [ ],
+    "readerHasEvidence" : true,
+    "readerWarning" : "已拦截图形解析生成的数值表；本次未恢复曲线定量数据，请对照原图。 本次只提供图中可见文字标签，未据图读取曲线数值或确认图形关系。"
+  }, {
+    "sourceFile" : "第5章-卷积神经网络-okk.pdf",
+    "sourceSha256" : "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e",
+    "sourcePage" : 14,
+    "copyPage" : 1,
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "visualCount" : 1,
+    "figures" : 0,
+    "issues" : [ "VISUAL_PAGE_FALLBACK" ],
+    "readerHasEvidence" : true,
+    "readerWarning" : "已拦截图形解析生成的数值表；本次未恢复曲线定量数据，请对照原图。 本次只提供图中可见文字标签，未据图读取曲线数值或确认图形关系。"
+  }, {
+    "sourceFile" : "第3章-线性模型-okk.pdf",
+    "sourceSha256" : "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d",
+    "sourcePage" : 23,
+    "copyPage" : 1,
+    "pageState" : "OCR_READY",
+    "errorCode" : null,
+    "visualCount" : 1,
+    "figures" : 0,
+    "issues" : [ "VISUAL_PAGE_FALLBACK" ],
+    "readerHasEvidence" : true,
+    "readerWarning" : "图像由DeepSeek-OCR解读后提供给回答模型，识别结果仍需对照原图核验。"
+  } ],
+  "embeddingEnabled" : false,
+  "scope" : "Production ingestion, private pixels and actual DeepSeek-OCR figure reader. No live answer-model or accuracy claim.",
+  "elapsedMs" : 82400
+}

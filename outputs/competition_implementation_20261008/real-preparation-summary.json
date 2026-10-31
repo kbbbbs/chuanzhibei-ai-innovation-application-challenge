@@ -1,0 +1,21 @@
+{
+  "pipeline": {
+    "realModel": true,
+    "outlineChapters": 1,
+    "lessons": 1,
+    "questions": 2,
+    "lessonSources": true,
+    "questionSources": true,
+    "reviewPayloads": "same generated sample; not human pedagogical approval",
+    "publish": {
+      "code": "200",
+      "msg": "课程草稿发布成功",
+      "data": {
+        "courseId": 1,
+        "chaptersCreated": 1,
+        "lessonsCreated": 1,
+        "questionsCreated": 2
+      }
+    }
+  }
+}

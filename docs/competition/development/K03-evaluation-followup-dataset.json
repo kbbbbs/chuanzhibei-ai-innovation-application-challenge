@@ -1,0 +1,515 @@
+{
+  "version": 2,
+  "frozenAt": "2026-10-30T11:26:49.107627+00:00",
+  "scope": "Same-source developer follow-up verification after observing the original acceptance aggregate failure. New query formulations; not independent teacher blind testing or an untouched research test set.",
+  "predecessorDatasetSha256": "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+  "protocol": {
+    "acceptanceAnswerable": 40,
+    "acceptanceNoAnswer": 10,
+    "targetKnownSourceTop5": 0.85,
+    "tuningCount": 0,
+    "notRunAtFreeze": true,
+    "noAnswerPolicy": "Report candidate presence only; K03 does not evaluate K04 abstention.",
+    "heldOutRule": "Freeze before any query embeddings/retrieval for these 50 questions. Select parameters using only original 10 tuning questions, then run this follow-up once. Preserve the original observed acceptance failure.",
+    "limitations": [
+      "Same ten course pages and author as predecessor; source/topic familiarity creates dependence.",
+      "Questions derived from already verified page facts, not from per-query acceptance errors.",
+      "Known-source labels are not exhaustive relevance judgements or answer quality scores."
+    ],
+    "corpus": "All safely native-extractable page copies plus listed actual captured OCR pages; noncovered OCR pages excluded and counted. Source-page mapping explicit; copied PDFs have page 1."
+  },
+  "sources": [
+    {
+      "id": "ai-history",
+      "sourceFile": "第1章-课程介绍-绪论-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "700c3affe3d69465b13d59c53f5b57b133223a6099cc2b19951ef727741614f1"
+    },
+    {
+      "id": "learning-elements",
+      "sourceFile": "第2章-机器学习概述-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f"
+    },
+    {
+      "id": "cross-entropy",
+      "sourceFile": "第3章-线性模型-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d"
+    },
+    {
+      "id": "memory-network",
+      "sourceFile": "第4章-前馈神经网络-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7"
+    },
+    {
+      "id": "cnn-depth",
+      "sourceFile": "第5章-卷积神经网络-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e"
+    },
+    {
+      "id": "rnn-segmentation",
+      "sourceFile": "第6章-循环神经网络-okk.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "839bb240a887eed021a4e3ac8d6108c25d120bee241e708f3ea56166468f97a5"
+    },
+    {
+      "id": "attention",
+      "sourceFile": "第9章 人工智能-语言模型.pdf",
+      "sourcePage": 14,
+      "sourceSha256": "cf0a6ede33f14c151ad1467143881d551ddbbb106be657e4bc45308ecdd3a1dd"
+    },
+    {
+      "id": "dense-image-limit",
+      "sourceFile": "第5章-卷积神经网络-okk.pdf",
+      "sourcePage": 3,
+      "sourceSha256": "4ecf368751470387cd2751b24bf6d83996b74a7fd531be6c46e65bb02986a00e"
+    },
+    {
+      "id": "softmax-rule",
+      "sourceFile": "第3章-线性模型-okk.pdf",
+      "sourcePage": 23,
+      "sourceSha256": "b39d04bde93c7b5dce33f32bb84449654d2130a0aaaa91dea53ee7ae0ee2597d"
+    },
+    {
+      "id": "activation-variants",
+      "sourceFile": "第4章-前馈神经网络-okk.pdf",
+      "sourcePage": 10,
+      "sourceSha256": "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7"
+    }
+  ],
+  "questions": [
+    {
+      "id": "F-ai-history-1",
+      "split": "acceptance",
+      "query": "请定位介绍达特茅斯研讨会与人工智能诞生关系的那页资料。",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "F-ai-history-2",
+      "split": "acceptance",
+      "query": "想了解Artificial Intelligence这个术语由谁提出，应先查哪张课程页？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "F-ai-history-3",
+      "split": "acceptance",
+      "query": "课程在讲述1956年夏天的研究活动时，将它与哪个学科的起点联系起来？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "F-ai-history-4",
+      "split": "acceptance",
+      "query": "约翰·麦卡锡在人工智能早期发展中有何贡献，哪页提供了线索？",
+      "answerable": true,
+      "goldSourceIds": [
+        "ai-history"
+      ]
+    },
+    {
+      "id": "F-learning-elements-1",
+      "split": "acceptance",
+      "query": "从样本到可学习模型，课程用哪些组成环节来组织机器学习方法？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "F-learning-elements-2",
+      "split": "acceptance",
+      "query": "若选择了模型但还没有确定好坏的判据，学习系统还缺哪个要素？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "F-learning-elements-3",
+      "split": "acceptance",
+      "query": "把优化器和用于评价预测误差的函数分开看，它们分别对应哪两个学习要素？",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "F-learning-elements-4",
+      "split": "acceptance",
+      "query": "请找到并列展示数据、模型、准则、优化算法的课程页。",
+      "answerable": true,
+      "goldSourceIds": [
+        "learning-elements"
+      ]
+    },
+    {
+      "id": "F-cross-entropy-1",
+      "split": "acceptance",
+      "query": "需要回顾预测结果为三维概率向量时的交叉熵例题，应该打开哪页？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "F-cross-entropy-2",
+      "split": "acceptance",
+      "query": "分类样本的目标类别概率越低，负对数形式的损失会怎样，哪页给出示例？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "F-cross-entropy-3",
+      "split": "acceptance",
+      "query": "查找用一个真实类别的one-hot标签评价三类别预测分布的计算例子。",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "F-cross-entropy-4",
+      "split": "acceptance",
+      "query": "想对照正确类概率为0.4时的对数损失示意，课程中哪页最直接？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cross-entropy"
+      ]
+    },
+    {
+      "id": "F-memory-network-1",
+      "split": "acceptance",
+      "query": "寻找展示有向环与神经网络记忆能力之间关系的那页。",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "F-memory-network-2",
+      "split": "acceptance",
+      "query": "如果网络响应不仅取决于当前输入还取决于过去输入，课件如何描述这类结构？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "F-memory-network-3",
+      "split": "acceptance",
+      "query": "神经元的输出重新作为输入传回自身，这一反馈连接对应哪类网络？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "F-memory-network-4",
+      "split": "acceptance",
+      "query": "在哪里可以一起看到Hopfield模型和Boltzmann Machine作为网络示例？",
+      "answerable": true,
+      "goldSourceIds": [
+        "memory-network"
+      ]
+    },
+    {
+      "id": "F-cnn-depth-1",
+      "split": "acceptance",
+      "query": "需要一张解释多张特征图堆叠成数据立方体的课程图示。",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "F-cnn-depth-2",
+      "split": "acceptance",
+      "query": "卷积层同时学习多种视觉模式时，输出的通道数在课程中如何解释？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "F-cnn-depth-3",
+      "split": "acceptance",
+      "query": "请定位把一幅输入图交给多组滤波器分别提取特征的示意页。",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "F-cnn-depth-4",
+      "split": "acceptance",
+      "query": "想比较单张灰度输入与三色输入的深度维度，哪页给出说明？",
+      "answerable": true,
+      "goldSourceIds": [
+        "cnn-depth"
+      ]
+    },
+    {
+      "id": "F-rnn-segmentation-1",
+      "split": "acceptance",
+      "query": "如何用B、M、E、S一类位置标记将一个汉字串编码为切词结果？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "F-rnn-segmentation-2",
+      "split": "acceptance",
+      "query": "查找以循环神经网络给汉字逐个分配分词标签的教学例子。",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "F-rnn-segmentation-3",
+      "split": "acceptance",
+      "query": "资料中哪页把中文词边界识别表示为输入序列和输出标签序列的对应？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "F-rnn-segmentation-4",
+      "split": "acceptance",
+      "query": "要演示有上下文歧义的中文句子如何分词，哪张RNN应用页可作为依据？",
+      "answerable": true,
+      "goldSourceIds": [
+        "rnn-segmentation"
+      ]
+    },
+    {
+      "id": "F-attention-1",
+      "split": "acceptance",
+      "query": "阅读长篇文本前先选择相关位置，这一注意力思路在哪页解释？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "F-attention-2",
+      "split": "acceptance",
+      "query": "课程如何用人类选择性处理信息的现象引出神经网络的attention？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "F-attention-3",
+      "split": "acceptance",
+      "query": "哪里将max-pooling和门控联系到显著性驱动的信息选择？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "F-attention-4",
+      "split": "acceptance",
+      "query": "网络面对海量输入时，聚焦其中一部分为什么有助于计算，哪页作了说明？",
+      "answerable": true,
+      "goldSourceIds": [
+        "attention"
+      ]
+    },
+    {
+      "id": "F-dense-image-limit-1",
+      "split": "acceptance",
+      "query": "请找出讨论全连接层用于视觉输入时两个主要局限的课程页。",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "F-dense-image-limit-2",
+      "split": "acceptance",
+      "query": "将每个像素与所有隐层单元相连，会怎样影响参数规模和训练？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "F-dense-image-limit-3",
+      "split": "acceptance",
+      "query": "同一物体在位置或大小变化后应保持识别结果，这给普通全连接网络提出什么困难？",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "F-dense-image-limit-4",
+      "split": "acceptance",
+      "query": "寻找把图像局部不变性和全连接前馈模型的不足放在一起说明的那页。",
+      "answerable": true,
+      "goldSourceIds": [
+        "dense-image-limit"
+      ]
+    },
+    {
+      "id": "F-softmax-rule-1",
+      "split": "acceptance",
+      "query": "需要Softmax回归参数学习的目标函数，哪页同时出现one-hot标签与对数概率？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "F-softmax-rule-2",
+      "split": "acceptance",
+      "query": "课程将多类分类的真实标签编码成向量后，怎样写出Softmax的学习风险？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "F-softmax-rule-3",
+      "split": "acceptance",
+      "query": "想查对所有训练样本的类别交叉熵求平均来估计W的公式来源。",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "F-softmax-rule-4",
+      "split": "acceptance",
+      "query": "在哪张学习准则页能看到指示函数与Softmax输出分量相乘后求和？",
+      "answerable": true,
+      "goldSourceIds": [
+        "softmax-rule"
+      ]
+    },
+    {
+      "id": "F-activation-variants-1",
+      "split": "acceptance",
+      "query": "查找比较Leaky ReLU、Parametric ReLU、ELU和Softplus的课程页面。",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "F-activation-variants-2",
+      "split": "acceptance",
+      "query": "需要能让负输入也传播少量信息的整流变体及其公式对照。",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "F-activation-variants-3",
+      "split": "acceptance",
+      "query": "哪张激活函数页展示了可学习的负轴斜率和指数负轴两类改进？",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "F-activation-variants-4",
+      "split": "acceptance",
+      "query": "想查找log(1+exp(x))这一平滑激活表达式与整流函数的联系。",
+      "answerable": true,
+      "goldSourceIds": [
+        "activation-variants"
+      ]
+    },
+    {
+      "id": "FN-01",
+      "split": "acceptance",
+      "query": "这批课件记录的本校2027年春季学期选课起止时间是哪两天？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-02",
+      "split": "acceptance",
+      "query": "能否从课程资料查到上周图书馆新增图书的ISBN清单？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-03",
+      "split": "acceptance",
+      "query": "请找出本班上次线性模型考试每位同学的分数表。",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-04",
+      "split": "acceptance",
+      "query": "这套教材保存了本项目生产数据库的备份下载地址吗？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-05",
+      "split": "acceptance",
+      "query": "课件中的哪个段落给出2026年10月30日人民币兑美元的收盘汇率？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-06",
+      "split": "acceptance",
+      "query": "想知道学校食堂今天晚餐的菜品和售价，资料能提供吗？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-07",
+      "split": "acceptance",
+      "query": "这些页面有没有写出下一届世界杯冠军的官方结果？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-08",
+      "split": "acceptance",
+      "query": "课程材料中是否包含某位真实学生的手机号和家庭地址？",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-09",
+      "split": "acceptance",
+      "query": "请定位本项目获10037比赛一等奖的官方评审公告。",
+      "answerable": false,
+      "goldSourceIds": []
+    },
+    {
+      "id": "FN-10",
+      "split": "acceptance",
+      "query": "这批PDF能给出下个月每一天北京市实测降雨量吗？",
+      "answerable": false,
+      "goldSourceIds": []
+    }
+  ]
+}

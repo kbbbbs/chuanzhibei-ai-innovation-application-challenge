@@ -1,0 +1,108 @@
+{
+  "archivedAt": "2026-10-21T22:18:43.100740+08:00",
+  "scope": "SiliconFlow role configuration and development-only Agent records",
+  "userDecisions": {
+    "apiKeys": "leave empty",
+    "agentLogging": "development process only"
+  },
+  "variables": {
+    "RAG_EMBEDDING_ENABLED": "true",
+    "RAG_EMBEDDING_BASE_URL": "https://api.siliconflow.cn/v1",
+    "RAG_EMBEDDING_MODEL": "Qwen/Qwen3-VL-Embedding-8B",
+    "OCR_BASE_URL": "https://api.siliconflow.cn/v1",
+    "OCR_MODEL": "deepseek-ai/DeepSeek-OCR"
+  },
+  "persistence": {
+    "windowsScope": "User",
+    "privateDotEnvIgnored": true,
+    "generationChanged": false
+  },
+  "backendTests": {
+    "total": 135,
+    "passed": 132,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 3
+  },
+  "externalEmbeddingOrOcrCalls": 0,
+  "liveApiValidation": "SKIPPED_NO_KEY_AS_REQUESTED",
+  "build": "mvn -DskipTests package: PASS",
+  "rules": {
+    "10037": {
+      "url": "https://www.boxuegu.com/matchTrack/detail/?id=10037",
+      "bodySha256": "28c5a2dd54a8d09e5320062d2823da30960b623311f9952851c2ff2182bbb1f7"
+    },
+    "10039": {
+      "url": "https://www.boxuegu.com/matchTrack/detail/?id=10039",
+      "bodySha256": "bc11a4e53d71a9e25d0a743e998d998cca832f1e93108f7219223d66398836ae"
+    }
+  },
+  "sourceFiles": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "c9b2eb6e2000720ee4ffba26aa0a6615ff30644e02353cceb9a8a8295cfded9a"
+    },
+    {
+      "path": ".env.example",
+      "sha256": "ac91ecfe43726c8c14131133a9aafa4fdd3082b6999efad7bcf2a0b1e1a3b1c9"
+    },
+    {
+      "path": "ai-learning-backend/src/main/resources/application.yml",
+      "sha256": "1cff88d520881e87be3f6e070fa35cc5c590aabf9dc29f689668cea86e075075"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelConfigurationTest.java",
+      "sha256": "cfef0ba494fdfffaf23efe62412c5d47b057c165c6e0651c1630935089b8fd12"
+    },
+    {
+      "path": "scripts/competition/export_agent_development_records.py",
+      "sha256": "d8a35a03fdf1358afd26e0f1a623f68cd5e578466d9a4443ea44b09b9e39b8f0"
+    },
+    {
+      "path": "scripts/competition/tests/test_export_agent_development_records.py",
+      "sha256": "be628e0a8c3d84922af850aa3de5e37398df32ea4602af1b87741b3210b29a99"
+    }
+  ],
+  "agentRecordRoot": "agent-records/2026-10-21-siliconflow-configuration/root",
+  "agentRecordChild": "agent-records/2026-10-21-siliconflow-configuration/development_recording",
+  "limitations": [
+    "OCR adapter remains K02",
+    "Embedding model dimension and availability not live-validated",
+    "Development logs are explicit snapshots, not a platform hook",
+    "Three complete core prompt chains still require real feature work"
+  ],
+  "exporterTests": {
+    "total": 11,
+    "passed": 11,
+    "failed": 0,
+    "errors": 0
+  },
+  "developmentRecordSnapshots": {
+    "root": {
+      "recordCount": 64,
+      "sourceLineRange": [
+        2472,
+        2708
+      ],
+      "recordsSha256": "01aeb12368d0cbca959cb51d9f30fc23ddb2a1e9dcf94c24fef0e40db7a118a3",
+      "sourceSha256": "37bef67c9ef85329071d45cf321c83accf41a825b6f01e00245753cecc42cdaa",
+      "pendingOutputs": 1
+    },
+    "development_recording": {
+      "recordCount": 39,
+      "sourceLineRange": [
+        235,
+        392
+      ],
+      "recordsSha256": "ed445dd3113f505268118980aee99d0092d6323f7f63d4d4d1e30471cb9d68ab",
+      "sourceSha256": "34f45aef055011d926c692c9621b424761dbed5e627ccf6bd5e2f8e328a94fa5",
+      "pendingOutputs": 0
+    }
+  },
+  "snapshotSecurityChecks": {
+    "knownSecretLeaks": 0,
+    "hiddenChannelRecords": 0,
+    "forkReplayExcluded": true
+  },
+  "buildArtifactSha256": "43bcad9ef756cdfcd1a258dbf72e07a7dfcd5ae75e6332d6b4501d648fa183de"
+}

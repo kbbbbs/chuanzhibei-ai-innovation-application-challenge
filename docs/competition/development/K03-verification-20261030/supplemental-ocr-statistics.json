@@ -1,0 +1,47 @@
+[
+  {
+    "imageSha256": "8fb65b5a8d107dd644b86a8e46e04ccb3fe808fe74a33820b802c58fcf9f9dca",
+    "sourceSha256": "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f",
+    "id": "learning-elements",
+    "imageBytes": 255668,
+    "sourceFile": "第2章-机器学习概述-okk.pdf",
+    "sourcePage": 14,
+    "imageFile": "refresh-source-learning-elements.png",
+    "httpStatus": 200,
+    "finishReason": "stop",
+    "latencyMs": 3797,
+    "model": "deepseek-ai/DeepSeek-OCR",
+    "characters": 771,
+    "hasLatex": false
+  },
+  {
+    "imageSha256": "6a321166d5ca461f95dd54b9112ecc0aa46ebff89932008d4e4d89c8fd52eb77",
+    "sourceSha256": "b1be9ddcc17d9d8a6fbb6a9182225bbe33bb15dbbd1d73fdfa6acf6ef1ebd0d7",
+    "id": "memory-network",
+    "imageBytes": 225330,
+    "sourceFile": "第4章-前馈神经网络-okk.pdf",
+    "sourcePage": 14,
+    "imageFile": "refresh-source-memory-network.png",
+    "httpStatus": 200,
+    "finishReason": "stop",
+    "latencyMs": 2813,
+    "model": "deepseek-ai/DeepSeek-OCR",
+    "characters": 700,
+    "hasLatex": false
+  },
+  {
+    "imageSha256": "a6c6ef3a4f0927f740c878f8cdcc3e3ddada708e9616d9b0593d7914faa2da2b",
+    "sourceSha256": "839bb240a887eed021a4e3ac8d6108c25d120bee241e708f3ea56166468f97a5",
+    "id": "rnn-segmentation",
+    "imageBytes": 144270,
+    "sourceFile": "第6章-循环神经网络-okk.pdf",
+    "sourcePage": 14,
+    "imageFile": "refresh-source-rnn-segmentation.png",
+    "httpStatus": 200,
+    "finishReason": "stop",
+    "latencyMs": 2703,
+    "model": "deepseek-ai/DeepSeek-OCR",
+    "characters": 557,
+    "hasLatex": false
+  }
+]

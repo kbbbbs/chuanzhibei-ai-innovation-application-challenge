@@ -1,0 +1,24 @@
+{
+  "date": "2026-10-27",
+  "scope": "Public primary-source research and project advice; no application code or model configuration changed",
+  "findings": [
+    "Formula-to-LaTeX is a mature documented route in Azure Document Intelligence, Docling, PaddleOCR and Mathpix; documentation is evidence of implementation, not a market-share survey.",
+    "Structured parsing and visual document retrieval are distinct approaches; ColPali documents image-based retrieval.",
+    "Recommendation: preserve formula source and original location, keep formula blocks intact, include surrounding definitions in retrieval, render on the frontend, and review uncertain recognition.",
+    "DeepSeek-OCR officially distinguishes document-to-Markdown and generic OCR prompts; project changes require comparative tests, not an assumed improvement."
+  ],
+  "sources": [
+    "https://learn.microsoft.com/en-us/azure/ai-services/document-intelligence/concept/add-on-capabilities?view=doc-intel-4.0.0",
+    "https://docling-project.github.io/docling/usage/enrichments/",
+    "https://github.com/PaddlePaddle/PaddleOCR/blob/main/docs/version3.x/pipeline_usage/formula_recognition.en.md",
+    "https://docs.mathpix.com/",
+    "https://huggingface.co/docs/transformers/main/tasks/visual_document_retrieval",
+    "https://github.com/deepseek-ai/DeepSeek-OCR",
+    "https://katex.org/docs/api.html"
+  ],
+  "tests": {
+    "status": "NOT_RUN",
+    "reason": "Research only; no implementation changes or live quality benchmark"
+  },
+  "record_limit": "Explicit snapshot; final response after export is not included."
+}

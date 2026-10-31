@@ -1,0 +1,49 @@
+{
+  "preparedAt": "2026-10-30T11:16:47.830487+00:00",
+  "scope": "Frozen source-grounded K03 retrieval acceptance preparation; real Java execution controlled by parent to avoid shared-target builds.",
+  "questionCounts": {
+    "tuning": 10,
+    "acceptanceAnswerable": 40,
+    "acceptanceNoAnswer": 10
+  },
+  "datasetFrozenBeforeRealRetrieval": true,
+  "pythonMetricsTests": {
+    "passed": 3,
+    "red": "Missing evaluation script before implementation"
+  },
+  "liveTest": {
+    "class": "K03RetrievalLiveTest",
+    "flag": "K03_LIVE_RETRIEVAL_CHECK=true",
+    "status": "PARENT_EXECUTION_AND_PROTOCOL_REPAIR",
+    "mavenNotRunByChild": true
+  },
+  "provenance": "Original source files and pages checked against prior K02 SHA manifest. Expected direct-extractable sources plus actual historic OCR replay; copy PDF page1 maps to original source page. No fresh OCR or GPT in this benchmark.",
+  "sourceStartLine": 429,
+  "sourceSession": "rollout-2026-10-30T18-39-46-01a18c64-e938-76d0-bbaa-b514d8b0a460.jsonl",
+  "limitations": [
+    "Author-written known-source labels; not teacher acceptance.",
+    "No K04 abstention or answer-model accuracy claim.",
+    "Real embeddings are batched then exact cached; separate production uncached HTTP query is asserted."
+  ],
+  "diagnostics": {
+    "actual32VectorIndices": "0..7 repeated four times",
+    "actual8VectorIndices": "0..7 exactly once",
+    "privateUseBulletFalsePositives": [
+      "U+F0A8",
+      "U+F0B7"
+    ],
+    "supplementalOcrPages": 3,
+    "supplementalOcrStatus": "HTTP200/stop; actual DeepSeek-OCR document mode",
+    "acceptanceQuestionsOrRetrievalParametersChanged": false
+  },
+  "files": {
+    "docs/competition/development/K03-evaluation-dataset.json": "38c396f43fe79528c112af744f42649ce18d485982c1b37abd505d20e5ac03ac",
+    "docs/competition/development/K03-evaluation-freeze.json": "c5da2e127781f655659c32533ef4696373b3d5782a73f420f5812dea060c9744",
+    "scripts/competition/evaluate_retrieval.py": "9b01440fabfc14691cf1625988b0e2b3ee2a49627db913a1218f894c3674f4e6",
+    "scripts/competition/tests/test_evaluate_retrieval.py": "97f6c9e1f6af7e095cd691e3ad9ffd84b21c40938b86efe8fa8ded66796a396a",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03RetrievalLiveTest.java": "2c50bbe6d23dcdfebc9585d43a7b4fd495cdd3d202d7d5a71095e134f73ca7c8",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03EmbeddingBatchContractTest.java": "31c5354530f104b3af519919414ad37d478d480d3e13494b79a4cd217fed772d",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K03SymbolBulletTest.java": "927f63365987f48bdf5b3f99c313736d3f65cb2140b001e624a18cb288aa3650",
+    "docs/competition/development/K03-embedding-protocol-diagnostic.json": "93b5f7f7843e572716c5511c7c5d67a7b5f2dd2e57e07f8a641ac9c2bab1cada"
+  }
+}

@@ -1,0 +1,19 @@
+.......F........
+======================================================================
+FAIL: test_manifest_hash_verifies_the_actual_jsonl_bytes_on_this_platform (test_export_agent_development_records.DevelopmentRecordExportTest.test_manifest_hash_verifies_the_actual_jsonl_bytes_on_this_platform)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "D:\ai-learning\scripts\competition\tests\test_export_agent_development_records.py", line 182, in test_manifest_hash_verifies_the_actual_jsonl_bytes_on_this_platform
+    self.assertEqual(hashlib.sha256((self.output/"records.jsonl").read_bytes()).hexdigest(),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        manifest["records_sha256"])
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '5f04b25aec4db5eee3e13ae1a018d24bee1019c3cedf8edf7c00dcc72917fcdf' != 'ca279556e6eec49658de4ebd6367656d5885c976c924c517c76ec7d50b854907'
+- 5f04b25aec4db5eee3e13ae1a018d24bee1019c3cedf8edf7c00dcc72917fcdf
++ ca279556e6eec49658de4ebd6367656d5885c976c924c517c76ec7d50b854907
+
+
+----------------------------------------------------------------------
+Ran 16 tests in 0.228s
+
+FAILED (failures=1)

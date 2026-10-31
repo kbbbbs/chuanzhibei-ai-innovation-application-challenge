@@ -1,0 +1,1 @@
+{"role":"embedding","status":"PASS","checks":[{"name":"EMBEDDING","status":"PASS","detail":"OBSERVED_AT_TESTED_SIZE_ONLY","latencyMs":835,"testedCharacters":0}]}

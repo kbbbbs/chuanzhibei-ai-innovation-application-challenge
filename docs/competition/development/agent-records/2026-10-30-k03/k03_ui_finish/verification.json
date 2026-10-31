@@ -1,0 +1,80 @@
+{
+  "archivedAt": "2026-10-31T05:39:55.330597+00:00",
+  "scope": "K03 pending-search cancellation and warning presentation; controlled HTTP/SSE fixtures only.",
+  "actualTaskStart": {
+    "line": 116,
+    "timestamp": "2026-10-31T05:32:54.323Z",
+    "source": "rollout-2026-10-31T13-32-54-01a19072-53ca-77d3-8937-da480742fd15.jsonl",
+    "inheritedPrefixOmitted": true
+  },
+  "story": {
+    "need": "A stopped request must not claim a completed empty search.",
+    "acceptance": [
+      "Show that the current search was stopped and incomplete.",
+      "Do not show empty results, prior actual mode or prior sources after cancellation.",
+      "A new search clears the stopped notice and can complete normally.",
+      "Switching libraries resets cancellation state."
+    ]
+  },
+  "red": {
+    "testAuthoredBy": "Previous k03_ui agent before this child started; retained unmodified for initial RED execution.",
+    "executedBy": "k03_ui_finish",
+    "tests": 1,
+    "failed": 1,
+    "observed": "Stopped pending request incorrectly displayed completed no-hit empty-state.",
+    "log": "logs/red-cancel-search.log",
+    "screenshot": "screenshots/cancel-empty-red.png"
+  },
+  "implementation": [
+    "Cancellation has a separate visible incomplete state.",
+    "Only a successful non-aborted response marks searched=true.",
+    "A new search and library change clear the stopped state.",
+    "Legacy BM25 warning presentation accepts either whitespace form."
+  ],
+  "green": {
+    "targetedTestsPassed": 1,
+    "log": "logs/green-cancel-search.log",
+    "note": "Restart-success assertions and a screenshot were added after initial RED; not claimed as separate REDs."
+  },
+  "final": {
+    "pageTestsPassed": 30,
+    "newK03Tests": 9,
+    "previousPageRegressionTests": 21,
+    "nodeTestsPassed": 8,
+    "build": "PASS",
+    "diffCheck": "PASS"
+  },
+  "logs": {
+    "pageRegression": "logs/green-all-ui.log",
+    "node": "logs/formula-node.log",
+    "build": "logs/frontend-build.log"
+  },
+  "visualReview": {
+    "observer": "development Agent",
+    "syntheticFixtures": true,
+    "viewed": "screenshots/cancel-incomplete-green.png",
+    "viewport": "1280x720",
+    "result": "Incomplete notice is visible; no completed-no-hit illustration, stale mode, or clipped content observed."
+  },
+  "manualVerification": [
+    "Open a teacher test library and start a search while the request is still pending.",
+    "Click Stop search: the notice must say the request was stopped and incomplete, not that no material exists.",
+    "Search again: the notice clears and the completed results show their actual retrieval mode.",
+    "Switch libraries: no stopped notice from the previous library should remain."
+  ],
+  "testServer": "Temporary owned Vite process on 5173 stopped after verification.",
+  "limitations": [
+    "No real model, backend-to-cloud E2E or retrieval quality acceptance in these frontend fixtures.",
+    "Existing live native-rag-real.spec.js intentionally not run; it requires a separate authorized demo database.",
+    "Preserved existing workspace edits; no commit, reset or dependency changes in this child."
+  ],
+  "finalFilesSha256": {
+    "ai-learning-frontend/src/utils/retrievalStatus.js": "bebd34d25b7dd2931cb7ff16a99e8356e343e3cca433a76c793ce2a9e09d7f8c",
+    "ai-learning-frontend/src/components/knowledge/RagAnswerStatus.vue": "1fecdd80150236f3f0e6ef60c480eb5af5b3da4538c4a3c15eff8eeb436a89e3",
+    "ai-learning-frontend/src/components/knowledge/NativeKnowledgeWorkspace.vue": "780eae55a95966ff91ab1d4e67cb79410cde9159ecc721a1022d6525bd5b4744",
+    "ai-learning-frontend/src/components/knowledge/RagCitations.vue": "54a4e118606952efacd62a8bded47a7360af3543479097e0558437e471308743",
+    "ai-learning-frontend/src/composables/useNativeRag.js": "1dd2ff2cd007513074eafaffed1007a69c9cc73c764756ddb91fa03cbb3d1748",
+    "ai-learning-frontend/src/components/AiChatWidget.vue": "ba719bce68c0072b7e60b967c4dae94e8c620684e2802e9726e523a4b60a077b",
+    "ai-learning-frontend/e2e/k03-retrieval-ui.spec.js": "dbaa150e0fb5c96f002d4b14ae13dd17e1a4766fc3ebe214b66de5087461624d"
+  }
+}

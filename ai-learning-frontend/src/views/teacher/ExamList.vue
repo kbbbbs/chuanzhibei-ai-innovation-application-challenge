@@ -1,0 +1,704 @@
+<template>
+  <div class="exam-list">
+    <el-card>
+      <template #header>
+        <div class="card-header">
+            <span>{{ assessmentLabel }}管理</span>
+          <div class="header-actions">
+            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
+            <el-button type="primary" @click="handleCreate">发布{{ assessmentLabel }}</el-button>
+          </div>
+        </div>
+      </template>
+
+      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+        <el-form-item :label="`${assessmentLabel}名称`">
+          <el-input v-model="searchForm.keyword" :placeholder="`请输入${assessmentLabel}名称`" clearable @keyup.enter="handleSearch" />
+        </el-form-item>
+        <el-form-item label="教学班">
+          <el-select v-model="searchForm.classId" placeholder="请选择教学班" clearable>
+            <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
+          <el-button @click="handleReset">重置</el-button>
+        </el-form-item>
+      </el-form>
+
+      <el-table :data="exams" border stripe v-loading="loading">
+        <el-table-column prop="id" label="ID" width="80" />
+        <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
+        <el-table-column label="开始时间" width="180">
+          <template #default="{ row }">
+            {{ row.startTime ? new Date(row.startTime).toLocaleString() : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="结束时间" width="180">
+          <template #default="{ row }">
+            {{ row.endTime ? new Date(row.endTime).toLocaleString() : '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" width="100">
+          <template #default="{ row }">
+            <el-tag v-if="row.status === 3" type="success">成绩已提交</el-tag>
+            <el-tag v-else-if="isExamEnded(row)" type="info">已结束</el-tag>
+            <el-tag v-else-if="isExamStarted(row)" type="success">进行中</el-tag>
+            <el-tag v-else type="warning">未开始</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="280" fixed="right">
+          <template #default="{ row }">
+            <el-button size="small" @click="handleGrading(row)">批改</el-button>
+            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+            <el-button v-if="row.status === 1 && isExamStarted(row) && !isExamEnded(row)" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
+            <el-button v-if="!isHomework && isExamEnded(row)" size="small" type="primary" @click="handleSubmitResults(row)">提交</el-button>
+            <el-button v-if="!isHomework && row.status === 3" size="small" type="primary" @click="handleResultDetails(row)">详情</el-button>
+            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+          </template>
+        </el-table-column>
+        <template #empty>
+          <AppEmpty />
+        </template>
+      </el-table>
+
+      <el-pagination
+        v-model:current-page="pagination.pageNum"
+        v-model:page-size="pagination.pageSize"
+        :total="pagination.total"
+        :page-sizes="[5, 10, 20, 50]"
+        layout="total, sizes, prev, pager, next, jumper"
+        @current-change="loadExams"
+        @size-change="handleSizeChange"
+        class="pagination-bar"
+      />
+    </el-card>
+
+    <!-- Form Dialog -->
+    <el-dialog v-model="dialogVisible" :title="form.id ? `编辑${assessmentLabel}` : `发布${assessmentLabel}`" width="760px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+        <div class="wizard-dialog">
+          <div class="wizard-steps">
+            <el-steps direction="vertical" :active="examStep" finish-status="success">
+              <el-step title="发布对象" description="试卷与教学班" />
+              <el-step :title="`${assessmentLabel}设置`" description="时间与说明" />
+              <el-step title="确认发布" description="检查后提交" />
+            </el-steps>
+          </div>
+
+          <div class="wizard-content">
+            <template v-if="examStep === 0">
+              <el-form-item :label="`${assessmentLabel}名称`" prop="title">
+                <el-input v-model="form.title" />
+              </el-form-item>
+              <el-form-item :label="isHomework ? '作业题卷' : '试卷'" prop="paperId">
+                <el-select v-model="form.paperId" placeholder="请选择试卷">
+                  <el-option v-for="paper in papers" :key="paper.id" :label="paper.title" :value="paper.id" />
+                </el-select>
+              </el-form-item>
+              <el-form-item label="教学班" prop="classId">
+                <el-select v-model="form.classId" placeholder="请选择教学班">
+                  <el-option v-for="cls in classList" :key="cls.id" :label="cls.className" :value="cls.id" />
+                </el-select>
+              </el-form-item>
+            </template>
+
+            <template v-else-if="examStep === 1">
+              <el-form-item :label="isHomework ? '作答限时(分)' : '考试时长(分)'" prop="durationMinutes">
+                <el-input-number v-model="form.durationMinutes" :min="1" />
+              </el-form-item>
+              <el-form-item :label="isHomework ? '开放时间' : '开始时间'" prop="startTime">
+                <el-date-picker v-model="form.startTime" type="datetime" :placeholder="isHomework ? '选择开放时间' : '选择开始时间'" />
+              </el-form-item>
+              <el-form-item v-if="isHomework" label="截止时间" prop="endTime">
+                <el-date-picker v-model="form.endTime" type="datetime" placeholder="选择截止时间" />
+              </el-form-item>
+              <el-form-item :label="`${assessmentLabel}说明`">
+                <el-input v-model="form.description" type="textarea" :rows="3" />
+              </el-form-item>
+              <el-form-item v-if="!isHomework" label="发布通知">
+                <div class="notice-option">
+                  <el-checkbox v-model="form.publishNotice">同时向教学班发布考试通知</el-checkbox>
+                  <span>通知将包含考试名称、开始时间、结束时间和作答时长。</span>
+                </div>
+              </el-form-item>
+              <template v-if="!isHomework">
+                <el-form-item label="切屏上限" prop="maxScreenSwitches">
+                  <el-input-number v-model="form.maxScreenSwitches" :min="0" :max="99" />
+                  <span class="field-hint">超过该次数自动判作弊，成绩记为 -1</span>
+                </el-form-item>
+                <el-form-item label="禁用剪贴板">
+                  <el-switch v-model="form.disableClipboard" />
+                </el-form-item>
+              </template>
+              <el-form-item label="状态">
+                <el-text>到达{{ isHomework ? '开放' : '开始' }}时间后自动开始</el-text>
+              </el-form-item>
+            </template>
+
+            <template v-else>
+              <el-descriptions :column="2" border>
+                <el-descriptions-item :label="`${assessmentLabel}名称`">{{ form.title || '-' }}</el-descriptions-item>
+                <el-descriptions-item :label="isHomework ? '作业题卷' : '试卷'">{{ selectedPaperTitle }}</el-descriptions-item>
+                <el-descriptions-item label="教学班">{{ selectedClassName }}</el-descriptions-item>
+                <el-descriptions-item :label="isHomework ? '作答限时' : '考试时长'">{{ form.durationMinutes }} 分钟</el-descriptions-item>
+                <el-descriptions-item :label="isHomework ? '开放时间' : '开始时间'">{{ form.startTime ? new Date(form.startTime).toLocaleString() : '-' }}</el-descriptions-item>
+                <el-descriptions-item :label="isHomework ? '截止时间' : '结束时间'">{{ formEndTime ? formEndTime.toLocaleString() : '-' }}</el-descriptions-item>
+                <el-descriptions-item v-if="!isHomework" label="切屏上限">{{ form.maxScreenSwitches }} 次</el-descriptions-item>
+                <el-descriptions-item v-if="!isHomework" label="剪贴板">{{ form.disableClipboard ? '禁用' : '允许' }}</el-descriptions-item>
+                <el-descriptions-item label="状态">到达{{ isHomework ? '开放' : '开始' }}时间后自动开始</el-descriptions-item>
+                <el-descriptions-item v-if="!isHomework" label="同步通知">{{ form.publishNotice ? '是' : '否' }}</el-descriptions-item>
+                <el-descriptions-item :label="`${assessmentLabel}说明`">{{ form.description || '-' }}</el-descriptions-item>
+              </el-descriptions>
+            </template>
+          </div>
+        </div>
+      </el-form>
+      <template #footer>
+        <el-button @click="dialogVisible = false">取消</el-button>
+        <el-button v-if="examStep > 0" @click="examStep -= 1">上一步</el-button>
+        <el-button v-if="examStep < 2" type="primary" @click="nextExamStep">下一步</el-button>
+        <el-button v-else type="primary" :loading="submitLoading" @click="handleSubmit">保存</el-button>
+      </template>
+    </el-dialog>
+
+  </div>
+</template>
+
+<script setup>
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/store/user'
+import { useConfirm } from '@/composables/useConfirm'
+import AppEmpty from '@/components/AppEmpty.vue'
+import { exportImportData } from '@/api/imports'
+import { getTeachingClasses } from '@/api/teachingClass'
+import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
+import request from '@/utils/request'
+
+const router = useRouter()
+const route = useRoute()
+const userStore = useUserStore()
+const { confirmDelete } = useConfirm()
+const formRef = ref(null)
+
+const loading = ref(false)
+const submitLoading = ref(false)
+const deleteLoading = ref(false)
+const exporting = ref(false)
+const exams = ref([])
+const papers = ref([])
+const classList = ref([])
+
+const searchForm = reactive({
+  keyword: '',
+  classId: null
+})
+
+const pagination = reactive({
+  pageNum: 1,
+  pageSize: 10,
+  total: 0
+})
+
+const dialogVisible = ref(false)
+const examStep = ref(0)
+let lifecycleRefreshTimer = null
+
+const form = reactive({
+  id: null,
+  paperId: null,
+  classId: null,
+  teacherId: currentUserId(userStore),
+  title: '',
+  description: '',
+  startTime: null,
+  endTime: null,
+  durationMinutes: 60,
+  maxScreenSwitches: 3,
+  disableClipboard: false,
+  status: 1,
+  publishNotice: false
+})
+
+const assessmentType = computed(() => route.meta.assessmentType || 'EXAM')
+const assessmentLabel = computed(() => assessmentType.value === 'HOMEWORK' ? '作业' : '考试')
+const isHomework = computed(() => assessmentType.value === 'HOMEWORK')
+const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
+const paperApi = computed(() => isHomework.value ? '/api/homework-papers' : '/api/papers')
+
+const rules = {
+  title: [{ required: true, message: '请输入名称', trigger: 'blur' }],
+  paperId: [{ required: true, message: '请选择试卷或作业题卷', trigger: 'change' }],
+  classId: [{ required: true, message: '请选择教学班', trigger: 'change' }],
+  durationMinutes: [{ required: true, message: '请输入时长', trigger: 'blur' }],
+  startTime: [{ required: true, message: '请选择开始或开放时间', trigger: 'change' }],
+  endTime: [{ required: true, message: '请选择截止时间', trigger: 'change' }]
+}
+
+// ---- 状态映射 ----
+// 前端: 0=未开始, 1=进行中, 2=已结束
+// 后端: DRAFT(0), PUBLISHED(1), CLOSED(3)
+const STATUS_TO_ENUM = { 0: 'DRAFT', 1: 'PUBLISHED', 2: 'CLOSED', 3: 'RESULTS_SUBMITTED' }
+const ENUM_TO_STATUS = { DRAFT: 0, PUBLISHED: 1, CLOSED: 2, RESULTS_SUBMITTED: 3 }
+
+// ---- 响应适配：将后端 ExamResponseDTO 映射为前端表格行 ----
+const mapExamForDisplay = (e) => ({
+  id: e.id,
+  title: e.name || e.title || '',
+  classId: e.classId,
+  teacherId: e.teacherId,
+  paperId: e.paperId,
+  durationMinutes: e.durationMinutes,
+  startTime: e.startTime,
+  endTime: e.endTime,
+  maxScreenSwitches: e.maxScreenSwitches ?? 3,
+  disableClipboard: Boolean(e.disableClipboard),
+  status: normalizeStatus(e.status, ENUM_TO_STATUS, 0)
+})
+
+const formEndTime = computed(() => {
+  if (isHomework.value) {
+    if (!form.endTime) return null
+    const deadline = new Date(form.endTime)
+    return Number.isNaN(deadline.getTime()) ? null : deadline
+  }
+  if (!form.startTime || !form.durationMinutes) return null
+  return new Date(new Date(form.startTime).getTime() + Number(form.durationMinutes) * 60 * 1000)
+})
+
+const isExamStarted = (exam) => exam.status !== 0 && new Date() >= new Date(exam.startTime)
+const isExamEnded = (exam) => exam.status === 2 || exam.status === 3 || new Date() >= new Date(exam.endTime)
+
+// ---- 响应适配：将后端 PaperResponseDTO 映射为前端下拉选项 ----
+const mapPaperForOption = (p) => ({
+  id: p.id,
+  title: p.name || p.title || '',
+  teacherId: p.teacherId,
+  status: normalizeStatus(p.status, { DRAFT: 0, PUBLISHED: 1, ARCHIVED: 2 }, 0)
+})
+
+const selectedPaperTitle = computed(() => {
+  return papers.value.find(paper => paper.id === form.paperId)?.title || '-'
+})
+
+const selectedClassName = computed(() => {
+  return classList.value.find(cls => cls.id === form.classId)?.className || '-'
+})
+
+const handleSearch = () => {
+  pagination.pageNum = 1
+  loadExams()
+}
+
+const handleSizeChange = () => {
+  pagination.pageNum = 1
+  loadExams()
+}
+
+const handleReset = () => {
+  searchForm.keyword = ''
+  searchForm.classId = null
+  pagination.pageNum = 1
+  loadExams()
+}
+
+const loadExams = async () => {
+  loading.value = true
+  try {
+    const params = scopedTeacherParams(userStore)
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
+    const res = await request.get(assessmentApi.value, { params })
+    if (res.code === '200' && res.data) {
+      const records = getRecords(res.data).map(mapExamForDisplay)
+      exams.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
+      pagination.total = getTotal(records)
+    } else {
+      exams.value = []
+      pagination.total = 0
+    }
+  } catch (e) {
+    exams.value = []
+    pagination.total = 0
+  } finally {
+    loading.value = false
+  }
+}
+
+const loadPapers = async () => {
+  try {
+    const params = scopedTeacherParams(userStore)
+    const res = await request.get(paperApi.value, { params })
+    if (res.code === '200' && res.data) {
+      const data = res.data
+      papers.value = getRecords(data).map(mapPaperForOption).filter(paper => paper.status === 1)
+    } else {
+      papers.value = []
+    }
+  } catch (e) {
+    papers.value = []
+  }
+}
+
+const loadClasses = async () => {
+  try {
+    const res = await getTeachingClasses(scopedTeacherParams(userStore, { pageSize: 100 }))
+    if (res.code === '200' && res.data) {
+      classList.value = getRecords(res.data)
+    } else {
+      classList.value = []
+    }
+  } catch (e) {
+    classList.value = []
+  }
+}
+
+const handleExport = async (format) => {
+  exporting.value = true
+  try {
+    const params = scopedTeacherParams(userStore, { format })
+    if (searchForm.keyword && searchForm.keyword.trim()) {
+      params.keyword = searchForm.keyword.trim()
+    }
+    if (searchForm.classId) {
+      params.classId = searchForm.classId
+    }
+    const blob = await exportImportData('exams', params)
+    downloadBlob(blob, `考试_${new Date().toISOString().slice(0, 10)}.${format}`)
+    ElMessage.success('导出成功')
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    exporting.value = false
+  }
+}
+
+const downloadBlob = (blob, fileName) => {
+  const url = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = url
+  link.download = fileName
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+  URL.revokeObjectURL(url)
+}
+
+const handleCreate = () => {
+  if (!papers.value || papers.value.length === 0) {
+    ElMessage.warning(isHomework.value
+      ? '暂无已发布的作业题卷，请先创建并发布作业题卷'
+      : '暂无已发布的试卷，请先创建并发布试卷')
+    return
+  }
+  if (!classList.value || classList.value.length === 0) {
+    ElMessage.warning(`暂无教学班，请先创建教学班后再发布${assessmentLabel.value}`)
+    return
+  }
+  Object.assign(form, {
+    id: null,
+    paperId: null,
+    classId: null,
+    teacherId: currentUserId(userStore),
+    title: '',
+    description: '',
+    startTime: null,
+    endTime: null,
+    durationMinutes: 60,
+    maxScreenSwitches: 3,
+    disableClipboard: false,
+    status: 1,
+    publishNotice: false
+  })
+  examStep.value = 0
+  dialogVisible.value = true
+}
+
+const handleEdit = async (row) => {
+  if (row.status !== 0) {
+    ElMessage.warning(`已发布或已结束的${assessmentLabel.value}不能直接修改`)
+    return
+  }
+  try {
+    const res = await request.get(`${assessmentApi.value}/${row.id}`)
+    if (res.code === '200' && res.data) {
+      const data = res.data
+      Object.assign(form, {
+        id: data.id,
+        paperId: data.paperId,
+        classId: data.classId,
+        teacherId: data.teacherId || currentUserId(userStore),
+        title: data.name || '',
+        description: data.description || '',
+        startTime: data.startTime ? new Date(data.startTime) : null,
+        endTime: data.endTime ? new Date(data.endTime) : null,
+        durationMinutes: data.durationMinutes ?? 60,
+        maxScreenSwitches: data.maxScreenSwitches ?? 3,
+        disableClipboard: Boolean(data.disableClipboard),
+        status: normalizeStatus(data.status, ENUM_TO_STATUS, 0),
+        publishNotice: false
+      })
+      examStep.value = 0
+      dialogVisible.value = true
+    }
+  } catch (e) {
+    // 全局已提示
+  }
+}
+
+const validateExamTarget = () => {
+  if (!form.title) {
+    ElMessage.warning(`请输入${assessmentLabel.value}名称`)
+    return false
+  }
+  if (!form.paperId) {
+    ElMessage.warning(isHomework.value ? '请选择作业题卷' : '请选择试卷')
+    return false
+  }
+  if (!form.classId) {
+    ElMessage.warning('请选择教学班')
+    return false
+  }
+  return true
+}
+
+const validateExamSchedule = () => {
+  if (!form.durationMinutes) {
+    ElMessage.warning(isHomework.value ? '请输入作答限时' : '请输入考试时长')
+    return false
+  }
+  if (!form.startTime) {
+    ElMessage.warning(isHomework.value ? '请选择开放时间' : '请选择开始时间')
+    return false
+  }
+  if (isHomework.value && !form.endTime) {
+    ElMessage.warning('请选择截止时间')
+    return false
+  }
+  if (!formEndTime.value || formEndTime.value <= new Date(form.startTime)) {
+    ElMessage.warning(isHomework.value ? '截止时间必须晚于开放时间' : '结束时间必须晚于开始时间')
+    return false
+  }
+  if (!form.id && form.startTime < new Date()) {
+    ElMessage.warning(`${isHomework.value ? '开放' : '开始'}时间不能早于当前时间`)
+    return false
+  }
+  return true
+}
+
+const nextExamStep = async () => {
+  if (examStep.value === 0) {
+    try {
+      await formRef.value.validateField(['title', 'paperId', 'classId'])
+    } catch (e) {
+      return
+    }
+    examStep.value = 1
+    return
+  }
+
+  try {
+    await formRef.value.validateField(isHomework.value
+      ? ['durationMinutes', 'startTime', 'endTime']
+      : ['durationMinutes', 'startTime'])
+  } catch (e) {
+    return
+  }
+  if (validateExamSchedule()) {
+    examStep.value = 2
+  }
+}
+
+// ---- 请求适配：将前端表单数据转换为 ExamRequestDTO ----
+const buildRequestDTO = () => {
+  const selectedPaper = papers.value.find(paper => paper.id === form.paperId)
+  return {
+    name: form.title,
+    classId: form.classId ? Number(form.classId) : null,
+    teacherId: Number(selectedPaper?.teacherId || form.teacherId || currentUserId(userStore)),
+    paperId: form.paperId ? Number(form.paperId) : null,
+    description: form.description || '',
+    startTime: formatLocalDateTime(form.startTime),
+    endTime: formatLocalDateTime(formEndTime.value),
+    durationMinutes: form.durationMinutes || 60,
+    maxScreenSwitches: isHomework.value ? 3 : Number(form.maxScreenSwitches ?? 3),
+    disableClipboard: isHomework.value ? false : Boolean(form.disableClipboard),
+    status: STATUS_TO_ENUM[form.status] || 'DRAFT',
+    publishNotice: !isHomework.value && Boolean(form.publishNotice),
+  }
+}
+
+const handleSubmit = async () => {
+  if (!validateExamTarget() || !validateExamSchedule()) {
+    return
+  }
+
+  const data = buildRequestDTO()
+
+  submitLoading.value = true
+  try {
+    let res
+    if (form.id) {
+      res = await request.put(`${assessmentApi.value}/${form.id}`, data)
+    } else {
+      res = await request.post(assessmentApi.value, data)
+    }
+
+    if (res.code === '200') {
+      ElMessage.success(`${assessmentLabel.value}保存成功${data.publishNotice ? '，通知已同步发布' : ''}`)
+      dialogVisible.value = false
+      loadExams()
+    } else {
+      ElMessage.error(res.message || '保存失败')
+    }
+  } catch (e) {
+    const errorMsg = e.response?.data?.message ||
+                     e.response?.data?.msg ||
+                     e.message ||
+                     '保存失败'
+    ElMessage.error(errorMsg)
+  } finally {
+    submitLoading.value = false
+  }
+}
+
+const handleDelete = async (row) => {
+  if (row.status === 1) {
+    ElMessage.warning(`进行中的${assessmentLabel.value}不能删除，请先结束${assessmentLabel.value}`)
+    return
+  }
+  try {
+    const confirmed = await confirmDelete(`确认删除此${assessmentLabel.value}？`)
+    if (!confirmed) return
+    deleteLoading.value = true
+    const res = await request.delete(`${assessmentApi.value}/${row.id}`)
+    if (res.code === '200') {
+      ElMessage.success('删除成功')
+      loadExams()
+    }
+  } catch (e) {
+    // 全局已提示
+  } finally {
+    deleteLoading.value = false
+  }
+}
+
+const handleGrading = (row) => {
+  router.push(assessmentType.value === 'HOMEWORK'
+    ? `/homework/${row.id}/submissions`
+    : `/exams/${row.id}/grading`)
+}
+
+const handleSubmitResults = async (row) => {
+  try {
+    const confirmed = await confirmDelete('确认提交本次考试成绩？再次提交会更新已批改的分数和统计结果')
+    if (!confirmed) return
+    const res = await request.post(`/api/exams/${row.id}/results/submit`)
+    if (res.code === '200') {
+      ElMessage.success('成绩已提交')
+      loadExams()
+    }
+  } catch (e) {
+    // 全局已提示
+  }
+}
+
+const handleResultDetails = (row) => {
+  router.push(`/exams/${row.id}/results`)
+}
+
+const handleEnd = async (row) => {
+  try {
+    const confirmed = await confirmDelete(`确认结束此${assessmentLabel.value}？结束后将无法恢复`)
+    if (!confirmed) return
+    
+    // 调用专用的 close 接口
+    const res = await request.post(`${assessmentApi.value}/${row.id}/close`)
+    if (res.code === '200') {
+      ElMessage.success(`${assessmentLabel.value}已结束`)
+      loadExams()
+    }
+  } catch (e) {
+    // 全局已提示
+  }
+}
+
+onMounted(() => {
+  loadPapers()
+  loadClasses()
+  loadExams()
+  lifecycleRefreshTimer = setInterval(loadExams, 15000)
+})
+
+watch(
+  () => route.name,
+  () => {
+    pagination.pageNum = 1
+    loadPapers()
+    loadExams()
+  }
+)
+
+onUnmounted(() => {
+  clearInterval(lifecycleRefreshTimer)
+})
+</script>
+
+<style scoped>
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.pagination-bar {
+  margin-top: 20px;
+  justify-content: center;
+}
+
+.search-form {
+  margin-bottom: 16px;
+}
+
+.wizard-dialog {
+  display: flex;
+  gap: 24px;
+  min-height: 300px;
+}
+
+.wizard-steps {
+  width: 170px;
+  padding: 8px 8px 8px 0;
+  border-right: 1px solid #ebeef5;
+}
+
+.wizard-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-hint {
+  margin-left: 12px;
+  color: #909399;
+  font-size: 13px;
+}
+
+.notice-option {
+  display: flex;
+  flex-direction: column;
+  color: #909399;
+  line-height: 1.5;
+}
+</style>
