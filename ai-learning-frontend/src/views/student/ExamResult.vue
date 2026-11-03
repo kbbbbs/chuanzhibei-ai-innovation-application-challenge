@@ -3,16 +3,16 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="card-header">
-          <span>考试结果</span>
+          <span>{{ assessmentLabel }}结果</span>
           <el-button @click="$router.back()">返回</el-button>
         </div>
       </template>
 
       <div v-if="submission.id">
-        <el-result v-if="submission.cheated" icon="error" title="本次考试被判定为作弊" :sub-title="`切屏 ${submission.screenSwitchCount || 0} 次，成绩记为 -1`">
+        <el-result v-if="submission.cheated" icon="error" :title="`本次${assessmentLabel}被判定为作弊`" :sub-title="`切屏 ${submission.screenSwitchCount || 0} 次，成绩记为 -1`">
           <template #extra>
             <el-descriptions :column="2" border>
-              <el-descriptions-item label="考试名称">{{ exam.title }}</el-descriptions-item>
+              <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
               <el-descriptions-item label="提交时间">
                 {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
               </el-descriptions-item>
@@ -23,7 +23,7 @@
         <el-result v-else-if="submission.status === 2" icon="success" :title="`总分：${submission.totalScore}`" :sub-title="`客观题：${submission.objectiveScore} | 主观题：${submission.subjectiveScore}`">
         <template #extra>
           <el-descriptions :column="2" border>
-            <el-descriptions-item label="考试名称">{{ exam.title }}</el-descriptions-item>
+            <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
             <el-descriptions-item label="提交时间">
               {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
             </el-descriptions-item>
@@ -34,7 +34,7 @@
       <el-result v-else icon="info" title="批改中" sub-title="老师正在批改主观题，请稍后查看">
         <template #extra>
           <el-descriptions :column="2" border>
-            <el-descriptions-item label="考试名称">{{ exam.title }}</el-descriptions-item>
+            <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
             <el-descriptions-item label="提交时间">
               {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
             </el-descriptions-item>
@@ -68,7 +68,7 @@
         </div>
       </div>
       </div>
-      <AppEmpty v-else description="暂无考试结果" />
+      <AppEmpty v-else :description="`暂无${assessmentLabel}结果`" />
     </el-card>
   </div>
 </template>
@@ -83,6 +83,7 @@ import { enumName, normalizeStatus } from '@/utils/apiHelpers'
 const route = useRoute()
 const submissionId = computed(() => Number(route.params.submissionId))
 const isHomework = computed(() => route.query.assessmentType === 'HOMEWORK')
+const assessmentLabel = computed(() => isHomework.value ? '作业' : '考试')
 const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
 const loading = ref(false)
@@ -183,7 +184,7 @@ const loadPage = () => {
 }
 
 watch(
-  () => route.params.submissionId,
+  () => [route.params.submissionId, route.query.assessmentType],
   loadPage,
   { immediate: true }
 )

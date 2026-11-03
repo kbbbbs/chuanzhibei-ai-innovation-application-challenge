@@ -1,0 +1,130 @@
+{
+  "cases": [
+    {
+      "id": "EX01",
+      "status": "PASS",
+      "scope": "Create independent course, class, membership, inline objective/subjective questions, published paper, draft examination, and publish; all business writes succeeded."
+    },
+    {
+      "id": "EX02",
+      "status": "PASS",
+      "scope": "Published exam opens 15 seconds in the future; early start rejected; start after opening succeeds."
+    },
+    {
+      "id": "EX03",
+      "status": "PASS",
+      "scope": "Actual start/end interval equals durationMinutes=1. Custom contradictory endTime was not tested."
+    },
+    {
+      "id": "EX04",
+      "status": "PASS",
+      "scope": "Student saves both answers and submits; objective 60, subjective 0, state PENDING_MANUAL_REVIEW."
+    },
+    {
+      "id": "EX05",
+      "status": "PASS",
+      "scope": "Repeated start returns same submission ID."
+    },
+    {
+      "id": "EX06",
+      "status": "PASS",
+      "scope": "Repeated submit rejected; teacher list contains exactly one record for the exam."
+    },
+    {
+      "id": "EX07",
+      "status": "PASS",
+      "scope": "Teacher awards subjective 35; total 95 and GRADED; student's subsequent read retains 95."
+    },
+    {
+      "id": "EX08",
+      "status": "PASS",
+      "scope": "Newly registered class outsider denied both submission read and exam start, HTTP403."
+    },
+    {
+      "id": "EX09",
+      "status": "PASS",
+      "scope": "After actual exam end, start rejected. Automatic submission for an unfinished exam was not exercised."
+    },
+    {
+      "id": "NT01",
+      "status": "PASS",
+      "scope": "Teacher creates class notice, member reads exact text, teacher updates, student refresh sees update, teacher deletes, subsequent read returns business404."
+    },
+    {
+      "id": "NT02",
+      "status": "PASS",
+      "scope": "Class outsider read denied and student modification denied; both HTTP403."
+    },
+    {
+      "id": "LP01",
+      "status": "PASS",
+      "scope": "Student progress45 saved, new read45; update70, new read70."
+    },
+    {
+      "id": "LP02",
+      "status": "PASS",
+      "scope": "Outsider cannot read or update progress; progress101 rejected and stored70 retained."
+    },
+    {
+      "id": "NO01",
+      "status": "PASS",
+      "scope": "Personal note Markdown/time saved and new read matches; class outsider cannot access lesson note. No shared-lesson second-user note isolation test."
+    },
+    {
+      "id": "AD01",
+      "status": "FAIL",
+      "scope": "Authenticated student can create and update category despite frontend admin-only category management. Reproduced twice; own synthetic categories removed by admin."
+    },
+    {
+      "id": "AD02",
+      "status": "PASS",
+      "scope": "Teacher cannot create user; admin creates synthetic student. Student user listing returns exactly self, password field absent, direct read of different synthetic user refused."
+    },
+    {
+      "id": "AD03",
+      "status": "PASS",
+      "scope": "Anonymous synthetic teacher application accepted; student review forbidden; admin rejects synthetic application and response persists status2. No approval workflow tested."
+    },
+    {
+      "id": "GR01",
+      "status": "PASS",
+      "scope": "Submit final exam results, aggregate95; CSV/XLSX contents actually parsed, 2 rows5 columns, same headers and score95. TXT format rejected; student export denied403. No rendered spreadsheet QA."
+    },
+    {
+      "id": "GR02",
+      "status": "NOT_RUN",
+      "scope": "Grade-file import not executed: no grade upload/preview/confirm endpoint found. ImportController exposes questions/papers/homeworks; GradeImportLogController exposes log CRUD, which is not grade import. No fictional API used."
+    },
+    {
+      "id": "PA01",
+      "status": "BLOCKED",
+      "scope": "Exactly one external arXiv query requested one result; HTTP200 with business500 `Failed to search arXiv: timeout` after8694ms. No retry or alternate external query. External search success not established."
+    },
+    {
+      "id": "VI01",
+      "status": "PASS",
+      "scope": "file URL rejected before download; member reads text lesson playback metadata with no play URL."
+    },
+    {
+      "id": "VI02",
+      "status": "NOT_RUN",
+      "scope": "Actual video retrieval/download/ready playback not exercised. Submit URL automatically schedules download, so no large or copyrighted material requested."
+    },
+    {
+      "id": "PR01",
+      "status": "PASS",
+      "scope": "Synthetic preparation created; student read denied403; exactly one outline generation, polled to SUCCEEDED100%, one chapter and one lesson matching positive-integer-addition topic. No source material; structural/topic smoke only, not teaching quality acceptance."
+    },
+    {
+      "id": "PR02",
+      "status": "NOT_RUN",
+      "scope": "Preparation source upload, lesson/question generation, editing and publication not exercised."
+    }
+  ],
+  "counts": {
+    "PASS": 19,
+    "FAIL": 1,
+    "BLOCKED": 1,
+    "NOT_RUN": 3
+  }
+}

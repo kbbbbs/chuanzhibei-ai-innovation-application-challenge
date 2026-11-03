@@ -4,6 +4,16 @@
 
 ## 当前记录
 
+2026-11-03汇总：[项目 Bug 修正版与未解决问题](../../../releases/2026-11-03-bugfix.md)。本轮原始浏览器trace及隔离数据库仅保留本机，不随仓库发布。
+
+| 近期任务 | 记录与范围 |
+| --- | --- |
+| 临时OCR/Embedding接口 | [报告](2026-11-02-temp-4_1f-interfaces/TEST-REPORT.md)：小图通过、扫描PDF超时、向量503；不将降级计作语义成功 |
+| 页面与其他业务模块 | [页面修复](2026-11-03-ui-agent-modules/ui/report.md)、[模块测试](2026-11-03-ui-agent-modules/modules/TEST-REPORT.md)：布局、文案、授权与业务烟测 |
+| 官方DeepSeek隔离重试 | [报告](2026-11-03-official-deepseek-retry/agent/REPORT.md)：有限样本业务确认闭环通过，私有默认配置未切换 |
+| 分类权限及交卷并发 | [状态与证据](2026-11-03-category-security/STATUS.md)：真实失败、修复与部署；恢复部分会话覆盖限制已注明 |
+| 论文检索 | [状态](2026-11-03-paper-search/STATUS.md)、[测试报告](2026-11-03-paper-search/terra/REPORT.md)：错误处理及XML解析修复；原偶发超时根因未确定，完整子会话未能可靠导出 |
+
 | 日期与任务 | 内容 | 状态 |
 | --- | --- | --- |
 | 2026-10-20 K00 | 已有 `K00-test-report.md`、人工验证与散列快照；这些是当时结果记录，不能冒称完整原始 Prompt 链 | 历史结果保留；原始会话可按实际时间另行归档 |

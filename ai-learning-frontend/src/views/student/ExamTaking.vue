@@ -200,7 +200,7 @@ const startTimer = () => {
     if (remainingTime.value === 0 && !autoSubmitTriggered) {
       autoSubmitTriggered = true
       clearInterval(timer)
-      ElMessage.warning('考试时间到，自动提交')
+      ElMessage.warning(`${isHomework.value ? '作业' : '考试'}时间到，自动提交`)
       handleSubmit(true)
     }
   }

@@ -1,0 +1,8 @@
+{
+  "product_and_release_whitespace_exit": 0,
+  "evidence_index_crlf_aware_check_exit": 0,
+  "release_missing_links": [],
+  "evidence_whitespace_note": "Full staged diff check reported whitespace in archived evidence, including CRLF preserved by existing .gitattributes docs/competition/** -text. Archived logs and exports retain original bytes for existing hashes; they were not rewritten to satisfy formatting checks. Product/release files checked separately.",
+  "excluded_local_artifacts": "Raw trace.zip files and isolated-data directories remain local and ignored.",
+  "validation": "Existing final backend 413 total, 398 passed, 15 skipped, 0 failures/errors; no product changes or repeated tests in this packaging turn."
+}

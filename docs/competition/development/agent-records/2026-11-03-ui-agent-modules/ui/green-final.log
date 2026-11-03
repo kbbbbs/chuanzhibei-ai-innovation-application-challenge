@@ -1,0 +1,16 @@
+
+Running 9 tests using 1 worker
+
+(node:33360) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 375px (2.1s)
+  ok 2 e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 768px (2.0s)
+  ok 3 e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 1080px (1.5s)
+  ok 4 e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 1440px (2.1s)
+  ok 5 e2e\learning-layout-assessment.spec.js:68:1 › same submission id switches result API when assessment query changes (895ms)
+  ok 6 e2e\learning-layout-assessment.spec.js:84:3 › HOMEWORK grading retains its own label (1.0s)
+  ok 7 e2e\learning-layout-assessment.spec.js:89:3 › HOMEWORK result retains its own labels (865ms)
+  ok 8 e2e\learning-layout-assessment.spec.js:84:3 › EXAM grading retains its own label (1.0s)
+  ok 9 e2e\learning-layout-assessment.spec.js:89:3 › EXAM result retains its own labels (903ms)
+
+  9 passed (13.1s)

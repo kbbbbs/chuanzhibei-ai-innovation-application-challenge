@@ -1,0 +1,22 @@
+
+Running 15 tests using 1 worker
+
+(node:36348) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 e2e\k03-retrieval-ui.spec.js:47:1 › explicit actual mode wins over legacy mode and gives a clear keyword degradation reason (1.8s)
+  ok  2 e2e\k03-retrieval-ui.spec.js:57:1 › hybrid retrieval retains source version and an inspectable index snapshot (2.0s)
+  ok  3 e2e\k03-retrieval-ui.spec.js:69:1 › no index or empty retrieval never claims hybrid work happened (1.1s)
+  ok  4 e2e\k03-retrieval-ui.spec.js:77:1 › a failed new search clears the previous actual mode and its source snapshot (1.2s)
+  ok  5 e2e\k03-retrieval-ui.spec.js:87:1 › completed answers show only actual returned retrieval mode (1.1s)
+  ok  6 e2e\k03-retrieval-ui.spec.js:96:1 › a citation cannot relabel a newer index as the original retrieved source (1.2s)
+  ok  7 e2e\k03-retrieval-ui.spec.js:104:1 › partial semantic coverage stays hybrid while explaining the keyword contribution (1.1s)
+  ok  8 e2e\k03-retrieval-ui.spec.js:111:1 › a fresh legacy source without version fields does not inherit cached version claims (1.1s)
+  ok  9 e2e\k03-retrieval-ui.spec.js:121:1 › stopping a pending search is shown as incomplete instead of a completed empty result (3.2s)
+  ok 10 e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations (1.4s)
+  ok 11 e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access (1.0s)
+  ok 12 e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response (1.3s)
+  ok 13 e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source (1.1s)
+  ok 14 e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer (1.1s)
+  ok 15 e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view (1.6s)
+
+  15 passed (22.3s)

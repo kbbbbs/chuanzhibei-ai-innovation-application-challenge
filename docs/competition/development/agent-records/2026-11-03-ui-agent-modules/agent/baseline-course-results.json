@@ -1,0 +1,44 @@
+{
+  "timestamp": "2026-11-03T00:57:17.460Z",
+  "base": "http://127.0.0.1:8080",
+  "label": "baseline-course",
+  "checks": [
+    {
+      "name": "structured-pending-course-plan",
+      "ok": false,
+      "detail": {
+        "httpStatus": 200,
+        "elapsedMs": 10084,
+        "actionCode": null,
+        "actionId": null,
+        "code": "200",
+        "message": "请求成功"
+      }
+    }
+  ],
+  "actor": {
+    "userId": 2,
+    "role": "teacher"
+  },
+  "sessionId": 33,
+  "prompt": "请创建课程，标题为agent-retest-20261103-baseline-course，分类ID为1，难度为beginner，状态为草稿。先生成待确认操作计划，不要执行。",
+  "reply": {
+    "httpStatus": 200,
+    "elapsedMs": 10084,
+    "code": "200",
+    "msg": "请求成功",
+    "data": {
+      "sessionId": 33,
+      "userMessageId": 33,
+      "assistantMessageId": 34,
+      "content": "请求类型识别未完成（已尝试 2 次）：操作规划超时，请稍后重试。",
+      "pendingAction": null,
+      "createTime": "2026-11-03T08:57:27.6992535",
+      "citations": [],
+      "retrievalMode": "none",
+      "knowledgeStatus": "NO_KNOWLEDGE",
+      "knowledgeWarning": null
+    }
+  },
+  "verdict": "FAIL"
+}

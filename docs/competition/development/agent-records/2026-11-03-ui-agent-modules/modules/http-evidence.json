@@ -1,0 +1,4201 @@
+{
+  "time": "2026-11-03T01:05:54.055Z",
+  "ids": {
+    "prefix": "other-20261103-1793667444741",
+    "teacher": 2,
+    "student": 3,
+    "admin": 1,
+    "course": 33,
+    "class": 33,
+    "memberAdded": true,
+    "paper": 1,
+    "exam": 1,
+    "submission": 1,
+    "outsider": 4,
+    "examDone": true,
+    "notice": 1,
+    "noticeDone": true,
+    "chapter": 33,
+    "lesson": 33,
+    "progress": 1,
+    "learningDone": true,
+    "category": 7,
+    "managedUser": 5,
+    "application": 1,
+    "adminDone": true,
+    "preparation": 1,
+    "generationRequested": true,
+    "externalDone": true,
+    "permissionDone": true,
+    "finishDone": true
+  },
+  "events": [
+    {
+      "name": "login teacher",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "teacher",
+          "nickname": "王老师",
+          "avatar": null,
+          "userId": 2,
+          "email": "[REDACTED]",
+          "username": "teacher",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 144
+    },
+    {
+      "name": "login student",
+      "role": "student",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 122
+    },
+    {
+      "name": "login admin",
+      "role": "admin",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "admin",
+          "nickname": "系统管理员",
+          "avatar": null,
+          "userId": 1,
+          "email": "[REDACTED]",
+          "username": "admin",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 159
+    },
+    {
+      "name": "categories",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/categories",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": [
+          {
+            "id": 1,
+            "name": "计算机科学与技术",
+            "description": "工学 / 计算机类 / 计算机科学与技术",
+            "sortOrder": 1,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 2,
+            "name": "软件工程",
+            "description": "工学 / 计算机类 / 软件工程",
+            "sortOrder": 2,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 3,
+            "name": "网络工程",
+            "description": "工学 / 计算机类 / 网络工程",
+            "sortOrder": 3,
+            "createTime": "2026-11-02T17:32:59.837514",
+            "updateTime": "2026-11-02T17:32:59.837514"
+          },
+          {
+            "id": 4,
+            "name": "数据科学与大数据技术",
+            "description": "工学 / 计算机类 / 数据科学与大数据技术",
+            "sortOrder": 4,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 5,
+            "name": "人工智能",
+            "description": "工学 / 计算机类 / 人工智能",
+            "sortOrder": 5,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 6,
+            "name": "网络空间安全",
+            "description": "工学 / 计算机类 / 网络空间安全",
+            "sortOrder": 6,
+            "createTime": "2026-11-02T17:32:59.839682",
+            "updateTime": "2026-11-02T17:32:59.839682"
+          }
+        ]
+      },
+      "ms": 18
+    },
+    {
+      "name": "create course",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/courses",
+      "body": {
+        "title": "other-20261103-1793667444741",
+        "categoryId": 1,
+        "status": 1,
+        "description": "Synthetic API smoke only"
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 34
+    },
+    {
+      "name": "find own course",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/courses?title=other-20261103-1793667444741",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 33,
+              "title": "other-20261103-1793667444741",
+              "description": "Synthetic API smoke only",
+              "cover": null,
+              "coverUrl": null,
+              "teacher": null,
+              "difficulty": "beginner",
+              "categoryId": 1,
+              "teacherId": 2,
+              "studentCount": 0,
+              "viewCount": 0,
+              "rating": 0,
+              "status": 1,
+              "createdAt": "2026-11-03T08:57:25.215181",
+              "updatedAt": "2026-11-03T08:57:25.215181",
+              "chapters": null
+            }
+          ],
+          "total": 1,
+          "size": 5,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 18
+    },
+    {
+      "name": "create class",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/teaching-classes",
+      "body": {
+        "className": "other-20261103-1793667444741",
+        "courseId": 33,
+        "teacherId": 2,
+        "status": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 15
+    },
+    {
+      "name": "find own class",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/teaching-classes?className=other-20261103-1793667444741",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 33,
+              "courseId": 33,
+              "teacherId": 2,
+              "className": "other-20261103-1793667444741",
+              "semester": null,
+              "description": null,
+              "status": 1,
+              "createTime": "2026-11-03T08:57:25.250973",
+              "updateTime": "2026-11-03T08:57:25.250973"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 8
+    },
+    {
+      "name": "add demo student to own class",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/class-students",
+      "body": {
+        "classId": 33,
+        "studentId": 3,
+        "status": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 13
+    },
+    {
+      "name": "create independent exam paper",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/papers",
+      "body": {
+        "courseId": 33,
+        "name": "other-20261103-1793667444741",
+        "durationMinutes": 1,
+        "status": "PUBLISHED",
+        "ignoreWarnings": true,
+        "questions": [
+          {
+            "inlineQuestion": {
+              "courseId": 33,
+              "content": "other-20261103-1793667444741 2+2?",
+              "type": "SINGLE_CHOICE",
+              "difficulty": "EASY",
+              "answers": [
+                {
+                  "answerContent": "A",
+                  "sortOrder": 1
+                }
+              ],
+              "options": [
+                {
+                  "optionKey": "A",
+                  "optionContent": "4",
+                  "sortOrder": 1
+                },
+                {
+                  "optionKey": "B",
+                  "optionContent": "5",
+                  "sortOrder": 2
+                }
+              ],
+              "status": "PUBLISHED"
+            },
+            "sortOrder": 1,
+            "score": 60,
+            "requiredAnswer": true
+          },
+          {
+            "inlineQuestion": {
+              "courseId": 33,
+              "content": "other-20261103-1793667444741 Explain addition",
+              "type": "SHORT_ANSWER",
+              "difficulty": "EASY",
+              "answers": [
+                {
+                  "answerContent": "Combining numbers",
+                  "sortOrder": 1
+                }
+              ],
+              "status": "PUBLISHED"
+            },
+            "sortOrder": 2,
+            "score": 40,
+            "requiredAnswer": true
+          }
+        ]
+      },
+      "http": 400,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "请求体不能为空或格式错误"
+      },
+      "ms": 19
+    },
+    {
+      "error": "paper create failed"
+    },
+    {
+      "name": "login teacher",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "teacher",
+          "nickname": "王老师",
+          "avatar": null,
+          "userId": 2,
+          "email": "[REDACTED]",
+          "username": "teacher",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 150
+    },
+    {
+      "name": "login student",
+      "role": "student",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 126
+    },
+    {
+      "name": "login admin",
+      "role": "admin",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "admin",
+          "nickname": "系统管理员",
+          "avatar": null,
+          "userId": 1,
+          "email": "[REDACTED]",
+          "username": "admin",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 118
+    },
+    {
+      "name": "categories",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/categories",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": [
+          {
+            "id": 1,
+            "name": "计算机科学与技术",
+            "description": "工学 / 计算机类 / 计算机科学与技术",
+            "sortOrder": 1,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 2,
+            "name": "软件工程",
+            "description": "工学 / 计算机类 / 软件工程",
+            "sortOrder": 2,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 3,
+            "name": "网络工程",
+            "description": "工学 / 计算机类 / 网络工程",
+            "sortOrder": 3,
+            "createTime": "2026-11-02T17:32:59.837514",
+            "updateTime": "2026-11-02T17:32:59.837514"
+          },
+          {
+            "id": 4,
+            "name": "数据科学与大数据技术",
+            "description": "工学 / 计算机类 / 数据科学与大数据技术",
+            "sortOrder": 4,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 5,
+            "name": "人工智能",
+            "description": "工学 / 计算机类 / 人工智能",
+            "sortOrder": 5,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 6,
+            "name": "网络空间安全",
+            "description": "工学 / 计算机类 / 网络空间安全",
+            "sortOrder": 6,
+            "createTime": "2026-11-02T17:32:59.839682",
+            "updateTime": "2026-11-02T17:32:59.839682"
+          }
+        ]
+      },
+      "ms": 6
+    },
+    {
+      "name": "find own course",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/courses?title=other-20261103-1793667444741",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 33,
+              "title": "other-20261103-1793667444741",
+              "description": "Synthetic API smoke only",
+              "cover": null,
+              "coverUrl": null,
+              "teacher": null,
+              "difficulty": "beginner",
+              "categoryId": 1,
+              "teacherId": 2,
+              "studentCount": 0,
+              "viewCount": 0,
+              "rating": 0,
+              "status": 1,
+              "createdAt": "2026-11-03T08:57:25.215181",
+              "updatedAt": "2026-11-03T08:57:25.215181",
+              "chapters": null
+            }
+          ],
+          "total": 1,
+          "size": 5,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 10
+    },
+    {
+      "name": "find own class",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/teaching-classes?className=other-20261103-1793667444741",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 33,
+              "courseId": 33,
+              "teacherId": 2,
+              "className": "other-20261103-1793667444741",
+              "semester": null,
+              "description": null,
+              "status": 1,
+              "createTime": "2026-11-03T08:57:25.250973",
+              "updateTime": "2026-11-03T08:57:25.250973"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 9
+    },
+    {
+      "name": "add demo student to own class",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/class-students",
+      "body": {
+        "classId": 33,
+        "studentId": 3,
+        "status": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "409",
+        "msg": "该学生已加入该教学班",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "name": "create independent exam paper",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/papers",
+      "body": {
+        "courseId": 33,
+        "name": "other-20261103-1793667444741",
+        "durationMinutes": 1,
+        "status": "PUBLISHED",
+        "ignoreWarnings": true,
+        "questions": [
+          {
+            "inlineQuestion": {
+              "courseId": 33,
+              "content": "other-20261103-1793667444741 2+2?",
+              "type": "SINGLE_CHOICE",
+              "difficulty": "EASY",
+              "answers": [
+                {
+                  "answerContent": "A",
+                  "sortOrder": 1
+                }
+              ],
+              "options": [
+                {
+                  "optionKey": "A",
+                  "optionContent": "4",
+                  "sortOrder": 1
+                },
+                {
+                  "optionKey": "B",
+                  "optionContent": "5",
+                  "sortOrder": 2
+                }
+              ],
+              "status": "ACTIVE"
+            },
+            "sortOrder": 1,
+            "score": 60,
+            "requiredAnswer": true
+          },
+          {
+            "inlineQuestion": {
+              "courseId": 33,
+              "content": "other-20261103-1793667444741 Explain addition",
+              "type": "SHORT_ANSWER",
+              "difficulty": "EASY",
+              "answers": [
+                {
+                  "answerContent": "Combining numbers",
+                  "sortOrder": 1
+                }
+              ],
+              "status": "ACTIVE"
+            },
+            "sortOrder": 2,
+            "score": 40,
+            "requiredAnswer": true
+          }
+        ]
+      },
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "courseId": 33,
+          "teacherId": 2,
+          "name": "other-20261103-1793667444741",
+          "description": null,
+          "totalScore": 100,
+          "durationMinutes": 1,
+          "status": "PUBLISHED",
+          "createdAt": "2026-11-03T08:58:21.673374",
+          "updatedAt": "2026-11-03T08:58:21.673374",
+          "paperQuestions": [
+            {
+              "id": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "sortOrder": 1,
+              "score": 60,
+              "requiredAnswer": true
+            },
+            {
+              "id": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "sortOrder": 2,
+              "score": 40,
+              "requiredAnswer": true
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 64
+    },
+    {
+      "name": "create independent exam",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/exams",
+      "body": {
+        "classId": 33,
+        "paperId": 1,
+        "name": "other-20261103-1793667444741",
+        "startTime": "2026-11-03T08:58:36",
+        "endTime": "2026-11-03T08:59:36",
+        "durationMinutes": 1,
+        "status": "DRAFT",
+        "maxScreenSwitches": 3,
+        "disableClipboard": false,
+        "publishNotice": false
+      },
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "classId": 33,
+          "teacherId": 2,
+          "name": "other-20261103-1793667444741",
+          "paperId": 1,
+          "paperName": "other-20261103-1793667444741",
+          "description": null,
+          "startTime": "2026-11-03T08:58:36",
+          "endTime": "2026-11-03T08:59:36",
+          "durationMinutes": 1,
+          "status": "DRAFT",
+          "maxScreenSwitches": 3,
+          "disableClipboard": false,
+          "createdAt": "2026-11-03T08:58:21.6914346",
+          "updatedAt": "2026-11-03T08:58:21.6914346"
+        },
+        "message": "OK"
+      },
+      "ms": 14
+    },
+    {
+      "check": "exam configured time interval",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "classId": 33,
+        "teacherId": 2,
+        "name": "other-20261103-1793667444741",
+        "paperId": 1,
+        "paperName": "other-20261103-1793667444741",
+        "description": null,
+        "startTime": "2026-11-03T08:58:36",
+        "endTime": "2026-11-03T08:59:36",
+        "durationMinutes": 1,
+        "status": "DRAFT",
+        "maxScreenSwitches": 3,
+        "disableClipboard": false,
+        "createdAt": "2026-11-03T08:58:21.6914346",
+        "updatedAt": "2026-11-03T08:58:21.6914346"
+      }
+    },
+    {
+      "name": "publish exam",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/exams/1/publish",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "classId": 33,
+          "teacherId": 2,
+          "name": "other-20261103-1793667444741",
+          "paperId": 1,
+          "paperName": "other-20261103-1793667444741",
+          "description": null,
+          "startTime": "2026-11-03T08:58:36",
+          "endTime": "2026-11-03T08:59:36",
+          "durationMinutes": 1,
+          "status": "PUBLISHED",
+          "maxScreenSwitches": 3,
+          "disableClipboard": false,
+          "createdAt": "2026-11-03T08:58:21.691435",
+          "updatedAt": "2026-11-03T08:58:21.6977377"
+        },
+        "message": "OK"
+      },
+      "ms": 11
+    },
+    {
+      "name": "deny early start",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/exams/1/submissions/start?candidateId=student",
+      "http": 400,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "考试尚未开始，当前时间：2026-11-03T08:58:21.709615600，开始时间：2026-11-03T08:58:36"
+      },
+      "ms": 11
+    },
+    {
+      "check": "early start rejected",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "考试尚未开始，当前时间：2026-11-03T08:58:21.709615600，开始时间：2026-11-03T08:58:36"
+      }
+    },
+    {
+      "name": "start open exam",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/exams/1/submissions/start?candidateId=student",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.6857186",
+          "submittedAt": null,
+          "objectiveScore": 0,
+          "subjectiveScore": 0,
+          "totalScore": 0,
+          "status": "IN_PROGRESS",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "answerContent": null,
+              "referenceAnswer": null,
+              "maxScore": 60,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "NOT_ANSWERED",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "answerContent": null,
+              "referenceAnswer": null,
+              "maxScore": 40,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "NOT_ANSWERED",
+              "comment": null
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 28
+    },
+    {
+      "name": "duplicate start",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/exams/1/submissions/start?candidateId=student",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.685719",
+          "submittedAt": null,
+          "objectiveScore": 0,
+          "subjectiveScore": 0,
+          "totalScore": 0,
+          "status": "IN_PROGRESS",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "answerContent": null,
+              "referenceAnswer": null,
+              "maxScore": 60,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "NOT_ANSWERED",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "answerContent": null,
+              "referenceAnswer": null,
+              "maxScore": 40,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "NOT_ANSWERED",
+              "comment": null
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 9
+    },
+    {
+      "check": "duplicate start same record",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "examId": 1,
+        "examName": "other-20261103-1793667444741",
+        "candidateId": "3",
+        "studentId": 3,
+        "startedAt": "2026-11-03T08:58:37.685719",
+        "submittedAt": null,
+        "objectiveScore": 0,
+        "subjectiveScore": 0,
+        "totalScore": 0,
+        "status": "IN_PROGRESS",
+        "screenSwitchCount": 0,
+        "maxScreenSwitches": 3,
+        "cheated": false,
+        "answers": [
+          {
+            "id": 1,
+            "paperQuestionId": 1,
+            "questionId": 33,
+            "questionContent": "other-20261103-1793667444741 2+2?",
+            "questionType": "SINGLE_CHOICE",
+            "answerContent": null,
+            "referenceAnswer": null,
+            "maxScore": 60,
+            "correct": null,
+            "score": 0,
+            "judgeStatus": "NOT_ANSWERED",
+            "comment": null
+          },
+          {
+            "id": 2,
+            "paperQuestionId": 2,
+            "questionId": 34,
+            "questionContent": "other-20261103-1793667444741 Explain addition",
+            "questionType": "SHORT_ANSWER",
+            "answerContent": null,
+            "referenceAnswer": null,
+            "maxScore": 40,
+            "correct": null,
+            "score": 0,
+            "judgeStatus": "NOT_ANSWERED",
+            "comment": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "student submission",
+      "role": "student",
+      "method": "GET",
+      "url": "/api/submissions/1",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.685719",
+          "submittedAt": null,
+          "objectiveScore": 0,
+          "subjectiveScore": 0,
+          "totalScore": 0,
+          "status": "IN_PROGRESS",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "answerContent": null,
+              "referenceAnswer": null,
+              "maxScore": 60,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "NOT_ANSWERED",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "answerContent": null,
+              "referenceAnswer": null,
+              "maxScore": 40,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "NOT_ANSWERED",
+              "comment": null
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 8
+    },
+    {
+      "name": "save exam answers",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/submissions/1/answers",
+      "body": {
+        "answers": [
+          {
+            "paperQuestionId": 1,
+            "selectedOptionKeys": [
+              "A"
+            ]
+          },
+          {
+            "paperQuestionId": 2,
+            "answerContent": "Combining two amounts"
+          }
+        ]
+      },
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.685719",
+          "submittedAt": null,
+          "objectiveScore": 0,
+          "subjectiveScore": 0,
+          "totalScore": 0,
+          "status": "IN_PROGRESS",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "answerContent": "A",
+              "referenceAnswer": null,
+              "maxScore": 60,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "ANSWERED",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "answerContent": "Combining two amounts",
+              "referenceAnswer": null,
+              "maxScore": 40,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "ANSWERED",
+              "comment": null
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 20
+    },
+    {
+      "check": "saved two answers",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "examId": 1,
+        "examName": "other-20261103-1793667444741",
+        "candidateId": "3",
+        "studentId": 3,
+        "startedAt": "2026-11-03T08:58:37.685719",
+        "submittedAt": null,
+        "objectiveScore": 0,
+        "subjectiveScore": 0,
+        "totalScore": 0,
+        "status": "IN_PROGRESS",
+        "screenSwitchCount": 0,
+        "maxScreenSwitches": 3,
+        "cheated": false,
+        "answers": [
+          {
+            "id": 1,
+            "paperQuestionId": 1,
+            "questionId": 33,
+            "questionContent": "other-20261103-1793667444741 2+2?",
+            "questionType": "SINGLE_CHOICE",
+            "answerContent": "A",
+            "referenceAnswer": null,
+            "maxScore": 60,
+            "correct": null,
+            "score": 0,
+            "judgeStatus": "ANSWERED",
+            "comment": null
+          },
+          {
+            "id": 2,
+            "paperQuestionId": 2,
+            "questionId": 34,
+            "questionContent": "other-20261103-1793667444741 Explain addition",
+            "questionType": "SHORT_ANSWER",
+            "answerContent": "Combining two amounts",
+            "referenceAnswer": null,
+            "maxScore": 40,
+            "correct": null,
+            "score": 0,
+            "judgeStatus": "ANSWERED",
+            "comment": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "submit exam",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/submissions/1/submit",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.685719",
+          "submittedAt": "2026-11-03T08:58:37.7543946",
+          "objectiveScore": 60,
+          "subjectiveScore": 0,
+          "totalScore": 60,
+          "status": "PENDING_MANUAL_REVIEW",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "answerContent": "A",
+              "referenceAnswer": null,
+              "maxScore": 60,
+              "correct": true,
+              "score": 60,
+              "judgeStatus": "AUTO_CORRECT",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "answerContent": "Combining two amounts",
+              "referenceAnswer": null,
+              "maxScore": 40,
+              "correct": null,
+              "score": 0,
+              "judgeStatus": "PENDING_MANUAL_REVIEW",
+              "comment": null
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 19
+    },
+    {
+      "check": "objective scoring and pending review",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "examId": 1,
+        "examName": "other-20261103-1793667444741",
+        "candidateId": "3",
+        "studentId": 3,
+        "startedAt": "2026-11-03T08:58:37.685719",
+        "submittedAt": "2026-11-03T08:58:37.7543946",
+        "objectiveScore": 60,
+        "subjectiveScore": 0,
+        "totalScore": 60,
+        "status": "PENDING_MANUAL_REVIEW",
+        "screenSwitchCount": 0,
+        "maxScreenSwitches": 3,
+        "cheated": false,
+        "answers": [
+          {
+            "id": 1,
+            "paperQuestionId": 1,
+            "questionId": 33,
+            "questionContent": "other-20261103-1793667444741 2+2?",
+            "questionType": "SINGLE_CHOICE",
+            "answerContent": "A",
+            "referenceAnswer": null,
+            "maxScore": 60,
+            "correct": true,
+            "score": 60,
+            "judgeStatus": "AUTO_CORRECT",
+            "comment": null
+          },
+          {
+            "id": 2,
+            "paperQuestionId": 2,
+            "questionId": 34,
+            "questionContent": "other-20261103-1793667444741 Explain addition",
+            "questionType": "SHORT_ANSWER",
+            "answerContent": "Combining two amounts",
+            "referenceAnswer": null,
+            "maxScore": 40,
+            "correct": null,
+            "score": 0,
+            "judgeStatus": "PENDING_MANUAL_REVIEW",
+            "comment": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "repeat submit",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/submissions/1/submit",
+      "http": 400,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "当前答卷状态不允许交卷"
+      },
+      "ms": 8
+    },
+    {
+      "name": "teacher exam submissions",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/api/submissions?examId=1",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": [
+          {
+            "id": 1,
+            "examId": 1,
+            "examName": "other-20261103-1793667444741",
+            "candidateId": "3",
+            "studentId": 3,
+            "startedAt": "2026-11-03T08:58:37.685719",
+            "submittedAt": "2026-11-03T08:58:37.754395",
+            "objectiveScore": 60,
+            "subjectiveScore": 0,
+            "totalScore": 60,
+            "status": "PENDING_MANUAL_REVIEW",
+            "screenSwitchCount": 0,
+            "maxScreenSwitches": 3,
+            "cheated": false,
+            "answers": [
+              {
+                "id": 1,
+                "paperQuestionId": 1,
+                "questionId": 33,
+                "questionContent": "other-20261103-1793667444741 2+2?",
+                "questionType": "SINGLE_CHOICE",
+                "answerContent": "A",
+                "referenceAnswer": null,
+                "maxScore": 60,
+                "correct": true,
+                "score": 60,
+                "judgeStatus": "AUTO_CORRECT",
+                "comment": null
+              },
+              {
+                "id": 2,
+                "paperQuestionId": 2,
+                "questionId": 34,
+                "questionContent": "other-20261103-1793667444741 Explain addition",
+                "questionType": "SHORT_ANSWER",
+                "answerContent": "Combining two amounts",
+                "referenceAnswer": null,
+                "maxScore": 40,
+                "correct": null,
+                "score": 0,
+                "judgeStatus": "PENDING_MANUAL_REVIEW",
+                "comment": null
+              }
+            ]
+          }
+        ],
+        "message": "OK"
+      },
+      "ms": 9
+    },
+    {
+      "check": "repeat submit adds no record",
+      "result": "PASS",
+      "details": {
+        "duplicate": {
+          "success": false,
+          "data": null,
+          "message": "当前答卷状态不允许交卷"
+        },
+        "recordCount": 1
+      }
+    },
+    {
+      "name": "grade subjective",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/submissions/1/grade-subjective",
+      "body": {
+        "grades": [
+          {
+            "submissionAnswerId": 2,
+            "score": 35,
+            "comment": "other-20261103-1793667444741 good"
+          }
+        ]
+      },
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.685719",
+          "submittedAt": "2026-11-03T08:58:37.754395",
+          "objectiveScore": 60,
+          "subjectiveScore": 35,
+          "totalScore": 95,
+          "status": "GRADED",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "answerContent": "A",
+              "referenceAnswer": null,
+              "maxScore": 60,
+              "correct": true,
+              "score": 60,
+              "judgeStatus": "AUTO_CORRECT",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "answerContent": "Combining two amounts",
+              "referenceAnswer": null,
+              "maxScore": 40,
+              "correct": null,
+              "score": 35,
+              "judgeStatus": "MANUALLY_GRADED",
+              "comment": "other-20261103-1793667444741 good"
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 19
+    },
+    {
+      "check": "grading total95",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "examId": 1,
+        "examName": "other-20261103-1793667444741",
+        "candidateId": "3",
+        "studentId": 3,
+        "startedAt": "2026-11-03T08:58:37.685719",
+        "submittedAt": "2026-11-03T08:58:37.754395",
+        "objectiveScore": 60,
+        "subjectiveScore": 35,
+        "totalScore": 95,
+        "status": "GRADED",
+        "screenSwitchCount": 0,
+        "maxScreenSwitches": 3,
+        "cheated": false,
+        "answers": [
+          {
+            "id": 1,
+            "paperQuestionId": 1,
+            "questionId": 33,
+            "questionContent": "other-20261103-1793667444741 2+2?",
+            "questionType": "SINGLE_CHOICE",
+            "answerContent": "A",
+            "referenceAnswer": null,
+            "maxScore": 60,
+            "correct": true,
+            "score": 60,
+            "judgeStatus": "AUTO_CORRECT",
+            "comment": null
+          },
+          {
+            "id": 2,
+            "paperQuestionId": 2,
+            "questionId": 34,
+            "questionContent": "other-20261103-1793667444741 Explain addition",
+            "questionType": "SHORT_ANSWER",
+            "answerContent": "Combining two amounts",
+            "referenceAnswer": null,
+            "maxScore": 40,
+            "correct": null,
+            "score": 35,
+            "judgeStatus": "MANUALLY_GRADED",
+            "comment": "other-20261103-1793667444741 good"
+          }
+        ]
+      }
+    },
+    {
+      "name": "student result refresh",
+      "role": "student",
+      "method": "GET",
+      "url": "/api/submissions/1/student",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "id": 1,
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "candidateId": "3",
+          "studentId": 3,
+          "startedAt": "2026-11-03T08:58:37.685719",
+          "submittedAt": "2026-11-03T08:58:37.754395",
+          "objectiveScore": 60,
+          "subjectiveScore": 35,
+          "totalScore": 95,
+          "status": "GRADED",
+          "screenSwitchCount": 0,
+          "maxScreenSwitches": 3,
+          "cheated": false,
+          "answers": [
+            {
+              "id": 1,
+              "paperQuestionId": 1,
+              "questionId": 33,
+              "questionContent": "other-20261103-1793667444741 2+2?",
+              "questionType": "SINGLE_CHOICE",
+              "score": 60,
+              "sortOrder": 1,
+              "requiredAnswer": true,
+              "options": [
+                {
+                  "optionKey": "A",
+                  "optionContent": "4",
+                  "sortOrder": 1
+                },
+                {
+                  "optionKey": "B",
+                  "optionContent": "5",
+                  "sortOrder": 2
+                }
+              ],
+              "answerContent": "A",
+              "correct": true,
+              "obtainedScore": 60,
+              "judgeStatus": "AUTO_CORRECT",
+              "comment": null
+            },
+            {
+              "id": 2,
+              "paperQuestionId": 2,
+              "questionId": 34,
+              "questionContent": "other-20261103-1793667444741 Explain addition",
+              "questionType": "SHORT_ANSWER",
+              "score": 40,
+              "sortOrder": 2,
+              "requiredAnswer": true,
+              "options": [],
+              "answerContent": "Combining two amounts",
+              "correct": null,
+              "obtainedScore": 35,
+              "judgeStatus": "MANUALLY_GRADED",
+              "comment": "other-20261103-1793667444741 good"
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 8
+    },
+    {
+      "check": "student persisted95",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "examId": 1,
+        "examName": "other-20261103-1793667444741",
+        "candidateId": "3",
+        "studentId": 3,
+        "startedAt": "2026-11-03T08:58:37.685719",
+        "submittedAt": "2026-11-03T08:58:37.754395",
+        "objectiveScore": 60,
+        "subjectiveScore": 35,
+        "totalScore": 95,
+        "status": "GRADED",
+        "screenSwitchCount": 0,
+        "maxScreenSwitches": 3,
+        "cheated": false,
+        "answers": [
+          {
+            "id": 1,
+            "paperQuestionId": 1,
+            "questionId": 33,
+            "questionContent": "other-20261103-1793667444741 2+2?",
+            "questionType": "SINGLE_CHOICE",
+            "score": 60,
+            "sortOrder": 1,
+            "requiredAnswer": true,
+            "options": [
+              {
+                "optionKey": "A",
+                "optionContent": "4",
+                "sortOrder": 1
+              },
+              {
+                "optionKey": "B",
+                "optionContent": "5",
+                "sortOrder": 2
+              }
+            ],
+            "answerContent": "A",
+            "correct": true,
+            "obtainedScore": 60,
+            "judgeStatus": "AUTO_CORRECT",
+            "comment": null
+          },
+          {
+            "id": 2,
+            "paperQuestionId": 2,
+            "questionId": 34,
+            "questionContent": "other-20261103-1793667444741 Explain addition",
+            "questionType": "SHORT_ANSWER",
+            "score": 40,
+            "sortOrder": 2,
+            "requiredAnswer": true,
+            "options": [],
+            "answerContent": "Combining two amounts",
+            "correct": null,
+            "obtainedScore": 35,
+            "judgeStatus": "MANUALLY_GRADED",
+            "comment": "other-20261103-1793667444741 good"
+          }
+        ]
+      }
+    },
+    {
+      "name": "register outsider",
+      "role": "anonymous",
+      "method": "POST",
+      "url": "/auth/register",
+      "body": {
+        "username": "other-20261103-1793667444741-outsider",
+        "password": "[REDACTED]",
+        "realName": "Synthetic outsider",
+        "roleCode": "student"
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 115
+    },
+    {
+      "check": "register synthetic outsider",
+      "result": "PASS",
+      "details": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      }
+    },
+    {
+      "name": "login outsider",
+      "role": "outsider",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "other-20261103-1793667444741-outsider",
+          "avatar": null,
+          "userId": 4,
+          "email": "[REDACTED]",
+          "username": "other-20261103-1793667444741-outsider",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 112
+    },
+    {
+      "name": "outsider cannot read submission",
+      "role": "outsider",
+      "method": "GET",
+      "url": "/api/submissions/1/student",
+      "http": 403,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "只能操作自己的答卷"
+      },
+      "ms": 7
+    },
+    {
+      "check": "submission unauthorized denied",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "只能操作自己的答卷"
+      }
+    },
+    {
+      "name": "outsider cannot start exam",
+      "role": "outsider",
+      "method": "POST",
+      "url": "/api/exams/1/submissions/start?candidateId=other-20261103-1793667444741",
+      "http": 403,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "学生未加入该教学班"
+      },
+      "ms": 8
+    },
+    {
+      "check": "exam membership enforced",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "学生未加入该教学班"
+      }
+    },
+    {
+      "name": "login teacher",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "teacher",
+          "nickname": "王老师",
+          "avatar": null,
+          "userId": 2,
+          "email": "[REDACTED]",
+          "username": "teacher",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 150
+    },
+    {
+      "name": "login student",
+      "role": "student",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 125
+    },
+    {
+      "name": "login admin",
+      "role": "admin",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "admin",
+          "nickname": "系统管理员",
+          "avatar": null,
+          "userId": 1,
+          "email": "[REDACTED]",
+          "username": "admin",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 123
+    },
+    {
+      "name": "login synthetic outsider phase2",
+      "role": "outsider",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "other-20261103-1793667444741-outsider",
+          "avatar": null,
+          "userId": 4,
+          "email": "[REDACTED]",
+          "username": "other-20261103-1793667444741-outsider",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 123
+    },
+    {
+      "name": "create notice",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/notices",
+      "body": {
+        "classId": 33,
+        "title": "other-20261103-1793667444741 notice",
+        "content": "Synthetic class notification",
+        "noticeType": "teaching",
+        "status": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 13
+    },
+    {
+      "name": "find own notice",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/notices?title=other-20261103-1793667444741",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 1,
+              "publisherId": 2,
+              "classId": 33,
+              "title": "other-20261103-1793667444741 notice",
+              "content": "Synthetic class notification",
+              "noticeType": "teaching",
+              "createTime": "2026-11-03T09:01:05.047066",
+              "status": 1
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 13
+    },
+    {
+      "name": "member reads notice",
+      "role": "student",
+      "method": "GET",
+      "url": "/notices/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "publisherId": 2,
+          "classId": 33,
+          "title": "other-20261103-1793667444741 notice",
+          "content": "Synthetic class notification",
+          "noticeType": "teaching",
+          "createTime": "2026-11-03T09:01:05.047066",
+          "status": 1
+        }
+      },
+      "ms": 6
+    },
+    {
+      "check": "notice target student sees content",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "publisherId": 2,
+        "classId": 33,
+        "title": "other-20261103-1793667444741 notice",
+        "content": "Synthetic class notification",
+        "noticeType": "teaching",
+        "createTime": "2026-11-03T09:01:05.047066",
+        "status": 1
+      }
+    },
+    {
+      "name": "outsider notice read denied",
+      "role": "outsider",
+      "method": "GET",
+      "url": "/notices/1",
+      "http": 403,
+      "response": {
+        "code": "403",
+        "msg": "无权查看该通知",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "check": "notice target membership",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "无权查看该通知",
+        "data": null
+      }
+    },
+    {
+      "name": "student notice write denied",
+      "role": "student",
+      "method": "PUT",
+      "url": "/notices/1",
+      "body": {
+        "classId": 33,
+        "title": "other-20261103-1793667444741 notice",
+        "content": "Unauthorized change",
+        "noticeType": "teaching",
+        "status": 1
+      },
+      "http": 403,
+      "response": {
+        "code": "403",
+        "msg": "仅教师或管理员可操作",
+        "data": null
+      },
+      "ms": 8
+    },
+    {
+      "check": "student cannot modify notice",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "仅教师或管理员可操作",
+        "data": null
+      }
+    },
+    {
+      "name": "teacher updates notice",
+      "role": "teacher",
+      "method": "PUT",
+      "url": "/notices/1",
+      "body": {
+        "classId": 33,
+        "title": "other-20261103-1793667444741 notice",
+        "content": "Synthetic updated",
+        "noticeType": "teaching",
+        "status": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 8
+    },
+    {
+      "name": "updated notice refresh",
+      "role": "student",
+      "method": "GET",
+      "url": "/notices/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "publisherId": 2,
+          "classId": 33,
+          "title": "other-20261103-1793667444741 notice",
+          "content": "Synthetic updated",
+          "noticeType": "teaching",
+          "createTime": "2026-11-03T09:01:05.047066",
+          "status": 1
+        }
+      },
+      "ms": 6
+    },
+    {
+      "check": "notice update persisted",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "publisherId": 2,
+        "classId": 33,
+        "title": "other-20261103-1793667444741 notice",
+        "content": "Synthetic updated",
+        "noticeType": "teaching",
+        "createTime": "2026-11-03T09:01:05.047066",
+        "status": 1
+      }
+    },
+    {
+      "name": "delete own test notice",
+      "role": "teacher",
+      "method": "DELETE",
+      "url": "/notices/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 7
+    },
+    {
+      "name": "deleted notice missing",
+      "role": "student",
+      "method": "GET",
+      "url": "/notices/1",
+      "http": 200,
+      "response": {
+        "code": "404",
+        "msg": "通知不存在",
+        "data": null
+      },
+      "ms": 5
+    },
+    {
+      "check": "notice deletion persisted",
+      "result": "PASS",
+      "details": {
+        "code": "404",
+        "msg": "通知不存在",
+        "data": null
+      }
+    },
+    {
+      "name": "create synthetic chapter",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/chapters",
+      "body": {
+        "courseId": 33,
+        "title": "other-20261103-1793667444741",
+        "sortOrder": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 11
+    },
+    {
+      "name": "find chapter",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/chapters?courseId=33",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 33,
+              "courseId": 33,
+              "title": "other-20261103-1793667444741",
+              "description": null,
+              "sortOrder": 1,
+              "status": 1,
+              "createdAt": "2026-11-03T09:01:05.129208",
+              "updatedAt": "2026-11-03T09:01:05.129208",
+              "lessons": null
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 11
+    },
+    {
+      "name": "create synthetic lesson",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/lessons",
+      "body": {
+        "chapterId": 33,
+        "title": "other-20261103-1793667444741",
+        "resourceType": "text",
+        "content": "Synthetic addition lesson",
+        "status": 1,
+        "sortOrder": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 33,
+          "chapterId": 33,
+          "title": "other-20261103-1793667444741",
+          "resourceType": "text",
+          "resourceUrl": null,
+          "content": "Synthetic addition lesson",
+          "videoUrl": "",
+          "videoResourceId": null,
+          "duration": null,
+          "sortOrder": 1,
+          "viewCount": null,
+          "status": 1,
+          "createdAt": "2026-11-03T09:01:05.1526821",
+          "updatedAt": "2026-11-03T09:01:05.1526821"
+        }
+      },
+      "ms": 13
+    },
+    {
+      "name": "find lesson",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/lessons?chapterId=33",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 33,
+              "chapterId": 33,
+              "title": "other-20261103-1793667444741",
+              "resourceType": "text",
+              "resourceUrl": null,
+              "content": "Synthetic addition lesson",
+              "videoUrl": "",
+              "videoResourceId": null,
+              "duration": 0,
+              "sortOrder": 1,
+              "viewCount": 0,
+              "status": 1,
+              "createdAt": "2026-11-03T09:01:05.152682",
+              "updatedAt": "2026-11-03T09:01:05.152682"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 25
+    },
+    {
+      "name": "save learning progress",
+      "role": "student",
+      "method": "POST",
+      "url": "/learning-progress",
+      "body": {
+        "classId": 33,
+        "lessonId": 33,
+        "studentId": 3,
+        "progress": 45,
+        "learnedSeconds": 30,
+        "lastPosition": 30
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 11
+    },
+    {
+      "name": "refresh progress list",
+      "role": "student",
+      "method": "GET",
+      "url": "/learning-progress?lessonId=33",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 1,
+              "classId": 33,
+              "studentId": 3,
+              "lessonId": 33,
+              "progress": 45,
+              "learnedSeconds": 30,
+              "lastPosition": 30,
+              "lastLearnTime": null,
+              "createTime": "2026-11-03T09:01:05.191727",
+              "updateTime": "2026-11-03T09:01:05.191727"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 9
+    },
+    {
+      "check": "progress45 persisted",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "classId": 33,
+        "studentId": 3,
+        "lessonId": 33,
+        "progress": 45,
+        "learnedSeconds": 30,
+        "lastPosition": 30,
+        "lastLearnTime": null,
+        "createTime": "2026-11-03T09:01:05.191727",
+        "updateTime": "2026-11-03T09:01:05.191727"
+      }
+    },
+    {
+      "name": "outsider progress read",
+      "role": "outsider",
+      "method": "GET",
+      "url": "/learning-progress/1",
+      "http": 403,
+      "response": {
+        "code": "403",
+        "msg": "只能查看自己的学习进度",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "check": "progress cross identity denied",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "只能查看自己的学习进度",
+        "data": null
+      }
+    },
+    {
+      "name": "outsider progress write",
+      "role": "outsider",
+      "method": "PUT",
+      "url": "/learning-progress/1",
+      "body": {
+        "classId": 33,
+        "lessonId": 33,
+        "studentId": 3,
+        "progress": 100,
+        "learnedSeconds": 30,
+        "lastPosition": 30
+      },
+      "http": 200,
+      "response": {
+        "code": "403",
+        "msg": "只能修改自己的学习进度",
+        "data": null
+      },
+      "ms": 9
+    },
+    {
+      "check": "progress cross identity write denied",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "只能修改自己的学习进度",
+        "data": null
+      }
+    },
+    {
+      "name": "progress valid update",
+      "role": "student",
+      "method": "PUT",
+      "url": "/learning-progress/1",
+      "body": {
+        "classId": 33,
+        "lessonId": 33,
+        "studentId": 3,
+        "progress": 70,
+        "learnedSeconds": 30,
+        "lastPosition": 30
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 9
+    },
+    {
+      "name": "progress101 rejected",
+      "role": "student",
+      "method": "PUT",
+      "url": "/learning-progress/1",
+      "body": {
+        "classId": 33,
+        "lessonId": 33,
+        "studentId": 3,
+        "progress": 101,
+        "learnedSeconds": 30,
+        "lastPosition": 30
+      },
+      "http": 200,
+      "response": {
+        "code": "400",
+        "msg": "学习进度应在0到100之间",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "check": "progress upper boundary",
+      "result": "PASS",
+      "details": {
+        "code": "400",
+        "msg": "学习进度应在0到100之间",
+        "data": null
+      }
+    },
+    {
+      "name": "progress update refresh",
+      "role": "student",
+      "method": "GET",
+      "url": "/learning-progress/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "classId": 33,
+          "studentId": 3,
+          "lessonId": 33,
+          "progress": 70,
+          "learnedSeconds": 30,
+          "lastPosition": 30,
+          "lastLearnTime": null,
+          "createTime": "2026-11-03T09:01:05.191727",
+          "updateTime": "2026-11-03T09:01:05.23198"
+        }
+      },
+      "ms": 7
+    },
+    {
+      "check": "progress70 persisted",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "classId": 33,
+        "studentId": 3,
+        "lessonId": 33,
+        "progress": 70,
+        "learnedSeconds": 30,
+        "lastPosition": 30,
+        "lastLearnTime": null,
+        "createTime": "2026-11-03T09:01:05.191727",
+        "updateTime": "2026-11-03T09:01:05.23198"
+      }
+    },
+    {
+      "name": "save personal note",
+      "role": "student",
+      "method": "PUT",
+      "url": "/lessons/33/note",
+      "body": {
+        "title": "other-20261103-1793667444741",
+        "contentMd": "# Synthetic note\nAddition combines quantities.",
+        "lastVideoTime": 12
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "userId": 3,
+          "courseId": 33,
+          "lessonId": 33,
+          "title": "other-20261103-1793667444741",
+          "contentMd": "# Synthetic note\nAddition combines quantities.",
+          "lastVideoTime": 12,
+          "createdAt": "2026-11-03T09:01:05.2623532",
+          "updatedAt": "2026-11-03T09:01:05.2623532"
+        }
+      },
+      "ms": 12
+    },
+    {
+      "name": "refresh personal note",
+      "role": "student",
+      "method": "GET",
+      "url": "/lessons/33/note",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "userId": 3,
+          "courseId": 33,
+          "lessonId": 33,
+          "title": "other-20261103-1793667444741",
+          "contentMd": "# Synthetic note\nAddition combines quantities.",
+          "lastVideoTime": 12,
+          "createdAt": "2026-11-03T09:01:05.262353",
+          "updatedAt": "2026-11-03T09:01:05.262353"
+        }
+      },
+      "ms": 8
+    },
+    {
+      "check": "note persisted content",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "userId": 3,
+        "courseId": 33,
+        "lessonId": 33,
+        "title": "other-20261103-1793667444741",
+        "contentMd": "# Synthetic note\nAddition combines quantities.",
+        "lastVideoTime": 12,
+        "createdAt": "2026-11-03T09:01:05.262353",
+        "updatedAt": "2026-11-03T09:01:05.262353"
+      }
+    },
+    {
+      "name": "outsider cannot read lesson note",
+      "role": "outsider",
+      "method": "GET",
+      "url": "/lessons/33/note",
+      "http": 403,
+      "response": {
+        "code": "403",
+        "msg": "无权访问该课时笔记",
+        "data": null
+      },
+      "ms": 7
+    },
+    {
+      "check": "note outsider lesson denied",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "无权访问该课时笔记",
+        "data": null
+      }
+    },
+    {
+      "name": "student cannot create category",
+      "role": "student",
+      "method": "POST",
+      "url": "/categories",
+      "body": {
+        "name": "other-20261103-1793667444741",
+        "description": "Synthetic category",
+        "sortOrder": 99
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 8
+    },
+    {
+      "check": "category admin only",
+      "result": "FAIL",
+      "details": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      }
+    },
+    {
+      "name": "admin creates category",
+      "role": "admin",
+      "method": "POST",
+      "url": "/categories",
+      "body": {
+        "name": "other-20261103-1793667444741",
+        "description": "Synthetic category",
+        "sortOrder": 99
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "name": "find synthetic category",
+      "role": "admin",
+      "method": "GET",
+      "url": "/categories",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": [
+          {
+            "id": 1,
+            "name": "计算机科学与技术",
+            "description": "工学 / 计算机类 / 计算机科学与技术",
+            "sortOrder": 1,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 2,
+            "name": "软件工程",
+            "description": "工学 / 计算机类 / 软件工程",
+            "sortOrder": 2,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 3,
+            "name": "网络工程",
+            "description": "工学 / 计算机类 / 网络工程",
+            "sortOrder": 3,
+            "createTime": "2026-11-02T17:32:59.837514",
+            "updateTime": "2026-11-02T17:32:59.837514"
+          },
+          {
+            "id": 4,
+            "name": "数据科学与大数据技术",
+            "description": "工学 / 计算机类 / 数据科学与大数据技术",
+            "sortOrder": 4,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 5,
+            "name": "人工智能",
+            "description": "工学 / 计算机类 / 人工智能",
+            "sortOrder": 5,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 6,
+            "name": "网络空间安全",
+            "description": "工学 / 计算机类 / 网络空间安全",
+            "sortOrder": 6,
+            "createTime": "2026-11-02T17:32:59.839682",
+            "updateTime": "2026-11-02T17:32:59.839682"
+          },
+          {
+            "id": 7,
+            "name": "other-20261103-1793667444741",
+            "description": "Synthetic category",
+            "sortOrder": 99,
+            "createTime": "2026-11-03T09:01:05.289894",
+            "updateTime": "2026-11-03T09:01:05.289894"
+          },
+          {
+            "id": 8,
+            "name": "other-20261103-1793667444741",
+            "description": "Synthetic category",
+            "sortOrder": 99,
+            "createTime": "2026-11-03T09:01:05.298466",
+            "updateTime": "2026-11-03T09:01:05.298466"
+          }
+        ]
+      },
+      "ms": 5
+    },
+    {
+      "check": "admin category persisted",
+      "result": "PASS",
+      "details": {
+        "id": 7
+      }
+    },
+    {
+      "name": "admin category update",
+      "role": "admin",
+      "method": "PUT",
+      "url": "/categories/7",
+      "body": {
+        "name": "other-20261103-1793667444741 updated",
+        "description": "Synthetic category",
+        "sortOrder": 99
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 7
+    },
+    {
+      "name": "admin removes unused category",
+      "role": "admin",
+      "method": "DELETE",
+      "url": "/categories/7",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "deletedCourses": 0
+        }
+      },
+      "ms": 9
+    },
+    {
+      "name": "student forbidden user administration",
+      "role": "student",
+      "method": "GET",
+      "url": "/users",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 3,
+              "username": "student",
+              "nickname": "张同学",
+              "email": "[REDACTED]",
+              "phone": "[REDACTED]",
+              "avatar": null,
+              "status": 1,
+              "roleId": 1,
+              "roleCode": "student",
+              "createTime": "2026-11-02T17:32:59.833516",
+              "updateTime": "2026-11-02T17:36:24.554231"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 15
+    },
+    {
+      "check": "student user listing denied",
+      "result": "FAIL",
+      "details": {
+        "code": "200",
+        "msg": "请求成功"
+      }
+    },
+    {
+      "name": "teacher cannot create user",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/users",
+      "body": {
+        "username": "other-20261103-1793667444741-admin-created",
+        "password": "[REDACTED]",
+        "nickname": "Synthetic managed user",
+        "roleCode": "student",
+        "status": 1
+      },
+      "http": 403,
+      "response": {
+        "code": "403",
+        "msg": "仅管理员可操作",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "check": "teacher user create denied",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "仅管理员可操作",
+        "data": null
+      }
+    },
+    {
+      "name": "admin creates synthetic user",
+      "role": "admin",
+      "method": "POST",
+      "url": "/users",
+      "body": {
+        "username": "other-20261103-1793667444741-admin-created",
+        "password": "[REDACTED]",
+        "nickname": "Synthetic managed user",
+        "roleCode": "student",
+        "status": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 122
+    },
+    {
+      "check": "admin user create",
+      "result": "PASS",
+      "details": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      }
+    },
+    {
+      "name": "find synthetic managed user",
+      "role": "admin",
+      "method": "GET",
+      "url": "/users?username=other-20261103-1793667444741-admin-created",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 5,
+              "username": "other-20261103-1793667444741-admin-created",
+              "nickname": "Synthetic managed user",
+              "email": "[REDACTED]",
+              "phone": "[REDACTED]",
+              "avatar": null,
+              "status": 1,
+              "roleId": 1,
+              "roleCode": "student",
+              "createTime": "2026-11-03T09:01:05.357805",
+              "updateTime": "2026-11-03T09:01:05.357805"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 10
+    },
+    {
+      "name": "synthetic teacher application",
+      "role": "anonymous",
+      "method": "POST",
+      "url": "/teacher-applications",
+      "body": {
+        "username": "other-20261103-1793667444741-applicant",
+        "password": "[REDACTED]",
+        "nickname": "Synthetic applicant",
+        "email": "[REDACTED]",
+        "reason": "Synthetic permission smoke"
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "申请已提交，请等待管理员审核",
+        "data": {
+          "id": 1,
+          "username": "other-20261103-1793667444741-applicant",
+          "password": "[REDACTED]",
+          "nickname": "Synthetic applicant",
+          "email": "[REDACTED]",
+          "phone": "[REDACTED]",
+          "reason": "Synthetic permission smoke",
+          "status": 0,
+          "reviewerId": null,
+          "reviewComment": null,
+          "createTime": "2026-11-03T09:01:05.6110813",
+          "reviewTime": null
+        }
+      },
+      "ms": 131
+    },
+    {
+      "name": "student application review denied",
+      "role": "student",
+      "method": "POST",
+      "url": "/teacher-applications/1/review",
+      "body": {
+        "status": 2,
+        "reviewComment": "Unauthorized"
+      },
+      "http": 403,
+      "response": {
+        "code": "403",
+        "msg": "仅管理员可操作",
+        "data": null
+      },
+      "ms": 12
+    },
+    {
+      "check": "application review requires admin",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "仅管理员可操作",
+        "data": null
+      }
+    },
+    {
+      "name": "admin rejects synthetic application",
+      "role": "admin",
+      "method": "POST",
+      "url": "/teacher-applications/1/review",
+      "body": {
+        "status": 2,
+        "reviewComment": "other-20261103-1793667444741 synthetic reject"
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "username": "other-20261103-1793667444741-applicant",
+          "password": "[REDACTED]",
+          "nickname": "Synthetic applicant",
+          "email": "[REDACTED]",
+          "phone": "[REDACTED]",
+          "reason": "Synthetic permission smoke",
+          "status": 2,
+          "reviewerId": 1,
+          "reviewComment": "other-20261103-1793667444741 synthetic reject",
+          "createTime": "2026-11-03T09:01:05.611081",
+          "reviewTime": "2026-11-03T09:01:05.6353523"
+        }
+      },
+      "ms": 8
+    },
+    {
+      "check": "admin application review persisted",
+      "result": "PASS",
+      "details": {
+        "id": 1,
+        "username": "other-20261103-1793667444741-applicant",
+        "password": "[REDACTED]",
+        "nickname": "Synthetic applicant",
+        "email": "[REDACTED]",
+        "phone": "[REDACTED]",
+        "reason": "Synthetic permission smoke",
+        "status": 2,
+        "reviewerId": 1,
+        "reviewComment": "other-20261103-1793667444741 synthetic reject",
+        "createTime": "2026-11-03T09:01:05.611081",
+        "reviewTime": "2026-11-03T09:01:05.6353523"
+      }
+    },
+    {
+      "name": "video rejects non HTTP URL",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/video-resources/url",
+      "body": {
+        "lessonId": 33,
+        "url": "file:///synthetic.mp4"
+      },
+      "http": 400,
+      "response": {
+        "code": "400",
+        "msg": "视频 URL 仅支持 http 和 https",
+        "data": null
+      },
+      "ms": 13
+    },
+    {
+      "check": "video scheme guard",
+      "result": "PASS",
+      "details": {
+        "code": "400",
+        "msg": "视频 URL 仅支持 http 和 https",
+        "data": null
+      }
+    },
+    {
+      "name": "text lesson playback metadata",
+      "role": "student",
+      "method": "GET",
+      "url": "/lessons/33/playback",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "lessonId": 33,
+          "title": "other-20261103-1793667444741",
+          "status": "PENDING",
+          "playUrl": "",
+          "duration": 0,
+          "summaryMd": null,
+          "errorMessage": null,
+          "videoResourceId": null
+        }
+      },
+      "ms": 9
+    },
+    {
+      "check": "playback reports explicit no video",
+      "result": "PASS",
+      "details": {
+        "lessonId": 33,
+        "title": "other-20261103-1793667444741",
+        "status": "PENDING",
+        "playUrl": "",
+        "duration": 0,
+        "summaryMd": null,
+        "errorMessage": null,
+        "videoResourceId": null
+      }
+    },
+    {
+      "name": "single external arxiv search",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/api/paper/search?keyword=machine%20learning&source=arxiv&page=1&size=1",
+      "http": 200,
+      "response": {
+        "code": "500",
+        "msg": "Failed to search arXiv: timeout",
+        "data": null
+      },
+      "ms": 8694
+    },
+    {
+      "check": "paper search business response",
+      "result": "FAIL",
+      "details": {
+        "code": "500",
+        "msg": "Failed to search arXiv: timeout",
+        "data": null
+      }
+    },
+    {
+      "name": "create preparation",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/preparations",
+      "body": {
+        "title": "other-20261103-1793667444741",
+        "categoryId": 1,
+        "audience": "Beginning students",
+        "totalHours": 1,
+        "chapterCount": 1,
+        "lessonsPerChapter": 1,
+        "teachingGoals": "Explain addition of two positive integers",
+        "extraInstructions": "Create only one chapter and one short lesson."
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "teacherId": 2,
+          "title": "other-20261103-1793667444741",
+          "config": {
+            "title": "other-20261103-1793667444741",
+            "categoryId": 1,
+            "description": null,
+            "difficulty": "beginner",
+            "audience": "Beginning students",
+            "totalHours": 1,
+            "chapterCount": 1,
+            "lessonsPerChapter": 1,
+            "teachingGoals": "Explain addition of two positive integers",
+            "extraInstructions": "Create only one chapter and one short lesson.",
+            "questionConfig": {
+              "countPerChapter": 5,
+              "types": [
+                "SINGLE_CHOICE",
+                "TRUE_FALSE",
+                "SHORT_ANSWER"
+              ],
+              "difficulty": "MEDIUM",
+              "instructions": null
+            },
+            "knowledgeBaseIds": []
+          },
+          "knowledgeBaseIds": [],
+          "ownedKnowledgeBaseId": null,
+          "sourceFiles": [],
+          "sourcesReady": true,
+          "outline": null,
+          "lessons": [],
+          "questions": [],
+          "projectStatus": "DRAFT",
+          "currentStage": "CONFIG",
+          "generationStatus": "IDLE",
+          "progress": 0,
+          "errorMessage": null,
+          "publishedCourseId": null,
+          "version": 0,
+          "createdAt": "2026-11-03T09:01:14.379918",
+          "updatedAt": "2026-11-03T09:01:14.379918"
+        }
+      },
+      "ms": 25
+    },
+    {
+      "name": "student cannot read preparation",
+      "role": "student",
+      "method": "GET",
+      "url": "/api/preparations/1",
+      "http": 403,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "仅教师或管理员可操作"
+      },
+      "ms": 4
+    },
+    {
+      "check": "preparation student denied",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "仅教师或管理员可操作"
+      }
+    },
+    {
+      "name": "single generate preparation outline",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/preparations/1/generate-outline",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "章节骨架生成任务已启动",
+        "data": {
+          "id": 1,
+          "teacherId": 2,
+          "title": "other-20261103-1793667444741",
+          "config": {
+            "title": "other-20261103-1793667444741",
+            "categoryId": 1,
+            "description": null,
+            "difficulty": "beginner",
+            "audience": "Beginning students",
+            "totalHours": 1,
+            "chapterCount": 1,
+            "lessonsPerChapter": 1,
+            "teachingGoals": "Explain addition of two positive integers",
+            "extraInstructions": "Create only one chapter and one short lesson.",
+            "questionConfig": {
+              "countPerChapter": 5,
+              "types": [
+                "SINGLE_CHOICE",
+                "TRUE_FALSE",
+                "SHORT_ANSWER"
+              ],
+              "difficulty": "MEDIUM",
+              "instructions": null
+            },
+            "knowledgeBaseIds": []
+          },
+          "knowledgeBaseIds": [],
+          "ownedKnowledgeBaseId": null,
+          "sourceFiles": [],
+          "sourcesReady": true,
+          "outline": null,
+          "lessons": [],
+          "questions": [],
+          "projectStatus": "DRAFT",
+          "currentStage": "CONFIG",
+          "generationStatus": "RUNNING",
+          "progress": 5,
+          "errorMessage": null,
+          "publishedCourseId": null,
+          "version": 1,
+          "createdAt": "2026-11-03T09:01:14.379918",
+          "updatedAt": "2026-11-03T09:01:14.404645"
+        }
+      },
+      "ms": 14
+    },
+    {
+      "name": "poll preparation 0",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/api/preparations/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "teacherId": 2,
+          "title": "other-20261103-1793667444741",
+          "config": {
+            "title": "other-20261103-1793667444741",
+            "categoryId": 1,
+            "description": null,
+            "difficulty": "beginner",
+            "audience": "Beginning students",
+            "totalHours": 1,
+            "chapterCount": 1,
+            "lessonsPerChapter": 1,
+            "teachingGoals": "Explain addition of two positive integers",
+            "extraInstructions": "Create only one chapter and one short lesson.",
+            "questionConfig": {
+              "countPerChapter": 5,
+              "types": [
+                "SINGLE_CHOICE",
+                "TRUE_FALSE",
+                "SHORT_ANSWER"
+              ],
+              "difficulty": "MEDIUM",
+              "instructions": null
+            },
+            "knowledgeBaseIds": []
+          },
+          "knowledgeBaseIds": [],
+          "ownedKnowledgeBaseId": null,
+          "sourceFiles": [],
+          "sourcesReady": true,
+          "outline": null,
+          "lessons": [],
+          "questions": [],
+          "projectStatus": "DRAFT",
+          "currentStage": "CONFIG",
+          "generationStatus": "RUNNING",
+          "progress": 5,
+          "errorMessage": null,
+          "publishedCourseId": null,
+          "version": 1,
+          "createdAt": "2026-11-03T09:01:14.379918",
+          "updatedAt": "2026-11-03T09:01:14.404645"
+        }
+      },
+      "ms": 7
+    },
+    {
+      "name": "poll preparation 1",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/api/preparations/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "teacherId": 2,
+          "title": "other-20261103-1793667444741",
+          "config": {
+            "title": "other-20261103-1793667444741",
+            "categoryId": 1,
+            "description": null,
+            "difficulty": "beginner",
+            "audience": "Beginning students",
+            "totalHours": 1,
+            "chapterCount": 1,
+            "lessonsPerChapter": 1,
+            "teachingGoals": "Explain addition of two positive integers",
+            "extraInstructions": "Create only one chapter and one short lesson.",
+            "questionConfig": {
+              "countPerChapter": 5,
+              "types": [
+                "SINGLE_CHOICE",
+                "TRUE_FALSE",
+                "SHORT_ANSWER"
+              ],
+              "difficulty": "MEDIUM",
+              "instructions": null
+            },
+            "knowledgeBaseIds": []
+          },
+          "knowledgeBaseIds": [],
+          "ownedKnowledgeBaseId": null,
+          "sourceFiles": [],
+          "sourcesReady": true,
+          "outline": null,
+          "lessons": [],
+          "questions": [],
+          "projectStatus": "DRAFT",
+          "currentStage": "CONFIG",
+          "generationStatus": "RUNNING",
+          "progress": 5,
+          "errorMessage": null,
+          "publishedCourseId": null,
+          "version": 1,
+          "createdAt": "2026-11-03T09:01:14.379918",
+          "updatedAt": "2026-11-03T09:01:14.404645"
+        }
+      },
+      "ms": 7
+    },
+    {
+      "name": "poll preparation 2",
+      "role": "teacher",
+      "method": "GET",
+      "url": "/api/preparations/1",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "id": 1,
+          "teacherId": 2,
+          "title": "other-20261103-1793667444741",
+          "config": {
+            "title": "other-20261103-1793667444741",
+            "categoryId": 1,
+            "description": null,
+            "difficulty": "beginner",
+            "audience": "Beginning students",
+            "totalHours": 1,
+            "chapterCount": 1,
+            "lessonsPerChapter": 1,
+            "teachingGoals": "Explain addition of two positive integers",
+            "extraInstructions": "Create only one chapter and one short lesson.",
+            "questionConfig": {
+              "countPerChapter": 5,
+              "types": [
+                "SINGLE_CHOICE",
+                "TRUE_FALSE",
+                "SHORT_ANSWER"
+              ],
+              "difficulty": "MEDIUM",
+              "instructions": null
+            },
+            "knowledgeBaseIds": []
+          },
+          "knowledgeBaseIds": [],
+          "ownedKnowledgeBaseId": null,
+          "sourceFiles": [],
+          "sourcesReady": true,
+          "outline": {
+            "courseDescription": "本课程面向初学学习者，用一课时简明讲解两个正整数加法的含义、基础计算方法和简单验算，帮助学习者完成入门级加法练习。",
+            "chapters": [
+              {
+                "chapterKey": "chapter-1",
+                "title": "两个正整数的加法入门",
+                "description": "认识加法的合并含义，理解加法算式，掌握两个正整数相加的基础方法并完成简单练习。",
+                "sortOrder": 1,
+                "lessons": [
+                  {
+                    "lessonKey": "lesson-1",
+                    "title": "两个正整数加法基础",
+                    "objectives": "理解两个正整数相加表示数量合并或增加、能正确读写简单的正整数加法算式、能计算两个正整数的和并说明基本计算步骤、能用简单方法检查加法结果是否合理",
+                    "knowledgePoints": [
+                      "加号、等号与加法算式的含义",
+                      "正整数相加表示数量合并",
+                      "数位对齐与从个位加起",
+                      "简单进位加法",
+                      "加法结果的简单验算"
+                    ],
+                    "durationMinutes": 45,
+                    "sortOrder": 1,
+                    "contentMd": null
+                  }
+                ]
+              }
+            ]
+          },
+          "lessons": [],
+          "questions": [],
+          "projectStatus": "DRAFT",
+          "currentStage": "OUTLINE_REVIEW",
+          "generationStatus": "SUCCEEDED",
+          "progress": 100,
+          "errorMessage": null,
+          "publishedCourseId": null,
+          "version": 1,
+          "createdAt": "2026-11-03T09:01:14.379918",
+          "updatedAt": "2026-11-03T09:01:24.197581"
+        }
+      },
+      "ms": 8
+    },
+    {
+      "check": "preparation outline generated",
+      "result": "PASS",
+      "details": {
+        "generationStatus": "SUCCEEDED",
+        "errorMessage": null,
+        "outline": {
+          "courseDescription": "本课程面向初学学习者，用一课时简明讲解两个正整数加法的含义、基础计算方法和简单验算，帮助学习者完成入门级加法练习。",
+          "chapters": [
+            {
+              "chapterKey": "chapter-1",
+              "title": "两个正整数的加法入门",
+              "description": "认识加法的合并含义，理解加法算式，掌握两个正整数相加的基础方法并完成简单练习。",
+              "sortOrder": 1,
+              "lessons": [
+                {
+                  "lessonKey": "lesson-1",
+                  "title": "两个正整数加法基础",
+                  "objectives": "理解两个正整数相加表示数量合并或增加、能正确读写简单的正整数加法算式、能计算两个正整数的和并说明基本计算步骤、能用简单方法检查加法结果是否合理",
+                  "knowledgePoints": [
+                    "加号、等号与加法算式的含义",
+                    "正整数相加表示数量合并",
+                    "数位对齐与从个位加起",
+                    "简单进位加法",
+                    "加法结果的简单验算"
+                  ],
+                  "durationMinutes": 45,
+                  "sortOrder": 1,
+                  "contentMd": null
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "login teacher",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "teacher",
+          "nickname": "王老师",
+          "avatar": null,
+          "userId": 2,
+          "email": "[REDACTED]",
+          "username": "teacher",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 147
+    },
+    {
+      "name": "login student",
+      "role": "student",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 121
+    },
+    {
+      "name": "login admin",
+      "role": "admin",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "admin",
+          "nickname": "系统管理员",
+          "avatar": null,
+          "userId": 1,
+          "email": "[REDACTED]",
+          "username": "admin",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 116
+    },
+    {
+      "name": "confirm student authenticated role",
+      "role": "student",
+      "method": "GET",
+      "url": "/auth/info",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student"
+        }
+      },
+      "ms": 5
+    },
+    {
+      "check": "student credential role",
+      "result": "PASS",
+      "details": {
+        "roleCode": "student",
+        "id": 3
+      }
+    },
+    {
+      "name": "anonymous category write denied",
+      "role": "anonymous",
+      "method": "POST",
+      "url": "/categories",
+      "body": {
+        "name": "other-20261103-1793667444741-anonymous",
+        "sortOrder": 1
+      },
+      "http": 401,
+      "response": "",
+      "ms": 2
+    },
+    {
+      "check": "anonymous category write denied",
+      "result": "PASS",
+      "details": ""
+    },
+    {
+      "name": "repro student creates category",
+      "role": "student",
+      "method": "POST",
+      "url": "/categories",
+      "body": {
+        "name": "other-20261103-1793667444741-permission-repro",
+        "sortOrder": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 7
+    },
+    {
+      "name": "admin locate repro category",
+      "role": "admin",
+      "method": "GET",
+      "url": "/categories",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": [
+          {
+            "id": 1,
+            "name": "计算机科学与技术",
+            "description": "工学 / 计算机类 / 计算机科学与技术",
+            "sortOrder": 1,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 2,
+            "name": "软件工程",
+            "description": "工学 / 计算机类 / 软件工程",
+            "sortOrder": 2,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 3,
+            "name": "网络工程",
+            "description": "工学 / 计算机类 / 网络工程",
+            "sortOrder": 3,
+            "createTime": "2026-11-02T17:32:59.837514",
+            "updateTime": "2026-11-02T17:32:59.837514"
+          },
+          {
+            "id": 4,
+            "name": "数据科学与大数据技术",
+            "description": "工学 / 计算机类 / 数据科学与大数据技术",
+            "sortOrder": 4,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 5,
+            "name": "人工智能",
+            "description": "工学 / 计算机类 / 人工智能",
+            "sortOrder": 5,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 6,
+            "name": "网络空间安全",
+            "description": "工学 / 计算机类 / 网络空间安全",
+            "sortOrder": 6,
+            "createTime": "2026-11-02T17:32:59.839682",
+            "updateTime": "2026-11-02T17:32:59.839682"
+          },
+          {
+            "id": 8,
+            "name": "other-20261103-1793667444741",
+            "description": "Synthetic category",
+            "sortOrder": 99,
+            "createTime": "2026-11-03T09:01:05.298466",
+            "updateTime": "2026-11-03T09:01:05.298466"
+          },
+          {
+            "id": 9,
+            "name": "other-20261103-1793667444741-permission-repro",
+            "description": null,
+            "sortOrder": 1,
+            "createTime": "2026-11-03T09:04:46.924067",
+            "updateTime": "2026-11-03T09:04:46.924067"
+          }
+        ]
+      },
+      "ms": 6
+    },
+    {
+      "check": "FAIL repro student category creation forbidden",
+      "result": "FAIL",
+      "details": {
+        "httpBusinessAccepted": true,
+        "persistedCount": 1,
+        "ids": [
+          9
+        ]
+      }
+    },
+    {
+      "name": "repro student updates own category",
+      "role": "student",
+      "method": "PUT",
+      "url": "/categories/9",
+      "body": {
+        "name": "other-20261103-1793667444741-permission-repro-changed",
+        "sortOrder": 1
+      },
+      "http": 400,
+      "response": {
+        "code": "400",
+        "msg": "name size must be between 0 and 50",
+        "data": null
+      },
+      "ms": 19
+    },
+    {
+      "check": "FAIL repro student category update forbidden",
+      "result": "PASS",
+      "details": {
+        "categoryId": 9,
+        "accepted": false
+      }
+    },
+    {
+      "name": "admin cleans repro category",
+      "role": "admin",
+      "method": "DELETE",
+      "url": "/categories/9",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "deletedCourses": 0
+        }
+      },
+      "ms": 7
+    },
+    {
+      "name": "admin cleans leftover synthetic category",
+      "role": "admin",
+      "method": "DELETE",
+      "url": "/categories/8",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "deletedCourses": 0
+        }
+      },
+      "ms": 7
+    },
+    {
+      "name": "verify student user list scope",
+      "role": "student",
+      "method": "GET",
+      "url": "/users",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 3,
+              "username": "student",
+              "nickname": "张同学",
+              "email": "[REDACTED]",
+              "phone": "[REDACTED]",
+              "avatar": null,
+              "status": 1,
+              "roleId": 1,
+              "roleCode": "student",
+              "createTime": "2026-11-02T17:32:59.833516",
+              "updateTime": "2026-11-02T17:36:24.554231"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 9
+    },
+    {
+      "check": "student users list contains only self",
+      "result": "PASS",
+      "details": {
+        "recordCount": 1,
+        "onlySelf": true,
+        "fields": [
+          "id",
+          "username",
+          "nickname",
+          "email",
+          "phone",
+          "avatar",
+          "status",
+          "roleId",
+          "roleCode",
+          "createTime",
+          "updateTime"
+        ],
+        "sensitiveFieldPresence": {
+          "password": "[REDACTED]",
+          "email": "[REDACTED]",
+          "phone": "[REDACTED]"
+        }
+      }
+    },
+    {
+      "name": "student cannot read synthetic other user",
+      "role": "student",
+      "method": "GET",
+      "url": "/users/5",
+      "http": 200,
+      "response": {
+        "code": "403",
+        "msg": "无权限查看该用户",
+        "data": null
+      },
+      "ms": 4
+    },
+    {
+      "check": "student other user denied",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "无权限查看该用户",
+        "data": null
+      }
+    },
+    {
+      "correction": "student user listing denied was an incorrect test expectation; expected behavior is own profile only, verified above. Initial FAIL is retained as test error, not product issue."
+    },
+    {
+      "name": "login teacher",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "teacher",
+          "nickname": "王老师",
+          "avatar": null,
+          "userId": 2,
+          "email": "[REDACTED]",
+          "username": "teacher",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 147
+    },
+    {
+      "name": "login student",
+      "role": "student",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 116
+    },
+    {
+      "name": "login admin",
+      "role": "admin",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "admin",
+          "nickname": "系统管理员",
+          "avatar": null,
+          "userId": 1,
+          "email": "[REDACTED]",
+          "username": "admin",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 117
+    },
+    {
+      "name": "confirm student authenticated role",
+      "role": "student",
+      "method": "GET",
+      "url": "/auth/info",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student"
+        }
+      },
+      "ms": 4
+    },
+    {
+      "check": "student credential role",
+      "result": "PASS",
+      "details": {
+        "roleCode": "student",
+        "id": 3
+      }
+    },
+    {
+      "name": "anonymous category write denied",
+      "role": "anonymous",
+      "method": "POST",
+      "url": "/categories",
+      "body": {
+        "name": "other-20261103-1793667444741-anonymous",
+        "sortOrder": 1
+      },
+      "http": 401,
+      "response": "",
+      "ms": 2
+    },
+    {
+      "check": "anonymous category write denied",
+      "result": "PASS",
+      "details": ""
+    },
+    {
+      "name": "repro student creates category",
+      "role": "student",
+      "method": "POST",
+      "url": "/categories",
+      "body": {
+        "name": "other-20261103-1793667444741-permission-repro",
+        "sortOrder": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 6
+    },
+    {
+      "name": "admin locate repro category",
+      "role": "admin",
+      "method": "GET",
+      "url": "/categories",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": [
+          {
+            "id": 1,
+            "name": "计算机科学与技术",
+            "description": "工学 / 计算机类 / 计算机科学与技术",
+            "sortOrder": 1,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 2,
+            "name": "软件工程",
+            "description": "工学 / 计算机类 / 软件工程",
+            "sortOrder": 2,
+            "createTime": "2026-11-02T17:32:59.836517",
+            "updateTime": "2026-11-02T17:32:59.836517"
+          },
+          {
+            "id": 3,
+            "name": "网络工程",
+            "description": "工学 / 计算机类 / 网络工程",
+            "sortOrder": 3,
+            "createTime": "2026-11-02T17:32:59.837514",
+            "updateTime": "2026-11-02T17:32:59.837514"
+          },
+          {
+            "id": 4,
+            "name": "数据科学与大数据技术",
+            "description": "工学 / 计算机类 / 数据科学与大数据技术",
+            "sortOrder": 4,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 5,
+            "name": "人工智能",
+            "description": "工学 / 计算机类 / 人工智能",
+            "sortOrder": 5,
+            "createTime": "2026-11-02T17:32:59.838516",
+            "updateTime": "2026-11-02T17:32:59.838516"
+          },
+          {
+            "id": 6,
+            "name": "网络空间安全",
+            "description": "工学 / 计算机类 / 网络空间安全",
+            "sortOrder": 6,
+            "createTime": "2026-11-02T17:32:59.839682",
+            "updateTime": "2026-11-02T17:32:59.839682"
+          },
+          {
+            "id": 10,
+            "name": "other-20261103-1793667444741-permission-repro",
+            "description": null,
+            "sortOrder": 1,
+            "createTime": "2026-11-03T09:05:40.004295",
+            "updateTime": "2026-11-03T09:05:40.004295"
+          }
+        ]
+      },
+      "ms": 4
+    },
+    {
+      "check": "FAIL repro student category creation forbidden",
+      "result": "FAIL",
+      "details": {
+        "httpBusinessAccepted": true,
+        "persistedCount": 1,
+        "ids": [
+          10
+        ]
+      }
+    },
+    {
+      "name": "repro student updates own category",
+      "role": "student",
+      "method": "PUT",
+      "url": "/categories/10",
+      "body": {
+        "name": "other-20261103-1793667444741-changed",
+        "sortOrder": 1
+      },
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": null
+      },
+      "ms": 8
+    },
+    {
+      "check": "FAIL repro student category update forbidden",
+      "result": "FAIL",
+      "details": {
+        "categoryId": 10,
+        "accepted": true
+      }
+    },
+    {
+      "name": "admin cleans repro category",
+      "role": "admin",
+      "method": "DELETE",
+      "url": "/categories/10",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "deletedCourses": 0
+        }
+      },
+      "ms": 7
+    },
+    {
+      "name": "verify student user list scope",
+      "role": "student",
+      "method": "GET",
+      "url": "/users",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "records": [
+            {
+              "id": 3,
+              "username": "student",
+              "nickname": "张同学",
+              "email": "[REDACTED]",
+              "phone": "[REDACTED]",
+              "avatar": null,
+              "status": 1,
+              "roleId": 1,
+              "roleCode": "student",
+              "createTime": "2026-11-02T17:32:59.833516",
+              "updateTime": "2026-11-02T17:36:24.554231"
+            }
+          ],
+          "total": 1,
+          "size": 10,
+          "current": 1,
+          "pages": 1
+        }
+      },
+      "ms": 8
+    },
+    {
+      "check": "student users list contains only self",
+      "result": "PASS",
+      "details": {
+        "recordCount": 1,
+        "onlySelf": true,
+        "fields": [
+          "id",
+          "username",
+          "nickname",
+          "email",
+          "phone",
+          "avatar",
+          "status",
+          "roleId",
+          "roleCode",
+          "createTime",
+          "updateTime"
+        ],
+        "sensitiveFieldPresence": {
+          "password": "[REDACTED]",
+          "email": "[REDACTED]",
+          "phone": "[REDACTED]"
+        }
+      }
+    },
+    {
+      "name": "student cannot read synthetic other user",
+      "role": "student",
+      "method": "GET",
+      "url": "/users/5",
+      "http": 200,
+      "response": {
+        "code": "403",
+        "msg": "无权限查看该用户",
+        "data": null
+      },
+      "ms": 5
+    },
+    {
+      "check": "student other user denied",
+      "result": "PASS",
+      "details": {
+        "code": "403",
+        "msg": "无权限查看该用户",
+        "data": null
+      }
+    },
+    {
+      "correction": "student user listing denied was an incorrect test expectation; expected behavior is own profile only, verified above. Initial FAIL is retained as test error, not product issue."
+    },
+    {
+      "name": "login teacher",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "teacher",
+          "nickname": "王老师",
+          "avatar": null,
+          "userId": 2,
+          "email": "[REDACTED]",
+          "username": "teacher",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 144
+    },
+    {
+      "name": "login student",
+      "role": "student",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "student",
+          "nickname": "张同学",
+          "avatar": null,
+          "userId": 3,
+          "email": "[REDACTED]",
+          "username": "student",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 125
+    },
+    {
+      "name": "login admin",
+      "role": "admin",
+      "method": "POST",
+      "url": "/auth/login",
+      "body": "[DEMO LOGIN OMITTED]",
+      "http": 200,
+      "response": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "phone": "[REDACTED]",
+          "roleCode": "admin",
+          "nickname": "系统管理员",
+          "avatar": null,
+          "userId": 1,
+          "email": "[REDACTED]",
+          "username": "admin",
+          "token": "[REDACTED]"
+        }
+      },
+      "ms": 121
+    },
+    {
+      "name": "ended exam start rejected",
+      "role": "student",
+      "method": "POST",
+      "url": "/api/exams/1/submissions/start?candidateId=student",
+      "http": 400,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "考试未发布，不能开始答题"
+      },
+      "ms": 8
+    },
+    {
+      "check": "ended exam cannot start",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "考试未发布，不能开始答题"
+      }
+    },
+    {
+      "name": "submit exam results",
+      "role": "teacher",
+      "method": "POST",
+      "url": "/api/exams/1/results/submit",
+      "http": 200,
+      "response": {
+        "success": true,
+        "data": {
+          "examId": 1,
+          "examName": "other-20261103-1793667444741",
+          "status": "RESULTS_SUBMITTED",
+          "fullScore": 100,
+          "averageScore": 95,
+          "passRate": 100,
+          "highestScore": 95,
+          "lowestScore": 95,
+          "studentScores": [
+            {
+              "studentId": 3,
+              "studentName": "张同学",
+              "submissionId": 1,
+              "totalScore": 95,
+              "submissionStatus": "GRADED",
+              "absent": false,
+              "cheated": false,
+              "screenSwitchCount": 0
+            }
+          ]
+        },
+        "message": "OK"
+      },
+      "ms": 15
+    },
+    {
+      "check": "exam results aggregate95",
+      "result": "PASS",
+      "details": {
+        "examId": 1,
+        "examName": "other-20261103-1793667444741",
+        "status": "RESULTS_SUBMITTED",
+        "fullScore": 100,
+        "averageScore": 95,
+        "passRate": 100,
+        "highestScore": 95,
+        "lowestScore": 95,
+        "studentScores": [
+          {
+            "studentId": 3,
+            "studentName": "张同学",
+            "submissionId": 1,
+            "totalScore": 95,
+            "submissionStatus": "GRADED",
+            "absent": false,
+            "cheated": false,
+            "screenSwitchCount": 0
+          }
+        ]
+      }
+    },
+    {
+      "name": "export exam csv",
+      "http": 200,
+      "contentType": "text/csv;charset=UTF-8",
+      "bytes": 106,
+      "body": "﻿学生ID,学生姓名,考试名称,成绩,状态\r\n3,张同学,other-20261103-1793667444741,95,已批改"
+    },
+    {
+      "check": "export csv format",
+      "result": "PASS",
+      "details": {
+        "bytes": 106
+      }
+    },
+    {
+      "name": "export exam xlsx",
+      "http": 200,
+      "contentType": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 3752
+    },
+    {
+      "check": "export xlsx format",
+      "result": "PASS",
+      "details": {
+        "bytes": 3752
+      }
+    },
+    {
+      "name": "export exam txt",
+      "http": 400,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "不支持的导出格式: txt"
+      }
+    },
+    {
+      "check": "unsupported export txt rejected",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "不支持的导出格式: txt"
+      }
+    },
+    {
+      "name": "student cannot export class results",
+      "role": "student",
+      "method": "GET",
+      "url": "/api/exams/1/results/export?format=csv",
+      "http": 403,
+      "response": {
+        "success": false,
+        "data": null,
+        "message": "无权维护该考试"
+      },
+      "ms": 42
+    },
+    {
+      "check": "exam export teacher only",
+      "result": "PASS",
+      "details": {
+        "success": false,
+        "data": null,
+        "message": "无权维护该考试"
+      }
+    }
+  ]
+}

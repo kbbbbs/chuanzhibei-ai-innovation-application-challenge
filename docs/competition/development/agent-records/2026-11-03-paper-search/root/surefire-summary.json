@@ -1,0 +1,659 @@
+{
+  "note": "Read-only summary of existing Surefire XML; no tests executed by root. Raw XML may contain environment properties and is not published.",
+  "totals": {
+    "tests": 413,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 15
+  },
+  "suites": [
+    {
+      "suite": "com.cupk.aiacademy.agent.core.service.AgentChatServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.agent.core.service.AgentChatServiceTest.xml",
+      "source_sha256": "c657585acdd74b195d4fa9e80321e78d7c624247ba1d1485f243a62752893e2b"
+    },
+    {
+      "suite": "com.cupk.aiacademy.agent.definition.service.AgentDefinitionServiceTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.agent.definition.service.AgentDefinitionServiceTest.xml",
+      "source_sha256": "91b2049d2a719e67cf9895e54978d4e6dfc70cefca8f39b049ebd6b568344f17"
+    },
+    {
+      "suite": "com.cupk.aiacademy.agent.knowledge.NativeFormulaContextTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.agent.knowledge.NativeFormulaContextTest.xml",
+      "source_sha256": "a58a3a728af3a3ba915cc43eb87c40ce7034762e8357ccf566146550c93f973f"
+    },
+    {
+      "suite": "com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProviderTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProviderTest.xml",
+      "source_sha256": "b7ac0d4193321c365994675b88c231e7f7d37e85f78c10abd3b9ddee2e977d0b"
+    },
+    {
+      "suite": "com.cupk.aiacademy.common.AuthUtilsAssignedRoleTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.common.AuthUtilsAssignedRoleTest.xml",
+      "source_sha256": "f55c83f38d727b4717dc62a4865190da4fd1155af49de4bd8e549c29faa4f862"
+    },
+    {
+      "suite": "com.cupk.aiacademy.config.AuthInterceptorAsyncTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.config.AuthInterceptorAsyncTest.xml",
+      "source_sha256": "acdfe57b0b90cdf15e244c87cf60ed3f51d633412fbad2e6c53511bc9cd3ce06"
+    },
+    {
+      "suite": "com.cupk.aiacademy.controller.CategoryAuthorizationTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.controller.CategoryAuthorizationTest.xml",
+      "source_sha256": "e9d76344831345ad40d238b6d9af10bdfeb3bd2369dea9d30d619dd881a24dfe"
+    },
+    {
+      "suite": "com.cupk.aiacademy.controller.NoticeControllerTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.controller.NoticeControllerTest.xml",
+      "source_sha256": "259988f3965539fb590b9c6cbfdc382932d24c3522e1056e77236e59a26483b1"
+    },
+    {
+      "suite": "com.cupk.aiacademy.model.ModelRoutingTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.model.ModelRoutingTest.xml",
+      "source_sha256": "c14628da6be5d8da89541c5f57352ac834035cd0964b10c5f19deacb8dc6b475"
+    },
+    {
+      "suite": "com.cupk.aiacademy.model.RuntimeModelCapabilitiesTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.model.RuntimeModelCapabilitiesTest.xml",
+      "source_sha256": "af8dea6d9fb39979c22c22487acb7698491c1b16c8da570b137765ce59756ad8"
+    },
+    {
+      "suite": "com.cupk.aiacademy.model.RuntimeModelConfigurationTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.model.RuntimeModelConfigurationTest.xml",
+      "source_sha256": "dea0e05cffaa9c23713175a08cdc3137dcffa741ac1cfecb4c47bc7ac7615cfd"
+    },
+    {
+      "suite": "com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest.xml",
+      "source_sha256": "446f87adb61cb37fe65197b5d1aa0c6ef14ef7cd73f81f0580d38b20564a9693"
+    },
+    {
+      "suite": "com.cupk.aiacademy.model.RuntimeModelLiveTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 5,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.model.RuntimeModelLiveTest.xml",
+      "source_sha256": "c0bb26112e181ab3f5d21480c14eaf433dbe7184d451c18ac108f95d58d98d09"
+    },
+    {
+      "suite": "com.cupk.aiacademy.model.RuntimeModelPolicyTest",
+      "tests": 19,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.model.RuntimeModelPolicyTest.xml",
+      "source_sha256": "b5cbf373ae61ff5d9b15cfa6626b2a80cd47d40a59e9ed9c500e6fcb3721a073"
+    },
+    {
+      "suite": "com.cupk.aiacademy.preparation.PreparationModelGatewayTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.preparation.PreparationModelGatewayTest.xml",
+      "source_sha256": "d3513f896e9064648350ac44a6513adaa3bdc425f0fb68ecbe51bf77389f87a2"
+    },
+    {
+      "suite": "com.cupk.aiacademy.preparation.PreparationNativeKnowledgeTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.preparation.PreparationNativeKnowledgeTest.xml",
+      "source_sha256": "9ab43f433e4cf146f594b2c2aaf048967baea930368c98e077215ec36209d36d"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest.xml",
+      "source_sha256": "f860c4b5fe2cccacfece510bcd77a608c6651b4775929fd46f16fba3ca22ce4b"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.chat.NativeRagVisualChatTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.chat.NativeRagVisualChatTest.xml",
+      "source_sha256": "f8b5521bff8d0a1ee6cd26b4567ba0b0bf3a9423f967123757c8ebaac564870c"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.FormulaContractTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.FormulaContractTest.xml",
+      "source_sha256": "1988ed1936fe6d682e91ea280fcf4228c5836fcb6af7b946feb1eb0b70758d19"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.FormulaTextTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.FormulaTextTest.xml",
+      "source_sha256": "d4383c905e7a0f4f5399684ac5e7141543ec3163ddf81a9d26e24c6a40c08b02"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.IngestionJobRepositoryTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.IngestionJobRepositoryTest.xml",
+      "source_sha256": "7384531fc6dcc814199c2b5af218d6a08e5a27f534b599ca635f3d66a6d7bc70"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02CourseMaterialLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02CourseMaterialLiveTest.xml",
+      "source_sha256": "91fcb74458e33e79ba1db2858009a2622580f72723d3589e921af85a2fd11cf6"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02FormulaLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02FormulaLiveTest.xml",
+      "source_sha256": "7bc9e2f83e63bb2a381e12d8b3b1300180f9a7d9c839e7a24d66b6ad04b2b93a"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02IngestionServiceTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02IngestionServiceTest.xml",
+      "source_sha256": "2b144763f71b30b801d54647a831de5b7a191c8a4a8eaa2c04707c7743eb2067"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02ProgressFencingRaceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02ProgressFencingRaceTest.xml",
+      "source_sha256": "aff6337bc9872704977f056c27d06b79a7b6d078ff071674c7ae763db1cbc0b0"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02VisualCheckpointTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02VisualCheckpointTest.xml",
+      "source_sha256": "ab06447cfaa19e94ce5cb0ade8d4408eb66d9b12602cb17d790f002e5574d21d"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02VisualHttpTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02VisualHttpTest.xml",
+      "source_sha256": "e14ddd5badf5ee1fe56cf5a53e4f487a34a59880c8cd8f2463a0ecff1b1ea777"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02VisualIngestionTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02VisualIngestionTest.xml",
+      "source_sha256": "a6e60cb802a2f1f0cb37f4edc2d68b68269e409c7979ebd858fe4dbd4aa27f8e"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02VisualLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02VisualLiveTest.xml",
+      "source_sha256": "a6996022866d881cb1735a8be9ba5ba1c6f8cc15627d95d01d56f39d8ada7341"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K02VisualQuotaTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K02VisualQuotaTest.xml",
+      "source_sha256": "54e9c94fdf47de90c08a8b96107d416c483ce290c823272db6c1c88d82bb9808"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.K03SymbolBulletTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.K03SymbolBulletTest.xml",
+      "source_sha256": "c7347a4e9e2036ff32235b5be232887f72c6906689eefe1f7bfb3a92f03f32dd"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.PageAnalysisAndChunkerTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.PageAnalysisAndChunkerTest.xml",
+      "source_sha256": "ff37f0927dd6e11ed8405ae0e3cda72fb6f7577719b6642ca4e6bf15ad3fceac"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ingestion.RagPageExtractorTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ingestion.RagPageExtractorTest.xml",
+      "source_sha256": "a5c97fd54ba20090d311b5edc0d99e9f9e5eb37bb1db418f52fd854b4f011132"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.JdbcRagVectorStoreTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.JdbcRagVectorStoreTest.xml",
+      "source_sha256": "2a45f5e3709235e37c5eb0ab627dcc978456555344cfbda991e25a11b2820d6a"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K01AuthorizationBoundaryTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K01AuthorizationBoundaryTest.xml",
+      "source_sha256": "eb4c54de26f365bcfa9653b0eb3a23db57f5665ab18a46c8d257ff4a6e5fcc8d"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K01DocumentLifecycleTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K01DocumentLifecycleTest.xml",
+      "source_sha256": "367ee61442f4ac6a33e773e1c4322514e1ba984266fc9fc4d594063d1fe5532f"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest.xml",
+      "source_sha256": "b65b9e8a1e9e518e59dfa19d0335500ab1dcf69e9ddd508815224f80ce3b7b65"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K01RevocationDuringIoTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K01RevocationDuringIoTest.xml",
+      "source_sha256": "c8917808b14e0ddbad327082e2c0cbb4f105f30655942d3184c13f787ba0f4b1"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K02SchemaMigrationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K02SchemaMigrationTest.xml",
+      "source_sha256": "f9d0b96c5170ec7792b3565dc2234fc5918be831dfb71abcbebbe9cb30fa382a"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K03EmbeddingBatchContractTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K03EmbeddingBatchContractTest.xml",
+      "source_sha256": "7403a29c906b944af32e2ec88cd403d17f2d405cf02878346bdf6ffb24979896"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K03EmbeddingBoundaryTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K03EmbeddingBoundaryTest.xml",
+      "source_sha256": "14e8be2a52bcaf7b00664550b88937aee326a4c5bdf393f3dca7e87880e4f042"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K03EvaluationSupportTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K03EvaluationSupportTest.xml",
+      "source_sha256": "65999ad2ed3c8791492f81741704122e5e3fa9594e4fd47cd14b5dee0e47e982"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K03PersistenceRestartTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K03PersistenceRestartTest.xml",
+      "source_sha256": "71c1c441ed8c82c7d1074735b823bbbec609f037ad1366ee3b399d762b629def"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K03RetrievalLiveTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K03RetrievalLiveTest.xml",
+      "source_sha256": "89cc87924ca1f9afa4870eb7a4a3fe163769cb1791159500ebecd297517f2c3f"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.K03SearchContractTest",
+      "tests": 6,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.K03SearchContractTest.xml",
+      "source_sha256": "359963528da2d52668788eb4173abf1c08eeadaad1af787e1e9943bca5bc5c81"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest.xml",
+      "source_sha256": "6f39dece089f08bdad3d5fbad44a18d727a988ac49f7eb0e2c357127f8ea0d9b"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.NativeRagVectorMigrationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.NativeRagVectorMigrationTest.xml",
+      "source_sha256": "68a8f783b567bd4c36b82e2182fefede211f4eb9e293728395a9505e75851557"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.NativeRagVectorStorageTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.NativeRagVectorStorageTest.xml",
+      "source_sha256": "75dc373a9e13f5100c5294798976c606f3af1dbef2af2cedaeeaed6f6c7da4fd"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ocr.OcrModelClientTest",
+      "tests": 16,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ocr.OcrModelClientTest.xml",
+      "source_sha256": "96bfe9505c97cba23f35610fc22ace9fb8f8aa29c38ceac671ce4669e4535d27"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ocr.OcrPipelineContractTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ocr.OcrPipelineContractTest.xml",
+      "source_sha256": "c3263083115cf45ed83664199612abb4ec33a0661077466e828d1c9ecbdf08e3"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ocr.OcrResultNormalizerRegressionTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ocr.OcrResultNormalizerRegressionTest.xml",
+      "source_sha256": "840a569efa282a62240d5170ad5dc26e3b748ca72028780417abc692c8ec32ab"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.ocr.RenderResourceGuardTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.ocr.RenderResourceGuardTest.xml",
+      "source_sha256": "b765ddc13a5c6f6dade7816b7b75fa544dab3f6dfbe650b0438206b756b8c00b"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagAuthorizationServiceTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagAuthorizationServiceTest.xml",
+      "source_sha256": "470767e0a5d15ddb8b946bdd589bfbb09757227910cfe8854c543e29de16801e"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagDocumentParserTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagDocumentParserTest.xml",
+      "source_sha256": "7fa65c59c746a6e845140637d1bbde38f347489608f24178bf80ddd35338a2dc"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagEmbeddingConfigurationTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagEmbeddingConfigurationTest.xml",
+      "source_sha256": "ec534abe03a23815ae1c0504ad755bb1feae5c4d7ddc5b9c071cbe709adf4434"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagEmbeddingProtocolTest",
+      "tests": 14,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagEmbeddingProtocolTest.xml",
+      "source_sha256": "1c3a4d57a0eda1e265b1c6b44b970d0afe9c98ecb509eac7ab256b8081ffac02"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagEmbeddingTimeoutTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagEmbeddingTimeoutTest.xml",
+      "source_sha256": "5a9423e82ca02063bff924be0c4958aafaf6202103a4f1fc3d8c9812172d7f47"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagFileStoreTest",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 4,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagFileStoreTest.xml",
+      "source_sha256": "2eda56366bcf6f3ca6ce7ad7f045395450ee4604e19cc9639e204add4f3b6e89"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagRetrievalServiceTest",
+      "tests": 11,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagRetrievalServiceTest.xml",
+      "source_sha256": "16bbf4b87d9385e98f48158f6f723eff5f647f49a952828d4cf93f9a0fd4dd67"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.RagSchemaMigratorTest",
+      "tests": 7,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.RagSchemaMigratorTest.xml",
+      "source_sha256": "56a2b540212e0c580f8169790ef98743069d3ab8852ad6e6184029916589131a"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.repository.RagIndexVersionRepositoryTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.repository.RagIndexVersionRepositoryTest.xml",
+      "source_sha256": "767d0681a6932bbfa4f97d90c9d40c92de33446c7e2063daf7cd5bdcb106230e"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.visual.OcrLayoutParserTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.visual.OcrLayoutParserTest.xml",
+      "source_sha256": "228067e8694fd05c5c36b2dc0d948d8f0e6f11b8204abcae1b487ae3145a25cf"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.visual.RagVisualReaderTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.visual.RagVisualReaderTest.xml",
+      "source_sha256": "557862c183a4fe29c6d37807bb8003b537e046733765488b30d225fe527ddced"
+    },
+    {
+      "suite": "com.cupk.aiacademy.rag.visual.VisualCropperTest",
+      "tests": 3,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.rag.visual.VisualCropperTest.xml",
+      "source_sha256": "af7465f56da5aadabccc22931356b00aba4a77ab56bde5be83e27a85414e0c3e"
+    },
+    {
+      "suite": "com.cupk.aiacademy.service.HomeCourseRecommendationServiceTest",
+      "tests": 1,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.service.HomeCourseRecommendationServiceTest.xml",
+      "source_sha256": "db133dd182307705dbe0dfa6bb0d6dc08e3fe82c56c66a3193613d3efbc73ff9"
+    },
+    {
+      "suite": "com.cupk.aiacademy.service.impl.ArxivSearchServiceImplTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.service.impl.ArxivSearchServiceImplTest.xml",
+      "source_sha256": "1b834377343e5c4912162856be54baff1f1d8b349c29cd2542e077f537f02747"
+    },
+    {
+      "suite": "com.cupk.aiacademy.service.ImportServiceTest",
+      "tests": 4,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.service.ImportServiceTest.xml",
+      "source_sha256": "d97fe7ab62ec7ec277003fd411403852e8dd60a3381aa50595260dc110834d59"
+    },
+    {
+      "suite": "com.cupk.aiacademy.service.PermissionServiceRagActorTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.service.PermissionServiceRagActorTest.xml",
+      "source_sha256": "3310c86d73cb06e0ea6522b3d972ee46903b429c9013df9a113a3a13752d9b47"
+    },
+    {
+      "suite": "com.cupk.aiacademy.service.QuestionServiceKnowledgeGenerationTest",
+      "tests": 9,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.service.QuestionServiceKnowledgeGenerationTest.xml",
+      "source_sha256": "249748717dafa20a0103eeeffb8b703a9eb95b3633c2cf9f602d4fc1a753ece3"
+    },
+    {
+      "suite": "com.cupk.aiacademy.service.RelatedNoticeServiceTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.service.RelatedNoticeServiceTest.xml",
+      "source_sha256": "f3ee7656b4f6724a08012e0c2b8ead0da8e31c817e969c30b8e73b90399a9aef"
+    },
+    {
+      "suite": "com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest",
+      "tests": 2,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 1,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest.xml",
+      "source_sha256": "152ccc7d8426e288fe2bebf35830b090e46e5854f97a2b77c0193c9c30922d66"
+    },
+    {
+      "suite": "com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest",
+      "tests": 22,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "source": "ai-learning-backend/target/surefire-reports/TEST-com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest.xml",
+      "source_sha256": "71e4ffe514ee31ea4dd77be64c2579f009883c8a8425ff1c955c8870c8267268"
+    }
+  ]
+}

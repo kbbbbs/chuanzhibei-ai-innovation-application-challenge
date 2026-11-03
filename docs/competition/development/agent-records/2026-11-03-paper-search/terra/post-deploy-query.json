@@ -1,0 +1,16 @@
+{
+  "timestamp": "2026-11-03T21:30:08.0756834+08:00",
+  "source": "arxiv",
+  "keyword": "machine learning",
+  "attempt": 1,
+  "http_status": 200,
+  "business_code": "200",
+  "classification": "valid_paper",
+  "elapsed_ms": 4754,
+  "total": 553612,
+  "paper_count": 1,
+  "paper_id": "2306.04338v1",
+  "title": "Changing Data Sources in the Age of Machine Learning for Official Statistics",
+  "author_count": 2,
+  "abstract_present": true
+}

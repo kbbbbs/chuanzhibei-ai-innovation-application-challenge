@@ -8,6 +8,7 @@ import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.CourseCategory;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,9 @@ public class CategoryController {
     @Autowired
     private CourseResourceService courseResourceService;
 
+    @Autowired
+    private PermissionService permissionService;
+
     @GetMapping
     public Result list() {
         QueryWrapper<CourseCategory> queryWrapper = new QueryWrapper<>();
@@ -54,6 +58,7 @@ public class CategoryController {
 
     @PostMapping
     public Result add(@Valid @RequestBody(required = false) CourseCategoryDto request) {
+        permissionService.requireAdmin();
         CourseCategory category = request == null ? null : request.toEntity();
         Result checkResult = checkCategory(category);
         if (checkResult != null) {
@@ -70,6 +75,7 @@ public class CategoryController {
 
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody CourseCategoryDto request) {
+        permissionService.requireAdmin();
         CourseCategory category = request.toEntity();
         if (categoryMapper.selectById(id) == null) {
             return Result.error("404", "分类不存在");
@@ -89,6 +95,7 @@ public class CategoryController {
     @DeleteMapping("/{id}")
     @Transactional(rollbackFor = Exception.class)
     public Result delete(@PathVariable Integer id, @RequestParam(required = false) Boolean cascade) {
+        permissionService.requireAdmin();
         if (categoryMapper.selectById(id) == null) {
             return Result.error("404", "分类不存在");
         }

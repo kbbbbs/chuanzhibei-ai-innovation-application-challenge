@@ -138,7 +138,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDTO saveAnswers(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
-        ExamRecord record = getEntityById(submissionId);
+        ExamRecord record = getEntityForUpdate(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷不允许继续作答");
@@ -169,7 +169,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDTO submit(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
-        ExamRecord record = getEntityById(submissionId);
+        ExamRecord record = getEntityForUpdate(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷状态不允许交卷");
@@ -183,7 +183,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDTO autoSubmit(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
-        ExamRecord record = getEntityById(submissionId);
+        ExamRecord record = getEntityForUpdate(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             return toResponse(record);
@@ -232,7 +232,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDTO reportScreenSwitch(Long submissionId) {
-        ExamRecord record = getEntityById(submissionId);
+        ExamRecord record = getEntityForUpdate(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             return toResponse(record);
@@ -270,7 +270,7 @@ public class SubmissionService {
 
     @Transactional
     public SubmissionResponseDTO manualGrade(Long submissionId, SubmissionRequestsDTO.ManualGradeRequest request) {
-        ExamRecord record = getEntityById(submissionId);
+        ExamRecord record = getEntityForUpdate(submissionId);
         requireTeacherRecord(record);
         if (record.getCheated() != null && record.getCheated() == 1) {
             throw new BusinessException("作弊答卷不能修改成绩");
@@ -381,6 +381,17 @@ public class SubmissionService {
         }
         query.orderByDesc("id");
         return recordMapper.selectList(query).stream().map(this::toResponse).toList();
+    }
+
+    /** Serialize answer/status/score writes for one submission until the caller's transaction commits. */
+    private ExamRecord getEntityForUpdate(Long submissionId) {
+        ExamRecord record = recordMapper.selectOne(new QueryWrapper<ExamRecord>()
+                .eq("id", toInt(submissionId, "答卷ID"))
+                .last("FOR UPDATE"));
+        if (record == null) {
+            throw new BusinessException("答卷不存在: " + submissionId);
+        }
+        return record;
     }
 
     public ExamRecord getEntityById(Long submissionId) {

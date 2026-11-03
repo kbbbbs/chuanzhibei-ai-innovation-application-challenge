@@ -1,0 +1,24 @@
+{
+  "timestamp": "2026-11-03T09:29:11.7051094+08:00",
+  "jarExists": true,
+  "baselineCapturedPrivately": true,
+  "listeners": [
+    {
+      "LocalPort": 8080,
+      "OwningProcess": 25896
+    },
+    {
+      "LocalPort": 5173,
+      "OwningProcess": 8852
+    }
+  ],
+  "processId": 34460,
+  "configuration": {
+    "intent": 5,
+    "baseUrl": "https://api.deepseek.com",
+    "runtimePlanning": 10,
+    "chat": 25,
+    "parameters": 10,
+    "model": "deepseek-flash"
+  }
+}

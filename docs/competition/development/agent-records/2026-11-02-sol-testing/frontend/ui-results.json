@@ -1,0 +1,32 @@
+{
+  "executor": "Sol resumed real-browser subagent",
+  "date": "2026-11-02",
+  "mode": "REAL_HTTP_BROWSER_WITH_DOM_CLICK_EVENT_ASSISTANCE",
+  "productCodeModified": false,
+  "apiFixtureCreated": false,
+  "submittedOnce": true,
+  "functionalSummary": {"total": 8, "pass": 8, "fail": 0},
+  "ids": {"course": 1, "teachingClass": 1, "paper": 1, "homework": 1, "student": 3, "submission": 1},
+  "homeworkName": "sol-20261102-teaching-loop",
+  "checks": [
+    {"id": "teacher-existing-lesson", "status": "PASS", "evidence": "sol-teacher-lesson.png"},
+    {"id": "student-lesson-from-class", "status": "PASS", "evidence": "sol-student-lesson-1440.png"},
+    {"id": "publish-homework", "status": "PASS", "httpStatus": 200, "evidence": "sol-session/records.jsonl"},
+    {"id": "draft-answer", "status": "PASS", "evidence": "sol-session/records.jsonl"},
+    {"id": "submit-pending-manual", "status": "PASS", "statusValue": "PENDING_MANUAL_REVIEW", "scores": {"objective": 50, "subjective": 0, "total": 50}, "evidence": "sol-student-pending.png"},
+    {"id": "teacher-grade-subjective", "status": "PASS", "statusValue": "GRADED", "scores": {"objective": 50, "subjective": 40, "total": 90}, "evidence": "sol-teacher-graded.png"},
+    {"id": "student-final-result", "status": "PASS", "scores": {"objective": 50, "subjective": 40, "total": 90}, "evidence": "sol-student-final-90.png"},
+    {"id": "student-result-reload", "status": "PASS", "scores": {"objective": 50, "subjective": 40, "total": 90}, "evidence": "sol-session/records.jsonl"}
+  ],
+  "observations": [
+    {"id": "lesson-sidebar-1083", "status": "OBSERVED_UI_ISSUE", "detail": "Notes sidebar squeezed/wrapped at 1083px; normal in separately checked 1440x1000 screenshot."},
+    {"id": "homework-exam-wording", "status": "OBSERVED_UI_ISSUE", "detail": "Homework grading/result labels still use exam terminology."},
+    {"id": "direct-course-missing-classId", "status": "TEST_OPERATION_ERROR", "detail": "Direct URL omitted classId; normal My Classes navigation rendered lesson."}
+  ],
+  "limitations": [
+    "Ordinary and force/mouse click were unreliable via browser relay; visible controls were operated using DOM dispatchEvent click. No Vue internal state was changed.",
+    "No backend restart performed for final grade; reload persisted the result.",
+    "Earlier mocked checks, backend checks and model outcomes are not rerun or included in these eight checks.",
+    "Earlier Agent planning timeout remains BLOCKED; OCR and Embedding remain NOT_RUN."
+  ]
+}

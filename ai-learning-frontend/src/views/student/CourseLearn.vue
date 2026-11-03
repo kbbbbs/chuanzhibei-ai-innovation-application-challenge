@@ -610,12 +610,22 @@ watch(
 }
 
 .study-layout {
+  display: grid;
+  grid-template-columns: minmax(160px, 200px) minmax(0, 1fr) minmax(320px, 360px);
+  gap: 20px;
+  margin: 0 !important;
   align-items: flex-start;
 }
 
-.lesson-sidebar-col,
-.course-learn :deep(.el-col) {
-  transition: width 0.2s ease, max-width 0.2s ease, flex-basis 0.2s ease;
+.study-layout > .el-col {
+  min-width: 0;
+  width: 100%;
+  max-width: 100%;
+  padding: 0 !important;
+}
+
+.sidebar-collapsed .study-layout {
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
 }
 
 .lesson-sidebar-card {
@@ -677,6 +687,12 @@ watch(
   justify-content: space-between;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.lesson-header > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .lesson-header-actions {
@@ -784,5 +800,38 @@ watch(
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
+}
+
+@media (max-width: 1350px) {
+  .study-layout {
+    grid-template-columns: 200px minmax(0, 1fr);
+  }
+
+  .study-tools-col {
+    grid-column: 2;
+  }
+
+  .sidebar-collapsed .study-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .sidebar-collapsed .study-tools-col {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 900px) {
+  .study-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .study-tools-col {
+    grid-column: 1;
+  }
+
+  .external-video-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>

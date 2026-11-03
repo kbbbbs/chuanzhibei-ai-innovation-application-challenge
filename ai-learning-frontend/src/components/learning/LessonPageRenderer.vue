@@ -228,12 +228,12 @@ function blockTypeLabel(type) {
 h2 { margin: 0; font-size: 28px; }
 .summary { color: #475569; line-height: 1.8; margin-bottom: 0; }
 .hero-meta { display: grid; justify-items: end; gap: 8px; color: #64748b; font-size: 12px; white-space: nowrap; }
-.page-shell { display: grid; grid-template-columns: 190px 1fr; gap: 16px; align-items: flex-start; }
+.page-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 16px; align-items: flex-start; align-content: start; min-height: 0; }
 .page-nav { position: sticky; top: 86px; display: grid; gap: 8px; padding: 16px; border: 1px solid #dbeafe; border-radius: 18px; background: #f8fbff; }
 .page-nav h3 { margin: 0 0 6px; color: #172033; }
 .page-nav a { color: #2563eb; text-decoration: none; line-height: 1.5; font-size: 13px; }
 .page-nav a:hover { text-decoration: underline; }
-.block-stack { display: grid; gap: 16px; }
+.block-stack { display: grid; gap: 16px; min-width: 0; }
 .page-block { border: 1px solid #e2e8f0; border-radius: 20px; padding: 18px; background: #fff; }
 .page-block h3 { margin: 0 0 14px; color: #172033; }
 .block-experiment,

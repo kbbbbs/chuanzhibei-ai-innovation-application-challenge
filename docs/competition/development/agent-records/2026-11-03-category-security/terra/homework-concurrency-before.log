@@ -1,0 +1,152 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.example:Final_exam_question_bank >----------------
+[INFO] Building Final exam question bank 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Final_exam_question_bank ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 20 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ Final_exam_question_bank ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 547 source files with javac [debug parameters release 21] to target\classes
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[32,19] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[43,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/orchestrator/AgentActionIntentRouter.java:[49,36] com.cupk.aiacademy.agent.action �е� com.cupk.aiacademy.agent.action.AgentActionSelectionService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[67,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[68,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[89,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageEntityResolver �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/query/NaturalLanguageQueryService.java:[90,40] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageTimeParser �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[13,19] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/tool/query/NaturalLanguageQueryTool.java:[15,37] com.cupk.aiacademy.agent.query �е� com.cupk.aiacademy.agent.query.NaturalLanguageQueryService �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[INFO] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/action/AgentParameterExtractor.java: ĳЩ�����ļ�ʹ�û򸲸����ѹ�ʱ�� API��
+[INFO] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/action/AgentParameterExtractor.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:deprecation ���±��롣
+[INFO] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/weknora/service/impl/WeKnoraServiceImpl.java: D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-backend\src\main\java\com\cupk\aiacademy\weknora\service\impl\WeKnoraServiceImpl.javaʹ����δ�����򲻰�ȫ�Ĳ�����
+[INFO] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/main/java/com/cupk/aiacademy/weknora/service/impl/WeKnoraServiceImpl.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:unchecked ���±��롣
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ Final_exam_question_bank ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ Final_exam_question_bank ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 73 source files with javac [debug parameters release 21] to target\test-classes
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.SpyBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.SpyBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.SpyBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.SpyBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[WARNING] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/model/RuntimeModelHttpIntegrationTest.java:[80,6] org.springframework.boot.test.mock.mockito �е� org.springframework.boot.test.mock.mockito.SpyBean �ѹ�ʱ, �ұ��Ϊ��ɾ��
+[INFO] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03SearchContractTest.java: ĳЩ�����ļ�ʹ����δ�����򲻰�ȫ�Ĳ�����
+[INFO] /D:/code/program/OnlineLearning/ai-learning-collaboration/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03SearchContractTest.java: �й���ϸ��Ϣ, ��ʹ�� -Xlint:unchecked ���±��롣
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ Final_exam_question_bank ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest
+18:40:56.984 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest]: ExamWorkflowIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:40:57.090 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.cupk.aiacademy.AiAcademyApplication for test class com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-11-03T18:40:57.455+08:00  INFO 41704 --- [ai-academy] [           main] c.c.a.w.ExamWorkflowIntegrationTest      : Starting ExamWorkflowIntegrationTest using Java 21.0.11 with PID 41704 (started by juanzhi in D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-backend)
+2026-11-03T18:40:57.456+08:00  INFO 41704 --- [ai-academy] [           main] c.c.a.w.ExamWorkflowIntegrationTest      : No active profile set, falling back to 1 default profile: "default"
+2026-11-03T18:41:02.771+08:00  INFO 41704 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-03T18:41:03.045+08:00  INFO 41704 --- [ai-academy] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:academy-tests user=SA
+2026-11-03T18:41:03.046+08:00  INFO 41704 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.12 
+2026-11-03T18:41:07.667+08:00  INFO 41704 --- [ai-academy] [           main] m.e.s.MybatisPlusApplicationContextAware : Register ApplicationContext instances org.springframework.web.context.support.GenericWebApplicationContext@8a62297
+2026-11-03T18:41:07.798+08:00  INFO 41704 --- [ai-academy] [           main] c.c.a.w.ExamWorkflowIntegrationTest      : Started ExamWorkflowIntegrationTest in 10.614 seconds (process running for 11.371)
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\juanzhi\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 11.73 s <<< FAILURE! -- in com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest
+[ERROR] com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest.concurrentDuplicateHomeworkSubmissionsHaveOneWinner -- Time elapsed: 0.783 s <<< FAILURE!
+org.opentest4j.AssertionFailedError: concurrent homework submit success count ==> expected: <1> but was: <2>
+	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
+	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
+	at org.junit.jupiter.api.AssertEquals.failNotEqual(AssertEquals.java:197)
+	at org.junit.jupiter.api.AssertEquals.assertEquals(AssertEquals.java:150)
+	at org.junit.jupiter.api.Assertions.assertEquals(Assertions.java:563)
+	at com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest.concurrentDuplicateHomeworkSubmissionsHaveOneWinner(ExamWorkflowIntegrationTest.java:227)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+
+[INFO] 
+[INFO] Results:
+[INFO] 
+[ERROR] Failures: 
+[ERROR]   ExamWorkflowIntegrationTest.concurrentDuplicateHomeworkSubmissionsHaveOneWinner:227 concurrent homework submit success count ==> expected: <1> but was: <2>
+[INFO] 
+[ERROR] Tests run: 1, Failures: 1, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  30.612 s
+[INFO] Finished at: 2026-11-03T18:41:09+08:00
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-surefire-plugin:3.5.6:test (default-test) on project Final_exam_question_bank: There are test failures.
+[ERROR] 
+[ERROR] See D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-backend\target\surefire-reports for the individual test results.
+[ERROR] See dump files (if any exist) [date].dump, [date]-jvmRun[N].dump and [date].dumpstream.
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

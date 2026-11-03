@@ -6,6 +6,7 @@ Vue 3 / Vite 前端与 Spring Boot 后端组成的课程学习平台，包含教
 
 | 协作入口 | 内容 |
 | --- | --- |
+| [2026-11-03 项目 Bug 修正版](docs/releases/2026-11-03-bugfix.md) | 本次修复、测试结果，以及明确保留的未解决问题和未验证范围；不是全部验收通过版本 |
 | [配置说明](docs/CONFIGURATION.md) | 四类模型、环境变量优先级、数据库、存储和排错 |
 | [仓库交接说明](docs/REPOSITORY_HANDOFF.md) | 安全快照、原仓库保留、上传范围及协作权限 |
 | [进展、人工验收与迭代](docs/COLLABORATION_AND_VALIDATION.md) | 当前进展；K02/K03 用户故事与验收对照；反馈后如何按 Scrum + XP 迭代 |

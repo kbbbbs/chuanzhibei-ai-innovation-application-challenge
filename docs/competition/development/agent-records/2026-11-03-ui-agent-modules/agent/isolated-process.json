@@ -1,0 +1,11 @@
+{
+  "processId": 43216,
+  "port": 8082,
+  "timestamp": "2026-11-03T08:59:27.2684386+08:00",
+  "planningModel": "",
+  "generationModel": "opencode/deepseek-v4.1-flash",
+  "intentTimeoutSeconds": 10,
+  "runtimePlanningTimeoutSeconds": 10,
+  "parameterTimeoutSeconds": 10,
+  "chatRequestTimeoutSeconds": 25
+}

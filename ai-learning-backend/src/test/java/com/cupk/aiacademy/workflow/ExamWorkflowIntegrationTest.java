@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.workflow;
 
 import com.cupk.aiacademy.common.Difficulty;
+import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.common.ExamStatus;
 import com.cupk.aiacademy.common.PaperPreflightWarningException;
 import com.cupk.aiacademy.common.PaperStatus;
@@ -16,6 +17,8 @@ import com.cupk.aiacademy.dto.QuestionRequestDTO;
 import com.cupk.aiacademy.dto.QuestionResponseDTO;
 import com.cupk.aiacademy.dto.SubmissionRequestsDTO;
 import com.cupk.aiacademy.dto.SubmissionResponseDTO;
+import com.cupk.aiacademy.dto.StudyNoteSaveRequest;
+import com.cupk.aiacademy.note.StudyNoteService;
 import com.cupk.aiacademy.service.ExamService;
 import com.cupk.aiacademy.service.ExamLifecycleScheduler;
 import com.cupk.aiacademy.service.ExamResultService;
@@ -36,6 +39,9 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -80,9 +86,15 @@ class ExamWorkflowIntegrationTest {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private StudyNoteService studyNoteService;
+
     @BeforeEach
     void seedData() {
         UserContext.clear();
+        jdbcTemplate.update("DELETE FROM study_note");
+        jdbcTemplate.update("DELETE FROM t_lesson");
+        jdbcTemplate.update("DELETE FROM t_chapter");
         jdbcTemplate.update("DELETE FROM t_homework_answer");
         jdbcTemplate.update("DELETE FROM t_homework_record");
         jdbcTemplate.update("DELETE FROM t_homework_session");
@@ -118,6 +130,168 @@ class ExamWorkflowIntegrationTest {
     @AfterEach
     void clearUserContext() {
         UserContext.clear();
+    }
+
+    @Test
+    void enrolledStudentsHaveSeparateNotesForSameLesson() {
+        jdbcTemplate.update("INSERT INTO t_user(id, username, password, nickname, status, create_time, update_time) VALUES (4, 'student2', 'pw', 'student2', 1, NOW(), NOW())");
+        jdbcTemplate.update("INSERT INTO t_user_role(id, user_id, role_id) VALUES (3, 4, 3)");
+        jdbcTemplate.update("INSERT INTO t_class_student(id, class_id, student_id, join_time, status) VALUES (2, ?, 4, NOW(), 1)", CLASS_ID);
+        jdbcTemplate.update("INSERT INTO t_chapter(id, course_id, title) VALUES (1, ?, 'chapter')", COURSE_ID);
+        jdbcTemplate.update("INSERT INTO t_lesson(id, chapter_id, title) VALUES (1, 1, 'lesson')");
+        StudyNoteSaveRequest first = new StudyNoteSaveRequest();
+        first.setContentMd("first private note");
+        StudyNoteSaveRequest second = new StudyNoteSaveRequest();
+        second.setContentMd("second private note");
+        loginAsStudent();
+        studyNoteService.saveMyNote(1, first);
+        setCurrentUser(4, "student");
+        assertEquals("", studyNoteService.getMyNote(1).getContentMd());
+        studyNoteService.saveMyNote(1, second);
+        loginAsStudent();
+        assertEquals("first private note", studyNoteService.getMyNote(1).getContentMd());
+        setCurrentUser(4, "student");
+        assertEquals("second private note", studyNoteService.getMyNote(1).getContentMd());
+        assertEquals(2, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM study_note WHERE lesson_id = 1", Integer.class));
+    }
+
+    @Test
+    void concurrentDuplicateSubmissionsHaveOneWinner() throws Exception {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        assertEquals(1, submission.getAnswers().size());
+        var ready = new CountDownLatch(2);
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Boolean> attempt = () -> {
+                loginAsStudent();
+                try {
+                    ready.countDown();
+                    if (!start.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("start timeout");
+                    submissionService.submit(submission.getId());
+                    return true;
+                } catch (BusinessException e) {
+                    assertEquals("当前答卷状态不允许交卷", e.getMessage());
+                    return false;
+                } finally {
+                    UserContext.clear();
+                }
+            };
+            var first = executor.submit(attempt);
+            var second = executor.submit(attempt);
+            assertTrue(ready.await(10, TimeUnit.SECONDS));
+            start.countDown();
+            int succeeded = (first.get(30, TimeUnit.SECONDS) ? 1 : 0) + (second.get(30, TimeUnit.SECONDS) ? 1 : 0);
+            assertEquals(1, succeeded, "concurrent submit success count");
+        }
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_exam_record", Integer.class));
+        assertEquals(SubmissionStatus.GRADED.getCode(), jdbcTemplate.queryForObject(
+                "SELECT status FROM t_exam_record WHERE id = ?", Integer.class, submission.getId()));
+        assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM t_exam_answer WHERE exam_record_id = ?", Integer.class, submission.getId()));
+    }
+
+    @Test
+    void concurrentDuplicateHomeworkSubmissionsHaveOneWinner() throws Exception {
+        loginAsTeacher();
+        var homework = createHomework(ExamStatus.DRAFT);
+        homeworkAssessmentService.publish(homework.getId());
+        loginAsStudent();
+        var submission = homeworkSubmissionService.start(homework.getId(), "student-001");
+        assertEquals(1, submission.getAnswers().size());
+        var ready = new CountDownLatch(2);
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            java.util.concurrent.Callable<Boolean> attempt = () -> {
+                loginAsStudent();
+                try {
+                    ready.countDown();
+                    if (!start.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("start timeout");
+                    homeworkSubmissionService.submit(submission.getId());
+                    return true;
+                } catch (BusinessException e) {
+                    assertEquals("当前答卷状态不允许交卷", e.getMessage());
+                    return false;
+                } finally {
+                    UserContext.clear();
+                }
+            };
+            var first = executor.submit(attempt);
+            var second = executor.submit(attempt);
+            assertTrue(ready.await(10, TimeUnit.SECONDS));
+            start.countDown();
+            int succeeded = (first.get(30, TimeUnit.SECONDS) ? 1 : 0) + (second.get(30, TimeUnit.SECONDS) ? 1 : 0);
+            assertEquals(1, succeeded, "concurrent homework submit success count");
+        }
+        assertEquals(1, jdbcTemplate.queryForObject("SELECT COUNT(*) FROM t_homework_record", Integer.class));
+        assertEquals(SubmissionStatus.GRADED.getCode(), jdbcTemplate.queryForObject(
+                "SELECT status FROM t_homework_record WHERE id = ?", Integer.class, submission.getId()));
+        assertEquals(1, jdbcTemplate.queryForObject(
+                "SELECT COUNT(*) FROM t_homework_answer WHERE homework_record_id = ?", Integer.class, submission.getId()));
+    }
+
+    @Test
+    void concurrentManualAndAutoSubmitPreserveWinningAnswers() throws Exception {
+        loginAsTeacher();
+        var exam = createExam(ExamStatus.DRAFT);
+        examService.publish(exam.getId());
+        loginAsStudent();
+        var submission = submissionService.start(exam.getId(), "student-001");
+        var manualItem = new SubmissionRequestsDTO.AnswerItem();
+        manualItem.setPaperQuestionId(submission.getAnswers().getFirst().getPaperQuestionId());
+        manualItem.setSelectedOptionKeys(List.of("A"));
+        var manualRequest = new SubmissionRequestsDTO.SaveAnswerRequest();
+        manualRequest.setAnswers(List.of(manualItem));
+        var autoItem = new SubmissionRequestsDTO.AnswerItem();
+        autoItem.setPaperQuestionId(manualItem.getPaperQuestionId());
+        autoItem.setSelectedOptionKeys(List.of("B"));
+        var autoRequest = new SubmissionRequestsDTO.SaveAnswerRequest();
+        autoRequest.setAnswers(List.of(autoItem));
+        var ready = new CountDownLatch(2);
+        var start = new CountDownLatch(1);
+        try (var executor = Executors.newFixedThreadPool(2)) {
+            var manual = executor.submit(() -> {
+                loginAsStudent();
+                try {
+                    ready.countDown();
+                    if (!start.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("start timeout");
+                    return submissionService.submit(submission.getId(), manualRequest);
+                } catch (BusinessException e) {
+                    assertEquals("当前答卷状态不允许交卷", e.getMessage());
+                    return null;
+                } finally {
+                    UserContext.clear();
+                }
+            });
+            var automatic = executor.submit(() -> {
+                loginAsStudent();
+                try {
+                    ready.countDown();
+                    if (!start.await(10, TimeUnit.SECONDS)) throw new IllegalStateException("start timeout");
+                    return submissionService.autoSubmit(submission.getId(), autoRequest);
+                } finally {
+                    UserContext.clear();
+                }
+            });
+            assertTrue(ready.await(10, TimeUnit.SECONDS));
+            start.countDown();
+            var manualResult = manual.get(30, TimeUnit.SECONDS);
+            var autoResult = automatic.get(30, TimeUnit.SECONDS);
+            assertEquals(SubmissionStatus.GRADED, autoResult.getStatus());
+            BigDecimal expectedScore = manualResult == null ? new BigDecimal("0.00") : new BigDecimal("5.00");
+            assertEquals(0, expectedScore.compareTo(autoResult.getTotalScore()));
+            if (manualResult != null) {
+                assertEquals(SubmissionStatus.GRADED, manualResult.getStatus());
+                assertEquals(0, expectedScore.compareTo(manualResult.getTotalScore()));
+            }
+            assertEquals(manualResult == null ? "B" : "A", jdbcTemplate.queryForObject(
+                    "SELECT student_answer FROM t_exam_answer WHERE exam_record_id = ?", String.class, submission.getId()));
+            assertEquals(0, expectedScore.compareTo(jdbcTemplate.queryForObject(
+                    "SELECT total_score FROM t_exam_record WHERE id = ?", BigDecimal.class, submission.getId())));
+        }
     }
 
     @Test

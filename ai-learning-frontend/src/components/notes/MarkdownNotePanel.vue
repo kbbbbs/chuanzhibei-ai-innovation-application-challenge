@@ -177,10 +177,20 @@ watch(content, (value) => {
 .note-header {
   justify-content: space-between;
   gap: 12px;
+  flex-wrap: wrap;
+}
+
+.note-header > span {
+  white-space: nowrap;
 }
 
 .note-actions {
   gap: 6px;
+  flex-wrap: wrap;
+}
+
+.note-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .note-title {

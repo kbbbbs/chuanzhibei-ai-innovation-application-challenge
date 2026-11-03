@@ -1,0 +1,158 @@
+
+Running 6 tests using 1 worker
+
+(node:36208) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 375px (1.3s)
+(node:41576) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 768px (1.3s)
+(node:42612) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 1080px (1.4s)
+(node:29984) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 1440px (1.5s)
+  x  5 e2e\learning-layout-assessment.spec.js:65:3 › HOMEWORK grading and result retain their own labels (10.7s)
+(node:36592) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 6 e2e\learning-layout-assessment.spec.js:65:3 › EXAM grading and result retain their own labels (1.7s)
+
+
+  1) e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 375px 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 280
+    Received:    85.875
+
+      48 |     })
+      49 |     expect(sizes.document).toBeLessThanOrEqual(sizes.viewport + 1)
+    > 50 |     expect(sizes.note.width).toBeGreaterThanOrEqual(280)
+         |                              ^
+      51 |     expect(sizes.title.height).toBeLessThanOrEqual(30)
+      52 |     expect(sizes.select.width).toBeGreaterThanOrEqual(125)
+      53 |     expect(sizes.select.right).toBeLessThanOrEqual(sizes.assistant.right + 1)
+        at D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-frontend\e2e\learning-layout-assessment.spec.js:50:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-9312f-eadable-and-usable-at-375px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-9312f-eadable-and-usable-at-375px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-9312f-eadable-and-usable-at-375px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-9312f-eadable-and-usable-at-375px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 768px 
+
+    Error: expect(received).toBeGreaterThanOrEqual(expected)
+
+    Expected: >= 280
+    Received:    191.15625
+
+      48 |     })
+      49 |     expect(sizes.document).toBeLessThanOrEqual(sizes.viewport + 1)
+    > 50 |     expect(sizes.note.width).toBeGreaterThanOrEqual(280)
+         |                              ^
+      51 |     expect(sizes.title.height).toBeLessThanOrEqual(30)
+      52 |     expect(sizes.select.width).toBeGreaterThanOrEqual(125)
+      53 |     expect(sizes.select.right).toBeLessThanOrEqual(sizes.assistant.right + 1)
+        at D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-frontend\e2e\learning-layout-assessment.spec.js:50:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-1da85-eadable-and-usable-at-768px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-1da85-eadable-and-usable-at-768px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-1da85-eadable-and-usable-at-768px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-1da85-eadable-and-usable-at-768px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 1080px 
+
+    Error: expect(received).toBeLessThanOrEqual(expected)
+
+    Expected: <= 30
+    Received:    105
+
+      49 |     expect(sizes.document).toBeLessThanOrEqual(sizes.viewport + 1)
+      50 |     expect(sizes.note.width).toBeGreaterThanOrEqual(280)
+    > 51 |     expect(sizes.title.height).toBeLessThanOrEqual(30)
+         |                                ^
+      52 |     expect(sizes.select.width).toBeGreaterThanOrEqual(125)
+      53 |     expect(sizes.select.right).toBeLessThanOrEqual(sizes.assistant.right + 1)
+      54 |     await page.getByRole('tab', { name: '问答', exact: true }).click()
+        at D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-frontend\e2e\learning-layout-assessment.spec.js:51:32
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-3a78c-adable-and-usable-at-1080px\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-3a78c-adable-and-usable-at-1080px\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-3a78c-adable-and-usable-at-1080px\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-3a78c-adable-and-usable-at-1080px\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) e2e\learning-layout-assessment.spec.js:65:3 › HOMEWORK grading and result retain their own labels 
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.exam-grading .card-header')
+    Expected substring: "作业批改：基础练习"
+    Received string:    "考试批改：基础练习返回"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.exam-grading .card-header')
+        - locator resolved to <div data-v-68b959a2="" class="card-header">…</div>
+        - unexpected value "考试批改：返回"
+        19 × locator resolved to <div data-v-68b959a2="" class="card-header">…</div>
+           - unexpected value "考试批改：基础练习返回"
+
+
+      66 |     await fixture(page, 'teacher')
+      67 |     await page.goto(kind === 'HOMEWORK' ? '/homework/1/submissions' : '/exams/1/grading')
+    > 68 |     await expect(page.locator('.exam-grading .card-header')).toContainText(`${label}批改：基础练习`)
+         |                                                              ^
+      69 |   })
+      70 |   test(`${kind} result retains its own labels`, async ({ page }) => {
+      71 |     await fixture(page)
+        at D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-frontend\e2e\learning-layout-assessment.spec.js:68:62
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-4382f-ult-retain-their-own-labels\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-4382f-ult-retain-their-own-labels\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-4382f-ult-retain-their-own-labels\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-reviewed-artifacts\learning-layout-assessment-4382f-ult-retain-their-own-labels\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4 failed
+    e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 375px ─
+    e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 768px ─
+    e2e\learning-layout-assessment.spec.js:34:3 › lesson tools remain readable and usable at 1080px 
+    e2e\learning-layout-assessment.spec.js:65:3 › HOMEWORK grading and result retain their own labels 
+  2 passed (21.4s)

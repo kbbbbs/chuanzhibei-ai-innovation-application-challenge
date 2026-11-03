@@ -1,0 +1,123 @@
+{
+  "startedUtc": "2026-11-02T09:45:30.937863+00:00",
+  "checks": [
+    {
+      "name": "empty",
+      "status": "PASS",
+      "evidence": {
+        "requestBytes": 0,
+        "response": {
+          "httpStatus": 200,
+          "body": {
+            "code": "400",
+            "msg": "文件不能为空且不能超过 20 MB",
+            "data": null
+          }
+        }
+      }
+    },
+    {
+      "name": "legacy-doc",
+      "status": "PASS",
+      "evidence": {
+        "requestBytes": 25,
+        "response": {
+          "httpStatus": 200,
+          "body": {
+            "code": "400",
+            "msg": "支持PDF、DOCX、PPTX、MD和UTF-8 TXT文件；不支持旧DOC/PPT",
+            "data": null
+          }
+        }
+      }
+    },
+    {
+      "name": "corrupt-pdf",
+      "status": "PASS",
+      "evidence": {
+        "requestBytes": 37,
+        "response": {
+          "httpStatus": 200,
+          "body": {
+            "code": "400",
+            "msg": "文件解析失败，请检查格式或文件是否损坏",
+            "data": null
+          }
+        }
+      }
+    },
+    {
+      "name": "over-20mb",
+      "status": "PASS",
+      "evidence": {
+        "requestBytes": 20971521,
+        "response": {
+          "httpStatus": 200,
+          "body": {
+            "code": "400",
+            "msg": "文件不能为空且不能超过 20 MB",
+            "data": null
+          }
+        }
+      }
+    },
+    {
+      "name": "rejected-inputs-no-searchable-index",
+      "status": "PASS",
+      "evidence": {
+        "hits": [],
+        "mode": "bm25",
+        "warning": "当前范围没有有效索引，请先上传并解析资料。",
+        "actualMode": "NONE",
+        "degradedReason": "EMPTY_INDEX",
+        "indexVersions": []
+      }
+    },
+    {
+      "name": "delete-own-document-revokes-original-and-chunk",
+      "status": "PASS",
+      "evidence": {
+        "documentId": "a8e3b039-d059-445e-9caf-1895ce28e17d",
+        "chunkId": "e1b08a3a-8acf-4ae0-b8eb-9fff956e5154",
+        "delete": {
+          "httpStatus": 200,
+          "body": {
+            "code": "200",
+            "msg": "请求成功",
+            "data": {
+              "deleted": true
+            }
+          },
+          "elapsedSeconds": 0.047,
+          "bytes": 59,
+          "sha256": "d71be5cf895816b1495c7141fc0a82fb0e7456a500e2c0a19c207916160c1b7c"
+        },
+        "original": {
+          "httpStatus": 404,
+          "body": {
+            "code": "404",
+            "msg": "文档不存在",
+            "data": null
+          },
+          "elapsedSeconds": 0.016,
+          "bytes": 50,
+          "sha256": "84e77fad63c24bb5a9c7fe558534b80b1ef19e76a1a8854140f4208012f7cd9d"
+        },
+        "chunk": {
+          "httpStatus": 200,
+          "body": {
+            "code": "404",
+            "msg": "来源片段不存在",
+            "data": null
+          },
+          "elapsedSeconds": 0.031,
+          "bytes": 56,
+          "sha256": "e0624faf60823aa9f6e43e70657da4600a29c3636a58764dd003be5493967401"
+        }
+      }
+    }
+  ],
+  "modelRequests": 0,
+  "knowledgeBaseId": "eba00a94-34f0-400a-bce2-301cda09c7a6",
+  "finishedUtc": "2026-11-02T09:45:32.186594+00:00"
+}

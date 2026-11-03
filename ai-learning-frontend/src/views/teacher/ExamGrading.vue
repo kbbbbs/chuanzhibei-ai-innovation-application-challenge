@@ -3,7 +3,7 @@
     <el-card v-loading="loading">
       <template #header>
         <div class="card-header">
-          <span>考试批改：{{ exam?.title }}</span>
+          <span>{{ assessmentLabel }}批改：{{ exam?.title }}</span>
           <el-button @click="$router.back()">返回</el-button>
         </div>
       </template>
@@ -128,6 +128,7 @@ const route = useRoute()
 const userStore = useUserStore()
 const examId = computed(() => Number(route.params.id))
 const isHomework = computed(() => route.meta.assessmentType === 'HOMEWORK')
+const assessmentLabel = computed(() => isHomework.value ? '作业' : '考试')
 const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
 const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 

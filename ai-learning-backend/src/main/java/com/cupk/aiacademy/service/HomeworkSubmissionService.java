@@ -135,7 +135,7 @@ public class HomeworkSubmissionService {
 
     @Transactional
     public SubmissionResponseDTO saveAnswers(Long submissionId, SubmissionRequestsDTO.SaveAnswerRequest request) {
-        HomeworkRecord record = getEntityById(submissionId);
+        HomeworkRecord record = getEntityForUpdate(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷不允许继续作答");
@@ -157,7 +157,7 @@ public class HomeworkSubmissionService {
 
     @Transactional
     public SubmissionResponseDTO submit(Long submissionId) {
-        HomeworkRecord record = getEntityById(submissionId);
+        HomeworkRecord record = getEntityForUpdate(submissionId);
         requireStudentRecord(record);
         if (SubmissionStatus.fromCode(record.getStatus()) != SubmissionStatus.IN_PROGRESS) {
             throw new BusinessException("当前答卷状态不允许交卷");
@@ -200,7 +200,7 @@ public class HomeworkSubmissionService {
 
     @Transactional
     public SubmissionResponseDTO manualGrade(Long submissionId, SubmissionRequestsDTO.ManualGradeRequest request) {
-        HomeworkRecord record = getEntityById(submissionId);
+        HomeworkRecord record = getEntityForUpdate(submissionId);
         requireTeacherRecord(record);
         if (request == null || request.getGrades() == null || request.getGrades().isEmpty()) {
             throw new BusinessException("批改结果不能为空");
@@ -308,6 +308,17 @@ public class HomeworkSubmissionService {
         }
         query.orderByDesc("id");
         return recordMapper.selectList(query).stream().map(this::toResponse).toList();
+    }
+
+    /** Serialize answer/status/score writes for one submission until the caller's transaction commits. */
+    private HomeworkRecord getEntityForUpdate(Long submissionId) {
+        HomeworkRecord record = recordMapper.selectOne(new QueryWrapper<HomeworkRecord>()
+                .eq("id", toInt(submissionId, "答卷ID"))
+                .last("FOR UPDATE"));
+        if (record == null) {
+            throw new BusinessException("答卷不存在: " + submissionId);
+        }
+        return record;
     }
 
     public HomeworkRecord getEntityById(Long submissionId) {

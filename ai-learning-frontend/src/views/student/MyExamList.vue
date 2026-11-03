@@ -232,7 +232,7 @@ const handleTabChange = () => {
 
 const handleStartExam = (exam) => {
   if (!canStartExam(exam)) {
-    ElMessage.warning('考试未到开始时间')
+    ElMessage.warning(`${assessmentLabel.value}未到开始时间`)
     return
   }
 

@@ -1,0 +1,114 @@
+{
+  "timestamp": "2026-11-03T06:43:29.353Z",
+  "originalPreserved": "business-results.json",
+  "checks": [
+    {
+      "name": "admin-can-read-own-synthetic-audit",
+      "ok": true
+    },
+    {
+      "name": "audit-action-and-result-match",
+      "ok": true
+    }
+  ],
+  "auditQuery": {
+    "httpStatus": 200,
+    "code": "200",
+    "ownMatchedCount": 1
+  },
+  "ownAudit": [
+    {
+      "id": 7,
+      "userId": 2,
+      "operation": "agent.course.create",
+      "method": "POST",
+      "url": "/api/agent/actions/confirm",
+      "createTime": "2026-11-03T14:40:59.102552",
+      "params": {
+        "actionId": "d49ec3f9-c510-46c3-bc26-a2bbbcadcddd",
+        "actionCode": "course.create",
+        "parameters": {
+          "title": "official-ds-20261103-write",
+          "categoryId": 1,
+          "difficulty": "beginner",
+          "status": 2
+        },
+        "result": {
+          "courseId": 1,
+          "title": "official-ds-20261103-write",
+          "categoryId": 1,
+          "categoryName": "计算机科学与技术",
+          "teacherId": 2,
+          "difficulty": "beginner",
+          "status": 2
+        }
+      }
+    }
+  ],
+  "correctedChecks": [
+    {
+      "name": "structured-pending-course-plan",
+      "ok": true,
+      "detail": {
+        "actionCode": "course.create",
+        "actionId": "d49ec3f9-c510-46c3-bc26-a2bbbcadcddd"
+      }
+    },
+    {
+      "name": "no-write-before-confirm",
+      "ok": true,
+      "detail": {
+        "total": 0
+      }
+    },
+    {
+      "name": "course-exists-after-confirm",
+      "ok": true,
+      "detail": {
+        "total": 1
+      }
+    },
+    {
+      "name": "duplicate-action-rejected",
+      "ok": true,
+      "detail": {
+        "httpStatus": 400,
+        "elapsedMs": 15,
+        "code": "400",
+        "msg": "待确认操作不存在或已被执行",
+        "data": null
+      }
+    },
+    {
+      "name": "audit-has-own-action",
+      "ok": true,
+      "detail": "Verified through admin; teacher listing restricts user_id to teacherStudentIds."
+    },
+    {
+      "name": "read-no-pending-write",
+      "ok": true,
+      "detail": {
+        "pendingAction": null
+      }
+    },
+    {
+      "name": "read-business-answer",
+      "ok": true,
+      "detail": {
+        "content": "查询结果（仅只读，未创建或修改任何数据）：\n\n- 课程ID：1\n- 名称：official-ds-20261103-write\n- 教师：无\n- 难度：beginner\n- 简介：无\n\n匹配到 1 门标题包含 official-ds-20261103 的课程。"
+      }
+    },
+    {
+      "name": "student-role-gate",
+      "ok": true,
+      "detail": {
+        "httpStatus": 200,
+        "elapsedMs": 5,
+        "code": "403",
+        "msg": "学生账号仅开放 Agent 对话权限",
+        "data": null
+      }
+    }
+  ],
+  "verdict": "PASS"
+}

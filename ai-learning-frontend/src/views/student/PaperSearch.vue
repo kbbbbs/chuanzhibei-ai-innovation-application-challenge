@@ -99,7 +99,13 @@
     </el-card>
 
     <el-card style="margin-top: 16px" v-loading="loading">
-      <div v-if="hasSearched && total === 0 && !loading" class="search-empty">
+      <div v-if="searchError && !loading" class="search-error" role="alert">
+        <strong>论文检索失败</strong>
+        <p>{{ searchError }}</p>
+        <el-button type="primary" @click="handleSearch">重新搜索</el-button>
+        <p class="search-error-hint">也可以在上方更换论文来源或关键词后搜索。</p>
+      </div>
+      <div v-else-if="hasSearched && total === 0 && !loading" class="search-empty">
         <template v-if="searchForm.source !== 'local' && isChinese(searchForm.keyword)">
           「{{ searchForm.keyword }}」是中文关键词，{{ sourceLabel(searchForm.source) }} 为英文论文库，中文检索结果有限。
           <el-button type="primary" link @click="switchToLocal">切换到本地数据库</el-button>
@@ -285,6 +291,7 @@ const searchForm = reactive({
 const papers = ref([])
 const total = ref(0)
 const loading = ref(false)
+const searchError = ref('')
 const importing = ref(false)
 const recPapers = ref([])
 const recLoading = ref(false)
@@ -361,6 +368,7 @@ const handleSearch = async () => {
   }
   hasSearched.value = true
   showRecommendations.value = false
+  searchError.value = ''
   loading.value = true
   try {
     const res = await searchPapers(buildSearchParams())
@@ -380,10 +388,14 @@ const handleSearch = async () => {
     } else {
       papers.value = []
       total.value = 0
+      searchError.value = res.msg || '暂时无法完成检索，请稍后重试。'
     }
-  } catch {
+  } catch (error) {
     papers.value = []
     total.value = 0
+    searchError.value = error.code === 'ECONNABORTED'
+      ? '检索请求超时，请稍后重试或切换论文来源。'
+      : (error.response?.data?.msg || '网络连接失败，请检查网络后重新搜索。')
   } finally {
     loading.value = false
   }
@@ -611,6 +623,7 @@ const handleReset = () => {
   searchForm.openAccessOnly = false
   searchForm.page = 1
   hasSearched.value = false
+  searchError.value = ''
   papers.value = []
   total.value = 0
   showRecommendations.value = true
@@ -633,6 +646,25 @@ onMounted(() => {
 </script>
 
 <style scoped>
+.search-error {
+  padding: 20px;
+  border: 1px solid var(--el-color-danger-light-7);
+  border-radius: 8px;
+  background: var(--el-color-danger-light-9);
+  color: var(--el-text-color-primary);
+  overflow-wrap: anywhere;
+}
+
+.search-error p {
+  margin: 12px 0;
+  line-height: 1.6;
+}
+
+.search-error .search-error-hint {
+  margin-bottom: 0;
+  color: var(--el-text-color-regular);
+}
+
 .header-row,
 .card-header,
 .rec-title-row,

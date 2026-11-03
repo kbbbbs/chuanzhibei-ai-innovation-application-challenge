@@ -1,0 +1,7 @@
+Backend exited with an error; inspect the startup diagnostics.
+ËùÔÚÎ»ÖÃ D:\code\program\OnlineLearning\ai-learning-collaboration\scripts\competition\start-local.ps1:68 ×Ö·û: 32
++ ... DE -ne 0) { throw 'Backend exited with an error; inspect the startup  ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : OperationStopped: (Backend exited ...up diagnostics.:String) [], RuntimeException
+    + FullyQualifiedErrorId : Backend exited with an error; inspect the startup diagnostics.
+ 

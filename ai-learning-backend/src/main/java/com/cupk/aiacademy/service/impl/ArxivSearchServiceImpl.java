@@ -8,8 +8,13 @@ import okhttp3.Request;
 import okhttp3.Response;
 import org.springframework.stereotype.Service;
 import org.w3c.dom.*;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
@@ -65,25 +70,46 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
                     return Result.error("429", "arXiv 请求过于频繁，请稍后重试或切换到 OpenAlex / Semantic Scholar");
                 }
                 if (!response.isSuccessful()) {
-                    return Result.error("arXiv API returned " + response.code());
+                    return Result.error("502", "arXiv 服务暂时不可用，请稍后重试或切换论文来源");
                 }
                 if (response.body() == null) {
-                    return Result.error("arXiv API returned empty body");
+                    return Result.error("502", "arXiv 返回了空响应，请稍后重试");
                 }
 
                 String body = response.body().string();
-                return Result.success(parseArxivXml(body));
+                try {
+                    return Result.success(parseArxivXml(body));
+                } catch (Exception e) {
+                    return Result.error("502", "arXiv 返回的检索数据无效，请稍后重试或调整关键词");
+                }
             }
+        } catch (InterruptedIOException e) {
+            return Result.error("504", "arXiv 检索超时，请稍后重试或切换论文来源");
+        } catch (IOException e) {
+            return Result.error("503", "暂时无法连接 arXiv，请检查网络后重试或切换论文来源");
         } catch (Exception e) {
-            return Result.error("Failed to search arXiv: " + e.getMessage());
+            return Result.error("500", "论文检索失败，请稍后重试");
         }
     }
 
     private PaperSearchResponse parseArxivXml(String xml) throws Exception {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         factory.setNamespaceAware(true);
-        Document doc = factory.newDocumentBuilder()
-            .parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+        factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+        factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+        factory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+        factory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_DTD, "");
+        factory.setAttribute(XMLConstants.ACCESS_EXTERNAL_SCHEMA, "");
+        factory.setXIncludeAware(false);
+        factory.setExpandEntityReferences(false);
+        var builder = factory.newDocumentBuilder();
+        builder.setErrorHandler(new DefaultHandler());
+        Document doc = builder.parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
+        Element root = doc.getDocumentElement();
+        if (!ATOM_NS.equals(root.getNamespaceURI()) || !"feed".equals(root.getLocalName())) {
+            throw new SAXException("Expected an Atom feed");
+        }
 
         NodeList entries = doc.getElementsByTagNameNS(ATOM_NS, "entry");
         List<PaperSearchResponse.Paper> papers = new ArrayList<>();
@@ -98,6 +124,9 @@ public class ArxivSearchServiceImpl implements ArxivSearchService {
             PaperSearchResponse.Paper paper = new PaperSearchResponse.Paper();
 
             String idUrl = getTextNS(entry, ATOM_NS, "id");
+            if (idUrl.contains("arxiv.org/api/errors")) {
+                throw new SAXException("arXiv returned an error feed");
+            }
             String paperId = normalizeArxivId(idUrl);
             paper.setPaperId(paperId);
 

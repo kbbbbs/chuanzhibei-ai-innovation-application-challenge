@@ -1,0 +1,3 @@
+2026-11-02T17:43:57.220+08:00  WARN 20748 --- [ai-academy] [0.1-8080-exec-4] c.c.a.agent.planner.LlmIntentSelector    : Agent planner model call failed: stage=intent_select, attempt=1, message=Agent 规划超时，请重新发送
+2026-11-02T17:44:02.221+08:00  WARN 20748 --- [ai-academy] [0.1-8080-exec-4] c.c.a.agent.planner.LlmIntentSelector    : Agent planner model call failed: stage=intent_select, attempt=2, message=Agent 规划超时，请重新发送
+2026-11-02T17:44:02.224+08:00  WARN 20748 --- [ai-academy] [0.1-8080-exec-4] c.c.a.a.core.service.AgentChatService    : Agent planning stopped with user-facing feedback: sessionId=1, attempts=2, errors=[操作规划超时，请稍后重试。], message=无法可靠判断请求类型：操作规划超时，请稍后重试。

@@ -1,0 +1,7 @@
+{
+  "http": 200,
+  "configured_model": "opencode/deepseek-v4.1-flash",
+  "response_model": "deepseek-v4.1-flash",
+  "answer": "ok",
+  "seconds": 2.344
+}

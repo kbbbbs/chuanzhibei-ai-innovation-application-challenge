@@ -1,0 +1,24 @@
+PASS isolated server started on 127.0.0.1:8082
+PASS admin creates synthetic category
+PASS admin reads synthetic category
+PASS admin creates synthetic course
+PASS student create returns 403
+PASS student update returns 403
+PASS student delete returns 403
+PASS student cascade returns 403
+PASS student attempts leave category and course intact
+PASS teacher create returns 403
+PASS teacher update returns 403
+PASS teacher delete returns 403
+PASS teacher cascade returns 403
+PASS teacher attempts leave category and course intact
+PASS anonymous create returns 401
+PASS anonymous update returns 401
+PASS anonymous delete returns 401
+PASS anonymous cascade returns 401
+PASS anonymous attempts leave category and course intact
+PASS admin updates category
+PASS admin cascade deletes synthetic category and course
+PASS admin confirms category removed
+PASS admin creates normal-delete category
+PASS admin normal delete succeeds

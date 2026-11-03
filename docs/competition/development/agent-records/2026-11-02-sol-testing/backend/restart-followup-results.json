@@ -1,0 +1,112 @@
+{
+  "startedUtc": "2026-11-02T09:40:51.990838+00:00",
+  "checks": [
+    {
+      "name": "restart-search-persistence",
+      "status": "PASS",
+      "evidence": {
+        "hits": [
+          {
+            "chunkId": "33010021-276b-430a-9bfc-7b4d7ce4c53f",
+            "documentId": "5cb924fd-373e-447f-a8b8-25f2e6a3b243",
+            "kbId": "35e4d75e-636a-48c6-8865-7c1f9df3947a",
+            "title": "sol-20261102.txt",
+            "content": "SolSyntheticCourse\n梯度下降教学测试：本课程更新后的学习率是0.02。批量大小是32。\n验证标记 SOL_SOURCE_V2。",
+            "page": null,
+            "ordinal": 1,
+            "score": 0.5,
+            "citation": "[1]",
+            "visuals": [],
+            "indexVersion": "2eab1c61-9c29-4f4c-bc63-6e0e67b4da82",
+            "documentVersion": 2,
+            "parseRevision": 1
+          }
+        ],
+        "mode": "bm25",
+        "warning": "向量配置不完整，实际使用BM25关键词检索。",
+        "actualMode": "KEYWORD",
+        "degradedReason": "EMBEDDING_NOT_CONFIGURED",
+        "indexVersions": [
+          {
+            "documentId": "5cb924fd-373e-447f-a8b8-25f2e6a3b243",
+            "indexVersion": "2eab1c61-9c29-4f4c-bc63-6e0e67b4da82",
+            "documentVersion": 2,
+            "parseRevision": 1,
+            "embeddingModel": null,
+            "dimensions": 0,
+            "normalized": false,
+            "chunkRevision": "native-formula-chunker-v3",
+            "parserRevision": "native-page-parser-formula1-visual1",
+            "embeddingFingerprint": null
+          }
+        ]
+      }
+    },
+    {
+      "name": "restart-original-persistence",
+      "status": "PASS",
+      "evidence": {
+        "httpStatus": 200,
+        "bytes": 137,
+        "sha256": "79b4d42677379ef99d32508e1f0a9fc92d10fa3356ec8ac0f963eec548b7ed7a"
+      }
+    },
+    {
+      "name": "real-rag-answer-after-model-config-correction",
+      "status": "PASS",
+      "evidence": {
+        "httpStatus": 200,
+        "body": {
+          "code": "200",
+          "msg": "请求成功",
+          "data": {
+            "sessionId": "0a423d28-80cd-41a6-842d-5cb8c5c6892e",
+            "answer": "根据资料[1]，梯度下降教学测试中：\n\n- 更新后的学习率是 **0.02**\n- 批量大小是 **32**\n\n引用：[1]",
+            "citations": [
+              {
+                "chunkId": "33010021-276b-430a-9bfc-7b4d7ce4c53f",
+                "documentId": "5cb924fd-373e-447f-a8b8-25f2e6a3b243",
+                "kbId": "35e4d75e-636a-48c6-8865-7c1f9df3947a",
+                "title": "sol-20261102.txt",
+                "content": "SolSyntheticCourse\n梯度下降教学测试：本课程更新后的学习率是0.02。批量大小是32。\n验证标记 SOL_SOURCE_V2。",
+                "page": null,
+                "ordinal": 1,
+                "score": 0.5,
+                "citation": "[1]",
+                "visuals": [],
+                "indexVersion": "2eab1c61-9c29-4f4c-bc63-6e0e67b4da82",
+                "documentVersion": 2,
+                "parseRevision": 1
+              }
+            ],
+            "mode": "bm25",
+            "status": "ANSWERED",
+            "warning": "向量配置不完整，实际使用BM25关键词检索。",
+            "actualMode": "KEYWORD",
+            "degradedReason": "EMBEDDING_NOT_CONFIGURED",
+            "indexVersions": [
+              {
+                "documentId": "5cb924fd-373e-447f-a8b8-25f2e6a3b243",
+                "indexVersion": "2eab1c61-9c29-4f4c-bc63-6e0e67b4da82",
+                "documentVersion": 2,
+                "parseRevision": 1,
+                "embeddingModel": null,
+                "dimensions": 0,
+                "normalized": false,
+                "chunkRevision": "native-formula-chunker-v3",
+                "parserRevision": "native-page-parser-formula1-visual1",
+                "embeddingFingerprint": null
+              }
+            ]
+          }
+        },
+        "elapsedSeconds": 16.484,
+        "bytes": 1254,
+        "sha256": "46eb79eeeb7fe3ef421b72270b09b435cb7a198add48869c94e383c8bf99edb3"
+      }
+    }
+  ],
+  "modelRequestsAttempted": 1,
+  "limitations": "One synthetic answer only; not a course answer accuracy or independent retrieval evaluation.",
+  "finishedUtc": "2026-11-02T09:41:08.616954+00:00"
+}

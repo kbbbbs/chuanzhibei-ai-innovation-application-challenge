@@ -1,0 +1,14 @@
+{
+  "export-inspection.json": "abf9c33406ad558821b37441bdf8e22c906553636b9bea04cea7b8392c433bb1",
+  "finalize.py": "f25c6bc5563dd56233de6fffa6d12b04c607e1429276cdf8d717b2814945f434",
+  "http-evidence.json": "de49256e1f396b06ef7384d39777e0ef61d77eb970167a0335b5a203ec004b25",
+  "inspect-export.py": "d7798c866498f0a7aa5ec3d8dd79f6d0ae85bf962ed129e4d478fb55365daf32",
+  "results.json": "9d282cf813760e18a8828c40a52164eee730b375bb3535e8008aecee81d1c945",
+  "session\\manifest.json": "77d67061f3aa609a77c8de63903a990c606616562530a60f91b19f2ae9ff0021",
+  "session\\records.jsonl": "78b868b1daa4282223b7842c5679da2caf289a074d60dc6135137845cbcb7848",
+  "session\\records.md": "e1c7b782ca8785294e27f4e25946a5e6183ff9cde45a4cd10e18d28aead23bd5",
+  "smoke.mjs": "40f0fe9104201e1e48852b3a50ec91ed247b27b18882a004bd21e0b0b2cfb708",
+  "synthetic-exam-score.csv": "050fd677fdcb500cabf314dc8fa6a95d76cb603041bb844a5a96a1098b453236",
+  "synthetic-exam-score.xlsx": "7187201ae626636543a83f85ac2379c423cd834bfa25a748f1e23df0e34890ac",
+  "TEST-REPORT.md": "8f31875229b02a9045d69e102cfa080eaa0864eafd76b2e96d969a7c3b50b251"
+}

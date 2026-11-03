@@ -1,0 +1,33 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-11-03T08:59:28.378+08:00  INFO 43216 --- [ai-academy] [           main] c.cupk.aiacademy.AiAcademyApplication    : Starting AiAcademyApplication v0.0.1-SNAPSHOT using Java 21.0.11 with PID 43216 (D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-backend\target\Final_exam_question_bank-0.0.1-SNAPSHOT.jar started by juanzhi in D:\code\program\OnlineLearning\ai-learning-collaboration)
+2026-11-03T08:59:28.379+08:00  INFO 43216 --- [ai-academy] [           main] c.cupk.aiacademy.AiAcademyApplication    : The following 1 profile is active: "contest-demo"
+2026-11-03T08:59:30.688+08:00  INFO 43216 --- [ai-academy] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8082 (http)
+2026-11-03T08:59:30.705+08:00  INFO 43216 --- [ai-academy] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-03T08:59:30.705+08:00  INFO 43216 --- [ai-academy] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-11-03T08:59:30.742+08:00  INFO 43216 --- [ai-academy] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-11-03T08:59:30.742+08:00  INFO 43216 --- [ai-academy] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2118 ms
+2026-11-03T08:59:30.919+08:00  INFO 43216 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-03T08:59:31.270+08:00  INFO 43216 --- [ai-academy] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:file:D:/code/program/OnlineLearning/ai-learning-collaboration/docs/competition/development/agent-records/2026-11-03-ui-agent-modules/agent/isolated-data/academy user=SA
+2026-11-03T08:59:31.272+08:00  INFO 43216 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.12 
+2026-11-03T08:59:35.014+08:00  INFO 43216 --- [ai-academy] [           main] m.e.s.MybatisPlusApplicationContextAware : Register ApplicationContext instances org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@67ab1c47
+2026-11-03T08:59:35.109+08:00  INFO 43216 --- [ai-academy] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8082 (http) with context path '/'
+2026-11-03T08:59:35.121+08:00  INFO 43216 --- [ai-academy] [           main] c.cupk.aiacademy.AiAcademyApplication    : Started AiAcademyApplication in 7.212 seconds (process running for 7.795)
+2026-11-03T08:59:59.639+08:00  INFO 43216 --- [ai-academy] [0.1-8082-exec-3] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-03T08:59:59.640+08:00  INFO 43216 --- [ai-academy] [0.1-8082-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-03T08:59:59.641+08:00  INFO 43216 --- [ai-academy] [0.1-8082-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 1 ms
+2026-11-03T09:00:00.065+08:00  WARN 43216 --- [ai-academy] [0.1-8082-exec-4] c.c.a.agent.planner.LlmIntentSelector    : Agent planner model call failed: stage=intent_select, attempt=1, message=Agent 规划模型调用失败：MODEL_NOT_CONFIGURED: 请检查对应运行模型配置；不会自动切换模型服务。
+2026-11-03T09:00:00.067+08:00  WARN 43216 --- [ai-academy] [0.1-8082-exec-4] c.c.a.agent.planner.LlmIntentSelector    : Agent planner model call failed: stage=intent_select, attempt=2, message=Agent 规划模型调用失败：MODEL_NOT_CONFIGURED: 请检查对应运行模型配置；不会自动切换模型服务。
+2026-11-03T09:00:00.071+08:00  WARN 43216 --- [ai-academy] [0.1-8082-exec-4] c.c.a.a.core.service.AgentChatService    : Agent planning stopped with user-facing feedback: sessionId=1, attempts=2, errors=[操作规划服务暂时不可用，请稍后重试。], message=无法可靠判断请求类型：操作规划服务暂时不可用，请稍后重试。

@@ -1,0 +1,439 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] ----------------< com.example:Final_exam_question_bank >----------------
+[INFO] Building Final exam question bank 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ Final_exam_question_bank ---
+[INFO] Copying 2 resources from src\main\resources to target\classes
+[INFO] Copying 20 resources from src\main\resources to target\classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ Final_exam_question_bank ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ Final_exam_question_bank ---
+[INFO] Copying 2 resources from src\test\resources to target\test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ Final_exam_question_bank ---
+[INFO] Nothing to compile - all classes are up to date.
+[INFO] 
+[INFO] --- surefire:3.5.6:test (default-test) @ Final_exam_question_bank ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.cupk.aiacademy.agent.core.service.AgentChatServiceTest
+Mockito is currently self-attaching to enable the inline-mock-maker. This will no longer work in future releases of the JDK. Please add Mockito as an agent to your build as described in Mockito's documentation: https://javadoc.io/doc/org.mockito/mockito-core/latest/org.mockito/org/mockito/Mockito.html#0.3
+WARNING: A Java agent has been loaded dynamically (C:\Users\juanzhi\.m2\repository\net\bytebuddy\byte-buddy-agent\1.17.8\byte-buddy-agent-1.17.8.jar)
+WARNING: If a serviceability tool is in use, please run with -XX:+EnableDynamicAgentLoading to hide this warning
+WARNING: If a serviceability tool is not in use, please run with -Djdk.instrument.traceUsage for more information
+WARNING: Dynamic loading of agents will be disallowed by default in a future release
+Java HotSpot(TM) 64-Bit Server VM warning: Sharing is only supported for boot loader classes because bootstrap classpath has been appended
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.541 s -- in com.cupk.aiacademy.agent.core.service.AgentChatServiceTest
+[INFO] Running com.cupk.aiacademy.agent.definition.service.AgentDefinitionServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.128 s -- in com.cupk.aiacademy.agent.definition.service.AgentDefinitionServiceTest
+[INFO] Running com.cupk.aiacademy.agent.knowledge.NativeFormulaContextTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.054 s -- in com.cupk.aiacademy.agent.knowledge.NativeFormulaContextTest
+[INFO] Running com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProviderTest
+18:44:02.535 [main] INFO com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProvider -- Agent RAG context prepared: agentCode=null, knowledgeBaseCount=1, contextCharacters=60
+18:44:02.548 [main] WARN com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProvider -- Ignore non-string WeKnora knowledge base id: 1
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.108 s -- in com.cupk.aiacademy.agent.knowledge.WeKnoraKnowledgeContextProviderTest
+[INFO] Running com.cupk.aiacademy.common.AuthUtilsAssignedRoleTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.132 s -- in com.cupk.aiacademy.common.AuthUtilsAssignedRoleTest
+[INFO] Running com.cupk.aiacademy.config.AuthInterceptorAsyncTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.094 s -- in com.cupk.aiacademy.config.AuthInterceptorAsyncTest
+[INFO] Running com.cupk.aiacademy.controller.CategoryAuthorizationTest
+18:44:03.465 [main] INFO org.hibernate.validator.internal.util.Version -- HV000001: Hibernate Validator 8.0.3.Final
+18:44:04.095 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+18:44:04.096 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+18:44:04.101 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 2 ms
+18:44:04.198 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+18:44:04.199 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+18:44:04.199 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+18:44:04.359 [main] INFO org.springframework.mock.web.MockServletContext -- Initializing Spring TestDispatcherServlet ''
+18:44:04.359 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Initializing Servlet ''
+18:44:04.359 [main] INFO org.springframework.test.web.servlet.TestDispatcherServlet -- Completed initialization in 0 ms
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.650 s -- in com.cupk.aiacademy.controller.CategoryAuthorizationTest
+[INFO] Running com.cupk.aiacademy.controller.NoticeControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.106 s -- in com.cupk.aiacademy.controller.NoticeControllerTest
+[INFO] Running com.cupk.aiacademy.model.ModelRoutingTest
+18:44:05.565 [ForkJoinPool.commonPool-worker-1] ERROR org.springframework.ai.chat.model.MessageAggregator -- Aggregation Error
+org.springframework.web.reactive.function.client.WebClientResponseException$Unauthorized: 401 Unauthorized from POST http://127.0.0.1:50298/failure/v1/chat/completions
+	at org.springframework.web.reactive.function.client.WebClientResponseException.create(WebClientResponseException.java:322)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ? 401 UNAUTHORIZED from POST http://127.0.0.1:50298/failure/v1/chat/completions [DefaultWebClient]
+Original Stack Trace:
+		at org.springframework.web.reactive.function.client.WebClientResponseException.create(WebClientResponseException.java:322)
+		at org.springframework.web.reactive.function.client.DefaultClientResponse.lambda$createException$1(DefaultClientResponse.java:214)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onNext(FluxMap.java:106)
+		at reactor.core.publisher.FluxOnErrorReturn$ReturnSubscriber.onNext(FluxOnErrorReturn.java:162)
+		at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onNext(FluxDefaultIfEmpty.java:122)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onNext(FluxMapFuseable.java:129)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onNext(FluxMapFuseable.java:299)
+		at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onNext(FluxFilterFuseable.java:337)
+		at reactor.core.publisher.Operators$BaseFluxToMonoOperator.completePossiblyEmpty(Operators.java:2096)
+		at reactor.core.publisher.MonoCollect$CollectSubscriber.onComplete(MonoCollect.java:145)
+		at reactor.core.publisher.FluxPublish$PublishSubscriber.checkTerminated(FluxPublish.java:634)
+		at reactor.core.publisher.FluxPublish$PublishSubscriber.drain(FluxPublish.java:494)
+		at reactor.core.publisher.FluxPublish$PublishSubscriber.onComplete(FluxPublish.java:355)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onComplete(FluxContextWrite.java:126)
+		at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onComplete(FluxMapFuseable.java:350)
+		at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.drainAsync(FluxFlattenIterable.java:371)
+		at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.drain(FluxFlattenIterable.java:724)
+		at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.onComplete(FluxFlattenIterable.java:273)
+		at reactor.adapter.JdkFlowAdapter$SubscriberToRS.onComplete(JdkFlowAdapter.java:160)
+		at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.complete(ResponseSubscribers.java:955)
+		at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.lambda$new$1(ResponseSubscribers.java:886)
+		at java.base/java.util.concurrent.CompletableFuture$UniAccept.tryFire(CompletableFuture.java:718)
+		at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+		at java.base/java.util.concurrent.CompletableFuture.complete(CompletableFuture.java:2179)
+		at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.lambda$subscribe$3(ResponseSubscribers.java:983)
+		at java.base/java.util.concurrent.CompletableFuture.uniAcceptNow(CompletableFuture.java:757)
+		at java.base/java.util.concurrent.CompletableFuture.uniAcceptStage(CompletableFuture.java:735)
+		at java.base/java.util.concurrent.CompletableFuture.thenAccept(CompletableFuture.java:2214)
+		at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.subscribe(ResponseSubscribers.java:979)
+		at reactor.adapter.JdkFlowAdapter$FlowPublisherAsFlux.subscribe(JdkFlowAdapter.java:68)
+		at reactor.core.publisher.InternalFluxOperator.subscribe(InternalFluxOperator.java:68)
+		at reactor.core.publisher.FluxPublish.connect(FluxPublish.java:106)
+		at reactor.core.publisher.FluxAutoConnect.subscribe(FluxAutoConnect.java:62)
+		at reactor.core.publisher.Flux.subscribe(Flux.java:8891)
+		at org.springframework.http.client.reactive.AbstractClientHttpResponse$SingleSubscriberPublisher.subscribe(AbstractClientHttpResponse.java:112)
+		at reactor.core.publisher.FluxSource.subscribe(FluxSource.java:71)
+		at reactor.core.publisher.Flux.subscribe(Flux.java:8891)
+		at reactor.core.publisher.MonoFlatMapMany$FlatMapManyMain.onNext(MonoFlatMapMany.java:196)
+		at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onNext(FluxContextWrite.java:107)
+		at reactor.core.publisher.FluxDoFinally$DoFinallySubscriber.onNext(FluxDoFinally.java:113)
+		at reactor.core.publisher.MonoPeekTerminal$MonoTerminalPeekSubscriber.onNext(MonoPeekTerminal.java:180)
+		at reactor.core.publisher.FluxPeekFuseable$PeekConditionalSubscriber.onNext(FluxPeekFuseable.java:854)
+		at reactor.core.publisher.FluxSwitchIfEmpty$SwitchIfEmptySubscriber.onNext(FluxSwitchIfEmpty.java:74)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onNext(FluxMap.java:122)
+		at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onNext(FluxOnErrorResume.java:79)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onNext(FluxPeek.java:200)
+		at reactor.core.publisher.FluxPeek$PeekSubscriber.onNext(FluxPeek.java:200)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.complete(MonoIgnoreThen.java:294)
+		at reactor.core.publisher.MonoIgnoreThen$ThenIgnoreMain.onNext(MonoIgnoreThen.java:188)
+		at reactor.core.publisher.FluxMap$MapSubscriber.onNext(FluxMap.java:122)
+		at reactor.core.publisher.MonoCompletionStage$MonoCompletionStageSubscription.apply(MonoCompletionStage.java:121)
+		at reactor.core.publisher.MonoCompletionStage$MonoCompletionStageSubscription.apply(MonoCompletionStage.java:67)
+		at java.base/java.util.concurrent.CompletableFuture.uniHandle(CompletableFuture.java:934)
+		at java.base/java.util.concurrent.CompletableFuture$UniHandle.tryFire(CompletableFuture.java:911)
+		at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+		at java.base/java.util.concurrent.CompletableFuture.postFire(CompletableFuture.java:614)
+		at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:844)
+		at java.base/java.util.concurrent.CompletableFuture$Completion.exec(CompletableFuture.java:483)
+		at java.base/java.util.concurrent.ForkJoinTask.doExec(ForkJoinTask.java:387)
+		at java.base/java.util.concurrent.ForkJoinPool$WorkQueue.topLevelExec(ForkJoinPool.java:1310)
+		at java.base/java.util.concurrent.ForkJoinPool.scan(ForkJoinPool.java:1841)
+		at java.base/java.util.concurrent.ForkJoinPool.runWorker(ForkJoinPool.java:1806)
+		at java.base/java.util.concurrent.ForkJoinWorkerThread.run(ForkJoinWorkerThread.java:188)
+18:44:06.616 [HttpClient-26-Worker-0] ERROR org.springframework.ai.chat.model.MessageAggregator -- Aggregation Error
+org.springframework.web.reactive.function.client.WebClientResponseException: 200 OK from POST http://127.0.0.1:50301/continuous/v1/chat/completions, but response failed with cause: java.io.IOException: chunked transfer encoding, state: READING_LENGTH
+	at org.springframework.web.reactive.function.client.WebClientResponseException.create(WebClientResponseException.java:337)
+	at org.springframework.web.reactive.function.client.DefaultClientResponse.lambda$createException$1(DefaultClientResponse.java:214)
+	at reactor.core.publisher.FluxMap$MapSubscriber.onNext(FluxMap.java:106)
+	at reactor.core.publisher.FluxOnErrorReturn$ReturnSubscriber.onError(FluxOnErrorReturn.java:199)
+	at reactor.core.publisher.FluxDefaultIfEmpty$DefaultIfEmptySubscriber.onError(FluxDefaultIfEmpty.java:156)
+	at reactor.core.publisher.FluxOnAssembly$OnAssemblySubscriber.onError(FluxOnAssembly.java:544)
+	at reactor.core.publisher.FluxMapFuseable$MapFuseableSubscriber.onError(FluxMapFuseable.java:142)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onError(FluxContextWrite.java:121)
+	at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onError(FluxMapFuseable.java:340)
+	at reactor.core.publisher.FluxFilterFuseable$FilterFuseableConditionalSubscriber.onError(FluxFilterFuseable.java:382)
+	at reactor.core.publisher.MonoCollect$CollectSubscriber.onError(MonoCollect.java:135)
+	at org.springframework.http.client.reactive.AbstractClientHttpResponse$SingleSubscriberPublisher.subscribe(AbstractClientHttpResponse.java:116)
+	at reactor.core.publisher.FluxSource.subscribe(FluxSource.java:71)
+	at reactor.core.publisher.Mono.subscribe(Mono.java:4576)
+	at reactor.core.publisher.FluxOnErrorResume$ResumeSubscriber.onError(FluxOnErrorResume.java:103)
+	at reactor.core.publisher.FluxOnAssembly$OnAssemblySubscriber.onError(FluxOnAssembly.java:544)
+	at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.maybeOnError(FluxConcatMapNoPrefetch.java:327)
+	at reactor.core.publisher.FluxConcatMapNoPrefetch$FluxConcatMapNoPrefetchSubscriber.onError(FluxConcatMapNoPrefetch.java:221)
+	at reactor.core.publisher.FluxBufferPredicate$BufferPredicateSubscriber.onError(FluxBufferPredicate.java:346)
+	at reactor.core.publisher.FluxPeekFuseable$PeekFuseableConditionalSubscriber.onError(FluxPeekFuseable.java:553)
+	at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onError(FluxMapFuseable.java:340)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onError(FluxContextWrite.java:121)
+	at reactor.core.publisher.FluxDoFinally$DoFinallySubscriber.onError(FluxDoFinally.java:119)
+	at reactor.core.publisher.FluxConcatArray$ConcatArraySubscriber.onError(FluxConcatArray.java:186)
+	at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.drainAsync(FluxFlattenIterable.java:351)
+	at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.drain(FluxFlattenIterable.java:724)
+	at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.onError(FluxFlattenIterable.java:263)
+	at reactor.core.publisher.FluxPublish$PublishSubscriber.checkTerminated(FluxPublish.java:625)
+	at reactor.core.publisher.FluxPublish$PublishSubscriber.drain(FluxPublish.java:494)
+	at reactor.core.publisher.FluxPublish$PublishSubscriber.onError(FluxPublish.java:336)
+	at reactor.core.publisher.FluxContextWrite$ContextWriteSubscriber.onError(FluxContextWrite.java:121)
+	at reactor.core.publisher.FluxMapFuseable$MapFuseableConditionalSubscriber.onError(FluxMapFuseable.java:340)
+	at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.drainAsync(FluxFlattenIterable.java:351)
+	at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.drain(FluxFlattenIterable.java:724)
+	at reactor.core.publisher.FluxFlattenIterable$FlattenIterableSubscriber.onError(FluxFlattenIterable.java:263)
+	at reactor.adapter.JdkFlowAdapter$SubscriberToRS.onError(JdkFlowAdapter.java:155)
+	at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.complete(ResponseSubscribers.java:960)
+	at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.lambda$new$1(ResponseSubscribers.java:886)
+	at java.base/java.util.concurrent.CompletableFuture.uniAcceptNow(CompletableFuture.java:757)
+	at java.base/java.util.concurrent.CompletableFuture.uniAcceptStage(CompletableFuture.java:735)
+	at java.base/java.util.concurrent.CompletableFuture.thenAccept(CompletableFuture.java:2214)
+	at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.lambda$new$2(ResponseSubscribers.java:886)
+	at java.base/java.util.concurrent.CompletableFuture.uniWhenComplete(CompletableFuture.java:863)
+	at java.base/java.util.concurrent.CompletableFuture$UniWhenComplete.tryFire(CompletableFuture.java:841)
+	at java.base/java.util.concurrent.CompletableFuture.postComplete(CompletableFuture.java:510)
+	at java.base/java.util.concurrent.CompletableFuture.completeExceptionally(CompletableFuture.java:2194)
+	at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.signalError(ResponseSubscribers.java:968)
+	at java.net.http/jdk.internal.net.http.ResponseSubscribers$PublishingBodySubscriber.onError(ResponseSubscribers.java:1044)
+	at java.net.http/jdk.internal.net.http.common.HttpBodySubscriberWrapper.propagateError(HttpBodySubscriberWrapper.java:171)
+	at java.net.http/jdk.internal.net.http.common.HttpBodySubscriberWrapper.complete(HttpBodySubscriberWrapper.java:310)
+	at java.net.http/jdk.internal.net.http.common.HttpBodySubscriberWrapper.onError(HttpBodySubscriberWrapper.java:396)
+	at java.net.http/jdk.internal.net.http.Http1Response.lambda$readBody$1(Http1Response.java:347)
+	at java.net.http/jdk.internal.net.http.ResponseContent$ChunkedBodyParser.onError(ResponseContent.java:185)
+	at java.net.http/jdk.internal.net.http.Http1Response$BodyReader.onReadError(Http1Response.java:677)
+	at java.net.http/jdk.internal.net.http.Http1AsyncReceiver.checkForErrors(Http1AsyncReceiver.java:302)
+	at java.net.http/jdk.internal.net.http.Http1AsyncReceiver.flush(Http1AsyncReceiver.java:268)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:182)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:207)
+	at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+	at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.io.IOException: chunked transfer encoding, state: READING_LENGTH
+	at java.net.http/jdk.internal.net.http.common.Utils.wrapWithExtraDetail(Utils.java:415)
+	Suppressed: The stacktrace has been enhanced by Reactor, refer to additional information below: 
+Error has been observed at the following site(s):
+	*__checkpoint ? Body from POST http://127.0.0.1:50301/continuous/v1/chat/completions [DefaultClientResponse]
+Original Stack Trace:
+		at java.net.http/jdk.internal.net.http.common.Utils.wrapWithExtraDetail(Utils.java:415)
+		at java.net.http/jdk.internal.net.http.Http1Response$BodyReader.onReadError(Http1Response.java:676)
+		at java.net.http/jdk.internal.net.http.Http1AsyncReceiver.checkForErrors(Http1AsyncReceiver.java:302)
+		at java.net.http/jdk.internal.net.http.Http1AsyncReceiver.flush(Http1AsyncReceiver.java:268)
+		at java.net.http/jdk.internal.net.http.common.SequentialScheduler$LockingRestartableTask.run(SequentialScheduler.java:182)
+		at java.net.http/jdk.internal.net.http.common.SequentialScheduler$CompleteRestartableTask.run(SequentialScheduler.java:149)
+		at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:207)
+		at java.base/java.util.concurrent.ThreadPoolExecutor.runWorker(ThreadPoolExecutor.java:1144)
+		at java.base/java.util.concurrent.ThreadPoolExecutor$Worker.run(ThreadPoolExecutor.java:642)
+		at java.base/java.lang.Thread.run(Thread.java:1583)
+Caused by: java.io.EOFException: EOF reached while reading
+	at java.net.http/jdk.internal.net.http.Http1AsyncReceiver$Http1TubeSubscriber.onComplete(Http1AsyncReceiver.java:601)
+	at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$ReadSubscription.signalCompletion(SocketTube.java:648)
+	at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$InternalReadSubscription.read(SocketTube.java:853)
+	at java.net.http/jdk.internal.net.http.SocketTube$SocketFlowTask.run(SocketTube.java:181)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler$SchedulableTask.run(SequentialScheduler.java:207)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:280)
+	at java.net.http/jdk.internal.net.http.common.SequentialScheduler.runOrSchedule(SequentialScheduler.java:233)
+	at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$InternalReadSubscription.signalReadable(SocketTube.java:782)
+	at java.net.http/jdk.internal.net.http.SocketTube$InternalReadPublisher$ReadEvent.signalEvent(SocketTube.java:965)
+	at java.net.http/jdk.internal.net.http.SocketTube$SocketFlowEvent.handle(SocketTube.java:253)
+	at java.net.http/jdk.internal.net.http.HttpClientImpl$SelectorManager.handleEvent(HttpClientImpl.java:1477)
+	at java.net.http/jdk.internal.net.http.HttpClientImpl$SelectorManager.lambda$run$3(HttpClientImpl.java:1422)
+	at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
+	at java.net.http/jdk.internal.net.http.HttpClientImpl$SelectorManager.run(HttpClientImpl.java:1422)
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 2.318 s -- in com.cupk.aiacademy.model.ModelRoutingTest
+[INFO] Running com.cupk.aiacademy.model.RuntimeModelCapabilitiesTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.431 s -- in com.cupk.aiacademy.model.RuntimeModelCapabilitiesTest
+[INFO] Running com.cupk.aiacademy.model.RuntimeModelConfigurationTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.514 s -- in com.cupk.aiacademy.model.RuntimeModelConfigurationTest
+[INFO] Running com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest
+18:44:07.875 [main] INFO org.springframework.test.context.support.AnnotationConfigContextLoaderUtils -- Could not detect default configuration classes for test class [com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest]: RuntimeModelHttpIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+18:44:07.995 [main] INFO org.springframework.boot.test.context.SpringBootTestContextBootstrapper -- Found @SpringBootConfiguration com.cupk.aiacademy.AiAcademyApplication for test class com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-11-03T18:44:08.291+08:00  INFO 21960 --- [ai-academy] [           main] c.c.a.m.RuntimeModelHttpIntegrationTest  : Starting RuntimeModelHttpIntegrationTest using Java 21.0.11 with PID 21960 (started by juanzhi in D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-backend)
+2026-11-03T18:44:08.293+08:00  INFO 21960 --- [ai-academy] [           main] c.c.a.m.RuntimeModelHttpIntegrationTest  : No active profile set, falling back to 1 default profile: "default"
+2026-11-03T18:44:10.402+08:00  INFO 21960 --- [ai-academy] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 0 (http)
+2026-11-03T18:44:10.422+08:00  INFO 21960 --- [ai-academy] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-11-03T18:44:10.422+08:00  INFO 21960 --- [ai-academy] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.55]
+2026-11-03T18:44:10.514+08:00  INFO 21960 --- [ai-academy] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-11-03T18:44:10.515+08:00  INFO 21960 --- [ai-academy] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2048 ms
+2026-11-03T18:44:10.646+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-11-03T18:44:10.918+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection conn0: url=jdbc:h2:mem:k00-http user=SA
+2026-11-03T18:44:10.921+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.12 
+2026-11-03T18:44:14.538+08:00  INFO 21960 --- [ai-academy] [           main] m.e.s.MybatisPlusApplicationContextAware : Register ApplicationContext instances org.springframework.boot.web.servlet.context.AnnotationConfigServletWebServerApplicationContext@5c883b3f
+2026-11-03T18:44:14.702+08:00  INFO 21960 --- [ai-academy] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 50348 (http) with context path '/'
+2026-11-03T18:44:14.723+08:00  INFO 21960 --- [ai-academy] [           main] c.c.a.m.RuntimeModelHttpIntegrationTest  : Started RuntimeModelHttpIntegrationTest in 6.662 seconds (process running for 14.702)
+2026-11-03T18:44:14.946+08:00  INFO 21960 --- [ai-academy] [1-auto-1-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-11-03T18:44:14.947+08:00  INFO 21960 --- [ai-academy] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-11-03T18:44:14.947+08:00  INFO 21960 --- [ai-academy] [1-auto-1-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 0 ms
+2026-11-03T18:44:15.978+08:00  INFO 21960 --- [ai-academy] [           main] o.s.b.w.e.tomcat.GracefulShutdown        : Commencing graceful shutdown. Waiting for active requests to complete
+2026-11-03T18:44:15.982+08:00  INFO 21960 --- [ai-academy] [tomcat-shutdown] o.s.b.w.e.tomcat.GracefulShutdown        : Graceful shutdown complete
+2026-11-03T18:44:15.994+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-11-03T18:44:15.998+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 8.155 s -- in com.cupk.aiacademy.model.RuntimeModelHttpIntegrationTest
+[INFO] Running com.cupk.aiacademy.model.RuntimeModelLiveTest
+[WARNING] Tests run: 5, Failures: 0, Errors: 0, Skipped: 5, Time elapsed: 0.001 s -- in com.cupk.aiacademy.model.RuntimeModelLiveTest
+[INFO] Running com.cupk.aiacademy.model.RuntimeModelPolicyTest
+[INFO] Tests run: 19, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.070 s -- in com.cupk.aiacademy.model.RuntimeModelPolicyTest
+[INFO] Running com.cupk.aiacademy.preparation.PreparationModelGatewayTest
+2026-11-03T18:44:17.129+08:00  WARN 21960 --- [ai-academy] [           main] c.c.a.p.PreparationModelGateway          : Preparation model call failed on attempt 1/2, retrying: ���ε��ó���1��
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.056 s -- in com.cupk.aiacademy.preparation.PreparationModelGatewayTest
+[INFO] Running com.cupk.aiacademy.preparation.PreparationNativeKnowledgeTest
+2026-11-03T18:44:17.614+08:00  WARN 21960 --- [ai-academy] [ive-test-worker] c.c.a.preparation.PreparationService     : Preparation model boundary failed: BusinessException
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.556 s -- in com.cupk.aiacademy.preparation.PreparationNativeKnowledgeTest
+[INFO] Running com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.186 s -- in com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest
+[INFO] Running com.cupk.aiacademy.rag.chat.NativeRagVisualChatTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.286 s -- in com.cupk.aiacademy.rag.chat.NativeRagVisualChatTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.FormulaContractTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.cupk.aiacademy.rag.ingestion.FormulaContractTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.FormulaTextTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.cupk.aiacademy.rag.ingestion.FormulaTextTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.IngestionJobRepositoryTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.561 s -- in com.cupk.aiacademy.rag.ingestion.IngestionJobRepositoryTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02CourseMaterialLiveTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.cupk.aiacademy.rag.ingestion.K02CourseMaterialLiveTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02FormulaLiveTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.cupk.aiacademy.rag.ingestion.K02FormulaLiveTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02IngestionServiceTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.145 s -- in com.cupk.aiacademy.rag.ingestion.K02IngestionServiceTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02ProgressFencingRaceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.499 s -- in com.cupk.aiacademy.rag.ingestion.K02ProgressFencingRaceTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02VisualCheckpointTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.493 s -- in com.cupk.aiacademy.rag.ingestion.K02VisualCheckpointTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02VisualHttpTest
+2026-11-03T18:44:27.215+08:00  INFO 21960 --- [ai-academy] [           main] o.s.mock.web.MockServletContext          : Initializing Spring TestDispatcherServlet ''
+2026-11-03T18:44:27.215+08:00  INFO 21960 --- [ai-academy] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Initializing Servlet ''
+2026-11-03T18:44:27.216+08:00  INFO 21960 --- [ai-academy] [           main] o.s.t.web.servlet.TestDispatcherServlet  : Completed initialization in 0 ms
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.336 s -- in com.cupk.aiacademy.rag.ingestion.K02VisualHttpTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02VisualIngestionTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.895 s -- in com.cupk.aiacademy.rag.ingestion.K02VisualIngestionTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02VisualLiveTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.002 s -- in com.cupk.aiacademy.rag.ingestion.K02VisualLiveTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K02VisualQuotaTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.295 s -- in com.cupk.aiacademy.rag.ingestion.K02VisualQuotaTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.K03SymbolBulletTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.cupk.aiacademy.rag.ingestion.K03SymbolBulletTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.PageAnalysisAndChunkerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.cupk.aiacademy.rag.ingestion.PageAnalysisAndChunkerTest
+[INFO] Running com.cupk.aiacademy.rag.ingestion.RagPageExtractorTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.354 s -- in com.cupk.aiacademy.rag.ingestion.RagPageExtractorTest
+[INFO] Running com.cupk.aiacademy.rag.JdbcRagVectorStoreTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.cupk.aiacademy.rag.JdbcRagVectorStoreTest
+[INFO] Running com.cupk.aiacademy.rag.K01AuthorizationBoundaryTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.305 s -- in com.cupk.aiacademy.rag.K01AuthorizationBoundaryTest
+[INFO] Running com.cupk.aiacademy.rag.K01DocumentLifecycleTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.941 s -- in com.cupk.aiacademy.rag.K01DocumentLifecycleTest
+[INFO] Running com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.cupk.aiacademy.rag.K01MySqlMigrationLiveTest
+[INFO] Running com.cupk.aiacademy.rag.K01RevocationDuringIoTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.212 s -- in com.cupk.aiacademy.rag.K01RevocationDuringIoTest
+[INFO] Running com.cupk.aiacademy.rag.K02SchemaMigrationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.027 s -- in com.cupk.aiacademy.rag.K02SchemaMigrationTest
+[INFO] Running com.cupk.aiacademy.rag.K03EmbeddingBatchContractTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.045 s -- in com.cupk.aiacademy.rag.K03EmbeddingBatchContractTest
+[INFO] Running com.cupk.aiacademy.rag.K03EmbeddingBoundaryTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.025 s -- in com.cupk.aiacademy.rag.K03EmbeddingBoundaryTest
+[INFO] Running com.cupk.aiacademy.rag.K03EvaluationSupportTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.120 s -- in com.cupk.aiacademy.rag.K03EvaluationSupportTest
+[INFO] Running com.cupk.aiacademy.rag.K03PersistenceRestartTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 13.56 s -- in com.cupk.aiacademy.rag.K03PersistenceRestartTest
+[INFO] Running com.cupk.aiacademy.rag.K03RetrievalLiveTest
+[WARNING] Tests run: 1, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0 s -- in com.cupk.aiacademy.rag.K03RetrievalLiveTest
+[INFO] Running com.cupk.aiacademy.rag.K03SearchContractTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.318 s -- in com.cupk.aiacademy.rag.K03SearchContractTest
+[INFO] Running com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 64.09 s -- in com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest
+[INFO] Running com.cupk.aiacademy.rag.NativeRagVectorMigrationTest
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.670 s -- in com.cupk.aiacademy.rag.NativeRagVectorMigrationTest
+[INFO] Running com.cupk.aiacademy.rag.NativeRagVectorStorageTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.009 s -- in com.cupk.aiacademy.rag.NativeRagVectorStorageTest
+[INFO] Running com.cupk.aiacademy.rag.ocr.OcrModelClientTest
+[INFO] Tests run: 16, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.343 s -- in com.cupk.aiacademy.rag.ocr.OcrModelClientTest
+[INFO] Running com.cupk.aiacademy.rag.ocr.OcrPipelineContractTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.284 s -- in com.cupk.aiacademy.rag.ocr.OcrPipelineContractTest
+[INFO] Running com.cupk.aiacademy.rag.ocr.OcrResultNormalizerRegressionTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.cupk.aiacademy.rag.ocr.OcrResultNormalizerRegressionTest
+[INFO] Running com.cupk.aiacademy.rag.ocr.RenderResourceGuardTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.666 s -- in com.cupk.aiacademy.rag.ocr.RenderResourceGuardTest
+[INFO] Running com.cupk.aiacademy.rag.RagAuthorizationServiceTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 s -- in com.cupk.aiacademy.rag.RagAuthorizationServiceTest
+[INFO] Running com.cupk.aiacademy.rag.RagDocumentParserTest
+2026-11-03T18:45:54.963+08:00  INFO 21960 --- [ai-academy] [           main] o.a.p.hslf.usermodel.HSLFTextParagraph   : styles atom doesn't exist. Creating dummy record for later saving.
+2026-11-03T18:45:54.966+08:00  INFO 21960 --- [ai-academy] [           main] o.a.p.hslf.usermodel.HSLFTextParagraph   : styles atom doesn't exist. Creating dummy record for later saving.
+2026-11-03T18:45:54.979+08:00  INFO 21960 --- [ai-academy] [           main] o.a.poi.hslf.usermodel.HSLFSlideShow     : Added slide 1 with ref 0 and identifier 256
+2026-11-03T18:45:54.982+08:00  INFO 21960 --- [ai-academy] [           main] o.a.poi.hslf.usermodel.HSLFSlideShow     : New slide/object ended up at 3221
+2026-11-03T18:45:55.022+08:00  INFO 21960 --- [ai-academy] [           main] org.apache.poi.POIDocument               : Wrote property set SummaryInformation of size 3676
+2026-11-03T18:45:55.024+08:00  INFO 21960 --- [ai-academy] [           main] org.apache.poi.POIDocument               : Wrote property set DocumentSummaryInformation of size 540
+2026-11-03T18:45:55.094+08:00  WARN 21960 --- [ai-academy] [           main] o.apache.poi.xslf.usermodel.XSLFSheet    : shape id 1 has been already used.
+2026-11-03T18:45:55.094+08:00  WARN 21960 --- [ai-academy] [           main] o.apache.poi.xslf.usermodel.XSLFSheet    : shape id 2 has been already used.
+2026-11-03T18:45:55.095+08:00  WARN 21960 --- [ai-academy] [           main] o.apache.poi.xslf.usermodel.XSLFSheet    : shape id 3 has been already used.
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.758 s -- in com.cupk.aiacademy.rag.RagDocumentParserTest
+[INFO] Running com.cupk.aiacademy.rag.RagEmbeddingConfigurationTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.cupk.aiacademy.rag.RagEmbeddingConfigurationTest
+[INFO] Running com.cupk.aiacademy.rag.RagEmbeddingProtocolTest
+[INFO] Tests run: 14, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.201 s -- in com.cupk.aiacademy.rag.RagEmbeddingProtocolTest
+[INFO] Running com.cupk.aiacademy.rag.RagEmbeddingTimeoutTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.020 s -- in com.cupk.aiacademy.rag.RagEmbeddingTimeoutTest
+[INFO] Running com.cupk.aiacademy.rag.RagFileStoreTest
+[WARNING] Tests run: 22, Failures: 0, Errors: 0, Skipped: 4, Time elapsed: 0.733 s -- in com.cupk.aiacademy.rag.RagFileStoreTest
+[INFO] Running com.cupk.aiacademy.rag.RagRetrievalServiceTest
+[INFO] Tests run: 11, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.cupk.aiacademy.rag.RagRetrievalServiceTest
+[INFO] Running com.cupk.aiacademy.rag.RagSchemaMigratorTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.135 s -- in com.cupk.aiacademy.rag.RagSchemaMigratorTest
+[INFO] Running com.cupk.aiacademy.rag.repository.RagIndexVersionRepositoryTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.066 s -- in com.cupk.aiacademy.rag.repository.RagIndexVersionRepositoryTest
+[INFO] Running com.cupk.aiacademy.rag.visual.OcrLayoutParserTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.010 s -- in com.cupk.aiacademy.rag.visual.OcrLayoutParserTest
+[INFO] Running com.cupk.aiacademy.rag.visual.RagVisualReaderTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.216 s -- in com.cupk.aiacademy.rag.visual.RagVisualReaderTest
+[INFO] Running com.cupk.aiacademy.rag.visual.VisualCropperTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.239 s -- in com.cupk.aiacademy.rag.visual.VisualCropperTest
+[INFO] Running com.cupk.aiacademy.service.HomeCourseRecommendationServiceTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.143 s -- in com.cupk.aiacademy.service.HomeCourseRecommendationServiceTest
+[INFO] Running com.cupk.aiacademy.service.ImportServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.863 s -- in com.cupk.aiacademy.service.ImportServiceTest
+[INFO] Running com.cupk.aiacademy.service.PermissionServiceRagActorTest
+[INFO] Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.024 s -- in com.cupk.aiacademy.service.PermissionServiceRagActorTest
+[INFO] Running com.cupk.aiacademy.service.QuestionServiceKnowledgeGenerationTest
+2026-11-03T18:46:00.286+08:00  INFO 21960 --- [ai-academy] [           main] c.c.aiacademy.service.QuestionService    : Generating questions from KB, prompt length: 840
+2026-11-03T18:46:00.288+08:00  WARN 21960 --- [ai-academy] [           main] c.c.aiacademy.service.QuestionService    : Question model boundary failed: IllegalStateException
+2026-11-03T18:46:00.311+08:00  WARN 21960 --- [ai-academy] [           main] c.c.aiacademy.service.QuestionService    : Question model boundary failed: BusinessException
+[INFO] Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.384 s -- in com.cupk.aiacademy.service.QuestionServiceKnowledgeGenerationTest
+[INFO] Running com.cupk.aiacademy.service.RelatedNoticeServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.005 s -- in com.cupk.aiacademy.service.RelatedNoticeServiceTest
+[INFO] Running com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest
+[WARNING] Tests run: 2, Failures: 0, Errors: 0, Skipped: 1, Time elapsed: 0.265 s -- in com.cupk.aiacademy.weknora.service.impl.WeKnoraServiceImplTest
+[INFO] Running com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest
+2026-11-03T18:46:00.592+08:00  INFO 21960 --- [ai-academy] [           main] t.c.s.AnnotationConfigContextLoaderUtils : Could not detect default configuration classes for test class [com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest]: ExamWorkflowIntegrationTest does not declare any static, non-private, non-final, nested classes annotated with @Configuration.
+2026-11-03T18:46:00.629+08:00  INFO 21960 --- [ai-academy] [           main] .b.t.c.SpringBootTestContextBootstrapper : Found @SpringBootConfiguration com.cupk.aiacademy.AiAcademyApplication for test class com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::               (v3.5.16)
+
+2026-11-03T18:46:00.695+08:00  INFO 21960 --- [ai-academy] [           main] c.c.a.w.ExamWorkflowIntegrationTest      : Starting ExamWorkflowIntegrationTest using Java 21.0.11 with PID 21960 (started by juanzhi in D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-backend)
+2026-11-03T18:46:00.695+08:00  INFO 21960 --- [ai-academy] [           main] c.c.a.w.ExamWorkflowIntegrationTest      : No active profile set, falling back to 1 default profile: "default"
+2026-11-03T18:46:01.425+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Starting...
+2026-11-03T18:46:01.426+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-2 - Added connection conn9978: url=jdbc:h2:mem:academy-tests user=SA
+2026-11-03T18:46:01.426+08:00  INFO 21960 --- [ai-academy] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-2 - Start completed.
+ _ _   |_  _ _|_. ___ _ |    _ 
+| | |\/|_)(_| | |_\  |_)||_|_\ 
+     /               |         
+                        3.5.12 
+2026-11-03T18:46:02.660+08:00  INFO 21960 --- [ai-academy] [           main] m.e.s.MybatisPlusApplicationContextAware : Register ApplicationContext instances org.springframework.web.context.support.GenericWebApplicationContext@3523be0e
+2026-11-03T18:46:02.757+08:00  INFO 21960 --- [ai-academy] [           main] c.c.a.w.ExamWorkflowIntegrationTest      : Started ExamWorkflowIntegrationTest in 2.115 seconds (process running for 122.736)
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 3.033 s -- in com.cupk.aiacademy.workflow.ExamWorkflowIntegrationTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 404, Failures: 0, Errors: 0, Skipped: 15
+[INFO] 
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  02:06 min
+[INFO] Finished at: 2026-11-03T18:46:04+08:00
+[INFO] ------------------------------------------------------------------------

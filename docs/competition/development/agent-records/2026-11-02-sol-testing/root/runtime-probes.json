@@ -1,0 +1,127 @@
+{
+  "started_at": "2026-11-02T09:39:13.196598+00:00",
+  "configuration": {
+    "code": "200",
+    "msg": "请求成功",
+    "data": [
+      {
+        "role": "generation",
+        "configuration": "CONFIGURED_UNVERIFIED",
+        "model": "opencode/deepseek-v4.1-flash",
+        "declaredContextWindowTokens": 0,
+        "adapterImplemented": true
+      },
+      {
+        "role": "planning",
+        "configuration": "CONFIGURED_UNVERIFIED",
+        "model": "opencode/deepseek-v4.1-flash",
+        "declaredContextWindowTokens": 0,
+        "adapterImplemented": true
+      },
+      {
+        "role": "embedding",
+        "configuration": "MODEL_NOT_CONFIGURED",
+        "model": "Qwen/Qwen3-VL-Embedding-8B",
+        "declaredContextWindowTokens": 0,
+        "adapterImplemented": true
+      },
+      {
+        "role": "ocr",
+        "configuration": "MODEL_NOT_CONFIGURED",
+        "model": "deepseek-ai/DeepSeek-OCR",
+        "declaredContextWindowTokens": 0,
+        "adapterImplemented": true
+      }
+    ]
+  },
+  "probes": [
+    {
+      "role": "generation",
+      "seconds": 30.125,
+      "result": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "role": "generation",
+          "status": "FAIL",
+          "checks": [
+            {
+              "name": "TEXT",
+              "status": "FAIL",
+              "detail": "MODEL_CALL_FAILED",
+              "latencyMs": 30093,
+              "testedCharacters": 0
+            },
+            {
+              "name": "JSON_OBJECT",
+              "status": "SKIPPED",
+              "detail": "TEXT_PROBE_FAILED",
+              "latencyMs": 0,
+              "testedCharacters": 0
+            },
+            {
+              "name": "STREAM",
+              "status": "SKIPPED",
+              "detail": "TEXT_PROBE_FAILED",
+              "latencyMs": 0,
+              "testedCharacters": 0
+            },
+            {
+              "name": "CONTEXT_SAMPLE",
+              "status": "SKIPPED",
+              "detail": "TEXT_PROBE_FAILED",
+              "latencyMs": 0,
+              "testedCharacters": 0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "role": "planning",
+      "seconds": 22.563,
+      "result": {
+        "code": "200",
+        "msg": "请求成功",
+        "data": {
+          "role": "planning",
+          "status": "PASS",
+          "checks": [
+            {
+              "name": "TEXT",
+              "status": "PASS",
+              "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+              "latencyMs": 8803,
+              "testedCharacters": 0
+            },
+            {
+              "name": "JSON_OBJECT",
+              "status": "PASS",
+              "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+              "latencyMs": 4522,
+              "testedCharacters": 0
+            },
+            {
+              "name": "STREAM",
+              "status": "PASS",
+              "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+              "latencyMs": 2893,
+              "testedCharacters": 0
+            },
+            {
+              "name": "CONTEXT_SAMPLE",
+              "status": "PASS",
+              "detail": "OBSERVED_AT_TESTED_SIZE_ONLY",
+              "latencyMs": 6327,
+              "testedCharacters": 2432
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "excluded": {
+    "ocr": "No supplied OCR credential",
+    "embedding": "No supplied embedding credential"
+  }
+}

@@ -56,3 +56,7 @@ Thumbs.db
 # Local instance dumps may contain user identities and learning records.
 /database/ai_academy_export.sql
 /database/ai_academy_content_seed.sql
+
+# Keep raw browser traces and isolated test databases local; publish sanitized reports.
+/docs/competition/development/agent-records/**/trace.zip
+/docs/competition/development/agent-records/**/isolated-data/

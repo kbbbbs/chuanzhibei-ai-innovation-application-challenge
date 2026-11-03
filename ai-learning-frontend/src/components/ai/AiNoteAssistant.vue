@@ -205,20 +205,26 @@ const taskLabel = (task) => {
 .assistant-toolbar {
   justify-content: space-between;
   gap: 10px;
+  flex-wrap: wrap;
 }
 
 .assistant-title {
   gap: 6px;
   color: #303133;
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .assistant-controls {
   gap: 6px;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .kb-select {
   width: 130px;
+  flex: 0 1 130px;
+  min-width: 0;
 }
 
 .quick-actions {
