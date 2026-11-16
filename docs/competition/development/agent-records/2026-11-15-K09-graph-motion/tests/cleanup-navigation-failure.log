@@ -1,0 +1,67 @@
+
+Running 27 tests using 1 worker
+
+(node:60180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 e2e\chapter-knowledge-graph.spec.js:18:1 › chapter graph shows real chapter concepts, labelled directional relations and their evidence (2.1s)
+  ok  2 e2e\chapter-knowledge-graph.spec.js:34:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout (2.0s)
+  ok  3 e2e\chapter-knowledge-graph.spec.js:55:1 › search finds a concept, handles no match, and zoom controls work (2.4s)
+  ok  4 e2e\chapter-knowledge-graph.spec.js:71:1 › learning suggestions are distinguished and filtering does not invent relations (1.7s)
+  ok  5 e2e\chapter-knowledge-graph.spec.js:82:1 › student can use graph at narrow width without page overflow (1.9s)
+  ok  6 e2e\chapter-knowledge-graph.spec.js:92:1 › knowledge workspace exposes the chapter demo and anonymous access keeps login boundary (6.0s)
+  ok  7 e2e\chapter-knowledge-graph.spec.js:101:1 › local demonstration is interactive without a backend or a login session (1.8s)
+  x   8 e2e\knowledge-graph-motion.spec.js:162:1 › directional motion paints changing frames, pauses and resumes without semantic graph mutations (2.2m)
+(node:53632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  9 e2e\knowledge-graph-motion.spec.js:193:1 › reduced motion starts with stable frames and no layout or camera animation (3.5s)
+  ok 10 e2e\knowledge-graph-motion.spec.js:220:1 › offscreen graph pauses drawing and restores the users playback choice when visible (3.6s)
+  ok 11 e2e\knowledge-graph-motion.spec.js:255:1 › presentation mode expands the graph and Escape restores normal controls on mobile (3.0s)
+  ok 12 e2e\knowledge-graph-motion.spec.js:287:1 › explicit relayout interpolates nodes and settles before further graph interactions (4.7s)
+  ok 13 e2e\knowledge-graph-motion.spec.js:300:1 › clear associations restores the complete network without moving knowledge points (3.2s)
+  ok 14 e2e\knowledge-graph-motion.spec.js:328:1 › particle layer follows actual node dragging and graph selection keeps user positions (3.8s)
+  ok 15 e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations (2.9s)
+  ok 16 e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access (2.2s)
+  ok 17 e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response (3.2s)
+  ok 18 e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source (2.3s)
+  ok 19 e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer (2.4s)
+  ok 20 e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view (3.2s)
+  ok 21 e2e\persistent-knowledge-graph.spec.js:178:1 › official graph reads API nodes and evidence, expands neighbours and searches aliases (2.9s)
+  ok 22 e2e\persistent-knowledge-graph.spec.js:216:1 › teacher creates a chapter draft, imports real source ids, saves and publishes (3.3s)
+  ok 23 e2e\persistent-knowledge-graph.spec.js:257:1 › student sees published graph without draft controls and can request a learning path (3.2s)
+  ok 24 e2e\persistent-knowledge-graph.spec.js:276:1 › network dragging changes node and edge positions, filters and expansion keep the moved node (3.4s)
+  ok 25 e2e\persistent-knowledge-graph.spec.js:327:1 › graph service failure shows its status and does not substitute chapter demo (2.9s)
+  ok 26 e2e\persistent-knowledge-graph.spec.js:336:1 › chapter-sized network remains readable and selection zooms into the chosen knowledge point (3.8s)
+  ok 27 e2e\persistent-knowledge-graph.spec.js:361:1 › empty student chapter is readable on mobile and has no sample fallback (1.5s)
+
+
+  1) e2e\knowledge-graph-motion.spec.js:162:1 › directional motion paints changing frames, pauses and resumes without semantic graph mutations 
+
+    Test timeout of 120000ms exceeded.
+
+    Error: page.goto: Test timeout of 120000ms exceeded.
+    Call log:
+      - navigating to "http://127.0.0.1:5173/login", waiting until "load"
+
+
+      186 |   }))
+      187 |   expect(size).toEqual({ nodes: 3, edges: 2 })
+    > 188 |   await page.goto('/login')
+          |              ^
+      189 |   await expect(page.getByTestId('graph-motion-layer')).toHaveCount(0)
+      190 |   expect(errors).toEqual([])
+      191 | })
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\knowledge-graph-motion.spec.js:188:14
+
+    Error Context: test-results\knowledge-graph-motion-dir-13def-ut-semantic-graph-mutations\error-context.md
+
+    attachment #2: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\knowledge-graph-motion-dir-13def-ut-semantic-graph-mutations\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\knowledge-graph-motion-dir-13def-ut-semantic-graph-mutations\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\knowledge-graph-motion.spec.js:162:1 › directional motion paints changing frames, pauses and resumes without semantic graph mutations 
+  26 passed (3.5m)

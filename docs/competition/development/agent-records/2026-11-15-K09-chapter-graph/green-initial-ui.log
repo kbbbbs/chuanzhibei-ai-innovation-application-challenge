@@ -1,0 +1,258 @@
+
+Running 6 tests using 1 worker
+
+(node:15464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\chapter-knowledge-graph.spec.js:17:1 › chapter graph shows real chapter concepts, labelled directional relations and their evidence (10.6s)
+(node:50704) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 e2e\chapter-knowledge-graph.spec.js:33:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout (10.5s)
+(node:3340) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 e2e\chapter-knowledge-graph.spec.js:54:1 › search finds a concept, handles no match, and zoom controls work (10.5s)
+(node:51456) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 e2e\chapter-knowledge-graph.spec.js:70:1 › learning suggestions are distinguished and filtering does not invent relations (10.5s)
+(node:11516) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 e2e\chapter-knowledge-graph.spec.js:81:1 › student can use graph at narrow width without page overflow (10.5s)
+(node:38656) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 e2e\chapter-knowledge-graph.spec.js:91:1 › knowledge workspace exposes the chapter demo and anonymous access keeps login boundary (10.8s)
+
+
+  1) e2e\chapter-knowledge-graph.spec.js:17:1 › chapter graph shows real chapter concepts, labelled directional relations and their evidence 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      11 |   await page.route('**/api/**', route => route.fulfill({ json: { code: '200', data: [] } }))
+      12 |   await page.goto('/chapter-knowledge-graph')
+    > 13 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+         |                                                                            ^
+      14 |   await expect(page.locator('.vue-flow__node')).toHaveCount(15)
+      15 | }
+      16 |
+        at openGraph (D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:13:76)
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:20:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) e2e\chapter-knowledge-graph.spec.js:33:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      11 |   await page.route('**/api/**', route => route.fulfill({ json: { code: '200', data: [] } }))
+      12 |   await page.goto('/chapter-knowledge-graph')
+    > 13 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+         |                                                                            ^
+      14 |   await expect(page.locator('.vue-flow__node')).toHaveCount(15)
+      15 | }
+      16 |
+        at openGraph (D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:13:76)
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:34:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) e2e\chapter-knowledge-graph.spec.js:54:1 › search finds a concept, handles no match, and zoom controls work 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      11 |   await page.route('**/api/**', route => route.fulfill({ json: { code: '200', data: [] } }))
+      12 |   await page.goto('/chapter-knowledge-graph')
+    > 13 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+         |                                                                            ^
+      14 |   await expect(page.locator('.vue-flow__node')).toHaveCount(15)
+      15 | }
+      16 |
+        at openGraph (D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:13:76)
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:55:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-se-1e589-atch-and-zoom-controls-work\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-se-1e589-atch-and-zoom-controls-work\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-se-1e589-atch-and-zoom-controls-work\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-se-1e589-atch-and-zoom-controls-work\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) e2e\chapter-knowledge-graph.spec.js:70:1 › learning suggestions are distinguished and filtering does not invent relations 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      11 |   await page.route('**/api/**', route => route.fulfill({ json: { code: '200', data: [] } }))
+      12 |   await page.goto('/chapter-knowledge-graph')
+    > 13 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+         |                                                                            ^
+      14 |   await expect(page.locator('.vue-flow__node')).toHaveCount(15)
+      15 | }
+      16 |
+        at openGraph (D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:13:76)
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:71:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-le-be343-g-does-not-invent-relations\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-le-be343-g-does-not-invent-relations\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-le-be343-g-does-not-invent-relations\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-le-be343-g-does-not-invent-relations\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) e2e\chapter-knowledge-graph.spec.js:81:1 › student can use graph at narrow width without page overflow 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      11 |   await page.route('**/api/**', route => route.fulfill({ json: { code: '200', data: [] } }))
+      12 |   await page.goto('/chapter-knowledge-graph')
+    > 13 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+         |                                                                            ^
+      14 |   await expect(page.locator('.vue-flow__node')).toHaveCount(15)
+      15 | }
+      16 |
+        at openGraph (D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:13:76)
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:83:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-st-be949-width-without-page-overflow\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-st-be949-width-without-page-overflow\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-st-be949-width-without-page-overflow\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-st-be949-width-without-page-overflow\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) e2e\chapter-knowledge-graph.spec.js:91:1 › knowledge workspace exposes the chapter demo and anonymous access keeps login boundary 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      11 |   await page.route('**/api/**', route => route.fulfill({ json: { code: '200', data: [] } }))
+      12 |   await page.goto('/chapter-knowledge-graph')
+    > 13 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+         |                                                                            ^
+      14 |   await expect(page.locator('.vue-flow__node')).toHaveCount(15)
+      15 | }
+      16 |
+        at openGraph (D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:13:76)
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:94:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-kn-5006c-access-keeps-login-boundary\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-kn-5006c-access-keeps-login-boundary\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-kn-5006c-access-keeps-login-boundary\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-initial-artifacts\chapter-knowledge-graph-kn-5006c-access-keeps-login-boundary\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    e2e\chapter-knowledge-graph.spec.js:17:1 › chapter graph shows real chapter concepts, labelled directional relations and their evidence 
+    e2e\chapter-knowledge-graph.spec.js:33:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout 
+    e2e\chapter-knowledge-graph.spec.js:54:1 › search finds a concept, handles no match, and zoom controls work 
+    e2e\chapter-knowledge-graph.spec.js:70:1 › learning suggestions are distinguished and filtering does not invent relations 
+    e2e\chapter-knowledge-graph.spec.js:81:1 › student can use graph at narrow width without page overflow 
+    e2e\chapter-knowledge-graph.spec.js:91:1 › knowledge workspace exposes the chapter demo and anonymous access keeps login boundary 

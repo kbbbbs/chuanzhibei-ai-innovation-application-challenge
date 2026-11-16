@@ -1,0 +1,14 @@
+
+Running 7 tests using 1 worker
+
+(node:51212) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\knowledge-graph-motion.spec.js:162:1 › directional motion paints changing frames, pauses and resumes without semantic graph mutations (4.6s)
+  ok 2 e2e\knowledge-graph-motion.spec.js:193:1 › reduced motion starts with stable frames and no layout or camera animation (3.1s)
+  ok 3 e2e\knowledge-graph-motion.spec.js:220:1 › offscreen graph pauses drawing and restores the users playback choice when visible (3.0s)
+  ok 4 e2e\knowledge-graph-motion.spec.js:255:1 › presentation mode expands the graph and Escape restores normal controls on mobile (2.9s)
+  ok 5 e2e\knowledge-graph-motion.spec.js:287:1 › explicit relayout interpolates nodes and settles before further graph interactions (3.7s)
+  ok 6 e2e\knowledge-graph-motion.spec.js:300:1 › clear associations restores the complete network without moving knowledge points (2.9s)
+  ok 7 e2e\knowledge-graph-motion.spec.js:328:1 › particle layer follows actual node dragging and graph selection keeps user positions (3.9s)
+
+  7 passed (25.9s)

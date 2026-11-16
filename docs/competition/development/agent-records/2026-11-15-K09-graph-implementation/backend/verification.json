@@ -1,0 +1,54 @@
+{
+  "task": "K09 graph backend, child /root/graph_backend",
+  "verifiedAt": "2026-11-15T08:02:04.544214+00:00",
+  "results": {
+    "GraphServiceTest": {
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    "GraphExtractionServiceTest": {
+      "passed": 3,
+      "failed": 0,
+      "skipped": 0
+    },
+    "jdk": "Microsoft JDK21.0.7",
+    "gitDiffCheck": "PASS",
+    "package": "PASS after root stopped jar-holding pilot",
+    "timeoutDefaultSeconds": 90
+  },
+  "testsNotRun": {
+    "liveNeo4j": "Separate storage agent owns real Neo4j test; GraphServiceTest uses a mocked projection repository and real isolated H2 ledger.",
+    "liveGeneration": "Unit tests use mocked ChatModelClient. Actual configured generation model was not invoked by this child.",
+    "fullRegression": "Root coordinating final regression and HTTP pilot."
+  },
+  "recordSnapshot": {
+    "sessionId": "01a1de2a-1c27-7872-9a12-1b38f8e02e01",
+    "sourceStartLine": 74,
+    "sourceLines": [
+      74,
+      538
+    ],
+    "recordCount": 142,
+    "limits": "Explicit snapshot. Later child edits, parent integration edits and final report may require another export. NEW_TASK original encrypted body omitted; parent delegation tool call preserves original task text."
+  },
+  "sha256": {
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphService.java": "9dcc9c4db37d0411dd21d773e3fce734f72a89de02ec4904c44eac0e9b03d3d5",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphController.java": "9564bee4aa0b6e482eac43e8724b623147ff4d04df6c2c5ee8aa7fba5aa740d2",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphExtractionService.java": "48e8d8d354df66d0cf8555bf6dab121f157430cc4db7585eb0a704e585aed604",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSnapshotValidator.java": "44a0b435e1bfdffd31a84c8fe4a0bd62e52f7801ab20af11f56fa634683e3de7",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java": "30e4fd8a67fee1f06d6cd27cd710fbf1ee090b6cf247c3858c57b625cb38ffcb",
+    "ai-learning-backend/src/main/resources/db/migration/V006__chapter_graph.sql": "530795c518ceadd24917be47eb5e76120d5904f2c365ce829aaa8c1c53ee55d4",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphServiceTest.java": "85b5f32b4ec2c7343669062873c1acd6261842e2ddec66e171ab2cf8e2e64281",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphExtractionServiceTest.java": "2bc3f1feab0f4ee263dfb051ec85b03bc902247f8b98649d3bee2faa2158374b",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/manifest.json": "25b3b56a9ebe9fe4ca709fa243f5facc7ad119112afc2423d8c1cdefb6504521",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/records.jsonl": "af578046f12dbdb341ef7696da625e6c539f77d7a467bf251b53f49f26183bc9",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/records.md": "5e13ba237ac05a8567829dc4adb6d854f0e0c75e57f9dde73590fbbe258c4e6f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/result.txt": "d8a56aec4c398f37ce3671cd251c10e032b7aa566d073ddffea8e24720f99450",
+    "ai-learning-backend/src/main/resources/application.yml": "70a72c5d65346cffeb23a4a031647f94a1b865fb5a885377dec1df7f6e453be9",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-confirmed-green.log": "46e4ce4ca8a06a3368734bf4cb1eb8fc0aefb36cfa74ee3990dbc901bd1fd1e1",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-negative-control.log": "fc5e0f7bd58efee3944a5136e45dbdb73ef09977ff9e8dda660b41f25ba1cd62",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-timeout-package-retry.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "timeoutRedLimit": "Initial400 was mock mismatch. Genuine old-mapper negative control produced502 vs504 after implementation existed."
+}

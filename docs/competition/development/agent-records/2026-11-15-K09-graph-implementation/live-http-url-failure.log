@@ -1,0 +1,38 @@
+Traceback (most recent call last):
+  File "D:\ai-learning-collaboration-verified\.codex_tmp\knowledge-graph\pilot.py", line 103, in <module>
+    {'setup':setup,'validate':validate}[sys.argv[1]]()
+  File "D:\ai-learning-collaboration-verified\.codex_tmp\knowledge-graph\pilot.py", line 94, in validate
+    denied(student,base+suffix)
+  File "D:\ai-learning-collaboration-verified\.codex_tmp\knowledge-graph\pilot.py", line 22, in denied
+    api.request(method, path, body)
+  File "D:\ai-learning-collaboration-verified\scripts\knowledge-graph\import_chapter.py", line 119, in request
+    with urllib.request.urlopen(req, timeout=120) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\urllib\request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\urllib\request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\urllib\request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\urllib\request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\urllib\request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\urllib\request.py", line 1344, in do_open
+    h.request(req.get_method(), req.selector, req.data, headers,
+  File "D:\Python\Python312\Lib\http\client.py", line 1338, in request
+    self._send_request(method, url, body, headers, encode_chunked)
+  File "D:\Python\Python312\Lib\http\client.py", line 1349, in _send_request
+    self.putrequest(method, url, **skips)
+  File "D:\Python\Python312\Lib\http\client.py", line 1187, in putrequest
+    self._output(self._encode_request(request))
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "D:\Python\Python312\Lib\http\client.py", line 1267, in _encode_request
+    return request.encode('ascii')
+           ^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeEncodeError: 'ascii' codec can't encode characters in position 74-75: ordinal not in range(128)

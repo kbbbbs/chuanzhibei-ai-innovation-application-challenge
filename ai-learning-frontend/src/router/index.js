@@ -220,6 +220,12 @@ export const layoutChildren = [
     meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
+    path: 'chapter-knowledge-graph',
+    name: 'ChapterKnowledgeGraph',
+    component: () => import('../views/student/ChapterKnowledgeGraph.vue'),
+    meta: { title: '章节知识图谱', icon: 'Share', fullWidth: true, roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+  },
+  {
     path: 'knowledge-graph',
     name: 'KnowledgeGraph',
     component: () => import('../views/student/KnowledgeGraph.vue'),
@@ -284,6 +290,13 @@ export const layoutChildren = [
 ]
 
 const routes = [
+  // Local-only preview of the curated chapter; never bypasses the production route's login boundary.
+  ...(import.meta.env.DEV ? [{
+    path: '/chapter-knowledge-graph-preview',
+    name: 'ChapterKnowledgeGraphPreview',
+    component: () => import('../views/student/ChapterKnowledgeGraphDemo.vue'),
+    meta: { title: '章节图谱预览', noAuth: true, chapterGraphPreview: true }
+  }] : []),
   {
     path: '/login',
     name: 'Login',

@@ -1,0 +1,19 @@
+{
+  "comparedTo": "2026-11-15-K09-graph-implementation/verification.json",
+  "checks": {
+    "ai-learning-backend/pom.xml": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphController.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphExtractionService.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphService.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSlice.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSnapshotValidator.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepository.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java": true,
+    "ai-learning-backend/src/main/resources/application.yml": true,
+    "ai-learning-backend/src/main/resources/db/migration/V006__chapter_graph.sql": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphExtractionServiceTest.java": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphServiceTest.java": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryIntegrationTest.java": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryTest.java": true
+  }
+}

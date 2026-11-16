@@ -1,0 +1,58 @@
+{
+  "task": "K09 GitHub read-only publication audit",
+  "verifiedAt": "2026-11-16T08:29:04.684345+00:00",
+  "businessCodeChanged": false,
+  "testsRun": false,
+  "testsSkippedReason": "Publication-scope review. Existing 2026-11-15 validation evidence inspected; no product changes.",
+  "diffCheck": "PASS",
+  "credentialScan": "No actual secret identified; broad-pattern false positives reviewed without displaying values. Private .env.local not read.",
+  "inventorySnapshot": {
+    "files": 217,
+    "bytes": 18920911,
+    "largestBytes": 5282292
+  },
+  "sourceBoundary": {
+    "sessionId": "01a1e375-a3b7-7370-8f5b-784efae70bab",
+    "startLine": 38,
+    "since": "2026-11-16T08:25:01.510Z",
+    "inheritedPrefixExcluded": [
+      2,
+      28
+    ]
+  },
+  "sha256": {
+    "ai-learning-backend/pom.xml": "cecf50abb02fc880b85ecf9b448bdd1f0c2eccdebc663aa0b1fc4929a7cf849e",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java": "30e4fd8a67fee1f06d6cd27cd710fbf1ee090b6cf247c3858c57b625cb38ffcb",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphController.java": "9564bee4aa0b6e482eac43e8724b623147ff4d04df6c2c5ee8aa7fba5aa740d2",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphExtractionService.java": "48e8d8d354df66d0cf8555bf6dab121f157430cc4db7585eb0a704e585aed604",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphService.java": "9dcc9c4db37d0411dd21d773e3fce734f72a89de02ec4904c44eac0e9b03d3d5",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSlice.java": "6a2fa42d4c1878aca487595fe263edfdb1d262a738e64a3558ed812e93bd7eaf",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSnapshotValidator.java": "44a0b435e1bfdffd31a84c8fe4a0bd62e52f7801ab20af11f56fa634683e3de7",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepository.java": "e2e15e59e362e9f4912550194d0a46dba4fed00f1408dea6891a7a3a1ea20ce8",
+    "ai-learning-backend/src/main/resources/application.yml": "70a72c5d65346cffeb23a4a031647f94a1b865fb5a885377dec1df7f6e453be9",
+    "ai-learning-backend/src/main/resources/db/migration/V006__chapter_graph.sql": "530795c518ceadd24917be47eb5e76120d5904f2c365ce829aaa8c1c53ee55d4",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphExtractionServiceTest.java": "2bc3f1feab0f4ee263dfb051ec85b03bc902247f8b98649d3bee2faa2158374b",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphServiceTest.java": "85b5f32b4ec2c7343669062873c1acd6261842e2ddec66e171ab2cf8e2e64281",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryIntegrationTest.java": "2450930fe0c2e1914fa601aadca0a3d3aa663f4dc5d28416502f57ba6f44e2a4",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryTest.java": "697cd9f839eb1259b3dba875f93539f81b33727b138af48b91c52632f3a89da9",
+    "ai-learning-frontend/e2e/chapter-knowledge-graph.spec.js": "614af001a5ce9194fb5023bbfed7fceaf7db67e697cf7e8849aec8f079c31287",
+    "ai-learning-frontend/e2e/knowledge-graph-motion.spec.js": "9731d02a44507ed4728049db116ce438f9603b09dfa8a3c973b95ba1c674e77b",
+    "ai-learning-frontend/e2e/persistent-knowledge-graph.spec.js": "395bfbc2e8e5205136485c71f60b68d22645be2da2644618f066b9a08e06658e",
+    "ai-learning-frontend/package-lock.json": "c563474f245d9c9e15dad3d4722f320dc3efb4cf127eba3b54c1d44fd79f7e7a",
+    "ai-learning-frontend/package.json": "38c5219bacb50cc5b02d82a6ec2461d41dadffde50d9faf0cc5ca15d14e1c569",
+    "ai-learning-frontend/src/api/knowledgeGraph.js": "0df8acb1722fe6f4697be916224271d77c72fd636cfbdd3d7575e4846dbc29bf",
+    "ai-learning-frontend/src/components/knowledge/KnowledgeGraphCanvas.vue": "b285c1511426d4cd9fed30e4d01099b542ef7553d1df73c597c60f5f591dc79b",
+    "ai-learning-frontend/src/data/machineLearningChapterGraph.js": "923acdb6c9f763fec8c438294c79a6d85d7148c742d9d3e1eeefceb9ea66a058",
+    "ai-learning-frontend/src/router/index.js": "a320bc8b7bf88cc814fdbca4188d1265568560ddae6654c4991a82482d56326d",
+    "ai-learning-frontend/src/views/student/ChapterKnowledgeGraph.vue": "bc6c454af1fe2228a552077fe400c51a7d0ded6fea8bcd6f7793a44ba6009521",
+    "ai-learning-frontend/src/views/student/ChapterKnowledgeGraphDemo.vue": "ddad8fa624e863698b9a4c81a9ead8be950ef48e24929665f8e768a97187ab60",
+    "ai-learning-frontend/src/views/student/KnowledgeBase.vue": "e2689c85ad3724e39bf9dd49ec8cca5a64d7121266fe52fee7d045e908fc97b1",
+    "ai-learning-frontend/src/views/teacher/CourseDetail.vue": "d729465b7c16ed2c8f0f66172126a689c12fe9e2d48923da407e35f36e7c672c",
+    "ai-learning-frontend/src/views/teacher/TeacherKnowledgeBase.vue": "3d75dcb52c089a77b747c648a82cae644409855fdd8c8318f6af9fb8d1081096",
+    "scripts/knowledge-graph/README.txt": "9f4786e5e7b908ba4459e327a64f11a43ea96f5a1c629610e5c298d4d078d77c",
+    "scripts/knowledge-graph/import_chapter.py": "1aef5a33e7dc49bda42629b3ac70021db11efbac15075e3a99e6de68b10b3315",
+    "scripts/knowledge-graph/start-neo4j.ps1": "6ca278fc2c257d6b8192088040c74e7b45c64050503f1184a49a00fb0358e422",
+    "scripts/knowledge-graph/tests/test_import_chapter.py": "32fb3c0d326d5e8609f0ca2d1340281c90827aaa684ea061a1400f187bec5592",
+    "docs/competition/development/agent-records/2026-11-16-K09-github-push/audit/result.txt": "d0d6768369ea33d962afc90feefcbcea817372f94e9542396a0319c2b0be0894"
+  }
+}

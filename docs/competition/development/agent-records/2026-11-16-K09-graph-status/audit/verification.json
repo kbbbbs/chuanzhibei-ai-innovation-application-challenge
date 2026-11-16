@@ -1,0 +1,42 @@
+{
+  "task": "K09 read-only status audit",
+  "business_code_changed": false,
+  "checks": "Plan, implementation and existing validation records inspected. No browser/model calls/Maven or runtime test run.",
+  "tests_skipped_reason": "Status-only read-only audit, no product changes. Existing test evidence is identified as prior evidence.",
+  "source_boundary": {
+    "session_id": "01a1e369-1016-7de2-8685-368d2fbceebe",
+    "start_line": 858,
+    "fork_prefix_omitted": [
+      2,
+      857
+    ],
+    "verified": true
+  },
+  "initial_export": {
+    "record_count": 12,
+    "source_parse_complete": true,
+    "outputs_without_exported_call": []
+  },
+  "files": [
+    {
+      "path": "docs/competition/development/K09-knowledge-graph-integration-plan.txt",
+      "sha256": "63f1a8616c0bc611d221d77dd0d93e70966af6245b385d14e523174dd5f739be"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphExtractionService.java",
+      "sha256": "48e8d8d354df66d0cf8555bf6dab121f157430cc4db7585eb0a704e585aed604"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSnapshotValidator.java",
+      "sha256": "44a0b435e1bfdffd31a84c8fe4a0bd62e52f7801ab20af11f56fa634683e3de7"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphService.java",
+      "sha256": "9dcc9c4db37d0411dd21d773e3fce734f72a89de02ec4904c44eac0e9b03d3d5"
+    },
+    {
+      "path": "docs\\competition\\development\\agent-records\\2026-11-16-K09-graph-status\\audit\\result.txt",
+      "sha256": "deeba3f2766454841ef6cc2fc51263382feb65cffb1db26a779e61a2ce065920"
+    }
+  ]
+}

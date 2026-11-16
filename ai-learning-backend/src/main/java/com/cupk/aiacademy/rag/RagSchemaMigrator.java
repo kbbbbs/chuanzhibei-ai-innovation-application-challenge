@@ -41,6 +41,9 @@ public class RagSchemaMigrator {
         applyResource("V005__rag_parser_revision.sql");
         if(jdbc.queryForObject("SELECT COUNT(*) FROM native_rag_schema_migration WHERE version='K03_005'",Integer.class)==0)
             jdbc.update("INSERT INTO native_rag_schema_migration(version) VALUES('K03_005')");
+        applyResource("V006__chapter_graph.sql");
+        if(jdbc.queryForObject("SELECT COUNT(*) FROM native_rag_schema_migration WHERE version='K09_006'",Integer.class)==0)
+            jdbc.update("INSERT INTO native_rag_schema_migration(version) VALUES('K09_006')");
     }
 
     private void applyResource(String name) {

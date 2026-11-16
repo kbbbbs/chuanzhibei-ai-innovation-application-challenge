@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-11-15T15:08:49.262305+00:00",
+  "sourceBoundary": 447,
+  "sourceRange": [
+    447,
+    1115
+  ],
+  "recordCount": 190,
+  "verificationObserved": {
+    "motionTests": "Test agent final-motion.log7PASS before CSS-only fullscreen controls fix",
+    "regressionTests": "Test agent final-regression.log20PASS before CSS-only fullscreen controls fix",
+    "execution": "Two sequential groups; Canvas agent did not independently execute browser suite.",
+    "readabilityFix": "Focused threshold>35px node and>=9px label PASS after orientation comparison.",
+    "latestVisualFix": "Root observed actual fullscreen label overlap; wide fullscreen controls moved to header with CSS only.",
+    "finalFocusedCaptureAndBuild": "Root owns final verification after CSS visual fix."
+  },
+  "sha256": {
+    "ai-learning-frontend/src/components/knowledge/KnowledgeGraphCanvas.vue": "b285c1511426d4cd9fed30e4d01099b542ef7553d1df73c597c60f5f591dc79b",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/result.txt": "7366fbccc53487a6e681d337ef975aaf359c2ec67e9faeed621ad8eefa0fe091",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/manifest.json": "f26aa3fa43d1ef382394f7c2c847217679fa2d387a1cbdaf5f885e7e72fcee9f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/records.jsonl": "cc2a69d898cf3467759067961d4cf74352440c467957ff391dafc1e401d3cf43",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/records.md": "7df35dd1c8670a8153dbead8ce110fee0ee4f4dd7a65b0d4bca5ba8c1ba28d56"
+  }
+}

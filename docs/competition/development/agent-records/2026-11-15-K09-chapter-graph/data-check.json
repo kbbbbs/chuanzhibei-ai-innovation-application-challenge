@@ -1,0 +1,12 @@
+{
+  "nodeCount": 15,
+  "relationCount": 17,
+  "knowledgeRelations": 14,
+  "learningSuggestions": 3,
+  "uniqueIds": true,
+  "validEndpoints": true,
+  "validPageRanges": true,
+  "sourceSha256Matches": true,
+  "sourceSha256": "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f",
+  "scope": "Curated core concepts; learning suggestions not teacher-approved. Page-range validation does not prove semantic correctness."
+}

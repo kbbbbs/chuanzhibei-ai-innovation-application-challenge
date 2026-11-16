@@ -1,0 +1,16 @@
+{
+  "database": "Neo4j Community 5.26.33",
+  "container": "ai-learning-knowledge-graph",
+  "ports": "127.0.0.1:7687,127.0.0.1:7474",
+  "scope": "Only storage-test- graph IDs",
+  "before": {
+    "nodes": 114,
+    "relationships": 108
+  },
+  "afterRestart": {
+    "nodes": 114,
+    "relationships": 108
+  },
+  "persistence": "PASS",
+  "credentials": "Private ignored file; not exported"
+}

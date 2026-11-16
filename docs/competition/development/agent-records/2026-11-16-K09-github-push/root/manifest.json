@@ -1,0 +1,54 @@
+{
+  "format_version": 1,
+  "session_id": "01a1ddf2-6ea5-7880-8712-c828f569da3d",
+  "since": "2026-11-16T08:24:20.330Z",
+  "source_file": "rollout-2026-11-15T14-43-37-01a1ddf2-6ea5-7880-8712-c828f569da3d.jsonl",
+  "source_sha256": "e22e4231675af2c226a743532da675b41ae2902ce92db8392195110de2e6a557",
+  "source_size_bytes": 14858599,
+  "source_total_lines": 2648,
+  "source_start_line": 2532,
+  "session_kind": "root_or_user",
+  "fork_inherited_prefix_omitted": null,
+  "fork_boundary_selection": null,
+  "source_line_range": [
+    2532,
+    2648
+  ],
+  "event_timestamp_range": [
+    "2026-11-16T08:24:20.330Z",
+    "2026-11-16T08:31:23.080Z"
+  ],
+  "record_count": 33,
+  "event_counts": {
+    "agent_message": 3,
+    "message": 3,
+    "tool_call": 14,
+    "tool_output": 13
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 6,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 0,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "b8cb763bb556ec2e5d756848f81a063571edfcc309847a082d2e8beea9fac235"
+}

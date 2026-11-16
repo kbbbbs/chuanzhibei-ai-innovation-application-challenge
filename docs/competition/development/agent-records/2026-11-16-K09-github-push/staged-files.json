@@ -1,0 +1,1145 @@
+{
+  "scope": "First feature commit staged contents, self manifest excluded",
+  "files": [
+    {
+      "path": "ai-learning-backend/pom.xml",
+      "bytes": 7799,
+      "sha256": "dff2a0a51fd5f5288f0e75a1a076992acafd7bec581223d9fa1f7284abe5d1b8"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java",
+      "bytes": 7052,
+      "sha256": "74f29dc433cdb0e0269282ac7386035d5214031719eca8a0db83b110e28e157a"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphController.java",
+      "bytes": 3246,
+      "sha256": "9564bee4aa0b6e482eac43e8724b623147ff4d04df6c2c5ee8aa7fba5aa740d2"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphExtractionService.java",
+      "bytes": 9407,
+      "sha256": "79c000b707af415b4e71f237b3d4631a5d22689a2c8d93caccaa34d4e1be6005"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphService.java",
+      "bytes": 26110,
+      "sha256": "9dcc9c4db37d0411dd21d773e3fce734f72a89de02ec4904c44eac0e9b03d3d5"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSlice.java",
+      "bytes": 199,
+      "sha256": "6a2fa42d4c1878aca487595fe263edfdb1d262a738e64a3558ed812e93bd7eaf"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSnapshotValidator.java",
+      "bytes": 7055,
+      "sha256": "44a0b435e1bfdffd31a84c8fe4a0bd62e52f7801ab20af11f56fa634683e3de7"
+    },
+    {
+      "path": "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepository.java",
+      "bytes": 15287,
+      "sha256": "e2e15e59e362e9f4912550194d0a46dba4fed00f1408dea6891a7a3a1ea20ce8"
+    },
+    {
+      "path": "ai-learning-backend/src/main/resources/application.yml",
+      "bytes": 4928,
+      "sha256": "fbd93b0b1c4c755a024fdad4b3a45e383ff4b5ac08d463aa10224e21303f103f"
+    },
+    {
+      "path": "ai-learning-backend/src/main/resources/db/migration/V006__chapter_graph.sql",
+      "bytes": 2271,
+      "sha256": "530795c518ceadd24917be47eb5e76120d5904f2c365ce829aaa8c1c53ee55d4"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphExtractionServiceTest.java",
+      "bytes": 4868,
+      "sha256": "2bc3f1feab0f4ee263dfb051ec85b03bc902247f8b98649d3bee2faa2158374b"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphServiceTest.java",
+      "bytes": 10428,
+      "sha256": "96cfaf67c38d72b410b1783190ef82afc3f5bde96e2f601d6e5b1ee9b47cc2f4"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryIntegrationTest.java",
+      "bytes": 5096,
+      "sha256": "2450930fe0c2e1914fa601aadca0a3d3aa663f4dc5d28416502f57ba6f44e2a4"
+    },
+    {
+      "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryTest.java",
+      "bytes": 1752,
+      "sha256": "697cd9f839eb1259b3dba875f93539f81b33727b138af48b91c52632f3a89da9"
+    },
+    {
+      "path": "ai-learning-frontend/e2e/chapter-knowledge-graph.spec.js",
+      "bytes": 6478,
+      "sha256": "614af001a5ce9194fb5023bbfed7fceaf7db67e697cf7e8849aec8f079c31287"
+    },
+    {
+      "path": "ai-learning-frontend/e2e/knowledge-graph-motion.spec.js",
+      "bytes": 12865,
+      "sha256": "9731d02a44507ed4728049db116ce438f9603b09dfa8a3c973b95ba1c674e77b"
+    },
+    {
+      "path": "ai-learning-frontend/e2e/persistent-knowledge-graph.spec.js",
+      "bytes": 12845,
+      "sha256": "395bfbc2e8e5205136485c71f60b68d22645be2da2644618f066b9a08e06658e"
+    },
+    {
+      "path": "ai-learning-frontend/package-lock.json",
+      "bytes": 137431,
+      "sha256": "afd728f03cfb0c0351cd38cf9382e2aa1035e33d6b62e7d5c78efc3d2271d263"
+    },
+    {
+      "path": "ai-learning-frontend/package.json",
+      "bytes": 699,
+      "sha256": "ee8177832d0f385f2e41c447b30dfa38951cadce9933e9441ef6a023f6084797"
+    },
+    {
+      "path": "ai-learning-frontend/src/api/knowledgeGraph.js",
+      "bytes": 2795,
+      "sha256": "0df8acb1722fe6f4697be916224271d77c72fd636cfbdd3d7575e4846dbc29bf"
+    },
+    {
+      "path": "ai-learning-frontend/src/components/knowledge/KnowledgeGraphCanvas.vue",
+      "bytes": 30701,
+      "sha256": "b285c1511426d4cd9fed30e4d01099b542ef7553d1df73c597c60f5f591dc79b"
+    },
+    {
+      "path": "ai-learning-frontend/src/data/machineLearningChapterGraph.js",
+      "bytes": 9037,
+      "sha256": "923acdb6c9f763fec8c438294c79a6d85d7148c742d9d3e1eeefceb9ea66a058"
+    },
+    {
+      "path": "ai-learning-frontend/src/router/index.js",
+      "bytes": 12862,
+      "sha256": "8d8a6dfe506ac3d2642816d1182b71dfcf3ca96bae28284a4e35416099ae7f2b"
+    },
+    {
+      "path": "ai-learning-frontend/src/views/student/ChapterKnowledgeGraph.vue",
+      "bytes": 45141,
+      "sha256": "bc6c454af1fe2228a552077fe400c51a7d0ded6fea8bcd6f7793a44ba6009521"
+    },
+    {
+      "path": "ai-learning-frontend/src/views/student/ChapterKnowledgeGraphDemo.vue",
+      "bytes": 21000,
+      "sha256": "ddad8fa624e863698b9a4c81a9ead8be950ef48e24929665f8e768a97187ab60"
+    },
+    {
+      "path": "ai-learning-frontend/src/views/student/KnowledgeBase.vue",
+      "bytes": 866,
+      "sha256": "98d8087e28dd00fe3fab37f7370d59f6e3a6c479040a52aad3c40fd571152624"
+    },
+    {
+      "path": "ai-learning-frontend/src/views/teacher/CourseDetail.vue",
+      "bytes": 35606,
+      "sha256": "7d8ae5f26d3bcfc02e657e6f40ab3d35782200c25c815aaa439eaaa05c6673cf"
+    },
+    {
+      "path": "ai-learning-frontend/src/views/teacher/TeacherKnowledgeBase.vue",
+      "bytes": 29376,
+      "sha256": "47c857211fe862cc118f1ab405ad461ab33227b2a9ab8271fd0c569491f5bbe4"
+    },
+    {
+      "path": "docs/competition/development/K09-knowledge-graph-integration-plan.txt",
+      "bytes": 23369,
+      "sha256": "63f1a8616c0bc611d221d77dd0d93e70966af6245b385d14e523174dd5f739be"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K03-K04-knowledge-graph-feasibility/assessment.txt",
+      "bytes": 10069,
+      "sha256": "f91c7b3b0ecf71630f94a7574d7e6591cbafcb7ded2ce67bb494c7a6e4441074"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K03-K04-knowledge-graph-feasibility/root/manifest.json",
+      "bytes": 2130,
+      "sha256": "3bb3d2c2d047afc53ad2899064e76bd3b4ba40ac70ef357442a555bb7a685768"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K03-K04-knowledge-graph-feasibility/root/records.jsonl",
+      "bytes": 245698,
+      "sha256": "72efee285b42c43d04363a16aae2aafdf57a1d8b5fe9ee44fa268fdd1ffe6cdb"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K03-K04-knowledge-graph-feasibility/root/records.md",
+      "bytes": 118827,
+      "sha256": "fdd8cc212f540bd704cd572aab7af00df9f8683040e2910921e07f9ae0a47806"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K03-K04-knowledge-graph-feasibility/verification.json",
+      "bytes": 4764,
+      "sha256": "3aa67caed38338ba1397934165e1cd0e8f7d133a15e55347c3a30e51bce4aadf"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/build-final.log",
+      "bytes": 28036,
+      "sha256": "74fd88e57ae660202e1e2d7e22e4935266fe7354f0aa24349f71ca2a32a63b1d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/build-initial.log",
+      "bytes": 28036,
+      "sha256": "39bf3748ac0a0eca44585d7779d9b6fc3fa6d05e9af3674a308bbdfcefa370a6"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/data-check.json",
+      "bytes": 431,
+      "sha256": "bb3e53c69eb93d21669ca11df69a7e012f27bee9b44fcea1678746e7b9acc665"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/desktop-final.png",
+      "bytes": 129917,
+      "sha256": "ac6c5e413b70941d5962bee3820afda1473c2fcdaeb45bc7a739ff4f87e23373"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/desktop-initial.png",
+      "bytes": 144090,
+      "sha256": "69446b9c1514649c2c55523c775307081fb1e72a271bba1fb61eab3ba6a3c56e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/detail-final.png",
+      "bytes": 130728,
+      "sha256": "d665e7cbfbdb33f56f45ae717a8910ccf98ad29996f7b272676a46e333f7a276"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/final-ui-artifacts/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/final-ui.log",
+      "bytes": 1983,
+      "sha256": "625593e31cefff9e96535d6e2ed5811dcf7552f4ebb3addccc399e7f0d293f97"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/.last-run.json",
+      "bytes": 341,
+      "sha256": "303e55958b6a66273bdacce53c84ef39791128226502d87e56649db7f2e01ea3"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence/error-context.md",
+      "bytes": 7141,
+      "sha256": "6de9e0ca27ed31278d25060c3d64ba6169fad9c8c14a710b4d04740a14025156"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence/test-failed-1.png",
+      "bytes": 4258,
+      "sha256": "c797377b472225bdd7e77bae81808312add33bbbfef9bab70159825ac0e09023"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-kn-5006c-access-keeps-login-boundary/error-context.md",
+      "bytes": 7135,
+      "sha256": "530c88df54cf0b3c7f158cb2ea1cf5e6ea848b3e0bb5a579453fea09ad7cc44f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-kn-5006c-access-keeps-login-boundary/test-failed-1.png",
+      "bytes": 4258,
+      "sha256": "c797377b472225bdd7e77bae81808312add33bbbfef9bab70159825ac0e09023"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-le-be343-g-does-not-invent-relations/error-context.md",
+      "bytes": 7127,
+      "sha256": "3639668dce689d61293e795d2b7b51851f156522128c65c1c38c546344990b51"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-le-be343-g-does-not-invent-relations/test-failed-1.png",
+      "bytes": 4258,
+      "sha256": "c797377b472225bdd7e77bae81808312add33bbbfef9bab70159825ac0e09023"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout/error-context.md",
+      "bytes": 7144,
+      "sha256": "24c6f2219a0a0971d541c876966bf9f29e2ee27aba28052309198f7ecde34868"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout/test-failed-1.png",
+      "bytes": 4258,
+      "sha256": "c797377b472225bdd7e77bae81808312add33bbbfef9bab70159825ac0e09023"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-se-1e589-atch-and-zoom-controls-work/error-context.md",
+      "bytes": 7113,
+      "sha256": "a08dc6538053920c48caf0a32a6a59d7d77ef11eab51376e3b4b32511d44b222"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-se-1e589-atch-and-zoom-controls-work/test-failed-1.png",
+      "bytes": 4258,
+      "sha256": "c797377b472225bdd7e77bae81808312add33bbbfef9bab70159825ac0e09023"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-st-be949-width-without-page-overflow/error-context.md",
+      "bytes": 7108,
+      "sha256": "d5d4655b5b3fa517174d2941f88641077ea0fc964281d3c6a24507b3a67200ea"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-artifacts/chapter-knowledge-graph-st-be949-width-without-page-overflow/test-failed-1.png",
+      "bytes": 2743,
+      "sha256": "397cf6ee355f27b77f780ccb2cdd2127acb8ee80ab65e72714177d584ff48b10"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-initial-ui.log",
+      "bytes": 20751,
+      "sha256": "b752901c8b3be6d9da04416c60d8510f7263c64c076012b5b835c44f6b8170a5"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-second-artifacts/.last-run.json",
+      "bytes": 96,
+      "sha256": "f95d825c654ce02ace50f23787d8eed89ebb918c931740f6974e6effb989fae6"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-second-artifacts/chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout/error-context.md",
+      "bytes": 7864,
+      "sha256": "041a76b3bad185b44b3a14c7c5b928a69774c31ea937fb185b1316c683b5194b"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-second-artifacts/chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout/test-failed-1.png",
+      "bytes": 96003,
+      "sha256": "c2142e5710b82d960bbb8de2de0f1545cf6d7ae4c0c1ec4b584bddd2a089e453"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/green-second-ui.log",
+      "bytes": 4779,
+      "sha256": "5e55397d8c8c38e41a94e3c83e6592c2d620f6205bf53571c060732737f57604"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/mobile-final.png",
+      "bytes": 73250,
+      "sha256": "04dbea52a1a1918416ec7cc949bcd316c0e47b1ffc8361f0fca24db46d623fec"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/plan.txt",
+      "bytes": 1817,
+      "sha256": "cb4c2c6572c3a1455bf26acd529ae21f48bf5b83afa050a7fd674d1e2713f346"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-artifacts/.last-run.json",
+      "bytes": 96,
+      "sha256": "d5f952091294bab09339ff809ef5704b15501b3d1cb86022dd7bfaf91b7858fc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-artifacts/chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence/error-context.md",
+      "bytes": 7421,
+      "sha256": "2e03037e4c5b36da8db6ae62433c784af7b1bc44cc788b932d3e2becc074268e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-artifacts/chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence/test-failed-1.png",
+      "bytes": 321540,
+      "sha256": "5400cc6d2ea5f1e1e5437cc04f1743c97818eea2a9bcf3f3e7b3c42757763ee1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-corrected-artifacts/.last-run.json",
+      "bytes": 96,
+      "sha256": "d5f952091294bab09339ff809ef5704b15501b3d1cb86022dd7bfaf91b7858fc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-corrected-artifacts/chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence/error-context.md",
+      "bytes": 7614,
+      "sha256": "0941e7333c17482dcf827cf9caa1b5285b064b1fb709fad27051fbd0e6a15669"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-corrected-artifacts/chapter-knowledge-graph-ch-d72c1-elations-and-their-evidence/test-failed-1.png",
+      "bytes": 321540,
+      "sha256": "5400cc6d2ea5f1e1e5437cc04f1743c97818eea2a9bcf3f3e7b3c42757763ee1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-corrected-ui.log",
+      "bytes": 3524,
+      "sha256": "3efebfec65f7edfbd4764bba62f3ca325a49d536be8037a8323eb2726f193ba0"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-preview-artifacts/.last-run.json",
+      "bytes": 96,
+      "sha256": "795ac8ef70e7606d30d082d8a98b9edad5a0fd060409ea2e45fc07faaf7f9869"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-preview-artifacts/chapter-knowledge-graph-lo-35879--backend-or-a-login-session/error-context.md",
+      "bytes": 8292,
+      "sha256": "ac882973c3450874925774474b5c93d06b5f22c2662992083be664763e9b4091"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-preview-artifacts/chapter-knowledge-graph-lo-35879--backend-or-a-login-session/test-failed-1.png",
+      "bytes": 321540,
+      "sha256": "5400cc6d2ea5f1e1e5437cc04f1743c97818eea2a9bcf3f3e7b3c42757763ee1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-preview.log",
+      "bytes": 3497,
+      "sha256": "39dd9c67356af674fb4cf0774cd50709e7d254e48e4c14d1706ff7ed31630cce"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/red-ui.log",
+      "bytes": 3500,
+      "sha256": "4929584550257f0d9c317951c718ac1bb7387cf7a032f437fe20a8b9b7714e92"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/result.txt",
+      "bytes": 5518,
+      "sha256": "a0d1411fd515716c6125145131696cd8ad0a3f1abaf37d8ac8a9444a93e900b1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/root/manifest.json",
+      "bytes": 2137,
+      "sha256": "c1562e8709fd447d096bd59162a8acfbe813e17a1abaf70e8d5eebdc71e85b12"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/root/records.jsonl",
+      "bytes": 650858,
+      "sha256": "d73c85556449cd4120abe4f0f74f9b5444950c857c6febf4ff58f6c1259e43ba"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/root/records.md",
+      "bytes": 223078,
+      "sha256": "55246957aab5c1322f7903e147b1afaaeca1d59b8618d74f53805824f1c5faac"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-chapter-graph/verification.json",
+      "bytes": 11256,
+      "sha256": "201649f4b2c36641e555f4d987d2b2daa8501866daf38a107028c90cbbf39fd3"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-course-knowledge-map-feasibility/assessment.txt",
+      "bytes": 6558,
+      "sha256": "c08d566e17f12f45cd60ab686c72920e66976d60dd90b7715ada9b4ff45650ca"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-course-knowledge-map-feasibility/root/manifest.json",
+      "bytes": 2133,
+      "sha256": "e048a8d68c0c3c33e3e4f21b2eec4fb96fadb09fd5231fc96fd053922a6d22fb"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-course-knowledge-map-feasibility/root/records.jsonl",
+      "bytes": 26514,
+      "sha256": "a0b87ab56699410ae04f760a0cf77b2b0404e4b84a497ba7f8e59661d780ed47"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-course-knowledge-map-feasibility/root/records.md",
+      "bytes": 25991,
+      "sha256": "13207124c20ab79c8cf450126892f9cc0c47e063ab0ba50cf0da5f80a22698c9"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-course-knowledge-map-feasibility/verification.json",
+      "bytes": 1600,
+      "sha256": "0c944b3599b79f953fb89962a368fffa200685535463609123ddc615491e246c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-final-green.log",
+      "bytes": 905,
+      "sha256": "46e4ce4ca8a06a3368734bf4cb1eb8fc0aefb36cfa74ee3990dbc901bd1fd1e1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-first-green.log",
+      "bytes": 1237,
+      "sha256": "a6004bbc65d5d838ec4804f7cd05ed5ec7e14283234d208a1938a7e5ad25fd56"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-red.log",
+      "bytes": 1991,
+      "sha256": "10cfa85847f3060b1924a36defb4de1124258bf7bd35d37b0e1e1c84d739d03f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-regression.log",
+      "bytes": 56567,
+      "sha256": "d0a4ca08feaa65a139a6a0a3eccf27f2ba35c79f4855cf452cbcbe303928d014"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-timeout-package-retry.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend-timeout-package.log",
+      "bytes": 890,
+      "sha256": "1c943cb3c88a7fe78e233f477ef6876b3640a6e635871467c6836d6d70c20e32"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/manifest.json",
+      "bytes": 2237,
+      "sha256": "25b3b56a9ebe9fe4ca709fa243f5facc7ad119112afc2423d8c1cdefb6504521"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/records.jsonl",
+      "bytes": 273757,
+      "sha256": "af578046f12dbdb341ef7696da625e6c539f77d7a467bf251b53f49f26183bc9"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/records.md",
+      "bytes": 223986,
+      "sha256": "5e13ba237ac05a8567829dc4adb6d854f0e0c75e57f9dde73590fbbe258c4e6f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/result.txt",
+      "bytes": 4861,
+      "sha256": "d8a56aec4c398f37ce3671cd251c10e032b7aa566d073ddffea8e24720f99450"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/backend/verification.json",
+      "bytes": 4156,
+      "sha256": "b59577a962ab25e9e3b94db132e768b737442a69d86a56821d0a51179472ead8"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-first-run-failure.log",
+      "bytes": 2743,
+      "sha256": "47a6bc3620f5c1927642985fe27e1eb1f8eef73706fd8b9f944d47ea4cf3907d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-red.log",
+      "bytes": 4789,
+      "sha256": "d6de6329d95f6c621cecb7f4abb41039ff4c0f9e5c2d48da4e390af92c011aa8"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-confirmed-green.log",
+      "bytes": 905,
+      "sha256": "46e4ce4ca8a06a3368734bf4cb1eb8fc0aefb36cfa74ee3990dbc901bd1fd1e1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-final-green.log",
+      "bytes": 3298,
+      "sha256": "f49f6c5dcf2ce7276494737cb81c06ff46182f05ee25cac3e3139310d0494358"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-green.log",
+      "bytes": 905,
+      "sha256": "46e4ce4ca8a06a3368734bf4cb1eb8fc0aefb36cfa74ee3990dbc901bd1fd1e1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-negative-control.log",
+      "bytes": 3297,
+      "sha256": "fc5e0f7bd58efee3944a5136e45dbdb73ef09977ff9e8dda660b41f25ba1cd62"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-red.log",
+      "bytes": 3297,
+      "sha256": "7501393d933df554405c1f0195b78f750f1c18f441b21bc0d39eb489fa1f5ffc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/extraction-timeout-restored-green.log",
+      "bytes": 3298,
+      "sha256": "62579c653707d86efe5db2740d779654c042bff492b10e9b979b3d3a1b93840b"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/build.log",
+      "bytes": 27766,
+      "sha256": "1280c6a21d6c3f69e239365c977914a27e83a3310d3a9856c7e69278276a6d3e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/drag-regression.log",
+      "bytes": 1667,
+      "sha256": "8c7a7f9b8f4f3b0f28f1604ce9697700461eb62dfa1d35424f8d7e7854f1f563"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/drag.log",
+      "bytes": 378,
+      "sha256": "68357336ada1bff2a7fb585b7e4d73ab57cb00acb568ba26f9a8c503430538c9"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/final-build.log",
+      "bytes": 27766,
+      "sha256": "bbeb0f65f004506b1bdb27e5c62c280c08ed9b29a5c9fb9569b8775ec4af27f2"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/final-ui.log",
+      "bytes": 3008,
+      "sha256": "a9158cc496113e8a74e4c0bf334aac47612b3b4804cb9b973721a2d3924dd880"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/first-green.log",
+      "bytes": 350,
+      "sha256": "9546b3576b0b6efa5b7eb41497bfb1f17cec3779a29ab37b074c5c3ab21637dc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/layout-green.log",
+      "bytes": 377,
+      "sha256": "a6f1c922ea8f19f142faf61f4af96e9bcdcb4978e3c64976766abd0c04f37ae9"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/layout-red.log",
+      "bytes": 2909,
+      "sha256": "ee9bd8f81164fbb6a195f7215f5989a5d6c23826369712b6bd7ac6b37c144cb8"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/layout-trial.png",
+      "bytes": 199281,
+      "sha256": "ca5ceef2c7f51cd5cccc363f7194c1425f64b0beb9e739e71d53ef5ab1aa9c0d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/live-desktop.png",
+      "bytes": 235184,
+      "sha256": "cafe4bbbb87457ca85038f11e7fa5bef1cc232007808cfcaa1eecf2663cd3083"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/live-detail.png",
+      "bytes": 206902,
+      "sha256": "bc2fd4cbfc18314ccf63f547fd1a2485ff9a5f1c65ca12a5560f8b9e5016a3be"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/live-layout.json",
+      "bytes": 390,
+      "sha256": "29642e3e3ffa718bccd1dc61b9c39e74ae514f225b0263430a0bf807d75012ef"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/red.log",
+      "bytes": 3245,
+      "sha256": "14c2999859c59d7dd0b3b085f2bd7314426340438b3734dacca92cc7d1adfcfc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/result.txt",
+      "bytes": 6352,
+      "sha256": "47a8276b47178a7fb470fe49fe9a1c74f6738562efdf8ba00cbefc2f37945cae"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/root/manifest.json",
+      "bytes": 2237,
+      "sha256": "1614e7e5b9bfa9c36b104f437ece4eec59d73759de7b65ce4890201069b85a67"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/root/records.jsonl",
+      "bytes": 1246812,
+      "sha256": "9a3860107d64b0b75a7e3060db047fbdb257d3163c63a24ea27946527bc225cd"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/root/records.md",
+      "bytes": 307096,
+      "sha256": "ea71e0089532a2eba360ff7fc044c9c702c4de8354cd45455f05cd84966e30f8"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/ui.log",
+      "bytes": 2706,
+      "sha256": "13308dda915526152ef55755c55284eb4e711ad8d5427d755d6b0c7fd3120112"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/frontend/verification.json",
+      "bytes": 5904,
+      "sha256": "3f12a1ed24d8e046b94a13cafe20da3e3cda82ea1b87258ba6ba835f237acd0c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/import-final-green.log",
+      "bytes": 835,
+      "sha256": "e38c8d61f16a654c41e56785b3c308019c5656a062ec2f3f985786df4bdbde7c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/import-green.log",
+      "bytes": 685,
+      "sha256": "ba3e0738f04a01d740435f8b67c71503bf03d1c130c811dab6f17a3fee91dbed"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/import-red.log",
+      "bytes": 1336,
+      "sha256": "3765f644dc10e85086f80d354e156cd810789dc56069cda854a3febb7128514a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/import-url-red.log",
+      "bytes": 1541,
+      "sha256": "7c057628a9d06a70b0d9e513542a526ecd6f66dba72a608a9df2096f1acf4610"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/live-extraction-first-timeout.json",
+      "bytes": 236,
+      "sha256": "7862ab1ea13e2db0c49d54ac35e92b73f530f426b14fd2fccdc8aa50cd4c2659"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/live-extraction.json",
+      "bytes": 236,
+      "sha256": "62b8fecad71d60a0b5e5d60b7cb585ce691bee4d8a06a41c3091b94f4c6949a8"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/live-http-url-failure.log",
+      "bytes": 2380,
+      "sha256": "0704cbca56b412905955f8fff54770bcb41cbdc1d6f5767d3a16444d4372f88a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/live-http.json",
+      "bytes": 945,
+      "sha256": "a2d4a7bebb03b4cc56811e5cd7b671354275c2cfb6860b5816b467948330072d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/live-http.log",
+      "bytes": 841,
+      "sha256": "6c87ffbd499235511cc07dc50655d7e0610c361bc8b60c758c1cccd02e930311"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/model-configuration.json",
+      "bytes": 474,
+      "sha256": "32515260baf1dba338b3b369666046eb9c46b38209fdce980c1e07c4d9bd1e7c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/plan.txt",
+      "bytes": 1262,
+      "sha256": "eeb99434db08012e0d0536e7ab94f6c01e5eb38e45c6f6185bc5757a45d1dbf9"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/result.txt",
+      "bytes": 6114,
+      "sha256": "6eb0c8673fb811fa154cbb10a18a49fb533fb804583d29895858d8a93ba61e1d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/root/manifest.json",
+      "bytes": 2168,
+      "sha256": "1ba1da49523ca2d83a5a4a6b5a0a61c0923079afa796a5196a04c70edc927c3d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/root/records.jsonl",
+      "bytes": 1090270,
+      "sha256": "3ec0b19761079b2cade2eb669020fd1fd6ba58d9d087d3cb931cbeba6a762736"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/root/records.md",
+      "bytes": 549028,
+      "sha256": "0a5496791a82da00c8feaa65acf152b3a220dd15d8b80b9118140d0f10c2fa8a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/source-ingestion.json",
+      "bytes": 450,
+      "sha256": "7b1900436713f2ef32846135f08d5479d51a726b6a485ec0ee4ad65b7648e8dc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/final-green.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/integration.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/manifest.json",
+      "bytes": 2218,
+      "sha256": "68bcc7d9bfa1a2deb7f5140a81ff2b32db9780ff86bbc545fe7c4f36ed37bb70"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/package.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/records.jsonl",
+      "bytes": 242417,
+      "sha256": "34add0b52304694113d3188bc9572176d936e90668b2fab37f9b4e60410743c9"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/records.md",
+      "bytes": 185678,
+      "sha256": "10d798ec024c93d3c430a2d2ac2b741bbcb51c64c867cd9c18e075428da099e6"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/red.log",
+      "bytes": 2075,
+      "sha256": "af3cadb24d47b6d1f1cb444b43713f55faa93e3ffd4f7503303f9495baa74c23"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/restart-persistence.json",
+      "bytes": 403,
+      "sha256": "b1b7b779153a2c97651682434d6731727a894c2433200aa9a48b04549e0ee5e4"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/result.txt",
+      "bytes": 4371,
+      "sha256": "ea55c58501b680e7660b44ff173f65d46543a8d8ed34085dcdb4b31392ea68fb"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/signature-red.log",
+      "bytes": 3649,
+      "sha256": "95abfae9d5bbfb600085d94bdcfce6724d644f6a4e8f7c1d71832ab25a7dc647"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/test-results.json",
+      "bytes": 384,
+      "sha256": "047583214d72cdf0873198352e956c39bddfd76b9e1d349af4489e0ca769c27f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/unit.log",
+      "bytes": 1120,
+      "sha256": "93067fa15e6adad1b1ec48d3fb22bd46127162fc748a91a820fa2a8c513a8d9d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/verification.json",
+      "bytes": 3925,
+      "sha256": "34ddee118ec3d7a2231b7b064a9ce1f6b57a8dcebf155d7413d9fb06bbe277dc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/verification.json",
+      "bytes": 19363,
+      "sha256": "c991d07d00407cc9f2ffa94d94f684d4d2fbbe674c52bce7fbb8dff3e36467cc"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/backend-baseline.json",
+      "bytes": 1424,
+      "sha256": "fc44c5954ead1fe2e6551fd0cc9828037c7a798095d513c90d3db46cbb53b0c0"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/manifest.json",
+      "bytes": 2242,
+      "sha256": "f26aa3fa43d1ef382394f7c2c847217679fa2d387a1cbdaf5f885e7e72fcee9f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/records.jsonl",
+      "bytes": 262427,
+      "sha256": "cc2a69d898cf3467759067961d4cf74352440c467957ff391dafc1e401d3cf43"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/records.md",
+      "bytes": 190402,
+      "sha256": "7df35dd1c8670a8153dbead8ce110fee0ee4f4dd7a65b0d4bca5ba8c1ba28d56"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/result.txt",
+      "bytes": 6256,
+      "sha256": "7366fbccc53487a6e681d337ef975aaf359c2ec67e9faeed621ad8eefa0fe091"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/verification.json",
+      "bytes": 1647,
+      "sha256": "c8655f432d998294112444e2d94cf375f59ce1df396ba835fa619f4257007972"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/final-build.log",
+      "bytes": 27766,
+      "sha256": "db347eec29da93a0d6039b3c2bc7e997bd7e6954773f1083eb3912e00f4e578a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/final-presentation.log",
+      "bytes": 520,
+      "sha256": "c97d8beea3eef4e479e8733174251af45ce8550843b4dd84bd3d9543326b4748"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/live-capture-final.log",
+      "bytes": 114,
+      "sha256": "8521ed4ac23911b96c11c78f77a3e580623897fe0f67ed7d74918f312a235d96"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/plan.txt",
+      "bytes": 1248,
+      "sha256": "bbaec64e56824dcb7eca2de3a145441e756ae2516a282fb8b3c35e20f195c182"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/result.txt",
+      "bytes": 6346,
+      "sha256": "62272749c5d6901b9960a8ff8230d523ff62d5cfff4c110839fef46915d0cc07"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/manifest.json",
+      "bytes": 2219,
+      "sha256": "88c466b4f80162634c7cafca62419b5856855d589d10307134a95b151f411b4c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/records.jsonl",
+      "bytes": 102325,
+      "sha256": "fb1c6f025812171e556fdffb59e28f2ce3c6ec13d661a21f6961aa6950cb3cfb"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/records.md",
+      "bytes": 78084,
+      "sha256": "9d028977dc6d9181c38c5b1598a0643f1721b0a2c8013040a8f3e131ed2a5a23"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/result.txt",
+      "bytes": 3388,
+      "sha256": "1265c3e2b1fd73f861852b31f216c3fa8a2ad428309555afd8fd9f7eb224a492"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/verification.json",
+      "bytes": 1875,
+      "sha256": "5b131d4aee65719f63e2a9890faf2bd2a8cb06a8514e6c569e18a1a3070fe4da"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/root/manifest.json",
+      "bytes": 2171,
+      "sha256": "b50e76819f221edaa86b0a24e122f9b496bfca37c16d3a33c4f4ae96962e8013"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/root/records.jsonl",
+      "bytes": 637534,
+      "sha256": "1a52d841e5c998ec3197ee6c77ebedf04948f39f9b44aeb34896ec9a9cb9965f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/root/records.md",
+      "bytes": 298334,
+      "sha256": "99e388b531f36e53f51d30a8bad7ae8668266c90b2a4e3ca65237c61c280497f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/ROOT_HANDOFF.txt",
+      "bytes": 858,
+      "sha256": "e2546d08925d9abf7201d07468baa7386cbc8aeb1cb1a83980445b4f8c876fa2"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/build-without-completion.log",
+      "bytes": 165,
+      "sha256": "97b404f0c31f95a6ff69edb5e5cffd93ea25bd393880db04d51a6826a767f073"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/cleanup-navigation-failure.log",
+      "bytes": 5941,
+      "sha256": "11e3ffbafe81047cd589c08dec41260c33a7da6aaa06620a106afca5689db6b3"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/clear-red.log",
+      "bytes": 3088,
+      "sha256": "2db6e3d877b7371d92bd2e4b22897fd42e41215cb53729effb6a8db1825c0d5a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-build.log",
+      "bytes": 165,
+      "sha256": "97b404f0c31f95a6ff69edb5e5cffd93ea25bd393880db04d51a6826a767f073"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-motion.log",
+      "bytes": 1375,
+      "sha256": "36a8a6046e65961df14d202312484f610cd75d5ec8c203235ca28c302bf1f23c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-regression.log",
+      "bytes": 3429,
+      "sha256": "04ab19f8e2340ae17545fe58960c01bc15fd1bf484a442a96bc1f1f9aea07c8e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-ui.log",
+      "bytes": 5941,
+      "sha256": "11e3ffbafe81047cd589c08dec41260c33a7da6aaa06620a106afca5689db6b3"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/first-green.log",
+      "bytes": 9757,
+      "sha256": "023f04a18735a13940c0ff9bbecb334c45db886f73be19b24bae8a847d6d34f8"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/fit-diagnosis.log",
+      "bytes": 3305,
+      "sha256": "3dcf50290d1c003e45de2b27a97b120ed6255fcd9a9b76fac5849d855ad8484f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-capture.log",
+      "bytes": 114,
+      "sha256": "8521ed4ac23911b96c11c78f77a3e580623897fe0f67ed7d74918f312a235d96"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-motion.gif",
+      "bytes": 5282292,
+      "sha256": "d613b26e2dca7acc365ce7af19faff8d7d11919c2cd01bafbc9e95fdcd5a88c7"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-motion.json",
+      "bytes": 1058,
+      "sha256": "cc6c7bb0157914e50999d0541b03ffe02add5a2da901350a6c10928140ff4d6c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-stage-before-controls.png",
+      "bytes": 689129,
+      "sha256": "aaf5ceb55f2a8d1a33ccdba49fbb630cb0fb2e1f4f752e4170fa2a53d626bd21"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-stage.png",
+      "bytes": 686638,
+      "sha256": "99781dae00221cff020dd90094ef6a2bd61f12ab86d28cbbb52451fead5e3147"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/motion-final.log",
+      "bytes": 1228,
+      "sha256": "2b83c6711d162fd70525bacc51201ad1be4c866c1b109a8c6664d1965db2e07d"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/motion-green.log",
+      "bytes": 523,
+      "sha256": "88a66bf9e59d84509daa51b7c83a81c4656da0de885c9562123eedb79842cd73"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/pixel-diagnosis.log",
+      "bytes": 3010,
+      "sha256": "c8d9a920bd6fd6d419c6d53f5c057a45d4b2c46cbb04693c9ed14046c90fdaec"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/readability-failure.log",
+      "bytes": 6511,
+      "sha256": "7d3b56e6f65d001244bf5cf64b1d0296289d38b2e859e1b75b6d3ed270baa988"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/readability-green.log",
+      "bytes": 377,
+      "sha256": "29b4978111a8f1107b2e14e6b749426ab1abd7ef6702f408641bad0003c4367f"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/red.log",
+      "bytes": 3039,
+      "sha256": "b61ede24bbdb8476cb47140b4766c791324cb3f7fcf2baa7f655694c11b749bf"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/resource-aborted-run.log",
+      "bytes": 523,
+      "sha256": "88a66bf9e59d84509daa51b7c83a81c4656da0de885c9562123eedb79842cd73"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/root/manifest.json",
+      "bytes": 2225,
+      "sha256": "c14a1e90ce0fe4c884e4af29579ef53ceb9c3cf7059c37af55431215e1c4f9f1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/root/records.jsonl",
+      "bytes": 862756,
+      "sha256": "d139a9ae4ebdc9ff328aa61ad96895d14b1d597006b8c487fde8cb0ac6669d47"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/root/records.md",
+      "bytes": 243131,
+      "sha256": "3f83443601b79bdbaed51a449195c303210b17bb804d933932a392959bdd1fff"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/second-run.log",
+      "bytes": 6324,
+      "sha256": "22bfbd4a4a98641cbd9d629ed54b87f2c77ca3fd10f622be351a5f89e8f0b4b2"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/verification.json",
+      "bytes": 13144,
+      "sha256": "486775ad8de4c166633df40ff4c394e8d66c40fd0c5e2d8213002aa0860a0475"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/result.txt",
+      "bytes": 2281,
+      "sha256": "2753ee7adf5ab193d468f7040e223bef4085d6e078ab810e681162d3b587e87a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/root/manifest.json",
+      "bytes": 2137,
+      "sha256": "c7c63677cdc0d017918a9ad10893155c61eb0f822b359867cbea10fdf59abea2"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/root/records.jsonl",
+      "bytes": 425029,
+      "sha256": "7b79c73e2afe2959044f1fdcb9180efc06936dda9da2c110e7f9c3dee25412d7"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/root/records.md",
+      "bytes": 158671,
+      "sha256": "e8d315ed7d536d0590c0eb21d7a837455fd684a0df84df4095c798fa800d6be6"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/verification.json",
+      "bytes": 2370,
+      "sha256": "b9086d1dace5094410122caef07bac7cff11e65ad7d316212aec08f32f4b0f5e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/audit/result.txt",
+      "bytes": 2657,
+      "sha256": "d0d6768369ea33d962afc90feefcbcea817372f94e9542396a0319c2b0be0894"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/audit/root/manifest.json",
+      "bytes": 2215,
+      "sha256": "0bb36227d393c6418b1b2236079a77b6bba1de4bee3b57607f2e1b42b0c8449b"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/audit/root/records.jsonl",
+      "bytes": 78427,
+      "sha256": "72fb99f573be71362fb5955e782c4a2779bfe80031b24bbf744a3debe1ce16a0"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/audit/root/records.md",
+      "bytes": 60553,
+      "sha256": "287aca1756e01537cdfb12cb01cef39a813fcfd7315f1d9288d2c7ca5a46abe7"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/audit/verification.json",
+      "bytes": 5472,
+      "sha256": "592f23e554321e281c4fcc853e822d0d2ec9ccab1d0563a649fedd962e4cc0a1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/result.txt",
+      "bytes": 1678,
+      "sha256": "278339672368d36d50e754f8e5b9499a08159e2ae632c7f5f57cdab94954b75e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/root/manifest.json",
+      "bytes": 2167,
+      "sha256": "9529ae5e5e30b23f7cfd3b740071608b7a2dbc85f2ded9ceb05eb746e170d832"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/root/records.jsonl",
+      "bytes": 105057,
+      "sha256": "b8cb763bb556ec2e5d756848f81a063571edfcc309847a082d2e8beea9fac235"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/root/records.md",
+      "bytes": 94970,
+      "sha256": "d36462d2128e0ef37776ad43049dd395f531c455524185936eb13cfceff01a6e"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/secret-scan.json",
+      "bytes": 457,
+      "sha256": "de9d76cb6399d40c4b51698de1fc228c5ce73b53eaca27e3bd688c3bd8eb06bd"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-github-push/verification.json",
+      "bytes": 8499,
+      "sha256": "907fbbbb301fc2f63c56d6f006395c6a1ec45457f588818ecb215ceaa327fadb"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/audit/result.txt",
+      "bytes": 2985,
+      "sha256": "deeba3f2766454841ef6cc2fc51263382feb65cffb1db26a779e61a2ce065920"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/audit/root/manifest.json",
+      "bytes": 2217,
+      "sha256": "dacd67ca75e3b7038238b0ec27f28b5467bdfd9a391adab2c29c7b9168fc2da1"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/audit/root/records.jsonl",
+      "bytes": 51952,
+      "sha256": "2ede09ca02d967976db4926e56dd09c0d591d065c2b9605e8128c4f493cabd61"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/audit/root/records.md",
+      "bytes": 35949,
+      "sha256": "81cfd6bfd3834029760015dd9938377770d5a56b472150b18dfc9404fb1dac1c"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/audit/verification.json",
+      "bytes": 1702,
+      "sha256": "19dcd4dc3a48aa3dd1d79b19d7ccc26c12c47fe4367afa9ae1eae76407a48e05"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/result.txt",
+      "bytes": 2611,
+      "sha256": "3df788218987d681b69f2c97fe418b4cae11c5ab822b523e41a4628b86455f5a"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/root/manifest.json",
+      "bytes": 2167,
+      "sha256": "fe62e8d73d336b289adce95c2d7b6eaca9238f2740e3a4a5e5bea220f2cabc50"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/root/records.jsonl",
+      "bytes": 108849,
+      "sha256": "8a2cb03450f8595f2f14275eed102e59c098080283ceb6e5f304244f95e91e28"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/root/records.md",
+      "bytes": 70344,
+      "sha256": "6b0cfb89d3f6f800654baa6e381ac1e319294e854fd2a3ad60d24e16cb018639"
+    },
+    {
+      "path": "docs/competition/development/agent-records/2026-11-16-K09-graph-status/verification.json",
+      "bytes": 6276,
+      "sha256": "3cf84f9014e08a38f921d06f099a620d2ccabcfd25d583b2e26b1468b60cd1bd"
+    },
+    {
+      "path": "scripts/knowledge-graph/README.txt",
+      "bytes": 4016,
+      "sha256": "9f4786e5e7b908ba4459e327a64f11a43ea96f5a1c629610e5c298d4d078d77c"
+    },
+    {
+      "path": "scripts/knowledge-graph/import_chapter.py",
+      "bytes": 12516,
+      "sha256": "1aef5a33e7dc49bda42629b3ac70021db11efbac15075e3a99e6de68b10b3315"
+    },
+    {
+      "path": "scripts/knowledge-graph/start-neo4j.ps1",
+      "bytes": 2490,
+      "sha256": "6ca278fc2c257d6b8192088040c74e7b45c64050503f1184a49a00fb0358e422"
+    },
+    {
+      "path": "scripts/knowledge-graph/tests/test_import_chapter.py",
+      "bytes": 1930,
+      "sha256": "32fb3c0d326d5e8609f0ca2d1340281c90827aaa684ea061a1400f187bec5592"
+    }
+  ]
+}

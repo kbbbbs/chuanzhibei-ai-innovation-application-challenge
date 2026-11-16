@@ -1,0 +1,20 @@
+
+Running 13 tests using 1 worker
+
+(node:35180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 e2e\chapter-knowledge-graph.spec.js:18:1 › chapter graph shows real chapter concepts, labelled directional relations and their evidence (1.1s)
+  ok  2 e2e\chapter-knowledge-graph.spec.js:34:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout (1.0s)
+  ok  3 e2e\chapter-knowledge-graph.spec.js:55:1 › search finds a concept, handles no match, and zoom controls work (923ms)
+  ok  4 e2e\chapter-knowledge-graph.spec.js:71:1 › learning suggestions are distinguished and filtering does not invent relations (940ms)
+  ok  5 e2e\chapter-knowledge-graph.spec.js:82:1 › student can use graph at narrow width without page overflow (796ms)
+  ok  6 e2e\chapter-knowledge-graph.spec.js:92:1 › knowledge workspace exposes the chapter demo and anonymous access keeps login boundary (1.6s)
+  ok  7 e2e\chapter-knowledge-graph.spec.js:101:1 › local demonstration is interactive without a backend or a login session (1.0s)
+  ok  8 e2e\native-rag-ui.spec.js:45:1 › native retrieval displays actual hit, authenticated source and final stream citations (1.1s)
+  ok  9 e2e\native-rag-ui.spec.js:66:1 › read-only knowledge fixture hides mutations without claiming legacy shared flags grant access (869ms)
+  ok 10 e2e\native-rag-ui.spec.js:74:1 › stop generation terminates the request and marks incomplete response (1.3s)
+  ok 11 e2e\native-rag-ui.spec.js:85:1 › no evidence clearly refuses and does not invent a source (932ms)
+  ok 12 e2e\native-rag-ui.spec.js:94:1 › filtered evidence retains the original citation number in the answer (895ms)
+  ok 13 e2e\native-rag-ui.spec.js:104:1 › answer and authenticated citation both render the stored formula with a source-code view (1.3s)
+
+  13 passed (14.6s)

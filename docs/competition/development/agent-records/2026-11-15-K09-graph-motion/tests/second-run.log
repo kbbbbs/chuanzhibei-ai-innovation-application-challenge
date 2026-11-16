@@ -1,0 +1,93 @@
+
+Running 6 tests using 1 worker
+
+(node:3972) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\knowledge-graph-motion.spec.js:144:1 › directional motion paints changing frames, pauses and resumes without semantic graph mutations (5.3s)
+  x  2 e2e\knowledge-graph-motion.spec.js:175:1 › reduced motion starts with stable frames and no layout or camera animation (3.3s)
+(node:45496) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 e2e\knowledge-graph-motion.spec.js:196:1 › offscreen graph pauses drawing and restores the users playback choice when visible (3.3s)
+(node:56252) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 e2e\knowledge-graph-motion.spec.js:217:1 › presentation mode expands the graph and Escape restores normal controls on mobile (3.8s)
+  ok 5 e2e\knowledge-graph-motion.spec.js:245:1 › explicit relayout interpolates nodes and settles before further graph interactions (4.6s)
+  ok 6 e2e\knowledge-graph-motion.spec.js:258:1 › particle layer follows actual node dragging and graph selection keeps user positions (3.7s)
+
+
+  1) e2e\knowledge-graph-motion.spec.js:175:1 › reduced motion starts with stable frames and no layout or camera animation 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "hash": 1149323026,
+    +   "hash": 54993153,
+        "painted": 4421,
+      }
+
+      181 |   const before = await pixels(page)
+      182 |   await page.waitForTimeout(250)
+    > 183 |   expect(await pixels(page)).toEqual(before)
+          |                              ^
+      184 |   await page
+      185 |     .getByRole('button', { name: '选择知识点监督学习', exact: true })
+      186 |     .click()
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\knowledge-graph-motion.spec.js:183:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\knowledge-graph-motion-red-8030b--layout-or-camera-animation\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\knowledge-graph-motion-red-8030b--layout-or-camera-animation\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\knowledge-graph-motion-red-8030b--layout-or-camera-animation\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\knowledge-graph-motion-red-8030b--layout-or-camera-animation\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) e2e\knowledge-graph-motion.spec.js:196:1 › offscreen graph pauses drawing and restores the users playback choice when visible 
+
+    Error: expect(received).toEqual(expected) // deep equality
+
+    - Expected  - 1
+    + Received  + 1
+
+      Object {
+    -   "hash": 3972617178,
+    +   "hash": 2475143103,
+        "painted": 5646,
+      }
+
+      205 |   const hiddenFrame = await pixels(page)
+      206 |   await page.waitForTimeout(250)
+    > 207 |   expect(await pixels(page)).toEqual(hiddenFrame)
+          |                              ^
+      208 |   await stage.scrollIntoViewIfNeeded()
+      209 |   await expect(stage).toHaveAttribute('data-motion-state', 'running')
+      210 |   await page.getByRole('button', { name: '暂停动态', exact: true }).click()
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\knowledge-graph-motion.spec.js:207:30
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results\knowledge-graph-motion-off-95ad5-layback-choice-when-visible\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results\knowledge-graph-motion-off-95ad5-layback-choice-when-visible\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results\knowledge-graph-motion-off-95ad5-layback-choice-when-visible\trace.zip
+    Usage:
+
+        npx playwright show-trace test-results\knowledge-graph-motion-off-95ad5-layback-choice-when-visible\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    e2e\knowledge-graph-motion.spec.js:175:1 › reduced motion starts with stable frames and no layout or camera animation 
+    e2e\knowledge-graph-motion.spec.js:196:1 › offscreen graph pauses drawing and restores the users playback choice when visible 
+  4 passed (30.1s)

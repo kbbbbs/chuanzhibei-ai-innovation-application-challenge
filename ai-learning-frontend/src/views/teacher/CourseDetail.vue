@@ -4,6 +4,7 @@
       <template #header>
         <div class="card-header">
           <span>课程详情：{{ course?.title }}</span>
+          <router-link :to="{ path: '/chapter-knowledge-graph', query: { courseId } }">课程知识图谱</router-link>
           <el-button @click="$router.back()">返回</el-button>
         </div>
       </template>

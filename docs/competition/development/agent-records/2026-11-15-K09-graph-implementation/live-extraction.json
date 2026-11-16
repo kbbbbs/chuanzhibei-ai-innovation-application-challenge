@@ -1,0 +1,7 @@
+{
+  "status": "FAILED",
+  "graphId": "2201b6e6-6912-4901-a7d6-a37b94343d82",
+  "error": "请求失败 POST /api/rag/graphs/2201b6e6-6912-4901-a7d6-a37b94343d82/extract，HTTP 504",
+  "elapsedSeconds": 90.14,
+  "published": false
+}

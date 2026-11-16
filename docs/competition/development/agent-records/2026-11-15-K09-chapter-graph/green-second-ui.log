@@ -1,0 +1,57 @@
+
+Running 6 tests using 1 worker
+
+(node:12384) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\chapter-knowledge-graph.spec.js:18:1 › chapter graph shows real chapter concepts, labelled directional relations and their evidence (1.3s)
+  x  2 e2e\chapter-knowledge-graph.spec.js:34:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout (11.0s)
+(node:46372) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 e2e\chapter-knowledge-graph.spec.js:55:1 › search finds a concept, handles no match, and zoom controls work (1.2s)
+  ok 4 e2e\chapter-knowledge-graph.spec.js:71:1 › learning suggestions are distinguished and filtering does not invent relations (859ms)
+  ok 5 e2e\chapter-knowledge-graph.spec.js:82:1 › student can use graph at narrow width without page overflow (797ms)
+  ok 6 e2e\chapter-knowledge-graph.spec.js:92:1 › knowledge workspace exposes the chapter demo and anonymous access keeps login boundary (1.7s)
+
+
+  1) e2e\chapter-knowledge-graph.spec.js:34:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout 
+
+    Error: expect(locator).toHaveAttribute(expected) failed
+
+    Locator:  locator('.vue-flow__node[data-id="loss"]')
+    Expected: "visibility: visible; z-index: 1000; transform: translate(906.64px, 298.432px); pointer-events: all;"
+    Received: "visibility: visible; z-index: 0; transform: translate(906.64px, 298.432px); pointer-events: all;"
+    Timeout:  10000ms
+
+    Call log:
+      - Expect "toHaveAttribute" with timeout 10000ms
+      - waiting for locator('.vue-flow__node[data-id="loss"]')
+        23 × locator resolved to <div tabindex="0" role="group" data-id="loss" aria-roledescription="node" aria-describedby="vue-flow__node-desc-chapter-ml" class="vue-flow__node vue-flow__node-concept nopan draggable selectable">…</div>
+           - unexpected value "visibility: visible; z-index: 0; transform: translate(906.64px, 298.432px); pointer-events: all;"
+
+
+      48 |   await page.getByRole('button', { name: '只看知识关系', exact: true }).click()
+      49 |   await page.getByTestId('concept-model').click()
+    > 50 |   await expect(node).toHaveAttribute('style', moved)
+         |                      ^
+      51 |   await page.getByRole('button', { name: '恢复布局', exact: true }).click()
+      52 |   await expect(node).toHaveAttribute('style', before)
+      53 | })
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:50:22
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-second-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-second-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-second-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\green-second-artifacts\chapter-knowledge-graph-no-0da7d-ering-reset-restores-layout\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\chapter-knowledge-graph.spec.js:34:1 › node dragging moves connected edges and survives selection and filtering; reset restores layout 
+  5 passed (18.1s)

@@ -1,0 +1,169 @@
+{
+  "task": "K09 dynamic frontend knowledge graph",
+  "verifiedAt": "2026-11-15T23:13:23.550969+08:00",
+  "results": {
+    "browserMotion": {
+      "passed": 7,
+      "failed": 0,
+      "log": "tests/final-motion.log"
+    },
+    "browserRegression": {
+      "passed": 20,
+      "failed": 0,
+      "log": "tests/final-regression.log"
+    },
+    "finalCssFocused": {
+      "passed": 2,
+      "failed": 0,
+      "log": "final-presentation.log"
+    },
+    "productionBuild": "PASS exit0, final-build.log",
+    "productionDevelopmentPreviewExcluded": true,
+    "diffCheck": "PASS",
+    "actualUiMedia": {
+      "nodes": 24,
+      "edges": 26,
+      "frames": 36,
+      "gifSize": [
+        1000,
+        667
+      ],
+      "durationMs": 16140,
+      "pausedStable": true,
+      "resumedChanges": true,
+      "pageErrors": []
+    },
+    "nativeUi": "CUA manually verified complete associations, fullscreen, pause/resume; final desktop header CSS verified by updated actual screenshot."
+  },
+  "testEnvironment": "Browser API contract tests used mocks. Final actual media used live localhost application and Neo4j, no mocked graph API. Automated verification used installed Chrome headless CPU rendering and sequential process groups due resource pressure.",
+  "limitations": {
+    "performance": "Motion draw is capped near30fps,100 visible edges,120visible nodes. No sustained benchmark claimed. The current24/26chapter fits those bounds.",
+    "backendTests": "Not rerun for frontend-only change. Fourteen backend-related source hashes match priorverifiedbaseline.",
+    "runtimeRecovery": "Owned Vite restarted as PID54728 with1536MB heap limit for this runtime; unrelatedapplications were not stopped.",
+    "initialBuild": "Child build exit result was missing, root repeated build and observed0.",
+    "semanticReview": "No new knowledge fact or teacher semantic approval performed in this turn."
+  },
+  "backendBaseline": {
+    "ai-learning-backend/pom.xml": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphController.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphExtractionService.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphService.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSlice.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSnapshotValidator.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepository.java": true,
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java": true,
+    "ai-learning-backend/src/main/resources/application.yml": true,
+    "ai-learning-backend/src/main/resources/db/migration/V006__chapter_graph.sql": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphExtractionServiceTest.java": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/GraphServiceTest.java": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryIntegrationTest.java": true,
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryTest.java": true
+  },
+  "recordSnapshots": {
+    "root": {
+      "session_id": "01a1ddf2-6ea5-7880-8712-c828f569da3d",
+      "source_start_line": 1433,
+      "source_line_range": [
+        1433,
+        2383
+      ],
+      "event_timestamp_range": [
+        "2026-11-15T08:26:32.990Z",
+        "2026-11-15T15:13:22.255Z"
+      ],
+      "record_count": 259
+    },
+    "canvas": {
+      "session_id": "01a1de52-b3f1-7b53-9f09-8a45c4651f13",
+      "source_start_line": 447,
+      "source_line_range": [
+        447,
+        1115
+      ],
+      "event_timestamp_range": [
+        "2026-11-15T08:29:03.781Z",
+        "2026-11-15T15:08:47.592Z"
+      ],
+      "record_count": 190
+    },
+    "tests": {
+      "session_id": "01a1de53-1452-75f2-b791-8358597336c0",
+      "source_start_line": 444,
+      "source_line_range": [
+        450,
+        1268
+      ],
+      "event_timestamp_range": [
+        "2026-11-15T08:29:27.973Z",
+        "2026-11-15T15:06:53.645Z"
+      ],
+      "record_count": 246
+    },
+    "review": {
+      "session_id": "01a1de58-782e-7d60-8598-f469e71d3843",
+      "source_start_line": 485,
+      "source_line_range": [
+        491,
+        697
+      ],
+      "event_timestamp_range": [
+        "2026-11-15T08:35:22.065Z",
+        "2026-11-15T08:50:12.040Z"
+      ],
+      "record_count": 59
+    }
+  },
+  "snapshotLimits": "Explicit snapshots only, not a platform hook. Final export output/hash writing/reply may be outside snapshot. Root takeover steps are in root records, not fabricated child steps.",
+  "sha256": {
+    "AGENTS.md": "23557b792946de10e8bbe877a230ebb53d21ad0b3aaebb0a10b064ad59c4dba1",
+    "ai-learning-frontend/e2e/knowledge-graph-motion.spec.js": "9731d02a44507ed4728049db116ce438f9603b09dfa8a3c973b95ba1c674e77b",
+    "ai-learning-frontend/e2e/persistent-knowledge-graph.spec.js": "395bfbc2e8e5205136485c71f60b68d22645be2da2644618f066b9a08e06658e",
+    "ai-learning-frontend/src/components/knowledge/KnowledgeGraphCanvas.vue": "b285c1511426d4cd9fed30e4d01099b542ef7553d1df73c597c60f5f591dc79b",
+    "ai-learning-frontend/src/views/student/ChapterKnowledgeGraph.vue": "bc6c454af1fe2228a552077fe400c51a7d0ded6fea8bcd6f7793a44ba6009521",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/backend-baseline.json": "fc44c5954ead1fe2e6551fd0cc9828037c7a798095d513c90d3db46cbb53b0c0",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/manifest.json": "f26aa3fa43d1ef382394f7c2c847217679fa2d387a1cbdaf5f885e7e72fcee9f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/records.jsonl": "cc2a69d898cf3467759067961d4cf74352440c467957ff391dafc1e401d3cf43",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/records.md": "7df35dd1c8670a8153dbead8ce110fee0ee4f4dd7a65b0d4bca5ba8c1ba28d56",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/result.txt": "7366fbccc53487a6e681d337ef975aaf359c2ec67e9faeed621ad8eefa0fe091",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/canvas/verification.json": "c8655f432d998294112444e2d94cf375f59ce1df396ba835fa619f4257007972",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/final-build.log": "db347eec29da93a0d6039b3c2bc7e997bd7e6954773f1083eb3912e00f4e578a",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/final-presentation.log": "c97d8beea3eef4e479e8733174251af45ce8550843b4dd84bd3d9543326b4748",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/live-capture-final.log": "8521ed4ac23911b96c11c78f77a3e580623897fe0f67ed7d74918f312a235d96",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/plan.txt": "bbaec64e56824dcb7eca2de3a145441e756ae2516a282fb8b3c35e20f195c182",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/result.txt": "62272749c5d6901b9960a8ff8230d523ff62d5cfff4c110839fef46915d0cc07",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/manifest.json": "88c466b4f80162634c7cafca62419b5856855d589d10307134a95b151f411b4c",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/records.jsonl": "fb1c6f025812171e556fdffb59e28f2ce3c6ec13d661a21f6961aa6950cb3cfb",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/records.md": "9d028977dc6d9181c38c5b1598a0643f1721b0a2c8013040a8f3e131ed2a5a23",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/result.txt": "1265c3e2b1fd73f861852b31f216c3fa8a2ad428309555afd8fd9f7eb224a492",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/review/verification.json": "5b131d4aee65719f63e2a9890faf2bd2a8cb06a8514e6c569e18a1a3070fe4da",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/root/manifest.json": "b50e76819f221edaa86b0a24e122f9b496bfca37c16d3a33c4f4ae96962e8013",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/root/records.jsonl": "1a52d841e5c998ec3197ee6c77ebedf04948f39f9b44aeb34896ec9a9cb9965f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/root/records.md": "99e388b531f36e53f51d30a8bad7ae8668266c90b2a4e3ca65237c61c280497f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/build-without-completion.log": "97b404f0c31f95a6ff69edb5e5cffd93ea25bd393880db04d51a6826a767f073",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/cleanup-navigation-failure.log": "11e3ffbafe81047cd589c08dec41260c33a7da6aaa06620a106afca5689db6b3",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/clear-red.log": "2db6e3d877b7371d92bd2e4b22897fd42e41215cb53729effb6a8db1825c0d5a",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-build.log": "97b404f0c31f95a6ff69edb5e5cffd93ea25bd393880db04d51a6826a767f073",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-motion.log": "36a8a6046e65961df14d202312484f610cd75d5ec8c203235ca28c302bf1f23c",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-regression.log": "04ab19f8e2340ae17545fe58960c01bc15fd1bf484a442a96bc1f1f9aea07c8e",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/final-ui.log": "11e3ffbafe81047cd589c08dec41260c33a7da6aaa06620a106afca5689db6b3",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/first-green.log": "023f04a18735a13940c0ff9bbecb334c45db886f73be19b24bae8a847d6d34f8",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/fit-diagnosis.log": "3dcf50290d1c003e45de2b27a97b120ed6255fcd9a9b76fac5849d855ad8484f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-capture.log": "8521ed4ac23911b96c11c78f77a3e580623897fe0f67ed7d74918f312a235d96",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-motion.gif": "d613b26e2dca7acc365ce7af19faff8d7d11919c2cd01bafbc9e95fdcd5a88c7",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-motion.json": "cc6c7bb0157914e50999d0541b03ffe02add5a2da901350a6c10928140ff4d6c",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-stage-before-controls.png": "aaf5ceb55f2a8d1a33ccdba49fbb630cb0fb2e1f4f752e4170fa2a53d626bd21",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/live-stage.png": "99781dae00221cff020dd90094ef6a2bd61f12ab86d28cbbb52451fead5e3147",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/motion-final.log": "2b83c6711d162fd70525bacc51201ad1be4c866c1b109a8c6664d1965db2e07d",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/motion-green.log": "88a66bf9e59d84509daa51b7c83a81c4656da0de885c9562123eedb79842cd73",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/pixel-diagnosis.log": "c8d9a920bd6fd6d419c6d53f5c057a45d4b2c46cbb04693c9ed14046c90fdaec",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/readability-failure.log": "7d3b56e6f65d001244bf5cf64b1d0296289d38b2e859e1b75b6d3ed270baa988",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/readability-green.log": "29b4978111a8f1107b2e14e6b749426ab1abd7ef6702f408641bad0003c4367f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/red.log": "b61ede24bbdb8476cb47140b4766c791324cb3f7fcf2baa7f655694c11b749bf",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/resource-aborted-run.log": "88a66bf9e59d84509daa51b7c83a81c4656da0de885c9562123eedb79842cd73",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/root/manifest.json": "c14a1e90ce0fe4c884e4af29579ef53ceb9c3cf7059c37af55431215e1c4f9f1",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/root/records.jsonl": "d139a9ae4ebdc9ff328aa61ad96895d14b1d597006b8c487fde8cb0ac6669d47",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/root/records.md": "3f83443601b79bdbaed51a449195c303210b17bb804d933932a392959bdd1fff",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/ROOT_HANDOFF.txt": "e2546d08925d9abf7201d07468baa7386cbc8aeb1cb1a83980445b4f8c876fa2",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-motion/tests/second-run.log": "22bfbd4a4a98641cbd9d629ed54b87f2c77ca3fd10f622be351a5f89e8f0b4b2"
+  }
+}

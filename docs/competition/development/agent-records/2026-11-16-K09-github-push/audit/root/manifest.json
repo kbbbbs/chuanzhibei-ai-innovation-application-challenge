@@ -1,0 +1,56 @@
+{
+  "format_version": 1,
+  "session_id": "01a1e375-a3b7-7370-8f5b-784efae70bab",
+  "since": "2026-11-16T08:25:01.510Z",
+  "source_file": "rollout-2026-11-16T16-25-00-01a1e375-a3b7-7370-8f5b-784efae70bab.jsonl",
+  "source_sha256": "33b42ef23a0780ee1861c358b87ab422dc6c38f8b5c9a7420f414d5b95c533f3",
+  "source_size_bytes": 734337,
+  "source_total_lines": 124,
+  "source_start_line": 38,
+  "session_kind": "subagent",
+  "fork_inherited_prefix_omitted": [
+    2,
+    37
+  ],
+  "fork_boundary_selection": "Explicit --start-line; caller verifies the actual task boundary",
+  "source_line_range": [
+    38,
+    124
+  ],
+  "event_timestamp_range": [
+    "2026-11-16T08:25:01.510Z",
+    "2026-11-16T08:29:04.228Z"
+  ],
+  "record_count": 26,
+  "event_counts": {
+    "agent_message": 3,
+    "tool_call": 12,
+    "tool_output": 11
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 6,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 0,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "72fb99f573be71362fb5955e782c4a2779bfe80031b24bbf744a3debe1ce16a0"
+}

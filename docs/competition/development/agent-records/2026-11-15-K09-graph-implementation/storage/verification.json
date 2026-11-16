@@ -1,0 +1,45 @@
+{
+  "verifiedAt": "2026-11-15T08:01:08.836785+00:00",
+  "tests": {
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "skipped": 0,
+    "actualNeo4jIntegration": 3
+  },
+  "restartPersistence": "PASS: 114 nodes,108 relationships unchanged",
+  "diffCheck": "PASS",
+  "snapshot": {
+    "session": "01a1de29-caac-7941-8ab4-27de5185aebe",
+    "sourceStart": 65,
+    "sourceRange": [
+      71,
+      414
+    ],
+    "recordCount": 107,
+    "limitations": "Final export output, hash writing, and final response may be outside snapshot; no hidden reasoning or inherited prefix exported."
+  },
+  "sha256": {
+    "ai-learning-backend/pom.xml": "cecf50abb02fc880b85ecf9b448bdd1f0c2eccdebc663aa0b1fc4929a7cf849e",
+    "ai-learning-backend/src/main/resources/application.yml": "059ef36ac78fe64b8a2cf33688b33a93190bba58ea7658d0836bdd4d74eff2dc",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepository.java": "e2e15e59e362e9f4912550194d0a46dba4fed00f1408dea6891a7a3a1ea20ce8",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/graph/GraphSlice.java": "6a2fa42d4c1878aca487595fe263edfdb1d262a738e64a3558ed812e93bd7eaf",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryTest.java": "697cd9f839eb1259b3dba875f93539f81b33727b138af48b91c52632f3a89da9",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/graph/Neo4jGraphRepositoryIntegrationTest.java": "2450930fe0c2e1914fa601aadca0a3d3aa663f4dc5d28416502f57ba6f44e2a4",
+    "scripts/knowledge-graph/start-neo4j.ps1": "6ca278fc2c257d6b8192088040c74e7b45c64050503f1184a49a00fb0358e422",
+    "scripts/knowledge-graph/README.txt": "9f4786e5e7b908ba4459e327a64f11a43ea96f5a1c629610e5c298d4d078d77c",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/integration.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/manifest.json": "68bcc7d9bfa1a2deb7f5140a81ff2b32db9780ff86bbc545fe7c4f36ed37bb70",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/records.jsonl": "34add0b52304694113d3188bc9572176d936e90668b2fab37f9b4e60410743c9",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/records.md": "10d798ec024c93d3c430a2d2ac2b741bbcb51c64c867cd9c18e075428da099e6",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/red.log": "af3cadb24d47b6d1f1cb444b43713f55faa93e3ffd4f7503303f9495baa74c23",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/restart-persistence.json": "b1b7b779153a2c97651682434d6731727a894c2433200aa9a48b04549e0ee5e4",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/result.txt": "ea55c58501b680e7660b44ff173f65d46543a8d8ed34085dcdb4b31392ea68fb",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/test-results.json": "047583214d72cdf0873198352e956c39bddfd76b9e1d349af4489e0ca769c27f",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/unit.log": "93067fa15e6adad1b1ec48d3fb22bd46127162fc748a91a820fa2a8c513a8d9d",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/final-green.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/package.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "docs/competition/development/agent-records/2026-11-15-K09-graph-implementation/storage/signature-red.log": "95abfae9d5bbfb600085d94bdcfce6724d644f6a4e8f7c1d71832ab25a7dc647"
+  },
+  "package": "PASS (-DskipTests)"
+}

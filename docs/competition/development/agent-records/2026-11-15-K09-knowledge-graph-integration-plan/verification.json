@@ -1,0 +1,42 @@
+{
+  "task": "K09 knowledge graph integration plan, documentation only",
+  "verifiedAt": "2026-11-15T15:40:43.995404+08:00",
+  "results": {
+    "documentCoverage": "PASS",
+    "previousFrontendFilesUnchanged": {
+      "ai-learning-frontend/src/data/machineLearningChapterGraph.js": true,
+      "ai-learning-frontend/src/views/student/ChapterKnowledgeGraph.vue": true,
+      "ai-learning-frontend/src/views/student/KnowledgeBase.vue": true,
+      "ai-learning-frontend/src/views/teacher/TeacherKnowledgeBase.vue": true,
+      "ai-learning-frontend/src/router/index.js": true,
+      "ai-learning-frontend/e2e/chapter-knowledge-graph.spec.js": true,
+      "ai-learning-frontend/package-lock.json": true
+    },
+    "diffCheck": "PASS (executed before export)",
+    "recordJsonParsing": "PASS"
+  },
+  "testsNotRun": {
+    "frontendBackendBuildAndTests": "Documentation-only task; no business code modified.",
+    "neo4jIntegrationAndModelExtraction": "Proposed capabilities, not implemented in this turn."
+  },
+  "recordSnapshot": {
+    "sessionId": "01a1ddf2-6ea5-7880-8712-c828f569da3d",
+    "sourceLines": [
+      373,
+      513
+    ],
+    "eventTimes": [
+      "2026-11-15T07:28:46.478Z",
+      "2026-11-15T07:41:15.300Z"
+    ],
+    "recordCount": 40,
+    "limits": "Explicit snapshot only. Export output, this verification and final reply may be outside snapshot. No subagents. Source tool-output truncation is not reconstructed."
+  },
+  "sha256": {
+    "docs/competition/development/K09-knowledge-graph-integration-plan.txt": "63f1a8616c0bc611d221d77dd0d93e70966af6245b385d14e523174dd5f739be",
+    "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/result.txt": "2753ee7adf5ab193d468f7040e223bef4085d6e078ab810e681162d3b587e87a",
+    "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/root/records.jsonl": "7b79c73e2afe2959044f1fdcb9180efc06936dda9da2c110e7f9c3dee25412d7",
+    "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/root/records.md": "e8d315ed7d536d0590c0eb21d7a837455fd684a0df84df4095c798fa800d6be6",
+    "docs/competition/development/agent-records/2026-11-15-K09-knowledge-graph-integration-plan/root/manifest.json": "c7c63677cdc0d017918a9ad10893155c61eb0f822b359867cbea10fdf59abea2"
+  }
+}

@@ -1,0 +1,61 @@
+{
+  "source": "Actual localhost application API and Neo4j chapter, no API mocks",
+  "browserMode": "Installed Chrome headless, GPU disabled and renderer-process-limit1 to reduce concurrent machine resource pressure",
+  "graph": {
+    "nodes": 24,
+    "edges": 26,
+    "zoom": 0.8878486761643188
+  },
+  "frames": 36,
+  "timestampsMs": [
+    0,
+    444,
+    891,
+    1355,
+    1756,
+    2156,
+    2681,
+    3194,
+    3658,
+    4105,
+    4537,
+    4956,
+    5406,
+    5824,
+    6259,
+    6710,
+    7160,
+    7624,
+    8104,
+    8508,
+    8971,
+    9422,
+    9887,
+    10339,
+    10820,
+    11287,
+    11769,
+    12250,
+    12701,
+    13152,
+    13586,
+    14004,
+    14453,
+    14872,
+    15289,
+    15722
+  ],
+  "pausedFrameStable": true,
+  "resumedFrameChanges": true,
+  "pageErrors": [],
+  "gif": {
+    "frames": 36,
+    "dimensions": [
+      1000,
+      667
+    ],
+    "durationMs": 16140,
+    "bytes": 5282292,
+    "timing": "Actual screenshot start intervals rounded to GIF 10ms precision"
+  }
+}

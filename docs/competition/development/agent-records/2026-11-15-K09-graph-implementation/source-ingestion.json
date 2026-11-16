@@ -1,0 +1,26 @@
+{
+  "stage": "COMPLETED",
+  "progress": 100,
+  "failedPages": [
+    8,
+    9,
+    10,
+    21
+  ],
+  "errorCode": null,
+  "documentVersion": 1,
+  "parseRevision": 1,
+  "actualChunkCount": 32,
+  "sourcePageCount": 36,
+  "graphEvidencePages": [
+    5,
+    14,
+    15,
+    17,
+    18,
+    19,
+    24,
+    31
+  ],
+  "note": "Graph curated facts use matched actual chunks. Failed image pages are not claimed as verified content."
+}

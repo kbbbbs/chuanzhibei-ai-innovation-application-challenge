@@ -1,0 +1,47 @@
+
+Running 1 test using 1 worker
+
+(node:51964) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\chapter-knowledge-graph.spec.js:101:1 › local demonstration is interactive without a backend or a login session (10.6s)
+
+
+  1) e2e\chapter-knowledge-graph.spec.js:101:1 › local demonstration is interactive without a backend or a login session 
+
+    Error: expect(locator).toBeVisible() failed
+
+    Locator: getByRole('heading', { name: '机器学习概述', exact: true })
+    Expected: visible
+    Timeout: 10000ms
+    Error: element(s) not found
+
+    Call log:
+      - Expect "toBeVisible" with timeout 10000ms
+      - waiting for getByRole('heading', { name: '机器学习概述', exact: true })
+
+
+      103 |   page.on('request', request => { if (new URL(request.url()).pathname.startsWith('/api/')) apiRequests.push(request.url()) })
+      104 |   await page.goto('/chapter-knowledge-graph-preview')
+    > 105 |   await expect(page.getByRole('heading', { name: '机器学习概述', exact: true })).toBeVisible()
+          |                                                                            ^
+      106 |   await page.getByTestId('concept-model').focus()
+      107 |   await page.keyboard.press('Enter')
+      108 |   await expect(page.getByTestId('graph-detail')).toContainText('线性模型')
+        at D:\ai-learning-collaboration-verified\ai-learning-frontend\e2e\chapter-knowledge-graph.spec.js:105:76
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\red-preview-artifacts\chapter-knowledge-graph-lo-35879--backend-or-a-login-session\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\red-preview-artifacts\chapter-knowledge-graph-lo-35879--backend-or-a-login-session\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\red-preview-artifacts\chapter-knowledge-graph-lo-35879--backend-or-a-login-session\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-15-K09-chapter-graph\red-preview-artifacts\chapter-knowledge-graph-lo-35879--backend-or-a-login-session\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\chapter-knowledge-graph.spec.js:101:1 › local demonstration is interactive without a backend or a login session 

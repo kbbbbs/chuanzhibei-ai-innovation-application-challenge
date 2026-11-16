@@ -12,6 +12,7 @@
     "@element-plus/icons-vue": "^2.3.2",
     "@vue-flow/core": "^1.48.2",
     "axios": "^1.18.1",
+    "cytoscape": "^3.35.0",
     "echarts": "^6.1.0",
     "element-plus": "^2.14.2",
     "katex": "0.19.1",

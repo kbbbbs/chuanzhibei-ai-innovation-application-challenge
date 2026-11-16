@@ -1,0 +1,20 @@
+
+Running 5 tests using 1 worker
+
+(node:39880) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 e2e\persistent-knowledge-graph.spec.js:263:1 › network dragging changes node and edge positions, filters and expansion keep the moved node (1.2s)
+(node:52564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 e2e\persistent-knowledge-graph.spec.js:263:1 › network dragging changes node and edge positions, filters and expansion keep the moved node (1.1s)
+(node:34600) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 3 e2e\persistent-knowledge-graph.spec.js:263:1 › network dragging changes node and edge positions, filters and expansion keep the moved node (1.3s)
+(node:36736) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 4 e2e\persistent-knowledge-graph.spec.js:263:1 › network dragging changes node and edge positions, filters and expansion keep the moved node (1.2s)
+(node:45500) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 5 e2e\persistent-knowledge-graph.spec.js:263:1 › network dragging changes node and edge positions, filters and expansion keep the moved node (1.3s)
+
+  5 passed (9.2s)

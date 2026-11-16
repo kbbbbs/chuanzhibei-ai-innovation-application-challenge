@@ -1,0 +1,53 @@
+{
+  "format_version": 1,
+  "session_id": "01a1ddf2-6ea5-7880-8712-c828f569da3d",
+  "since": "2026-11-15T07:28:46.478Z",
+  "source_file": "rollout-2026-11-15T14-43-37-01a1ddf2-6ea5-7880-8712-c828f569da3d.jsonl",
+  "source_sha256": "c6afdb81663053e5cb79c442084461ab6d9ee4293638173bf9a02f201c4b3c6c",
+  "source_size_bytes": 4815985,
+  "source_total_lines": 513,
+  "source_start_line": 373,
+  "session_kind": "root_or_user",
+  "fork_inherited_prefix_omitted": null,
+  "fork_boundary_selection": null,
+  "source_line_range": [
+    373,
+    513
+  ],
+  "event_timestamp_range": [
+    "2026-11-15T07:28:46.478Z",
+    "2026-11-15T07:41:15.300Z"
+  ],
+  "record_count": 40,
+  "event_counts": {
+    "message": 5,
+    "tool_call": 18,
+    "tool_output": 17
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 6,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 0,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "7b79c73e2afe2959044f1fdcb9180efc06936dda9da2c110e7f9c3dee25412d7"
+}
