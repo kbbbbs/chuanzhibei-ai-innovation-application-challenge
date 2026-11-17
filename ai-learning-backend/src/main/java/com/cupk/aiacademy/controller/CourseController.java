@@ -105,7 +105,12 @@ public class CourseController {
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
         Course course = courseMapper.selectById(id);
-        return course == null ? Result.error("404", "课程不存在") : Result.success(course);
+        AuthUtils.LoginUser actor = UserContext.get();
+        if (course == null || (actor != null && "student".equals(actor.getRoleCode())
+                && !Integer.valueOf(1).equals(course.getStatus()))) {
+            return Result.error("404", "课程不存在");
+        }
+        return Result.success(course);
     }
 
     @Transactional

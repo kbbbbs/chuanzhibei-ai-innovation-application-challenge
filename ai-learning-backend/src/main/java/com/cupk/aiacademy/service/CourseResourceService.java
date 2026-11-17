@@ -94,7 +94,7 @@ public class CourseResourceService {
             if (courseIds.isEmpty()) {
                 return page;
             }
-            query.in("id", courseIds);
+            query.in("id", courseIds).eq("status", 1);
         } else if (authUtils.isTeacher(loginUser)) {
             query.eq("teacher_id", loginUser.getUserId());
         } else if (!authUtils.isAdmin(loginUser)) {

@@ -261,9 +261,17 @@ public class PermissionService {
     public List<Integer> studentClassIds(Integer studentId) {
         QueryWrapper<ClassStudent> query = new QueryWrapper<>();
         query.eq("student_id", studentId).eq("status", 1).orderByDesc("id");
-        return classStudentMapper.selectList(query).stream()
+        List<Integer> joined = classStudentMapper.selectList(query).stream()
                 .map(ClassStudent::getClassId)
                 .filter(id -> id != null && id > 0)
+                .distinct()
+                .toList();
+        if (joined.isEmpty()) return List.of();
+        QueryWrapper<TeachingClass> active = new QueryWrapper<>();
+        active.in("id", joined).eq("status", 1);
+        return classMapper.selectList(active).stream()
+                .filter(teachingClass -> Integer.valueOf(1).equals(teachingClass.getStatus()))
+                .map(TeachingClass::getId)
                 .distinct()
                 .toList();
     }
@@ -274,10 +282,19 @@ public class PermissionService {
             return List.of();
         }
         QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds);
-        return classMapper.selectList(query).stream()
+        query.in("id", classIds).eq("status", 1);
+        List<Integer> joinedCourses = classMapper.selectList(query).stream()
+                .filter(teachingClass -> Integer.valueOf(1).equals(teachingClass.getStatus()))
                 .map(TeachingClass::getCourseId)
                 .filter(id -> id != null && id > 0)
+                .distinct()
+                .toList();
+        if (joinedCourses.isEmpty()) return List.of();
+        QueryWrapper<Course> published = new QueryWrapper<>();
+        published.in("id", joinedCourses).eq("status", 1);
+        return courseMapper.selectList(published).stream()
+                .filter(course -> Integer.valueOf(1).equals(course.getStatus()))
+                .map(Course::getId)
                 .distinct()
                 .toList();
     }

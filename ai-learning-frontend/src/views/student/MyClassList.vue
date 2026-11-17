@@ -120,10 +120,10 @@ const loadClasses = async () => {
         const classRes = await request.get(`/teaching-classes/${item.classId}`, { silentError: true })
         if (classRes.code !== '200' || !classRes.data) continue
         const teachingClass = classRes.data
-        if (!teachingClass.courseId) continue
+        if (!teachingClass.courseId || Number(teachingClass.status) !== 1) continue
         const courseRes = await request.get(`/courses/${teachingClass.courseId}`, { silentError: true })
         const course = courseRes.code === '200' ? courseRes.data : {}
-        if (!course?.id || !course?.title) continue
+        if (!course?.id || !course?.title || Number(course.status) !== 1) continue
         rows.push({
           ...item,
           ...teachingClass,

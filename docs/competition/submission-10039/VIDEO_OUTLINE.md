@@ -2,9 +2,17 @@
 
 成片目标为 **7分30秒**，1920×1080、MP4。三条AI协作段固定在 **3:35–6:35，共3分钟**。赛方要求总时长5–8分钟，AI协作过程至少2分钟。下表每个“旁白”单元格是一句完整台词，空白旁白行是操作留白。时间为录制安排，实际成片需在导出后核对。
 
+## 直接取材入口
+
+先打开[录屏证据页面](http://127.0.0.1:18739/recording/)。P01原始用户反馈可直接点[这张卡片](http://127.0.0.1:18739/recording/#P01-5478)，页面显示真实原话与北京时间。源行5478指原会话的记录行号，卡片已经按source_line定位，无需在JSONL中手动数行。
+
+详细操作见[录屏取材说明](recording/录屏取材说明.md)。
+
 ## 录制前准备
 
-打开本次评审版本，准备教师和学生两个已登录窗口。教师已创建发布课程、课时和有效教学班并加入演示学生。另准备一个没有资料授权的演示课程，供3:05的选文解释使用。上传采用自编 `demo/gradient.md`。逐页PDF核验画面使用本人有权使用的资料。
+本机录制入口为 [AI智学](http://127.0.0.1:24739/)，材料入口为[录屏证据页](http://127.0.0.1:18739/recording/)，后端服务地址为 `http://127.0.0.1:18049`。准备教师和学生两个已登录窗口，演示账号分别为 `demo_teacher`、`demo_student`，专用演示密码均为 `Demo10039!`。当前教学班、发布课程与学生关系已预置，具体入口见[演示环境准备说明](recording/DEMO_READY.md)。
+
+自编 `demo/gradient.md` 与 `recording/demo-materials/gradient-review.pdf` 已真实上传并处理完成，已授权给演示课程 `1003911`。PDF逐页核验可以直接打开现有就绪资料。0:25起的上传镜头按旁白另录同内容资料，使用该次实际处理状态。3:05的选文解释使用预置的无资料授权演示课程。
 
 将本文件末尾的证据路径、三条逐条对话、代码修改和历史日志预先打开，界面字号至少16px、编辑器字号建议18px。原始Prompt、事件日期、源行号及测试数量要能够看清。历史回放使用原时间，新录制的操作使用录制当天时间。
 
@@ -75,67 +83,67 @@
 |3:05–3:13|再看一个没有授权资料的课时，我仍然可以选中正文，请助手解释。|切换到预先建立且无授权资料的演示课程，选文并发送。|E14|
 |3:13–3:20|这时页面明确显示仅依据选中文本，方便区分这次解释使用了哪些内容。|指向selection模式提示和空参考资料区域。|E14|
 |3:20–3:27|（静默操作）|停留真实选文解释结果，保留“仅依据选中文本”提示。|E14|
-|3:27–3:35|下面打开三个真实开发片段，说明我怎样提出问题，再引导AI完成修改。|切换编辑器，展开三条Prompt链索引，准备进入第一条原始记录。|E15|
+|3:27–3:35|下面打开三个真实开发片段，说明我怎样提出问题，再引导AI完成修改。|打开[三链取材总入口](http://127.0.0.1:18739/recording/#overview)，点击左侧P01第一张卡片。|E15|
 
 ### 3:35–4:35　AI协作一　公式OCR与结构保留
 
 |起止时间|逐句旁白|画面与操作|证据|
 |---|---|---|---|
-|3:35–3:43|第一条链从人工核验开始，我发现公式显示成普通文本，便把问题交给AI检查。|打开P01原始用户反馈，显示源行5478和实际事件日期。|E16|
-|3:43–3:51|随后我追问方案，并要求补齐公式处理，约束识别、保存和显示几个环节。|依次定位源行5542、5595，停留“先按照建议补齐k02”的原话。|E16|
-|3:51–3:55|（静默操作）|保持原始Prompt与事件时间可读，给观众阅读原话。|E16|
-|3:55–4:04|AI建议保留公式源码和来源，并先写测试，检查分块和问答上下文会不会截断公式。|显示源行5598的建议，再打开FormulaText与公式安全分块修改。|E17|
-|4:04–4:12|具体的截断和识别路由问题，由Agent在测试中定位，再补修复和受限重试。|打开RED与修正节点，依次显示5698、5849到5898、6034到6070。|E18|
-|4:12–4:16|（静默操作）|在失败日志和修正代码之间各停留两秒，光标指向真实失败和实际修改。|E18|
-|4:16–4:24|当时的记录显示，十二页处理就绪，后端三百一十三项和前端十九项测试通过。|打开P01历史报告结果表，显示12/12、313通过、13跳过和前端19项。|E19|
-|4:24–4:28|（静默操作）|停留测试结果与原始日志时间，不将历史测试画面标为本次新运行。|E19|
-|4:28–4:35|原页对照仍发现漏符号等问题，这些观察也和修复过程一起保存在材料里。|显示漏λ、漏等价式和等式改写的保留观察，再转下一条。|E19|
+|3:35–3:43|第一条链从人工核验开始，我发现公式显示成普通文本，便把问题交给AI检查。|点击[P01用户原始反馈](http://127.0.0.1:18739/recording/#P01-5478)，停留原话与北京时间，源行在展开详情内。|E16|
+|3:43–3:51|随后我追问方案，并要求补齐公式处理，约束识别、保存和显示几个环节。|依次点击[方案追问](http://127.0.0.1:18739/recording/#P01-5542)和[实施指令](http://127.0.0.1:18739/recording/#P01-5595)，各停留约4秒。|E16|
+|3:51–3:55|（静默操作）|停留[实施指令卡](http://127.0.0.1:18739/recording/#P01-5595)，给观众阅读原话。|E16|
+|3:55–4:04|AI建议保留公式源码和来源，并先写测试，检查分块和问答上下文会不会截断公式。|显示[Agent建议](http://127.0.0.1:18739/recording/#P01-5598)，再打开[公式代码补丁](http://127.0.0.1:18739/recording/#P01-5666)。|E17|
+|4:04–4:12|具体的截断和识别路由问题，由Agent在测试中定位，再补修复和受限重试。|依次打开[真实截断反馈](http://127.0.0.1:18739/recording/#P01-5849)与[受限重试修正](http://127.0.0.1:18739/recording/#P01-5898)，各约4秒。|E18|
+|4:12–4:16|（静默操作）|打开[公式展示失败输出](http://127.0.0.1:18739/recording/#P01-5645)，停留实际AssertionError。|E18|
+|4:16–4:24|当时的记录显示，十二页处理就绪，后端三百一十三项和前端十九项测试通过。|打开[P01历史结果卡](http://127.0.0.1:18739/recording/#P01-report)，保留313/13、19和12/12。|E19|
+|4:24–4:28|（静默操作）|停留[交付原话](http://127.0.0.1:18739/recording/#P01-6224)及其实际事件时间。|E19|
+|4:28–4:35|原页对照仍发现漏符号等问题，这些观察也和修复过程一起保存在材料里。|在[交付与保留问题](http://127.0.0.1:18739/recording/#P01-6224)中显示漏λ、漏等价式和等式改写。|E19|
 
 ### 4:35–5:35　AI协作二　逐页核验确认与编辑
 
 |起止时间|逐句旁白|画面与操作|证据|
 |---|---|---|---|
-|4:35–4:43|第二条链来自服务器的实际使用，我发现核验窗口没有确认和修改入口。|打开P02原始反馈，显示源行13的用户原话。|E20|
-|4:43–4:51|我又补充页面地址和右侧竖窗的位置，把修复目标明确到逐页核验抽屉。|定位源行164，保留用户对页面位置的说明，服务器地址按材料脱敏展示。|E20|
-|4:51–4:55|（静默操作）|停留用户的页面定位反馈，光标指向“右边弹出的一个竖窗”。|E20|
-|4:55–5:04|AI先确认原界面缺少操作，再提出逐页确认和文本修正，让修订内容进入检索。|显示源行64的诊断与建议，再打开抽屉和review接口修改。|E21|
-|5:04–5:12|服务和页面测试先暴露缺少方法与按钮，随后实现确认、编辑保存和状态更新。|显示源行79到133的RED，再展示177、204到234的修改。|E22|
-|5:12–5:16|（静默操作）|停留实际失败输出和修正后的确认、编辑按钮。|E22|
-|5:16–5:24|当时五十七项后端测试、二十七项界面测试及前端构建通过，结果都有记录。|打开test-results.json和build.log，显示统计与实际日期。|E23|
-|5:24–5:28|（静默操作）|保持历史结果可读，随后切到用户“本地打开项目入口，我要测试”的消息。|E23|
-|5:28–5:35|我接着要求打开本地入口进行测试，当时本地修复和服务器部署状态也分别写明。|显示源行295、305和308，保留当时本地交付与待部署说明。|E23|
+|4:35–4:43|第二条链来自服务器的实际使用，我发现核验窗口没有确认和修改入口。|打开[P02用户原始反馈](http://127.0.0.1:18739/recording/#P02-13)，停留原话和实际事件时间。|E20|
+|4:43–4:51|我又补充页面地址和右侧竖窗的位置，把修复目标明确到逐页核验抽屉。|打开[用户指出右侧竖窗](http://127.0.0.1:18739/recording/#P02-164)，主画面已摘出页面位置原话。|E20|
+|4:51–4:55|（静默操作）|停留[页面位置卡](http://127.0.0.1:18739/recording/#P02-164)，给观众阅读“右边弹出的一个竖窗”。|E20|
+|4:55–5:04|AI先确认原界面缺少操作，再提出逐页确认和文本修正，让修订内容进入检索。|显示[Agent诊断与方案](http://127.0.0.1:18739/recording/#P02-64)，再切到[抽屉修正补丁](http://127.0.0.1:18739/recording/#P02-221)。|E21|
+|5:04–5:12|服务和页面测试先暴露缺少方法与按钮，随后实现确认、编辑保存和状态更新。|打开[缺少review方法的失败](http://127.0.0.1:18739/recording/#P02-99)和[补充服务测试](http://127.0.0.1:18739/recording/#P02-204)，各停留约4秒。|E22|
+|5:12–5:16|（静默操作）|停留[页面测试失败输出](http://127.0.0.1:18739/recording/#P02-115)，原始快照也保留测试命令错误。|E22|
+|5:16–5:24|当时五十七项后端测试、二十七项界面测试及前端构建通过，结果都有记录。|打开[P02历史结果卡](http://127.0.0.1:18739/recording/#P02-results)，需要原文件时点“测试结果JSON”。|E23|
+|5:24–5:28|（静默操作）|打开[用户要求本地测试](http://127.0.0.1:18739/recording/#P02-305)。|E23|
+|5:28–5:35|我接着要求打开本地入口进行测试，当时本地修复和服务器部署状态也分别写明。|显示[当时交付状态](http://127.0.0.1:18739/recording/#P02-295)和[本地入口回应](http://127.0.0.1:18739/recording/#P02-308)。|E23|
 
 ### 5:35–6:35　AI协作三　学习布局与作业文案
 
 |起止时间|逐句旁白|画面与操作|证据|
 |---|---|---|---|
-|5:35–5:43|第三条链是学习页面布局和作业文案，我把使用中看到的这两个问题交给AI修正。|打开P03根会话源行1460，保留用户原话和实际日期。|E24|
-|5:43–5:51|AI进一步定位到固定三列布局，以及共享页面中沿用考试文案的具体原因。|定位根会话1512，突出显示Agent的诊断归属。|E25|
-|5:51–5:55|（静默操作）|停留诊断与修复安排，再切执行子会话的失败记录。|E25|
-|5:55–6:04|失败测试记录了窄屏笔记区过窄、标题挤压和作业文案错误，随后调整布局与业务判断。|打开UI子会话145及155到239，展示RED和对应响应式、assessmentType修改。|E26|
-|6:04–6:12|Agent继续检查手机页面，又发现大段空白，补上失败测试后将间距修正为十六像素。|显示子会话296、306和375，对照手机空白修复节点。|E26|
-|6:12–6:16|（静默操作）|停留red-mobile.log和修正后的间距结果，标明这是当时的追加测试。|E26|
-|6:16–6:24|最终十项新增测试全部通过，既有页面回归和公式测试也有各自的结果。|打开green-complete.log、regression.log、formula.log，分别显示10、15、8。|E27|
-|6:24–6:28|（静默操作）|保持三份结果的数量和时间可读，再回到主链索引。|E27|
-|6:28–6:35|这三条链保留了原始提问、AI建议、实际修改和验证，能够按源记录逐项复核。|显示三条主链及源行、call_id索引，不展示内部推理或真实凭据。|E15|
+|5:35–5:43|第三条链是学习页面布局和作业文案，我把使用中看到的这两个问题交给AI修正。|打开[P03用户原始反馈](http://127.0.0.1:18739/recording/#P03-1460)，原文与实际日期已直接显示。|E24|
+|5:43–5:51|AI进一步定位到固定三列布局，以及共享页面中沿用考试文案的具体原因。|打开[Agent定位具体原因](http://127.0.0.1:18739/recording/#P03-1512)，保留诊断归属。|E25|
+|5:51–5:55|（静默操作）|停留[诊断卡片](http://127.0.0.1:18739/recording/#P03-1512)，准备进入测试反馈。|E25|
+|5:55–6:04|失败测试记录了窄屏笔记区过窄、标题挤压和作业文案错误，随后调整布局与业务判断。|依次显示[窄屏失败反馈](http://127.0.0.1:18739/recording/#P03-145)与[第一轮修正结果](http://127.0.0.1:18739/recording/#P03-239)。|E26|
+|6:04–6:12|Agent继续检查手机页面，又发现大段空白，补上失败测试后将间距修正为十六像素。|显示[手机额外空白](http://127.0.0.1:18739/recording/#P03-296)，再切到[最终修正结果](http://127.0.0.1:18739/recording/#P03-375)。|E26|
+|6:12–6:16|（静默操作）|在[手机空白卡](http://127.0.0.1:18739/recording/#P03-296)中点击“手机空白失败日志”。|E26|
+|6:16–6:24|最终十项新增测试全部通过，既有页面回归和公式测试也有各自的结果。|打开[P03历史测试结果](http://127.0.0.1:18739/recording/#P03-results)，分别显示10/15/8。|E27|
+|6:24–6:28|（静默操作）|保持[P03结果卡](http://127.0.0.1:18739/recording/#P03-results)可读，再返回左侧主链导航。|E27|
+|6:28–6:35|这三条链保留了原始提问、AI建议、实际修改和验证，能够按源记录逐项复核。|回到[三链总入口](http://127.0.0.1:18739/recording/#overview)，左侧三组卡片可直接逐项复核。|E15|
 
 ### 6:35–7:05　检索实测与失败项
 
 |起止时间|逐句旁白|画面与操作|证据|
 |---|---|---|---|
-|6:35–6:43|固定二十道课程题中，混合检索的前五条来源命中十七题，命中率百分之八十五。|打开retrieval/REPORT.md结果表，指向17/20和85%。|E28|
-|6:43–6:50|关键词对照命中十八题，为百分之九十，两个结果按同一份题集报告。|指向18/20和90%，画面保留两列结果。|E28|
-|6:50–6:57|三十六页中有四页解析失败，相关题目仍保留在这二十题的分母里。|打开逐页状态，显示第8、9、10、21页错误及q05、q13未命中观察。|E29|
-|6:57–7:03|这里测的是来源页命中率，回答正确率需要另行评判，逐题结果已经随包提供。|显示指标解释与全部逐题结果入口，不把85%配成答案准确率字幕。|E28|
-|7:03–7:05|（静默操作）|停留结果表，随后切到公开仓库首页。|E28|
+|6:35–6:43|固定二十道课程题中，混合检索的前五条来源命中十七题，命中率百分之八十五。|打开[检索结果卡](http://127.0.0.1:18739/recording/#retrieval)，指向17/20与85%。|E28|
+|6:43–6:50|关键词对照命中十八题，为百分之九十，两个结果按同一份题集报告。|在[同一结果卡](http://127.0.0.1:18739/recording/#retrieval)指向18/20与90%。|E28|
+|6:50–6:57|三十六页中有四页解析失败，相关题目仍保留在这二十题的分母里。|在[结果卡](http://127.0.0.1:18739/recording/#retrieval)展示4个失败页，再点“逐页与查询原始结果”。|E29|
+|6:57–7:03|这里测的是来源页命中率，回答正确率需要另行评判，逐题结果已经随包提供。|保持[结果卡](http://127.0.0.1:18739/recording/#retrieval)的指标定义，点“完整逐题报告”可看全部题目。|E28|
+|7:03–7:05|（静默操作）|停留[结果卡](http://127.0.0.1:18739/recording/#retrieval)，随后切到公开仓库。|E28|
 
 ### 7:05–7:30　交付入口与复现
 
 |起止时间|逐句旁白|画面与操作|证据|
 |---|---|---|---|
 |7:05–7:13|源码、可编辑技术文档和三条Prompt链，统一放在这个公开评审仓库中。|打开公开仓库首页，显示README、Word文档、PDF和三条链入口。|E30|
-|7:13–7:23|使用本机已有依赖缓存时，干净副本从安装构建到启动登录，用时八十九点六三一秒。|打开reproduction.md阶段表，指向89.631秒及共享缓存说明。|E31|
-|7:23–7:29|评审可以按环境指南填写自己的模型配置，启动后再完成示例课程问答。|打开ENVIRONMENT.md与.env.example，仅显示空凭据模板，最后停留材料索引。|E32|
+|7:13–7:23|使用本机已有依赖缓存时，干净副本从安装构建到启动登录，用时八十九点六三一秒。|打开[复现与交付卡](http://127.0.0.1:18739/recording/#reproduction)，展示89.631秒与共享缓存条件。|E31|
+|7:23–7:29|评审可以按环境指南填写自己的模型配置，启动后再完成示例课程问答。|在[交付卡](http://127.0.0.1:18739/recording/#reproduction)打开“环境指南”，模板只展示空凭据。|E32|
 |7:29–7:30|（静默操作）|保持仓库地址和材料入口一秒，结束录制。|E30|
 
 ## 取材定位
@@ -144,38 +152,38 @@
 
 |编号|直接打开的文件或页面|定位方法|
 |---|---|---|
-|E01|[official/official-track.json](official/official-track.json)|data.name=AI创新应用挑战赛，赛项10039，封面使用“传智杯AI创新应用挑战赛”|
-|E02|[evidence/implementation/frontend/live-browser.json](evidence/implementation/frontend/live-browser.json)|真实教师和学生页面联测，配套live-student-rag.png和live-teacher-authorization.png|
-|E03|[ORIGIN_AND_DEPENDENCIES.md](ORIGIN_AND_DEPENDENCIES.md)|原小学期教学管理基座与本次AI增量的来源说明|
-|E04|[demo/gradient.md](demo/gradient.md)|自编UTF-8演示资料，录制前下载到本机并上传|
-|E05|[evidence/implementation/RESULTS.md](evidence/implementation/RESULTS.md)|资料处理与课程问答已验证范围，实际录制读取当前页面状态|
-|E06|[prompt-chains/P01-ocr-formulas.md](prompt-chains/P01-ocr-formulas.md)|识别内容与原页核验边界，现场PDF须已获合法使用授权|
-|E07|[prompt-chains/P02-page-review.md](prompt-chains/P02-page-review.md)|当前抽屉操作与历史修复来源，现场只在自有演示资料保存|
-|E08|[evidence/implementation/frontend/live-teacher-authorization.png](evidence/implementation/frontend/live-teacher-authorization.png)|真实课程授权界面，阅读授权与原件下载分别控制|
-|E09|[evidence/implementation/frontend/live-student-rag.png](evidence/implementation/frontend/live-student-rag.png)|真实课时页、课程名及授权资料数量|
-|E10|[evidence/implementation/frontend/REPORT.md](evidence/implementation/frontend/REPORT.md)|正文/笔记选文、固定选文卡片及移除的前端验证|
-|E11|[evidence/implementation/frontend/live-browser.json](evidence/implementation/frontend/live-browser.json)|实际回答与关键词/语义联合检索状态，现场模式按实际结果展示|
-|E12|[evidence/implementation/frontend/live-course-source.png](evidence/implementation/frontend/live-course-source.png)|课程授权文档版本下的出处原文|
-|E13|[evidence/implementation/frontend/REPORT.md](evidence/implementation/frontend/REPORT.md)|历史恢复、新会话、停止和切课取消测试|
-|E14|[evidence/implementation/live-http-results.json](evidence/implementation/live-http-results.json)|real_generation_selection_only及no_sources_no_selection检查|
-|E15|[prompt-chains/README.md](prompt-chains/README.md)|三条主链、可见消息、源会话与工具索引入口|
-|E16|[prompt-chains/P01-visible-dialogue.md](prompt-chains/P01-visible-dialogue.md)|会话01a11a5b-d413-7b51-aaf0-7320ae85ce4a，源行5478/5542/5595|
-|E17|[prompt-chains/P01-ocr-formulas.md](prompt-chains/P01-ocr-formulas.md)|源行5598建议，FormulaText及公式安全分块对应工具节点|
-|E18|[evidence/prompt-chains/P01/formula-development/records.jsonl](evidence/prompt-chains/P01/formula-development/records.jsonl)|按source_line定位5698、5849→5898、6034→6070，工具调用由tool-evidence-index.json定位|
-|E19|[evidence/prompt-chains/P01/reports/historical-test-report.txt](evidence/prompt-chains/P01/reports/historical-test-report.txt)|2026-10-28历史结果，313通过/13跳过、前端6+13项、12/12页就绪及漏识别观察|
-|E20|[prompt-chains/P02-visible-dialogue.md](prompt-chains/P02-visible-dialogue.md)|会话01a1e3a2-d311-7fa2-844c-0435c46af8b8，源行13/164|
-|E21|[prompt-chains/P02-page-review.md](prompt-chains/P02-page-review.md)|源行64诊断与确认/编辑方案|
-|E22|[evidence/prompt-chains/P02/page-review/records.jsonl](evidence/prompt-chains/P02/page-review/records.jsonl)|源行79–133有效失败，177、204/221/234修正与覆盖|
-|E23|[evidence/prompt-chains/P02/reports/test-results.json](evidence/prompt-chains/P02/reports/test-results.json)|配套build.log和historical-result.txt，源行295/305/308交付与本地测试请求|
-|E24|[prompt-chains/P03-visible-dialogue.md](prompt-chains/P03-visible-dialogue.md)|根会话01a19a2e-c08e-7723-9c0a-87cb96f47e37，源行1460原Prompt|
-|E25|[prompt-chains/P03-learning-ui.md](prompt-chains/P03-learning-ui.md)|根会话1512诊断，明确具体原因来自Agent定位|
-|E26|[evidence/prompt-chains/P03/learning-ui/records.jsonl](evidence/prompt-chains/P03/learning-ui/records.jsonl)|子会话01a19ee6-0642-7690-a5ab-86a78e37d691，源行145/155–239/296/306/375|
-|E27|[evidence/prompt-chains/P03/reports/green-complete.log](evidence/prompt-chains/P03/reports/green-complete.log)|配套regression.log与formula.log，历史10/15/8项分别记录|
-|E28|[retrieval/REPORT.md](retrieval/REPORT.md)|2026-11-17固定20题，Top5来源页命中17/20与18/20，包含逐题结果和指标定义|
-|E29|[retrieval/runs/20261117T065931Z/report.json](retrieval/runs/20261117T065931Z/report.json)|原36页的8/9/10/21页失败，全部20题分母保留|
-|E30|https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge|录制前核对root实际推送结果，打开公开仓库首页而非本地路径|
-|E31|[reproduction.md](reproduction.md)|89.631秒仅对应共享依赖缓存下复制/安装/构建/启动登录，业务联测另外记录|
-|E32|[ENVIRONMENT.md](ENVIRONMENT.md)|源码根.env.example以及Windows启动命令，真实凭据保留在录屏外|
+|E01|[E01取材卡](http://127.0.0.1:18739/recording/#official)<br/>原材料 [official/official-track.json](official/official-track.json)|卡片已预先定位。原始复核信息 data.name=AI创新应用挑战赛，赛项10039，封面使用“传智杯AI创新应用挑战赛”|
+|E02|[E02取材卡](http://127.0.0.1:18739/recording/#overview)<br/>原材料 [evidence/implementation/frontend/live-browser.json](evidence/implementation/frontend/live-browser.json)|卡片已预先定位。原始复核信息 真实教师和学生页面联测，配套live-student-rag.png和live-teacher-authorization.png|
+|E03|[E03取材卡](http://127.0.0.1:18739/recording/#overview)<br/>原材料 [ORIGIN_AND_DEPENDENCIES.md](ORIGIN_AND_DEPENDENCIES.md)|卡片已预先定位。原始复核信息 原小学期教学管理基座与本次AI增量的来源说明|
+|E04|[E04取材卡](http://127.0.0.1:18739/recording/#live-teacher)<br/>原材料 [demo/gradient.md](demo/gradient.md)|卡片已预先定位。原始复核信息 自编UTF-8演示资料，录制前下载到本机并上传|
+|E05|[E05取材卡](http://127.0.0.1:18739/recording/#live-teacher)<br/>原材料 [evidence/implementation/RESULTS.md](evidence/implementation/RESULTS.md)|卡片已预先定位。原始复核信息 资料处理与课程问答已验证范围，实际录制读取当前页面状态|
+|E06|[E06取材卡](http://127.0.0.1:18739/recording/#live-teacher)<br/>原材料 [prompt-chains/P01-ocr-formulas.md](prompt-chains/P01-ocr-formulas.md)|卡片已预先定位。原始复核信息 识别内容与原页核验边界，现场PDF须已获合法使用授权|
+|E07|[E07取材卡](http://127.0.0.1:18739/recording/#live-teacher)<br/>原材料 [prompt-chains/P02-page-review.md](prompt-chains/P02-page-review.md)|卡片已预先定位。原始复核信息 当前抽屉操作与历史修复来源，现场只在自有演示资料保存|
+|E08|[E08取材卡](http://127.0.0.1:18739/recording/#live-teacher)<br/>原材料 [evidence/implementation/frontend/live-teacher-authorization.png](evidence/implementation/frontend/live-teacher-authorization.png)|卡片已预先定位。原始复核信息 真实课程授权界面，阅读授权与原件下载分别控制|
+|E09|[E09取材卡](http://127.0.0.1:18739/recording/#live-student)<br/>原材料 [evidence/implementation/frontend/live-student-rag.png](evidence/implementation/frontend/live-student-rag.png)|卡片已预先定位。原始复核信息 真实课时页、课程名及授权资料数量|
+|E10|[E10取材卡](http://127.0.0.1:18739/recording/#live-student)<br/>原材料 [evidence/implementation/frontend/REPORT.md](evidence/implementation/frontend/REPORT.md)|卡片已预先定位。原始复核信息 正文/笔记选文、固定选文卡片及移除的前端验证|
+|E11|[E11取材卡](http://127.0.0.1:18739/recording/#live-student)<br/>原材料 [evidence/implementation/frontend/live-browser.json](evidence/implementation/frontend/live-browser.json)|卡片已预先定位。原始复核信息 实际回答与关键词/语义联合检索状态，现场模式按实际结果展示|
+|E12|[E12取材卡](http://127.0.0.1:18739/recording/#live-student)<br/>原材料 [evidence/implementation/frontend/live-course-source.png](evidence/implementation/frontend/live-course-source.png)|卡片已预先定位。原始复核信息 课程授权文档版本下的出处原文|
+|E13|[E13取材卡](http://127.0.0.1:18739/recording/#live-student)<br/>原材料 [evidence/implementation/frontend/REPORT.md](evidence/implementation/frontend/REPORT.md)|卡片已预先定位。原始复核信息 历史恢复、新会话、停止和切课取消测试|
+|E14|[E14取材卡](http://127.0.0.1:18739/recording/#selection-only)<br/>原材料 [evidence/implementation/live-http-results.json](evidence/implementation/live-http-results.json)|卡片已预先定位。原始复核信息 real_generation_selection_only及no_sources_no_selection检查|
+|E15|[E15取材卡](http://127.0.0.1:18739/recording/#overview)<br/>原材料 [prompt-chains/README.md](prompt-chains/README.md)|卡片已预先定位。原始复核信息 三条主链、可见消息、源会话与工具索引入口|
+|E16|[E16取材卡](http://127.0.0.1:18739/recording/#P01-5478)<br/>原材料 [prompt-chains/P01-visible-dialogue.md](prompt-chains/P01-visible-dialogue.md)|卡片已预先定位。原始复核信息 会话01a11a5b-d413-7b51-aaf0-7320ae85ce4a，源行5478/5542/5595|
+|E17|[E17取材卡](http://127.0.0.1:18739/recording/#P01-5598)<br/>原材料 [prompt-chains/P01-ocr-formulas.md](prompt-chains/P01-ocr-formulas.md)|卡片已预先定位。原始复核信息 源行5598建议，FormulaText及公式安全分块对应工具节点|
+|E18|[E18取材卡](http://127.0.0.1:18739/recording/#P01-5698)<br/>原材料 [evidence/prompt-chains/P01/formula-development/records.jsonl](evidence/prompt-chains/P01/formula-development/records.jsonl)|卡片已预先定位。原始复核信息 按source_line定位5698、5849→5898、6034→6070，工具调用由tool-evidence-index.json定位|
+|E19|[E19取材卡](http://127.0.0.1:18739/recording/#P01-report)<br/>原材料 [evidence/prompt-chains/P01/reports/historical-test-report.txt](evidence/prompt-chains/P01/reports/historical-test-report.txt)|卡片已预先定位。原始复核信息 2026-10-28历史结果，313通过/13跳过、前端6+13项、12/12页就绪及漏识别观察|
+|E20|[E20取材卡](http://127.0.0.1:18739/recording/#P02-13)<br/>原材料 [prompt-chains/P02-visible-dialogue.md](prompt-chains/P02-visible-dialogue.md)|卡片已预先定位。原始复核信息 会话01a1e3a2-d311-7fa2-844c-0435c46af8b8，源行13/164|
+|E21|[E21取材卡](http://127.0.0.1:18739/recording/#P02-64)<br/>原材料 [prompt-chains/P02-page-review.md](prompt-chains/P02-page-review.md)|卡片已预先定位。原始复核信息 源行64诊断与确认/编辑方案|
+|E22|[E22取材卡](http://127.0.0.1:18739/recording/#P02-204)<br/>原材料 [evidence/prompt-chains/P02/page-review/records.jsonl](evidence/prompt-chains/P02/page-review/records.jsonl)|卡片已预先定位。原始复核信息 源行79–133有效失败，177、204/221/234修正与覆盖|
+|E23|[E23取材卡](http://127.0.0.1:18739/recording/#P02-results)<br/>原材料 [evidence/prompt-chains/P02/reports/test-results.json](evidence/prompt-chains/P02/reports/test-results.json)|卡片已预先定位。原始复核信息 配套build.log和historical-result.txt，源行295/305/308交付与本地测试请求|
+|E24|[E24取材卡](http://127.0.0.1:18739/recording/#P03-1460)<br/>原材料 [prompt-chains/P03-visible-dialogue.md](prompt-chains/P03-visible-dialogue.md)|卡片已预先定位。原始复核信息 根会话01a19a2e-c08e-7723-9c0a-87cb96f47e37，源行1460原Prompt|
+|E25|[E25取材卡](http://127.0.0.1:18739/recording/#P03-1512)<br/>原材料 [prompt-chains/P03-learning-ui.md](prompt-chains/P03-learning-ui.md)|卡片已预先定位。原始复核信息 根会话1512诊断，明确具体原因来自Agent定位|
+|E26|[E26取材卡](http://127.0.0.1:18739/recording/#P03-145)<br/>原材料 [evidence/prompt-chains/P03/learning-ui/records.jsonl](evidence/prompt-chains/P03/learning-ui/records.jsonl)|卡片已预先定位。原始复核信息 子会话01a19ee6-0642-7690-a5ab-86a78e37d691，源行145/155–239/296/306/375|
+|E27|[E27取材卡](http://127.0.0.1:18739/recording/#P03-results)<br/>原材料 [evidence/prompt-chains/P03/reports/green-complete.log](evidence/prompt-chains/P03/reports/green-complete.log)|卡片已预先定位。原始复核信息 配套regression.log与formula.log，历史10/15/8项分别记录|
+|E28|[E28取材卡](http://127.0.0.1:18739/recording/#retrieval)<br/>原材料 [retrieval/REPORT.md](retrieval/REPORT.md)|卡片已预先定位。原始复核信息 2026-11-17固定20题，Top5来源页命中17/20与18/20，包含逐题结果和指标定义|
+|E29|[E29取材卡](http://127.0.0.1:18739/recording/#retrieval)<br/>原材料 [retrieval/runs/20261117T065931Z/report.json](retrieval/runs/20261117T065931Z/report.json)|卡片已预先定位。原始复核信息 原36页的8/9/10/21页失败，全部20题分母保留|
+|E30|[E30取材卡](http://127.0.0.1:18739/recording/#reproduction)<br/>原材料 https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge|卡片已预先定位。原始复核信息 录制前核对root实际推送结果，打开公开仓库首页而非本地路径|
+|E31|[E31取材卡](http://127.0.0.1:18739/recording/#reproduction)<br/>原材料 [reproduction.md](reproduction.md)|卡片已预先定位。原始复核信息 89.631秒仅对应共享依赖缓存下复制/安装/构建/启动登录，业务联测另外记录|
+|E32|[E32取材卡](http://127.0.0.1:18739/recording/#reproduction)<br/>原材料 [ENVIRONMENT.md](ENVIRONMENT.md)|卡片已预先定位。原始复核信息 源码根.env.example以及Windows启动命令，真实凭据保留在录屏外|
 
 ## 录音与剪辑核对
 

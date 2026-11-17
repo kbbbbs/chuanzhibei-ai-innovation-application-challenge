@@ -1,0 +1,24 @@
+# Dedicated persistent local recording environment.
+server:
+  address: 127.0.0.1
+  port: 18049
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:file:./data/contest-recording/academy;MODE=MySQL;DATABASE_TO_LOWER=TRUE;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password: ''
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:contest-demo-schema.sql
+      data-locations: classpath:contest-demo-seed.sql,classpath:contest-recording-seed.sql
+jwt:
+  secret: ${JWT_SECRET:local-contest-recording-only-change-before-sharing-2026}
+rag:
+  storage-path: ./data/contest-recording/documents
+weknora:
+  enabled: false
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl

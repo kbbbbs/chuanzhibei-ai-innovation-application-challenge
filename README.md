@@ -9,6 +9,8 @@
 | 可编辑 Word 技术文档 | [填写身份与编辑正文](docs/competition/submission-10039/TECHNICAL_REPORT.docx) |
 | 正式技术 PDF | [16页技术文档](docs/competition/submission-10039/TECHNICAL_REPORT.pdf) |
 | 逐句视频旁白 | [时间轴、画面、操作与每句旁白](docs/competition/submission-10039/VIDEO_OUTLINE.md) |
+| 录制账号与入口 | [预置入班关系、发布步骤与页面入口](docs/competition/submission-10039/recording/DEMO_READY.md) |
+| 录屏取材 | [真实反馈、事件日期和来源卡片](docs/competition/submission-10039/recording/录屏取材说明.md) |
 | 三条核心 Prompt 链 | [原提问、AI建议、修复与验证](docs/competition/submission-10039/prompt-chains/README.md) |
 | 复现指南 | [环境、依赖、配置、账号和业务步骤](docs/competition/submission-10039/ENVIRONMENT.md) |
 | 实测结果 | [固定20题检索报告](docs/competition/submission-10039/retrieval/REPORT.md) |
@@ -25,7 +27,7 @@
 
 2026-11-17固定20题测量的Top5已标注来源命中率为混合检索17/20（85%）、关键词对照18/20（90%）。36页资料中32页形成有效内容，4页失败仍保留在题目分母中。该指标衡量来源页命中。
 
-后端回归427通过、19跳过、0失败，前端受控浏览器51项通过、公式展示8项通过。真实教师与学生课时问答、来源读取及撤权处理已联测。各结果的实际日期、环境与覆盖范围保存在对应报告中。
+录制准备后的后端回归432通过、19跳过、0失败，前端受控浏览器51项通过、公式展示8项通过。真实教师与学生课时问答、来源读取及撤权处理已联测。本轮另通过学生课程可见性浏览器测试，真实教师启用课程后，预先入班的学生刷新可见。本轮另通过学生课程可见性浏览器测试，真实教师启用课程后，预先入班的学生刷新可见。各结果的实际日期、环境与覆盖范围保存在对应报告中。
 
 历史包含112条小学期管理系统提交、5条后续协作提交和2条实际归档提交。原作者、时间和信息保留，旧凭据及私有路径脱敏后导入，原SHA映射随材料提供。发布提交在上述119条归档历史后追加公开评审文档及首页整理。原始AI迭代中未保存的中间提交按真实Prompt快照补充说明。
 

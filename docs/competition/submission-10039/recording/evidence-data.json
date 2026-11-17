@@ -1,0 +1,857 @@
+{
+  "cards": [
+    {
+      "id": "overview",
+      "group": "录制入口",
+      "title": "从这里打开每一段画面",
+      "role": "报告与画面入口",
+      "operation": "先开教师与学生两个窗口，再按左侧时间轴进入卡片。",
+      "quote": "本页为原记录整理展示。点击卡片即可取材，源会话、源行与完整快照在“来源与完整记录”展开。历史事件的时间直接显示在卡片上。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "README.md"
+      },
+      "links": [
+        [
+          "教师知识库",
+          "http://127.0.0.1:24739/teacher-knowledge-base"
+        ],
+        [
+          "学生我的班级",
+          "http://127.0.0.1:24739/my-classes"
+        ],
+        [
+          "自编上传资料",
+          "../demo/gradient.md"
+        ],
+        [
+          "逐页核验用PDF",
+          "demo-materials/gradient-review.pdf"
+        ],
+        [
+          "P01用户原始反馈",
+          "#P01-5478"
+        ],
+        [
+          "P02用户原始反馈",
+          "#P02-13"
+        ],
+        [
+          "P03用户原始反馈",
+          "#P03-1460"
+        ]
+      ]
+    },
+    {
+      "id": "official",
+      "group": "现场",
+      "title": "正式赛道与作品封面",
+      "role": "报告与画面入口",
+      "operation": "0:00打开技术PDF第一页，使用填写身份后的封面。",
+      "quote": "传智杯 · AI创新应用挑战赛（10039）\n开发主题为Vibe Coding\nAI智学——面向课程资料的RAG学习助手。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "official/official-track.json"
+      },
+      "links": [
+        [
+          "技术PDF封面",
+          "../TECHNICAL_REPORT.pdf#page=1"
+        ],
+        [
+          "可编辑Word",
+          "../TECHNICAL_REPORT.docx"
+        ]
+      ]
+    },
+    {
+      "id": "live-teacher",
+      "group": "现场",
+      "title": "教师资料处理与课程授权",
+      "role": "报告与画面入口",
+      "operation": "0:25–1:35在教师知识库现场操作。",
+      "quote": "gradient.md与一页自编gradient-review.pdf已真实上传、处理完成，并授权给演示课程1003911。可直接打开现有PDF逐页核验，展示原页与识别文字。上传过程镜头按旁白另录一份同内容资料，等待实际终态；随后打开既有课程授权，展示阅读与下载选项。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "demo/gradient.md"
+      },
+      "links": [
+        [
+          "教师知识库",
+          "http://127.0.0.1:24739/teacher-knowledge-base"
+        ],
+        [
+          "下载gradient.md",
+          "../demo/gradient.md"
+        ],
+        [
+          "自编核验PDF",
+          "demo-materials/gradient-review.pdf"
+        ],
+        [
+          "11/17历史授权截图",
+          "../evidence/implementation/frontend/live-teacher-authorization.png"
+        ]
+      ]
+    },
+    {
+      "id": "live-student",
+      "group": "现场",
+      "title": "学生进入课程并选文提问",
+      "role": "报告与画面入口",
+      "operation": "1:35–3:05在学生窗口操作。",
+      "quote": "进入我的班级，打开已发布课程及课时。选中正文或笔记，点击“解释这段”。保留真实生成状态，打开出处、恢复历史、开始新对话或停止生成。实际检索模式按当次页面显示录制。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "evidence/implementation/frontend/live-browser.json"
+      },
+      "links": [
+        [
+          "学生我的班级",
+          "http://127.0.0.1:24739/my-classes"
+        ],
+        [
+          "11/17历史学生截图",
+          "../evidence/implementation/frontend/live-student-rag.png"
+        ],
+        [
+          "11/17历史出处截图",
+          "../evidence/implementation/frontend/live-course-source.png"
+        ]
+      ]
+    },
+    {
+      "id": "selection-only",
+      "group": "现场",
+      "title": "没有授权资料时解释选文",
+      "role": "报告与画面入口",
+      "operation": "3:05–3:35使用无资料授权的演示课程。",
+      "quote": "选中正文并提问，画面保留“仅依据选中文本”。现场录制实际过程，结果按当次页面核对。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "evidence/implementation/live-http-results.json"
+      },
+      "links": [
+        [
+          "学生我的班级",
+          "http://127.0.0.1:24739/my-classes"
+        ]
+      ]
+    },
+    {
+      "id": "P01-5478",
+      "group": "P01",
+      "title": "公式变成普通文本，用户提出问题",
+      "role": "用户原始反馈",
+      "operation": "3:35开始，停留原话与实际事件时间。",
+      "quote": "我现在人工核验rag，发现在识别公式的时候，会统一转换成文本。目前这个问题是怎么处理的？当需要调用相关知识的时候，是读取rag的llm将rag中的文本形式转换成公式输出还是就是存储公式？\n",
+      "date": "2026年10月27日 23:20:43（北京时间）",
+      "utc": "2026-10-27T15:20:43.120Z",
+      "raw": "我现在人工核验rag，发现在识别公式的时候，会统一转换成文本。目前这个问题是怎么处理的？当需要调用相关知识的时候，是读取rag的llm将rag中的文本形式转换成公式输出还是就是存储公式？\n",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-audit/records.jsonl",
+        "line": 5478,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-5542",
+      "group": "P01",
+      "title": "用户追问处理方案",
+      "role": "用户方案追问",
+      "operation": "3:43点击本卡片，再切到实施指令。",
+      "quote": "这个方案是目前的主流解决方案吗？现在业界一般都怎么解决这个问题\n",
+      "date": "2026年10月27日 23:25:35（北京时间）",
+      "utc": "2026-10-27T15:25:35.334Z",
+      "raw": "这个方案是目前的主流解决方案吗？现在业界一般都怎么解决这个问题\n",
+      "source": {
+        "file": "evidence/prompt-chains/P01/industry-review/records.jsonl",
+        "line": 5542,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-5595",
+      "group": "P01",
+      "title": "用户要求补齐公式处理",
+      "role": "用户实施指令",
+      "operation": "展示“先按照建议补齐k02”的原话。",
+      "quote": "先按照建议补齐k02、\n",
+      "date": "2026年10月28日 00:36:18（北京时间）",
+      "utc": "2026-10-27T16:36:18.028Z",
+      "raw": "先按照建议补齐k02、\n",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5595,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-5598",
+      "group": "P01",
+      "title": "先测试，再实现公式处理",
+      "role": "Agent对外建议",
+      "operation": "3:55展示建议，再切到真实补丁。",
+      "quote": "我会把 K02 的公式处理补齐：先写验收测试，再处理公式结构保留、分块保护、显示和人工核验，最后用真实课件验证。开发过程继续按参赛要求留档。",
+      "date": "2026年10月28日 00:36:26（北京时间）",
+      "utc": "2026-10-27T16:36:26.183Z",
+      "raw": "我会把 K02 的公式处理补齐：先写验收测试，再处理公式结构保留、分块保护、显示和人工核验，最后用真实课件验证。开发过程继续按参赛要求留档。",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5598,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-5645",
+      "group": "P01",
+      "title": "公式展示的真实失败输出",
+      "role": "历史工具返回节选",
+      "operation": "展示AssertionError与失败输入，输出按原快照保留截断。",
+      "quote": "Script completed\nWall time 11.2 seconds\nOutput:\n\n{}\n\n  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /math-render-error/. Input:\r\n  \r\n  '<p>$$\\\\notARealMathCommand{x}$$</p>'\r\n  \r\n      at TestContext.<anonymous> (file:///D:/ai-learning/ai-learning-frontend/e2e/formula-rendering.test.mjs:23:10)\r\n      at Test.runInAsyncScope (node:async_hooks:214:14)\r\n      at Test.run (node:internal/test_runner/test:1103:25)\r\n      at Test.processPendingSubtests (node:internal/test_runner/test:785:18)\r\n      at Test.postRun (node:internal/test_runner/test:1232:19)\r\n      at Test.run (node:internal/test_runner/test:1160:12)\r\n      at async Test.processPendingSubtests (node:internal/test_runner/test:785:7) {\r\n    generatedMessage: true,\r\n    code: 'ERR_ASSERTION',\r\n    actual: '<p>$$\\\\notARealMathCommand{x}$$</p>',\r\n    expected: /math-render-error/,\r\n    operator: 'match',\r\n    diff: 'simple'\r\n  }\r\n",
+      "date": "2026年10月28日 00:40:09（北京时间）",
+      "utc": "2026-10-27T16:40:09.223Z",
+      "raw": "Script completed\nWall time 11.2 seconds\nOutput:\n\n{}\n\n  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /math-render-error/. Input:\r\n  \r\n  '<p>$$\\\\notARealMathCommand{x}$$</p>'\r\n  \r\n      at TestContext.<anonymous> (file:///D:/ai-learning/ai-learning-frontend/e2e/formula-rendering.test.mjs:23:10)\r\n      at Test.runInAsyncScope (node:async_hooks:214:14)\r\n      at Test.run (node:internal/test_runner/test:1103:25)\r\n      at Test.processPendingSubtests (node:internal/test_runner/test:785:18)\r\n      at Test.postRun (node:internal/test_runner/test:1232:19)\r\n      at Test.run (node:internal/test_runner/test:1160:12)\r\n      at async Test.processPendingSubtests (node:internal/test_runner/test:785:7) {\r\n    generatedMessage: true,\r\n    code: 'ERR_ASSERTION',\r\n    actual: '<p>$$\\\\notARealMathCommand{x}$$</p>',\r\n    expected: /math-render-error/,\r\n    operator: 'match',\r\n    diff: 'simple'\r\n  }\r\n",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5645,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": "call_e78a4401eabd495fbc815f87f3221855"
+      }
+    },
+    {
+      "id": "P01-5666",
+      "group": "P01",
+      "title": "加入公式结构处理代码",
+      "role": "历史工具参数节选",
+      "operation": "展示FormulaText新增补丁。转义换行已展开，原始参数仍可下载。",
+      "quote": "*** Begin Patch\n*** Add File: D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/formula/FormulaText.java\n+package com.cupk.aiacademy.rag.formula;\n+\n+import java.util.*;\n+import java.util.regex.Pattern;\n+\n+/** Bounded structural checks, not a proof of mathematical correctness. Offsets are UTF-16 source offsets. */\n+public final class FormulaText {\n+    public static final int VERSION=1;\n+    public static final int MAX_FORMULA_CHARS=12000;\n+    private static final Pattern ENV=Pattern.compile(\"\\\\\\\\(begin|end)\\\\{([a-zA-Z*]+)\\\\}\");\n+    private static final Set<String> MATH_ENV=Set.of(\"equation\",\"equation*\",\"align\",\"align*\",\"aligned\",\"gather\",\"gather*\",\n+            \"gathered\",\"multline\",\"multline*\",\"split\",\"cases\",\"matrix\",\"pmatrix\",\"bmatrix\",\"Bmatrix\",\"vmatrix\",\"Vmatrix\",\"array\");\n+    private static final Pattern MATH_SIGNAL=Pattern.compile(\"[∑∏∫∂∇√∞≤≥≠±∈∀∃]|\\\\\\\\(?:frac|dfrac|tfrac|sqrt|sum|prod|int|partial|begin)\\\\b|[a-zA-Zα-ωΑ-Ω][a-zA-Z0-9_{}()\\\\s^.-]{0,25}[=<>][^=]\");\n+    private FormulaText() { }\n+    public record Block(int ordinal,int start,int end,String raw,String latex,boolean display,String status,String errorCode) { }\n+    public record Analysis(List<Block> blocks,List<String> issues) {\n+        public boolean valid(){return issues.isEmpty();}\n+    }\n+\n+    public static boolean suspectMath(String text){return text!=null && MATH_SIGNAL.matcher(text).find();}\n+\n+    public static Analysis analyze(String text) {\n+        if(text==null || text.isEmpty())return new Analysis(List.of(),List.of());\n+        List<Block> blocks=new ArrayList<>();Set<String> issues=new LinkedHashSet<>();\n+        for(int i=0;i<text.length();) {\n+            int skipped=skipCode(text,i);if(skipped>i){i=skipped;continue;}\n+            if(escaped(text,i)){i++;continue;}\n+            String open=null,close=null;boolean display=false,environment=false;\n+            if(text.startsWith(\"$$\",i)){open=\"$$\";close=\"$$\";display=true;}\n+            else if(text.startsWith(\"\\\\[\",i)){open=\"\\\\[\";close=\"\\\\]\";display=true;}\n+            else if(text.startsWith(\"\\\\(\",i)){open=\"\\\\(\";close=\"\\\\)\";}\n+            else if(text.charAt(i)=='$' && i+1<text.length() && !Character.isWhitespace(text.charAt(i+1)) && !currency(text,i)) {open=\"$\";close=\"$\";}\n+            else if(text.st\n\n[节选至此，完整工具参数见原始快照。]",
+      "date": "2026年10月28日 00:42:56（北京时间）",
+      "utc": "2026-10-27T16:42:56.920Z",
+      "raw": "*** Begin Patch\n*** Add File: D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/formula/FormulaText.java\n+package com.cupk.aiacademy.rag.formula;\n+\n+import java.util.*;\n+import java.util.regex.Pattern;\n+\n+/** Bounded structural checks, not a proof of mathematical correctness. Offsets are UTF-16 source offsets. */\n+public final class FormulaText {\n+    public static final int VERSION=1;\n+    public static final int MAX_FORMULA_CHARS=12000;\n+    private static final Pattern ENV=Pattern.compile(\"\\\\\\\\(begin|end)\\\\{([a-zA-Z*]+)\\\\}\");\n+    private static final Set<String> MATH_ENV=Set.of(\"equation\",\"equation*\",\"align\",\"align*\",\"aligned\",\"gather\",\"gather*\",\n+            \"gathered\",\"multline\",\"multline*\",\"split\",\"cases\",\"matrix\",\"pmatrix\",\"bmatrix\",\"Bmatrix\",\"vmatrix\",\"Vmatrix\",\"array\");\n+    private static final Pattern MATH_SIGNAL=Pattern.compile(\"[∑∏∫∂∇√∞≤≥≠±∈∀∃]|\\\\\\\\(?:frac|dfrac|tfrac|sqrt|sum|prod|int|partial|begin)\\\\b|[a-zA-Zα-ωΑ-Ω][a-zA-Z0-9_{}()\\\\s^.-]{0,25}[=<>][^=]\");\n+    private FormulaText() { }\n+    public record Block(int ordinal,int start,int end,String raw,String latex,boolean display,String status,String errorCode) { }\n+    public record Analysis(List<Block> blocks,List<String> issues) {\n+        public boolean valid(){return issues.isEmpty();}\n+    }\n+\n+    public static boolean suspectMath(String text){return text!=null && MATH_SIGNAL.matcher(text).find();}\n+\n+    public static Analysis analyze(String text) {\n+        if(text==null || text.isEmpty())return new Analysis(List.of(),List.of());\n+        List<Block> blocks=new ArrayList<>();Set<String> issues=new LinkedHashSet<>();\n+        for(int i=0;i<text.length();) {\n+            int skipped=skipCode(text,i);if(skipped>i){i=skipped;continue;}\n+            if(escaped(text,i)){i++;continue;}\n+            String open=null,close=null;boolean display=false,environment=false;\n+            if(text.startsWith(\"$$\",i)){open=\"$$\";close=\"$$\";display=true;}\n+            else if(text.startsWith(\"\\\\[\",i)){open=\"\\\\[\";close=\"\\\\]\";display=true;}\n+            else if(text.startsWith(\"\\\\(\",i)){open=\"\\\\(\";close=\"\\\\)\";}\n+            else if(text.charAt(i)=='$' && i+1<text.length() && !Character.isWhitespace(text.charAt(i+1)) && !currency(text,i)) {open=\"$\";close=\"$\";}\n+            else if(text.startsWith(\"\\\\begin{\",i)) {\n+                var match=ENV.matcher(text);match.region(i,text.length());\n+                if(match.lookingAt() && MATH_ENV.contains(match.group(2))) {\n+                    open=match.group();close=\"\\\\end{\"+match.group(2)+\"}\";display=true;environment=true;\n+                }\n+            }\n+            if(open==null){i++;continue;}\n+            int stop=closing(text,close,i+open.length());\n+            int end=stop<0?text.length():stop+close.length();\n+            String raw=text.substring(i,end);\n+            String latex=environment?raw:text.substring(i+open.length(),stop<0?end:stop);\n+            String error=stop<0?\"FORMULA_UNCLOSED\":check(latex);\n+            if(error!=null)issues.add(error);\n+            blocks.add(new Block(blocks.size()+1,i,end,raw,latex.strip(),display,error==null?\"STRUCTURE_OK\":\"INVALID\",error));\n+            i=end;\n+        }\n+        return new Analysis(List.copyOf(blocks),List.copyOf(issues));\n+    }\n+\n+    /** An evidence budget may omit a whole formula, but must never fabricate a truncated one. */\n+    public static String safePrefix(String text,int limit) {\n+        if(text==null || limit<=0)return \"\";\n+        int end=Math.min(text.length(),limit);\n+        for(var block:analyze(text).blocks()) {\n+            if(block.start()>=end)break;\n+            if(!\"STRUCTURE_OK\".equals(block.status()) || block.end()>end){end=block.start();break;}\n+        }\n+        if(end>0 && end<text.length() && Character.isHighSurrogate(text.charAt(end-1)))end--;\n+        return text.substring(0,end);\n+    }\n+\n+    private static String check(String latex) {\n+        if(latex.isBlank())return \"FORMULA_EMPTY\";\n+        if(latex.length()>MAX_FORMULA_CHARS)return \"FORMULA_TOO_LONG\";\n+        int braces=0;\n+        for(int i=0;i<latex.length();i++)if(!escaped(latex,i)) {\n+            char c=latex.charAt(i);\n+            if(c=='{')braces++;\n+            if(c=='}' && --braces<0)return \"FORMULA_BRACES_UNBALANCED\";\n+        }\n+        if(braces!=0)return \"FORMULA_BRACES_UNBALANCED\";\n+        var environments=new ArrayDeque<String>();var matches=ENV.matcher(latex);\n+        while(matches.find()) {\n+            if(\"begin\".equals(matches.group(1)))environments.push(matches.group(2));\n+            else if(environments.isEmpty() || !environments.pop().equals(matches.group(2)))return \"FORMULA_ENV_UNBALANCED\";\n+        }\n+        if(!environments.isEmpty())return \"FORMULA_ENV_UNBALANCED\";\n+        long left=Pattern.compile(\"\\\\\\\\left\\\\b\").matcher(latex).results().count();\n+        long right=Pattern.compile(\"\\\\\\\\right\\\\b\").matcher(latex).results().count();\n+        if(left!=right)return \"FORMULA_FENCES_UNBALANCED\";\n+        return null;\n+    }\n+    private static int closing(String text,String marker,int from) {\n+        for(int at=text.indexOf(marker,from);at>=0;at=text.indexOf(marker,at+marker.length()))\n+            if(!escaped(text,at))return at;\n+        return -1;\n+    }\n+    private static boolean escaped(String text,int at) {\n+        int count=0;for(int i=at-1;i>=0 && text.charAt(i)=='\\\\';i--)count++;\n+        return count%2==1;\n+    }\n+    private static boolean currency(String text,int at) {\n+        int i=at+1;if(i>=text.length() || !Character.isDigit(text.charAt(i)))return false;\n+        while(i<text.length() && (Character.isDigit(text.charAt(i)) || text.charAt(i)=='.' || text.charAt(i)==','))i++;\n+        return i==text.length() || Character.isWhitespace(text.charAt(i));\n+    }\n+    private static int skipCode(String text,int at) {\n+        if(text.charAt(at)!='`' && !text.startsWith(\"~~~\",at))return at;\n+        char c=text.charAt(at);int n=1;while(at+n<text.length() && text.charAt(at+n)==c)n++;\n+        String marker=text.substring(at,at+n);int close=text.indexOf(marker,at+n);\n+        return close<0?text.length():close+n;\n+    }\n+}\n*** Update File: D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/PageAnalysisService.java\n@@\n         if(replacements>Math.max(2,value.length()/20))return new Assessment(true,false,\"CORRUPT_TEXT\");\n+        if(com.cupk.aiacademy.rag.formula.FormulaText.suspectMath(value))return new Assessment(true,false,\"FORMULA_TEXT_LAYER\");\n*** Update File: D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ocr/OcrResultNormalizer.java\n@@\n         if(recognized.isBlank())return nativeText==null?\"\":nativeText.strip();\n+        // The original PDF glyph order is not a second source of truth for an OCR-reconstructed formula.\n+        if(!com.cupk.aiacademy.rag.formula.FormulaText.analyze(recognized).blocks().isEmpty())return recognized;\n*** Update File: D:/ai-learning/ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagTextChunker.java\n@@\n import com.cupk.aiacademy.rag.RagAccessException;\n+import com.cupk.aiacademy.rag.formula.FormulaText;\n@@\n         if(text.length()>1_000_000 || startingOrdinal<1)throw new RagAccessException(\"400\",\"文本分块参数超限\");\n+        var math=FormulaText.analyze(text);\n+        if(!math.valid())throw new RagAccessException(\"400\",\"公式结构不完整或超过处理上限，请核验原页\");\n@@\n                 if(end>start && Character.isHighSurrogate(text.charAt(end-1)))end--;\n             }\n+            // Keep the whole expression, including its source delimiters, with nearby definitions.\n+            for(var formula:math.blocks())if(end>formula.start() && end<formula.end())end=formula.end();\n@@\n-            start=Math.max(start+1,end-120);if(Character.isLowSurrogate(text.charAt(start)))start++;\n+            int next=Math.max(start+1,end-120);\n+            for(var formula:math.blocks())if(next>formula.start() && next<formula.end())next=formula.end();\n+            start=next;if(start<text.length() && Character.isLowSurrogate(text.charAt(start)))start++;\n*** End Patch",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5666,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": "call_65b77d49cf9749c4b9324d5cd59fd87e"
+      }
+    },
+    {
+      "id": "P01-5698",
+      "group": "P01",
+      "title": "首轮测试复现四类问题",
+      "role": "Agent测试反馈",
+      "operation": "4:04展示问题与基础测试反馈。",
+      "quote": "第一轮测试已复现四类问题：数学文字层未触发 OCR、长公式被切开、残缺公式进入检索、OCR 公式后又拼入错位的文字层内容。基础修复的 13 项测试已通过；我正在接入持久化和界面，并使用 PDF 技能核对真实课件页面。",
+      "date": "2026年10月28日 00:44:57（北京时间）",
+      "utc": "2026-10-27T16:44:57.079Z",
+      "raw": "第一轮测试已复现四类问题：数学文字层未触发 OCR、长公式被切开、残缺公式进入检索、OCR 公式后又拼入错位的文字层内容。基础修复的 13 项测试已通过；我正在接入持久化和界面，并使用 PDF 技能核对真实课件页面。",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5698,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      },
+      "links": [
+        [
+          "公式展示失败输出",
+          "#P01-5645"
+        ],
+        [
+          "真实截断反馈",
+          "#P01-5849"
+        ],
+        [
+          "受限重试修正",
+          "#P01-5898"
+        ]
+      ]
+    },
+    {
+      "id": "P01-5849",
+      "group": "P01",
+      "title": "真实样本有一页被截断",
+      "role": "Agent真实验证反馈",
+      "operation": "保留11/12页与OCR截断观察，再点修正卡片。",
+      "quote": "端到端界面测试的 12 项已通过。真实公式样本首轮有 11/12 页可用，另 1 页仍被 OCR 截断；该页已按预期隔离，没有进入检索。我正在排查这个失败，并检查图示页的简单标记是否会被误判为需要专项识别的复杂公式。",
+      "date": "2026年10月28日 09:42:32（北京时间）",
+      "utc": "2026-10-28T01:42:32.086Z",
+      "raw": "端到端界面测试的 12 项已通过。真实公式样本首轮有 11/12 页可用，另 1 页仍被 OCR 截断；该页已按预期隔离，没有进入检索。我正在排查这个失败，并检查图示页的简单标记是否会被误判为需要专项识别的复杂公式。",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5849,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-5898",
+      "group": "P01",
+      "title": "加入受限重试并修正误判",
+      "role": "Agent修正反馈",
+      "operation": "显示尺寸对比、受限重试与32项相关测试。",
+      "quote": "截断页在调整图像尺寸后的两次对比调用中都完整返回了结果。我已加入一次受限重试，并保留首次截断原文供核验；同时修正了把 `D=3` 这类简单图示标记误判为复杂公式的问题。相关 32 项测试通过，正在复跑真实样本。",
+      "date": "2026年10月28日 09:47:54（北京时间）",
+      "utc": "2026-10-28T01:47:54.163Z",
+      "raw": "截断页在调整图像尺寸后的两次对比调用中都完整返回了结果。我已加入一次受限重试，并保留首次截断原文供核验；同时修正了把 `D=3` 这类简单图示标记误判为复杂公式的问题。相关 32 项测试通过，正在复跑真实样本。",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 5898,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-6034",
+      "group": "P01",
+      "title": "继续修复公式识别路由",
+      "role": "Agent修正反馈",
+      "operation": "展示第二轮真实OCR定位的路由问题。",
+      "quote": "新增的公式路由和截断恢复逻辑已通过 53 项相关测试。真实 OCR 第二轮发现了“普通识别被截断后，没有继续尝试公式识别”的问题，已修复；接下来重跑真实样本，并做完整回归。公式能显示出来仍不代表识别完全正确，核验时发现的漏项也会写进报告。\n",
+      "date": "2026年10月28日 10:01:55（北京时间）",
+      "utc": "2026-10-28T02:01:55.019Z",
+      "raw": "新增的公式路由和截断恢复逻辑已通过 53 项相关测试。真实 OCR 第二轮发现了“普通识别被截断后，没有继续尝试公式识别”的问题，已修复；接下来重跑真实样本，并做完整回归。公式能显示出来仍不代表识别完全正确，核验时发现的漏项也会写进报告。\n",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 6034,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-6070",
+      "group": "P01",
+      "title": "追加公式边界测试",
+      "role": "Agent测试反馈",
+      "operation": "显示变量说明和表格公式的边界问题。",
+      "quote": "复查时还发现两个边界问题：长公式后的变量说明可能落到下一块，Markdown 表格里的公式也可能无法显示。已先加测试复现，会一起补齐，避免只修好独立公式的展示。\n",
+      "date": "2026年10月28日 10:04:19（北京时间）",
+      "utc": "2026-10-28T02:04:19.560Z",
+      "raw": "复查时还发现两个边界问题：长公式后的变量说明可能落到下一块，Markdown 表格里的公式也可能无法显示。已先加测试复现，会一起补齐，避免只修好独立公式的展示。\n",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 6070,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-6224",
+      "group": "P01",
+      "title": "公式处理交付与保留问题",
+      "role": "历史验证结果",
+      "operation": "4:16展示313通过、13跳过、前端19项、12/12页及漏识别观察。",
+      "quote": "已补齐 **K02 公式处理代码**，按先测试、再实现、再回归完成：\n\n- 保存公式 LaTeX、来源和原页信息。\n- 分块及问答上下文避免截断公式。\n- 页面与引用支持公式排版、源码对照；失败结果保留供核验。\n\n验证结果：后端 **313 通过、13 跳过、零失败**；前端 **19 项通过**，构建通过；真实 OCR **12/12 页处理就绪**，MySQL 验证通过。\n\n**内容准确性仍需核验**：抽查发现 ELU 等价式遗漏、λ 漏识别和等式改写，已明确记录，未算作内容验收通过。\n\n请按 [人工验证方法](/D:/ai-learning/docs/competition/development/K02-formula-manual-verification.md)重启并重新解析旧资料。详见 [测试报告](/D:/ai-learning/docs/competition/development/K02-formula-test-report.md)。[开发记录](/D:/ai-learning/docs/competition/development/agent-records/2026-10-28-k02-formulas/root/records.md)已脱敏归档至最终反馈前快照。",
+      "date": "2026年10月28日 10:18:19（北京时间）",
+      "utc": "2026-10-28T02:18:19.186Z",
+      "raw": "已补齐 **K02 公式处理代码**，按先测试、再实现、再回归完成：\n\n- 保存公式 LaTeX、来源和原页信息。\n- 分块及问答上下文避免截断公式。\n- 页面与引用支持公式排版、源码对照；失败结果保留供核验。\n\n验证结果：后端 **313 通过、13 跳过、零失败**；前端 **19 项通过**，构建通过；真实 OCR **12/12 页处理就绪**，MySQL 验证通过。\n\n**内容准确性仍需核验**：抽查发现 ELU 等价式遗漏、λ 漏识别和等式改写，已明确记录，未算作内容验收通过。\n\n请按 [人工验证方法](/D:/ai-learning/docs/competition/development/K02-formula-manual-verification.md)重启并重新解析旧资料。详见 [测试报告](/D:/ai-learning/docs/competition/development/K02-formula-test-report.md)。[开发记录](/D:/ai-learning/docs/competition/development/agent-records/2026-10-28-k02-formulas/root/records.md)已脱敏归档至最终反馈前快照。",
+      "source": {
+        "file": "evidence/prompt-chains/P01/formula-development/records.jsonl",
+        "line": 6224,
+        "session": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+        "callId": null
+      }
+    },
+    {
+      "id": "P01-report",
+      "group": "P01",
+      "title": "公式处理历史测试报告",
+      "role": "报告与画面入口",
+      "operation": "4:16–4:35展示结果，再展开原报告。",
+      "quote": "后端313通过、13跳过、0失败。\n前端19项通过，真实OCR 12/12页处理就绪。\n原页对照仍有ELU等价式遗漏、λ漏识别和等式改写。",
+      "date": "2026年10月28日（历史报告日期）",
+      "source": {
+        "file": "evidence/prompt-chains/P01/reports/historical-test-report.txt"
+      },
+      "links": [
+        [
+          "完整历史报告",
+          "../evidence/prompt-chains/P01/reports/historical-test-report.txt"
+        ],
+        [
+          "最终后端日志",
+          "../evidence/prompt-chains/P01/reports/backend-full-final.log"
+        ]
+      ]
+    },
+    {
+      "id": "P02-13",
+      "group": "P02",
+      "title": "核验窗口无法确认或修改",
+      "role": "用户原始反馈",
+      "operation": "4:35展示用户反馈与当时事件时间。",
+      "quote": "待核验页我该怎么办，我在服务器上发现很多页都要待核验，我点进逐页核验又没办法确定或修改\n",
+      "date": "2026年11月16日 17:14:41（北京时间）",
+      "utc": "2026-11-16T09:14:41.626Z",
+      "raw": "待核验页我该怎么办，我在服务器上发现很多页都要待核验，我点进逐页核验又没办法确定或修改\n",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 13,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-164",
+      "group": "P02",
+      "title": "用户指出右侧竖窗",
+      "role": "用户补充定位",
+      "operation": "4:43展示“右边弹出的一个竖窗”。",
+      "quote": "我点击主页核验，右边弹出的一个竖窗",
+      "date": "2026年11月16日 17:23:30（北京时间）",
+      "utc": "2026-11-16T09:23:30.934Z",
+      "raw": "<send_user_message_question_reply>\n[{\"questionItemId\":\"[\\\"request_user_input_async\\\",\\\"call_69a4dc7b13d54e4798ed6213c2035cf8\\\",0]\",\"question\":\"服务器上出现问题的页面地址是什么？我会用它核对实际运行版本和修复入口。\",\"answer\":\"[http://192.0.2.11/app/teacher-knowledge-base](http://192.0.2.11/app/teacher-knowledge-base)我点击主页核验，右边弹出的一个竖窗\"}]\n</send_user_message_question_reply>\n",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 164,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-64",
+      "group": "P02",
+      "title": "定位缺少确认、编辑和保存",
+      "role": "Agent诊断与方案",
+      "operation": "4:55展示诊断，再切到实际接口修改。",
+      "quote": "已经找到原因。“逐页核验”目前只有查看和重新识别，缺少确认、编辑和保存功能。OCR 识别页也会统一标为需核验，所以数量可能很多。\n\n我会补上逐页确认和文本修正，并让保存后的内容重新进入检索。当前先在本地修复和验证，服务器的实际版本还需另行核对。",
+      "date": "2026年11月16日 17:17:42（北京时间）",
+      "utc": "2026-11-16T09:17:42.736Z",
+      "raw": "已经找到原因。“逐页核验”目前只有查看和重新识别，缺少确认、编辑和保存功能。OCR 识别页也会统一标为需核验，所以数量可能很多。\n\n我会补上逐页确认和文本修正，并让保存后的内容重新进入检索。当前先在本地修复和验证，服务器的实际版本还需另行核对。",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 64,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-177",
+      "group": "P02",
+      "title": "明确为右侧逐页核验抽屉",
+      "role": "Agent修正反馈",
+      "operation": "显示OCR_READY映射和已补操作入口的说明。",
+      "quote": "你说的是知识库右侧弹出的逐页核验抽屉。代码里确实只有查看和重试功能，缺少人工确认、修改保存的入口，`OCR_READY` 状态也被误显示成了“待核验”。\n\n本地已补上这些操作并通过第一轮测试。我继续核对你给的服务器页面，以及修订后的内容是否进入检索。",
+      "date": "2026年11月16日 17:24:08（北京时间）",
+      "utc": "2026-11-16T09:24:08.635Z",
+      "raw": "你说的是知识库右侧弹出的逐页核验抽屉。代码里确实只有查看和重试功能，缺少人工确认、修改保存的入口，`OCR_READY` 状态也被误显示成了“待核验”。\n\n本地已补上这些操作并通过第一轮测试。我继续核对你给的服务器页面，以及修订后的内容是否进入检索。",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 177,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-99",
+      "group": "P02",
+      "title": "服务测试暴露缺少review方法",
+      "role": "历史工具返回节选",
+      "operation": "5:04展示实际编译失败，再切到新增服务测试。",
+      "quote": "Script completed\nWall time 10.2 seconds\nOutput:\n\n{}\n\n> ai-learning-frontend@0.1.0 dev\n> vite --host 127.0.0.1\n\n\n  VITE v8.1.2  ready in 924 ms\n\n  ➜  Local:   http://127.0.0.1:24678/\n\nWarning: truncated output (original token count: 1512)\nTotal output lines: 57\n\n[ERROR] COMPILATION ERROR : \r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[61,21] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[63,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[73,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[74,44] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[80,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[81,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[82,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为c\n\n[节选至此，完整工具参数见原始快照。]",
+      "date": "2026年11月16日 17:19:33（北京时间）",
+      "utc": "2026-11-16T09:19:33.303Z",
+      "raw": "Script completed\nWall time 10.2 seconds\nOutput:\n\n{}\n\n> ai-learning-frontend@0.1.0 dev\n> vite --host 127.0.0.1\n\n\n  VITE v8.1.2  ready in 924 ms\n\n  ➜  Local:   http://127.0.0.1:24678/\n\nWarning: truncated output (original token count: 1512)\nTotal output lines: 57\n\n[ERROR] COMPILATION ERROR : \r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[61,21] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[63,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[73,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[74,44] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[80,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[81,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[82,35] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[83,21] 找不到符号\n  符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\n  位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project Final_exam_question_bank: Compilation failure: Compilation failure: \r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServ…12 tokens truncated… 符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[63,35] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[73,35] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[74,44] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[80,35] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[81,35] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[82,35] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java:[83,21] 找不到符号\r\n[ERROR]   符号:   方法 review(java.lang.String,int,int,int,java.lang.String)\r\n[ERROR]   位置: 类型为com.cupk.aiacademy.rag.ingestion.RagIngestionService的变量 service\r\n[ERROR] -> [Help 1]\r\n[ERROR] \r\n[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.\r\n[ERROR] Re-run Maven using the -X switch to enable full debug logging.\r\n[ERROR] \r\n[ERROR] For more information about the errors and possible solutions, please read the following articles:\r\n[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException\r\n",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 99,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": "call_19932214e6fd4e12a3ad3bf2fe7da8bf"
+      }
+    },
+    {
+      "id": "P02-115",
+      "group": "P02",
+      "title": "页面测试暴露缺少操作入口",
+      "role": "历史工具返回节选",
+      "operation": "显示两项界面测试失败，后续测试命令语法错误保留在原输出中。",
+      "quote": "Script completed\nWall time 0.4 seconds\nOutput:\n\nWarning: truncated output (original token count: 1450)\nTotal output lines: 78\n\n  x  1 e2e\\k02-processing-ui.spec.js:104:1 › owner can correct and confirm a page with the displayed revision (20.2s)\n(node:6444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  x  2 e2e\\k02-processing-ui.spec.js:115:1 › processing pages cannot be edited or confirmed (11.3s)\n\n\n  1) e2e\\k02-processing-ui.spec.js:104:1 › owner can correct and confirm a page with the displayed revision \n\n    Test timeout of 20000ms exceeded.\n\n    Error: locator.click: Test timeout of 20000ms exceeded.\n    Call log:\n      - waiting for getByTestId('document-page-review').getByRole('button', { name: '修改文本', exact: true })\n\n\n      106 |   await page.getByRole('button', { name: '逐页核验', exact: true }).click()\n      107 |   const review = page.getByTestId('document-page-review')\n    > 108 |   await review.getByRole('button', { name: '修改文本', exact: true }).click()\n          |                                                                   ^\n      109 |   await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('教师修订后的文字')\n      110 |   await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()\n      111 |   await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)\n        at D:\\ai-learning-collaboration-verified\\ai-learning-frontend\\e2e\\k02-processing-ui.spec.js:108:67\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\k02-processing-ui-owner-ca-87516-with-the-displayed-revision\\test-failed-1.png\n    ──────────────────────────────────────────────────────────…450 tokens truncated…                                                        ^\n      120 |   await expect(review.getByRole('button', { name: '确认本页无误', exact: true })).toBeDisabled()\n      121 | })\n      122 |\n        at D:\\ai-learning-collaboration-verified\\ai-learning-frontend\\e2e\\k02-processing-ui.spec.js:119:75\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\k02-processing-ui-processi-24d2d-nnot-be-edit\n\n[节选至此，完整工具参数见原始快照。]",
+      "date": "2026年11月16日 17:21:20（北京时间）",
+      "utc": "2026-11-16T09:21:20.855Z",
+      "raw": "Script completed\nWall time 0.4 seconds\nOutput:\n\nWarning: truncated output (original token count: 1450)\nTotal output lines: 78\n\n  x  1 e2e\\k02-processing-ui.spec.js:104:1 › owner can correct and confirm a page with the displayed revision (20.2s)\n(node:6444) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.\n(Use `node --trace-warnings ...` to show where the warning was created)\n  x  2 e2e\\k02-processing-ui.spec.js:115:1 › processing pages cannot be edited or confirmed (11.3s)\n\n\n  1) e2e\\k02-processing-ui.spec.js:104:1 › owner can correct and confirm a page with the displayed revision \n\n    Test timeout of 20000ms exceeded.\n\n    Error: locator.click: Test timeout of 20000ms exceeded.\n    Call log:\n      - waiting for getByTestId('document-page-review').getByRole('button', { name: '修改文本', exact: true })\n\n\n      106 |   await page.getByRole('button', { name: '逐页核验', exact: true }).click()\n      107 |   const review = page.getByTestId('document-page-review')\n    > 108 |   await review.getByRole('button', { name: '修改文本', exact: true }).click()\n          |                                                                   ^\n      109 |   await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('教师修订后的文字')\n      110 |   await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()\n      111 |   await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)\n        at D:\\ai-learning-collaboration-verified\\ai-learning-frontend\\e2e\\k02-processing-ui.spec.js:108:67\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\k02-processing-ui-owner-ca-87516-with-the-displayed-revision\\test-failed-1.png\n    ──────────────────────────────────────────────────────────…450 tokens truncated…                                                        ^\n      120 |   await expect(review.getByRole('button', { name: '确认本页无误', exact: true })).toBeDisabled()\n      121 | })\n      122 |\n        at D:\\ai-learning-collaboration-verified\\ai-learning-frontend\\e2e\\k02-processing-ui.spec.js:119:75\n\n    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────\n    test-results\\k02-processing-ui-processi-24d2d-nnot-be-edited-or-confirmed\\test-failed-1.png\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n    Error Context: test-results\\k02-processing-ui-processi-24d2d-nnot-be-edited-or-confirmed\\error-context.md\n\n    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────\n    test-results\\k02-processing-ui-processi-24d2d-nnot-be-edited-or-confirmed\\trace.zip\n    Usage:\n\n        npx playwright show-trace test-results\\k02-processing-ui-processi-24d2d-nnot-be-edited-or-confirmed\\trace.zip\n\n    ────────────────────────────────────────────────────────────────────────────────────────────────\n\n  2 failed\n    e2e\\k02-processing-ui.spec.js:104:1 › owner can correct and confirm a page with the displayed revision \n    e2e\\k02-processing-ui.spec.js:115:1 › processing pages cannot be edited or confirmed ───────────\n\n{}\nParserError: \r\nLine |\r\n   2 |  … ontend/src/api/rag.js; mvn -q -Dtest=K02IngestionServiceTest,Ingestio …\r\n     |                                                                ~\r\n     | Missing argument in parameter list.\r\n",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 115,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": "call_706745ec6f17409d9ab336b15f18b8ca"
+      }
+    },
+    {
+      "id": "P02-204",
+      "group": "P02",
+      "title": "补充失败页人工修改测试",
+      "role": "历史工具参数节选",
+      "operation": "5:04展示manualCorrectionRepairsFailedPage等服务测试。",
+      "quote": "*** Begin Patch\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java\n@@\n     @Test void confirmationAndCorrectionValidatePageAndFormulaBeforeEnqueue() throws Exception {\n@@\n         assertFalse(jobs.pages(id,1,2).getFirst().needsReview());\n     }\n+\n+    @Test void manualCorrectionRepairsFailedPageAndPreservesOtherPages() throws Exception {\n+        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException(\"OCR_NOT_CONFIGURED\"));\n+        var uploaded=data(service.submit(base,pdf(false),\"partial-review.pdf\"));\n+        String id=value(uploaded,\"documentId\");service.runNext(\"initial\");\n+        var original=jobs.pages(id,1,1);\n+        assertEquals(\"FAILED\",original.get(1).state());\n+        data(service.review(id,2,1,1,\"Corrected scanned page.\"));service.runNext(\"repair\");\n+        var reviewed=jobs.pages(id,1,2);\n+        assertEquals(original.get(0),reviewed.get(0));assertEquals(original.get(2),reviewed.get(2));\n+        assertEquals(\"READY\",doc(id).get(\"processing_state\"));assertFalse(reviewed.get(1).needsReview());\n+        assertEquals(\"TEXT_READY\",reviewed.get(1).state());\n+        verify(ocr,times(1)).recognize(any());\n+    }\n+\n+    @Test void confirmingAnotherPagePreservesUnrepairedFailures() throws Exception {\n+        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException(\"OCR_NOT_CONFIGURED\"));\n+        var uploaded=data(service.submit(base,pdf(false),\"partial-confirm.pdf\"));\n+        String id=value(uploaded,\"documentId\");service.runNext(\"initial\");\n+        var first=jobs.pages(id,1,1).getFirst();\n+        data(service.review(id,1,1,1,first.chosenText()));service.runNext(\"confirm\");\n+        assertEquals(\"PARTIAL\",doc(id).get(\"processing_state\"));\n+        assertEquals(\"FAILED\",jobs.pages(id,1,2).get(1).state());\n+        verify(ocr,times(1)).recognize(any());\n+    }\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-frontend/src/components/knowledge/DocumentPageReview.vue\n@@\n-          <strong>{{ pageLabel(page) }}</strong><span>{{ statusLabel(page.pageStatus) }}</span>\n+          <strong>{{ pageLabel(page) }}</strong><span>{{ page.method === 'MANUAL' && !page.needsReview ? '已人工确认' : statusLabel(page.pageStatus\n\n[节选至此，完整工具参数见原始快照。]",
+      "date": "2026年11月16日 17:26:51（北京时间）",
+      "utc": "2026-11-16T09:26:51.319Z",
+      "raw": "*** Begin Patch\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java\n@@\n     @Test void confirmationAndCorrectionValidatePageAndFormulaBeforeEnqueue() throws Exception {\n@@\n         assertFalse(jobs.pages(id,1,2).getFirst().needsReview());\n     }\n+\n+    @Test void manualCorrectionRepairsFailedPageAndPreservesOtherPages() throws Exception {\n+        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException(\"OCR_NOT_CONFIGURED\"));\n+        var uploaded=data(service.submit(base,pdf(false),\"partial-review.pdf\"));\n+        String id=value(uploaded,\"documentId\");service.runNext(\"initial\");\n+        var original=jobs.pages(id,1,1);\n+        assertEquals(\"FAILED\",original.get(1).state());\n+        data(service.review(id,2,1,1,\"Corrected scanned page.\"));service.runNext(\"repair\");\n+        var reviewed=jobs.pages(id,1,2);\n+        assertEquals(original.get(0),reviewed.get(0));assertEquals(original.get(2),reviewed.get(2));\n+        assertEquals(\"READY\",doc(id).get(\"processing_state\"));assertFalse(reviewed.get(1).needsReview());\n+        assertEquals(\"TEXT_READY\",reviewed.get(1).state());\n+        verify(ocr,times(1)).recognize(any());\n+    }\n+\n+    @Test void confirmingAnotherPagePreservesUnrepairedFailures() throws Exception {\n+        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException(\"OCR_NOT_CONFIGURED\"));\n+        var uploaded=data(service.submit(base,pdf(false),\"partial-confirm.pdf\"));\n+        String id=value(uploaded,\"documentId\");service.runNext(\"initial\");\n+        var first=jobs.pages(id,1,1).getFirst();\n+        data(service.review(id,1,1,1,first.chosenText()));service.runNext(\"confirm\");\n+        assertEquals(\"PARTIAL\",doc(id).get(\"processing_state\"));\n+        assertEquals(\"FAILED\",jobs.pages(id,1,2).get(1).state());\n+        verify(ocr,times(1)).recognize(any());\n+    }\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-frontend/src/components/knowledge/DocumentPageReview.vue\n@@\n-          <strong>{{ pageLabel(page) }}</strong><span>{{ statusLabel(page.pageStatus) }}</span>\n+          <strong>{{ pageLabel(page) }}</strong><span>{{ page.method === 'MANUAL' && !page.needsReview ? '已人工确认' : statusLabel(page.pageStatus) }}</span>\n@@\n-                <details open>[CONTEXT OMITTED]<pre>{{ formula.latex }}</pre></details>\n+                <details open>[CONTEXT OMITTED]<pre>{{ formula.latex }}</pre></details>\n*** End Patch",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 204,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": "call_d0003e7324c94784a90d8c6a3c46cc3a"
+      }
+    },
+    {
+      "id": "P02-221",
+      "group": "P02",
+      "title": "修正核验抽屉状态与按钮",
+      "role": "历史工具参数节选",
+      "operation": "展示DocumentPageReview.vue补丁。",
+      "quote": "*** Begin Patch\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-frontend/src/components/knowledge/DocumentPageReview.vue\n@@\n-    <div class=\"review-heading\"><h3>原页与提取结果</h3><el-button size=\"small\" :loading=\"loading\" @click=\"loadPages\">刷新处理结果</el-button></div>\n+    <div class=\"review-heading\"><h3>原页与提取结果</h3><el-button size=\"small\" :loading=\"loading\" :disabled=\"saving\" @click=\"loadPages\">刷新处理结果</el-button></div>\n@@\n-        <button v-for=\"page in pages\" :key=\"page.pageNo\" type=\"button\" :data-testid=\"`review-page-${page.pageNo}`\" :class=\"{ active: selectedNo === page.pageNo }\" @click=\"selectPage(page.pageNo)\">\n-          <strong>{{ pageLabel(page) }}</strong><span>{{ statusLabel(page.pageStatus) }}</span>\n+        <button v-for=\"page in pages\" :key=\"page.pageNo\" type=\"button\" :disabled=\"saving\" :data-testid=\"`review-page-${page.pageNo}`\" :class=\"{ active: selectedNo === page.pageNo }\" @click=\"selectPage(page.pageNo)\">\n+          <strong>{{ pageLabel(page) }}</strong><span>{{ page.method === 'MANUAL' && !page.needsReview ? '已人工确认' : statusLabel(page.pageStatus) }}</span>\n@@\n-          <el-button :disabled=\"busy\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: false })\">重试此{{ paged ? '页' : '位置' }}</el-button>\n-          <el-button v-if=\"canPreview\" type=\"primary\" :disabled=\"busy\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: true })\">强制识别本页</el-button>\n+          <el-button :disabled=\"busy || saving\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: false })\">重试此{{ paged ? '页' : '位置' }}</el-button>\n+          <el-button v-if=\"canPreview\" type=\"primary\" :disabled=\"busy || saving\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: true })\">强制识别本页</el-button>\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-frontend/e2e/k02-processing-ui.spec.js\n@@\n test('processing pages cannot be edited or confirmed', async ({ page }) => {\n@@\n })\n+\n+test('confirmation submits the displayed text and save conflicts retain the correction', async ({ page }) => {\n+  const calls = await fixture(page, { state: 'COMPLETED' })\n+  await page.getByRole('button', { name: '逐页核验', exact: true }).click()\n+  const review = page.getByTestId('document-page-review')\n+  await review.getByRole('button', { name: '确认本页无\n\n[节选至此，完整工具参数见原始快照。]",
+      "date": "2026年11月16日 17:28:16（北京时间）",
+      "utc": "2026-11-16T09:28:16.954Z",
+      "raw": "*** Begin Patch\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-frontend/src/components/knowledge/DocumentPageReview.vue\n@@\n-    <div class=\"review-heading\"><h3>原页与提取结果</h3><el-button size=\"small\" :loading=\"loading\" @click=\"loadPages\">刷新处理结果</el-button></div>\n+    <div class=\"review-heading\"><h3>原页与提取结果</h3><el-button size=\"small\" :loading=\"loading\" :disabled=\"saving\" @click=\"loadPages\">刷新处理结果</el-button></div>\n@@\n-        <button v-for=\"page in pages\" :key=\"page.pageNo\" type=\"button\" :data-testid=\"`review-page-${page.pageNo}`\" :class=\"{ active: selectedNo === page.pageNo }\" @click=\"selectPage(page.pageNo)\">\n-          <strong>{{ pageLabel(page) }}</strong><span>{{ statusLabel(page.pageStatus) }}</span>\n+        <button v-for=\"page in pages\" :key=\"page.pageNo\" type=\"button\" :disabled=\"saving\" :data-testid=\"`review-page-${page.pageNo}`\" :class=\"{ active: selectedNo === page.pageNo }\" @click=\"selectPage(page.pageNo)\">\n+          <strong>{{ pageLabel(page) }}</strong><span>{{ page.method === 'MANUAL' && !page.needsReview ? '已人工确认' : statusLabel(page.pageStatus) }}</span>\n@@\n-          <el-button :disabled=\"busy\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: false })\">重试此{{ paged ? '页' : '位置' }}</el-button>\n-          <el-button v-if=\"canPreview\" type=\"primary\" :disabled=\"busy\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: true })\">强制识别本页</el-button>\n+          <el-button :disabled=\"busy || saving\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: false })\">重试此{{ paged ? '页' : '位置' }}</el-button>\n+          <el-button v-if=\"canPreview\" type=\"primary\" :disabled=\"busy || saving\" @click=\"$emit('retry', { pages: [selected.pageNo], forceOcr: true })\">强制识别本页</el-button>\n*** Update File: D:/ai-learning-collaboration-verified/ai-learning-frontend/e2e/k02-processing-ui.spec.js\n@@\n test('processing pages cannot be edited or confirmed', async ({ page }) => {\n@@\n })\n+\n+test('confirmation submits the displayed text and save conflicts retain the correction', async ({ page }) => {\n+  const calls = await fixture(page, { state: 'COMPLETED' })\n+  await page.getByRole('button', { name: '逐页核验', exact: true }).click()\n+  const review = page.getByTestId('document-page-review')\n+  await review.getByRole('button', { name: '确认本页无误', exact: true }).click()\n+  await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)\n+  expect(calls.find(call => call.path.endsWith('/pages/1/review')).body.text).toBe('文字层标题\n识别正文')\n+  await page.route(`**/api/rag/documents/${docId}/pages/1/review`, route => route.fulfill({ json: { code: '409', msg: '页面版本已改变，请刷新后重新核验' } }))\n+  await review.getByRole('button', { name: '修改文本', exact: true }).click()\n+  await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('保留未保存的修订')\n+  await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()\n+  await expect(review).toContainText('页面版本已改变')\n+  await expect(review.getByRole('textbox', { name: '修订后的检索文本' })).toHaveValue('保留未保存的修订')\n+})\n*** End Patch",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 221,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": "call_e6603f5f6c744bc09366be4ff83ea3ed"
+      }
+    },
+    {
+      "id": "P02-295",
+      "group": "P02",
+      "title": "57项后端与27项界面测试通过",
+      "role": "历史交付结果",
+      "operation": "5:16展示测试结果与当时尚未部署服务器的说明。",
+      "quote": "你说的右侧竖窗确实缺少**确认和修改入口**，服务器当前发布版本也存在这个问题。代码会给 OCR 页标记需核验，因此数量较多。\n\n我已在本地补上完整操作流程，更新后可以这样处理。\n\n- 内容正确，点“确认本页无误”。\n- 内容有误，点“修改文本”，修正后“保存并确认本页”。\n- 保存后等待索引重建完成，再核验下一页。\n\n57 条后端测试、27 条界面测试和构建均通过，开发记录已归档。**修复尚未部署到服务器，所以你现在刷新页面还不会看到新按钮。**",
+      "date": "2026年11月16日 17:32:20（北京时间）",
+      "utc": "2026-11-16T09:32:20.558Z",
+      "raw": "你说的右侧竖窗确实缺少**确认和修改入口**，服务器当前发布版本也存在这个问题。代码会给 OCR 页标记需核验，因此数量较多。\n\n我已在本地补上完整操作流程，更新后可以这样处理。\n\n- 内容正确，点“确认本页无误”。\n- 内容有误，点“修改文本”，修正后“保存并确认本页”。\n- 保存后等待索引重建完成，再核验下一页。\n\n57 条后端测试、27 条界面测试和构建均通过，开发记录已归档。**修复尚未部署到服务器，所以你现在刷新页面还不会看到新按钮。**",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 295,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-305",
+      "group": "P02",
+      "title": "用户要求打开本地项目测试",
+      "role": "用户复验请求",
+      "operation": "5:24后展示这条真实请求。",
+      "quote": "本地打开项目入口，我要测试\n",
+      "date": "2026年11月16日 17:34:38（北京时间）",
+      "utc": "2026-11-16T09:34:38.108Z",
+      "raw": "本地打开项目入口，我要测试\n",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 305,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-308",
+      "group": "P02",
+      "title": "回应启动本地入口",
+      "role": "Agent对外回应",
+      "operation": "配合上一张，说明当时人工复验入口。",
+      "quote": "我来启动本地项目并打开入口，检查前后端是否都能访问。",
+      "date": "2026年11月16日 17:34:43（北京时间）",
+      "utc": "2026-11-16T09:34:43.074Z",
+      "raw": "我来启动本地项目并打开入口，检查前后端是否都能访问。",
+      "source": {
+        "file": "evidence/prompt-chains/P02/page-review/records.jsonl",
+        "line": 308,
+        "session": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+        "callId": null
+      }
+    },
+    {
+      "id": "P02-results",
+      "group": "P02",
+      "title": "逐页核验历史测试结果",
+      "role": "报告与画面入口",
+      "operation": "5:16显示结果，再打开实际JSON与构建日志。",
+      "quote": "后端5个相关测试类共57项通过。\n界面27项通过，失败0。\n前端构建退出码0。\n当时修复在本地，服务器尚未部署。",
+      "date": "2026年11月16日（历史报告日期）",
+      "source": {
+        "file": "evidence/prompt-chains/P02/reports/test-results.json"
+      },
+      "links": [
+        [
+          "测试结果JSON",
+          "../evidence/prompt-chains/P02/reports/test-results.json"
+        ],
+        [
+          "构建日志",
+          "../evidence/prompt-chains/P02/reports/build.log"
+        ]
+      ]
+    },
+    {
+      "id": "P03-1460",
+      "group": "P03",
+      "title": "学习布局与作业文案的缺陷反馈",
+      "role": "用户原始反馈",
+      "operation": "5:35展示原话，原文中的“可是页面”按原记录保留。",
+      "quote": "重复测试agent业务规划，改善可是页面布局拥挤和作业页面文案错误，继续测试其他业务模块\n",
+      "date": "2026年11月03日 08:52:49（北京时间）",
+      "utc": "2026-11-03T00:52:49.055Z",
+      "raw": "重复测试agent业务规划，改善可是页面布局拥挤和作业页面文案错误，继续测试其他业务模块\n",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-root/records.jsonl",
+        "line": 1460,
+        "session": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+        "callId": null
+      }
+    },
+    {
+      "id": "P03-1512",
+      "group": "P03",
+      "title": "定位固定三列与写死文案",
+      "role": "Agent诊断与方案",
+      "operation": "5:43展示具体原因由Agent定位。",
+      "quote": "三部分已并行推进：界面修复先用回归测试复现旧问题；Agent 用有限的真实请求复测；其他模块优先测独立考试、通知、笔记和管理权限。课时页目前使用固定三列布局，窄屏下侧栏空间不足；作业文案则来自共享页面中写死的“考试”文本。\n",
+      "date": "2026年11月03日 08:56:22（北京时间）",
+      "utc": "2026-11-03T00:56:22.730Z",
+      "raw": "三部分已并行推进：界面修复先用回归测试复现旧问题；Agent 用有限的真实请求复测；其他模块优先测独立考试、通知、笔记和管理权限。课时页目前使用固定三列布局，窄屏下侧栏空间不足；作业文案则来自共享页面中写死的“考试”文本。\n",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-root/records.jsonl",
+        "line": 1512,
+        "session": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+        "callId": null
+      }
+    },
+    {
+      "id": "P03-145",
+      "group": "P03",
+      "title": "回归测试复现窄屏问题",
+      "role": "Agent测试反馈",
+      "operation": "5:55展示375/768/1080px的实际失败观察。",
+      "quote": "回归测试已复现：375px 和 768px 下笔记区域被压到约 86px、191px，1080px 下 AI 助手标题变成 105px 高。修复会在中等宽度将工具区移到正文下方，小屏改为单列，并让笔记工具栏自然换行。",
+      "date": "2026年11月03日 08:58:52（北京时间）",
+      "utc": "2026-11-03T00:58:52.321Z",
+      "raw": "回归测试已复现：375px 和 768px 下笔记区域被压到约 86px、191px，1080px 下 AI 助手标题变成 105px 高。修复会在中等宽度将工具区移到正文下方，小屏改为单列，并让笔记工具栏自然换行。",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-ui/records.jsonl",
+        "line": 145,
+        "session": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+        "callId": null
+      }
+    },
+    {
+      "id": "P03-155",
+      "group": "P03",
+      "title": "执行布局和业务文案回归",
+      "role": "历史工具参数",
+      "operation": "展示真实浏览器测试命令，结果见报告卡片。",
+      "quote": "{\"cmd\":\"npx playwright test e2e/learning-layout-assessment.spec.js --output=../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green-artifacts 2>&1 | Tee-Object ../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green.log\",\"workdir\":\"D:\\\\code\\\\program\\\\OnlineLearning\\\\ai-learning-collaboration\\\\ai-learning-frontend\",\"yield_time_ms\":1000,\"max_output_tokens\":1000}",
+      "date": "2026年11月03日 08:59:36（北京时间）",
+      "utc": "2026-11-03T00:59:36.770Z",
+      "raw": "{\"cmd\":\"npx playwright test e2e/learning-layout-assessment.spec.js --output=../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green-artifacts 2>&1 | Tee-Object ../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green.log\",\"workdir\":\"D:\\\\code\\\\program\\\\OnlineLearning\\\\ai-learning-collaboration\\\\ai-learning-frontend\",\"yield_time_ms\":1000,\"max_output_tokens\":1000}",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-ui/records.jsonl",
+        "line": 155,
+        "session": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+        "callId": "call_7U2bx7a3IuIz8K3J3A06g7zO"
+      }
+    },
+    {
+      "id": "P03-239",
+      "group": "P03",
+      "title": "第一轮修正通过，继续检查",
+      "role": "Agent修正反馈",
+      "operation": "展示8项新增、15项既有回归与构建反馈。",
+      "quote": "新增的 8 项回归和 15 项已有检索界面测试已通过，前端构建也通过。真实 Chrome 中确认 375、768、1080、1440px 均无页面横向溢出；我正在核对手机正文、目录折叠，以及相同提交 ID 切换作业/考试类型时的数据刷新。",
+      "date": "2026年11月03日 09:03:23（北京时间）",
+      "utc": "2026-11-03T01:03:23.742Z",
+      "raw": "新增的 8 项回归和 15 项已有检索界面测试已通过，前端构建也通过。真实 Chrome 中确认 375、768、1080、1440px 均无页面横向溢出；我正在核对手机正文、目录折叠，以及相同提交 ID 切换作业/考试类型时的数据刷新。",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-ui/records.jsonl",
+        "line": 239,
+        "session": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+        "callId": null
+      }
+    },
+    {
+      "id": "P03-296",
+      "group": "P03",
+      "title": "手机页面发现额外空白",
+      "role": "Agent实际页面反馈",
+      "operation": "6:04展示约297px空白与先写失败测试的安排。",
+      "quote": "真实手机页面还发现一个相关布局问题：全局 `.page-shell` 的最小高度影响了课时正文，导致导航和正文之间出现约 297px 空白。失败测试已捕获，我会仅在课时渲染组件里取消这个继承效果。",
+      "date": "2026年11月03日 09:06:37（北京时间）",
+      "utc": "2026-11-03T01:06:37.681Z",
+      "raw": "真实手机页面还发现一个相关布局问题：全局 `.page-shell` 的最小高度影响了课时正文，导致导航和正文之间出现约 297px 空白。失败测试已捕获，我会仅在课时渲染组件里取消这个继承效果。",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-ui/records.jsonl",
+        "line": 296,
+        "session": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+        "callId": null
+      },
+      "links": [
+        [
+          "手机空白失败日志",
+          "../evidence/prompt-chains/P03/reports/red-mobile.log"
+        ]
+      ]
+    },
+    {
+      "id": "P03-306",
+      "group": "P03",
+      "title": "运行补充完整页面测试",
+      "role": "历史工具参数",
+      "operation": "展示追加手机回归的实际命令。",
+      "quote": "{\"cmd\":\"npx playwright test e2e/learning-layout-assessment.spec.js --output=../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green-complete-artifacts 2>&1 | Tee-Object ../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green-complete.log; rg -n 'LessonPageRenderer' src; npm run build 2>&1 | Tee-Object ../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/build-final.log\",\"workdir\":\"D:\\\\code\\\\program\\\\OnlineLearning\\\\ai-learning-collaboration\\\\ai-learning-frontend\",\"yield_time_ms\":1000,\"max_output_tokens\":1500}",
+      "date": "2026年11月03日 09:07:02（北京时间）",
+      "utc": "2026-11-03T01:07:02.074Z",
+      "raw": "{\"cmd\":\"npx playwright test e2e/learning-layout-assessment.spec.js --output=../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green-complete-artifacts 2>&1 | Tee-Object ../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/green-complete.log; rg -n 'LessonPageRenderer' src; npm run build 2>&1 | Tee-Object ../docs/competition/development/agent-records/2026-11-03-ui-agent-modules/ui/build-final.log\",\"workdir\":\"D:\\\\code\\\\program\\\\OnlineLearning\\\\ai-learning-collaboration\\\\ai-learning-frontend\",\"yield_time_ms\":1000,\"max_output_tokens\":1500}",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-ui/records.jsonl",
+        "line": 306,
+        "session": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+        "callId": "call_dt0q1NSZm6kBtD0KhT90q4NX"
+      }
+    },
+    {
+      "id": "P03-375",
+      "group": "P03",
+      "title": "最终10项新增测试通过",
+      "role": "历史验证结果",
+      "operation": "6:16展示10项测试、16px间距及作业/考试语境核对。",
+      "quote": "最终 10 项新增测试全部通过，手机导航与正文间距已恢复为 16px。真实数据也已核对：作业结果显示 90 分和“作业名称”，考试结果显示 95 分和“考试名称”；两类教师批改页标题也正确。现在只整理证据与验证报告。",
+      "date": "2026年11月03日 09:10:55（北京时间）",
+      "utc": "2026-11-03T01:10:55.113Z",
+      "raw": "最终 10 项新增测试全部通过，手机导航与正文间距已恢复为 16px。真实数据也已核对：作业结果显示 90 分和“作业名称”，考试结果显示 95 分和“考试名称”；两类教师批改页标题也正确。现在只整理证据与验证报告。",
+      "source": {
+        "file": "evidence/prompt-chains/P03/learning-ui/records.jsonl",
+        "line": 375,
+        "session": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+        "callId": null
+      },
+      "links": [
+        [
+          "新增10项原始日志",
+          "../evidence/prompt-chains/P03/reports/green-complete.log"
+        ]
+      ]
+    },
+    {
+      "id": "P03-results",
+      "group": "P03",
+      "title": "学习布局与文案的历史回归",
+      "role": "报告与画面入口",
+      "operation": "6:16–6:28分别显示三类实际测试结果。",
+      "quote": "新增布局与文案测试10项通过。\n既有检索页面回归15项通过。\n公式展示8项通过。\n各结果属于2026年11月3日的历史开发记录。",
+      "date": "2026年11月3日（历史报告日期）",
+      "source": {
+        "file": "evidence/prompt-chains/P03/reports/green-complete.log"
+      },
+      "links": [
+        [
+          "新增10项日志",
+          "../evidence/prompt-chains/P03/reports/green-complete.log"
+        ],
+        [
+          "回归15项日志",
+          "../evidence/prompt-chains/P03/reports/regression.log"
+        ],
+        [
+          "公式8项日志",
+          "../evidence/prompt-chains/P03/reports/formula.log"
+        ],
+        [
+          "手机空白失败日志",
+          "../evidence/prompt-chains/P03/reports/red-mobile.log"
+        ]
+      ]
+    },
+    {
+      "id": "retrieval",
+      "group": "结果",
+      "title": "固定20题的实际检索结果",
+      "role": "报告与画面入口",
+      "operation": "6:35–7:05展示两列结果及失败页。",
+      "quote": "Top5已标注来源页命中\n混合检索 17/20，85%\n关键词对照 18/20，90%\n36页中32页进入索引，8、9、10、21页解析失败。\n全部20题保留分母，指标是来源页命中率。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "retrieval/REPORT.md"
+      },
+      "links": [
+        [
+          "完整逐题报告",
+          "../retrieval/REPORT.md"
+        ],
+        [
+          "逐页与查询原始结果",
+          "../retrieval/runs/20261117T065931Z/report.json"
+        ]
+      ]
+    },
+    {
+      "id": "reproduction",
+      "group": "结果",
+      "title": "启动复现与公开提交入口",
+      "role": "报告与画面入口",
+      "operation": "7:05–7:30展示公开仓库与环境配置。",
+      "quote": "独立源码副本安装、构建、启动并登录共89.631秒。\n条件为同机共享npm/Maven依赖缓存。\n课程问答真实业务联测另有记录。",
+      "date": "2026年11月17日（材料日期）",
+      "source": {
+        "file": "reproduction.md"
+      },
+      "links": [
+        [
+          "公开评审仓库",
+          "https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge"
+        ],
+        [
+          "复现计时",
+          "../reproduction.md"
+        ],
+        [
+          "环境指南",
+          "../ENVIRONMENT.md"
+        ],
+        [
+          "逐句旁白",
+          "../VIDEO_OUTLINE.md"
+        ]
+      ]
+    }
+  ],
+  "evidenceMap": {
+    "E01": "official",
+    "E02": "overview",
+    "E03": "overview",
+    "E04": "live-teacher",
+    "E05": "live-teacher",
+    "E06": "live-teacher",
+    "E07": "live-teacher",
+    "E08": "live-teacher",
+    "E09": "live-student",
+    "E10": "live-student",
+    "E11": "live-student",
+    "E12": "live-student",
+    "E13": "live-student",
+    "E14": "selection-only",
+    "E15": "overview",
+    "E16": "P01-5478",
+    "E17": "P01-5598",
+    "E18": "P01-5698",
+    "E19": "P01-report",
+    "E20": "P02-13",
+    "E21": "P02-64",
+    "E22": "P02-204",
+    "E23": "P02-results",
+    "E24": "P03-1460",
+    "E25": "P03-1512",
+    "E26": "P03-145",
+    "E27": "P03-results",
+    "E28": "retrieval",
+    "E29": "retrieval",
+    "E30": "reproduction",
+    "E31": "reproduction",
+    "E32": "reproduction"
+  },
+  "label": "原记录整理展示",
+  "generatedAt": "2026-11-17T09:13:47.874957+00:00"
+}
