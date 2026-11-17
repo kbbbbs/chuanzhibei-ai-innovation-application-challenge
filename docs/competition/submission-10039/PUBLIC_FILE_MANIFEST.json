@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-17T10:24:03.111513+00:00",
+  "createdAt": "2026-11-17T10:25:48.823350+00:00",
   "scope": "Current public review payload using canonical Git blob bytes; historical bounded manifests retain original provenance.",
   "files": {
     ".env.example": "5842d567e315fd26104da4cb7f0aa5d5ec2957b24c230f91bc65e8224ead41da",
@@ -932,7 +932,7 @@
     "docs/competition/submission-10039/TECHNICAL_REPORT.docx": "208e1fca34ade92d0a8ed1c9b53c0a75f95bd14a3673b2a78b918e4c2b0d91ce",
     "docs/competition/submission-10039/TECHNICAL_REPORT.md": "5ff49f6f9e2b2ecc547c30ba4d92f44e8ebf36ba9dd0f7fc8790dc0cc40f6fb9",
     "docs/competition/submission-10039/TECHNICAL_REPORT.pdf": "8f8bc5cd33a076e86d57dc2d4fedc4771071feab14e960afd94067b54de61909",
-    "docs/competition/submission-10039/VIDEO_OUTLINE.md": "c4989454ee61899f957f9c0d5b1a49795f9f4d2114736c25a5d380ca30f27939",
+    "docs/competition/submission-10039/VIDEO_OUTLINE.md": "e5967c61b79178ecd08d258f5ef22f0465e7b8d8478e6e60b7e7b94b34640d6e",
     "docs/competition/submission-10039/demo/README.md": "981099924f693987a4e2e491fb6800c579d9f56444e62e252b6232aa2508e3e0",
     "docs/competition/submission-10039/demo/gradient.md": "43cf4d1f84f60c96cfc7173016a7767a1774eb8cba3fa52eb81ca756d0fd1e07",
     "docs/competition/submission-10039/demo/recording-fixture.md": "9c7a8b439e6addb64b66bf43d0f8540285d14d6ac6301299cd53779fdb447f6b",
@@ -1038,7 +1038,7 @@
     "docs/competition/submission-10039/prompt-chains/task-request.md": "73a2a6dbc16e94e893af65e96291e465efd8c937f7e9f6ba2b93ea138b5ff1cf",
     "docs/competition/submission-10039/prompt-chains/tool-evidence-index.json": "cf8ec76dc9b02f8d2a9ed52ee4c7eaa24bafa750e09dbb1ec417df5395faa3ec",
     "docs/competition/submission-10039/prompt-chains/verification.json": "82188323d01e089f61e3d2b778a7a11d890f2285a56b57c57363356ad4c7fe53",
-    "docs/competition/submission-10039/recording/CORE_DEMO_0-335.md": "b564fe5f64c1647a1e1b8b695225b06703f1cb92e54f76d9c544da5d20f82566",
+    "docs/competition/submission-10039/recording/CORE_DEMO_0-335.md": "c0ec0b1649f28d02b92b41de32da0f9869737718a5ab0a90e770f79bd64240f7",
     "docs/competition/submission-10039/recording/DEMO_READY.md": "a5d587ed0f9a827cab6efd9cec1a555f91bff0ce3101fa0d12cba39c932ba6c0",
     "docs/competition/submission-10039/recording/demo-materials/gradient-review.pdf": "38dd1a181eaac7606443a96c3188264035f9ab8c02c91e382a6d53d34aedfdbb",
     "docs/competition/submission-10039/recording/evidence-data.json": "2f67dbc360a400e4da75990253305af4154ad92a7dcadaf94f36108c63d90c85",
