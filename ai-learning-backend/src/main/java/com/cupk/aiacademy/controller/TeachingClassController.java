@@ -194,7 +194,7 @@ public class TeachingClassController {
             return Result.error("400", "教学班信息不能为空");
         }
         Course course = teachingClass.getCourseId() == null ? null : courseMapper.selectById(teachingClass.getCourseId());
-        if (course == null) {
+        if (teachingClass.getCourseId() != null && course == null) {
             return Result.error("404", "课程不存在");
         }
         if (teachingClass.getTeacherId() == null || teachingClass.getTeacherId() <= 0) {
@@ -205,7 +205,7 @@ public class TeachingClassController {
         } catch (RuntimeException e) {
             return Result.error("404", e.getMessage());
         }
-        if (course.getTeacherId() != null && !course.getTeacherId().equals(teachingClass.getTeacherId())) {
+        if (course != null && course.getTeacherId() != null && !course.getTeacherId().equals(teachingClass.getTeacherId())) {
             return Result.error("400", "教学班教师必须与课程教师一致");
         }
         if (teachingClass.getClassName() == null || teachingClass.getClassName().trim().isEmpty()) {

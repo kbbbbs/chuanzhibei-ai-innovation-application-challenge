@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.pojo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -14,7 +15,7 @@ public class TeachingClass {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
 
-    @TableField("course_id")
+    @TableField(value = "course_id", updateStrategy = FieldStrategy.ALWAYS)
     private Integer courseId;
 
     @TableField("teacher_id")

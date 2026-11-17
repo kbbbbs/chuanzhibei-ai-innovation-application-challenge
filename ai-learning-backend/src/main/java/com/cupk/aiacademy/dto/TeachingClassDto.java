@@ -10,7 +10,6 @@ import lombok.Data;
 
 @Data
 public class TeachingClassDto {
-    @NotNull
     @Positive
     private Integer courseId;
 

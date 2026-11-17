@@ -1,5 +1,7 @@
 # 环境与十分钟复现指南
 
+比赛录制使用当前本机开发入口24678/8080，专用账号为czb_teacher和czb_student。人工智能一班已预置学生，课程从零创建后再关联发布。完整点击步骤、8份PDF素材与起点见[本机录制准备](recording/DEMO_READY.md)。以下最小复现步骤使用材料中的合成教学示例。
+
 本指南面向 Windows 本机评审。材料包解压后，进入 `code/` 源码目录执行命令。使用仓库克隆时，进入包含 `ai-learning-backend/`、`ai-learning-frontend/` 和 `scripts/` 的项目根目录。
 
 ## 环境与依赖

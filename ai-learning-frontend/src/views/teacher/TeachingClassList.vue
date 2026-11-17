@@ -26,6 +26,11 @@
       <el-table :data="classList" border stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="className" label="班级名称" />
+        <el-table-column label="课程" min-width="160">
+          <template #default="{ row }">
+            {{ getCourseName(row.courseId) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="semester" label="学期" width="120" />
         <el-table-column label="状态" width="100">
           <template #default="{ row }">
@@ -61,7 +66,7 @@
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑教学班' : '创建教学班'" width="500px">
       <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
         <el-form-item label="课程" prop="courseId">
-          <el-select v-model="form.courseId" placeholder="请选择课程">
+          <el-select v-model="form.courseId" placeholder="可稍后关联课程" clearable>
             <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
           </el-select>
         </el-form-item>
@@ -165,7 +170,6 @@ const form = reactive({
 })
 
 const rules = {
-  courseId: [{ required: true, message: '请选择课程', trigger: 'change' }],
   className: [{ required: true, message: '请输入班级名称', trigger: 'blur' }],
   semester: [{ required: true, message: '请输入学期', trigger: 'blur' }],
 }
@@ -223,13 +227,15 @@ const loadCourses = async () => {
   }
 }
 
+const getCourseName = (courseId) => {
+  if (!courseId) return '待关联课程'
+  const course = courses.value.find(item => Number(item.id) === Number(courseId))
+  return course?.title || `课程${courseId}`
+}
+
 const handleCreate = async () => {
   if (!courses.value || courses.value.length === 0) {
     await loadCourses()
-  }
-  if (!courses.value || courses.value.length === 0) {
-    ElMessage.warning('暂无课程数据，请先创建课程后再创建教学班')
-    return
   }
   Object.assign(form, {
     id: null,
@@ -256,6 +262,7 @@ const handleSubmit = async () => {
     const selectedCourse = courses.value.find(course => course.id === form.courseId)
     const payload = {
       ...form,
+      courseId: form.courseId || null,
       teacherId: Number(selectedCourse?.teacherId || form.teacherId || currentUserId(userStore))
     }
     let res

@@ -1,0 +1,66 @@
+{
+  "nodes": [
+    {
+      "id": "image_clustering",
+      "name": "图像聚类",
+      "type": "TASK",
+      "description": "根据一组未标注的图片，按图片相似性自动分到不同类别的任务。",
+      "aliases": [
+        "Clustering Images"
+      ],
+      "evidenceIds": [
+        "CURRENT_PAGE_13_CHUNK_ID"
+      ]
+    },
+    {
+      "id": "clustering",
+      "name": "聚类",
+      "type": "CONCEPT",
+      "description": "本页将根据相似性对图片自动分组的问题称为聚类问题。",
+      "aliases": [
+        "聚类问题"
+      ],
+      "evidenceIds": [
+        "CURRENT_PAGE_13_CHUNK_ID"
+      ]
+    },
+    {
+      "id": "unsupervised_learning",
+      "name": "无监督学习",
+      "type": "CONCEPT",
+      "description": "本页中训练样本只有图片、没有标签，希望算法自行判断其分组。",
+      "aliases": [
+        "Unsupervised Learning"
+      ],
+      "evidenceIds": [
+        "CURRENT_PAGE_13_CHUNK_ID"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "image_is_clustering",
+      "source": "image_clustering",
+      "target": "clustering",
+      "type": "IS_A",
+      "label": "属于",
+      "explanation": "本页把按图片相似性自动分组的图像聚类任务称为聚类问题。",
+      "origin": "DOCUMENT",
+      "evidenceIds": [
+        "CURRENT_PAGE_13_CHUNK_ID"
+      ]
+    },
+    {
+      "id": "clustering_is_unsupervised",
+      "source": "clustering",
+      "target": "unsupervised_learning",
+      "type": "IS_A",
+      "label": "属于",
+      "explanation": "本页明确说明这个聚类问题是无监督学习问题，训练样本没有标签。",
+      "origin": "DOCUMENT",
+      "evidenceIds": [
+        "CURRENT_PAGE_13_CHUNK_ID"
+      ]
+    }
+  ]
+}

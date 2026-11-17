@@ -485,7 +485,7 @@ CREATE TABLE IF NOT EXISTS `t_teacher_application` (
 
 CREATE TABLE IF NOT EXISTS `t_teaching_class` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `course_id` int NOT NULL,
+  `course_id` int DEFAULT NULL,
   `teacher_id` int NOT NULL,
   `class_name` varchar(100) NOT NULL,
   `semester` varchar(50) DEFAULT NULL,

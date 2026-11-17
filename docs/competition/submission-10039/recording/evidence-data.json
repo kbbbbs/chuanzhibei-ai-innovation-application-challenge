@@ -4,29 +4,29 @@
       "id": "overview",
       "group": "录制入口",
       "title": "从这里打开每一段画面",
-      "role": "报告与画面入口",
-      "operation": "先开教师与学生两个窗口，再按左侧时间轴进入卡片。",
-      "quote": "本页为原记录整理展示。点击卡片即可取材，源会话、源行与完整快照在“来源与完整记录”展开。历史事件的时间直接显示在卡片上。",
-      "date": "2026年11月17日（材料日期）",
+      "role": "操作指引与历史记录入口",
+      "operation": "0:00–3:35按现场操作指引进入本机开发平台，3:35后按历史原记录卡片取材。",
+      "quote": "现场操作指引\n使用本机最新开发版本24678/8080。教师czb_teacher、学生czb_student，合成演示密码均为Czb10039!2026。学生预先加入人工智能一班，教师从零新建人工智能基础课程。\n\n课程导入选择第2章-机器学习概述-okk.pdf，资料库逐份上传全部8份PDF并授权。主线展示发布、学生问答与教师检索。2:40–3:35的图谱为可选55秒片段，可独立剪除。剪除后成片6分35秒，AI协作前移至2:40–5:40，仍为3分钟。\n\n历史原记录整理\nP01、P02、P03卡片保留原话、原事件时间、源行和固定公开脱敏材料。现场功能从本机系统窗口录制。",
+      "date": "2026年11月17日（操作指引整理日期）",
       "source": {
-        "file": "README.md"
+        "file": "recording/CORE_DEMO_0-335.md"
       },
       "links": [
         [
-          "教师知识库",
-          "http://127.0.0.1:24739/teacher-knowledge-base"
+          "0–3:35逐句脚本",
+          "CORE_DEMO_0-335.md"
+        ],
+        [
+          "教师课程管理",
+          "http://127.0.0.1:24678/courses"
         ],
         [
           "学生我的班级",
-          "http://127.0.0.1:24739/my-classes"
+          "http://127.0.0.1:24678/my-classes"
         ],
         [
-          "自编上传资料",
-          "../demo/gradient.md"
-        ],
-        [
-          "逐页核验用PDF",
-          "demo-materials/gradient-review.pdf"
+          "完整旁白",
+          "../VIDEO_OUTLINE.md"
         ],
         [
           "P01用户原始反馈",
@@ -46,12 +46,12 @@
       "id": "official",
       "group": "现场",
       "title": "正式赛道与作品封面",
-      "role": "报告与画面入口",
-      "operation": "0:00打开技术PDF第一页，使用填写身份后的封面。",
-      "quote": "传智杯 · AI创新应用挑战赛（10039）\n开发主题为Vibe Coding\nAI智学——面向课程资料的RAG学习助手。",
-      "date": "2026年11月17日（材料日期）",
+      "role": "现场操作指引",
+      "operation": "0:00–0:10显示正式赛道、作品名与两种角色。",
+      "quote": "传智杯 · AI创新应用挑战赛（10039）\n开发主题为Vibe Coding\nAI智学——面向课程资料的RAG学习助手。\n\n封面身份字段按参赛者要求留空。",
+      "date": "2026年11月17日（操作指引整理日期）",
       "source": {
-        "file": "official/official-track.json"
+        "file": "recording/CORE_DEMO_0-335.md"
       },
       "links": [
         [
@@ -61,80 +61,180 @@
         [
           "可编辑Word",
           "../TECHNICAL_REPORT.docx"
+        ],
+        [
+          "教师课程管理",
+          "http://127.0.0.1:24678/courses"
+        ],
+        [
+          "学生我的班级",
+          "http://127.0.0.1:24678/my-classes"
+        ]
+      ]
+    },
+    {
+      "id": "live-course",
+      "group": "现场",
+      "title": "教师从零创建人工智能基础课程",
+      "role": "现场操作指引",
+      "operation": "0:10–0:50在教师课程管理点新建课程。",
+      "quote": "填写课程名人工智能基础，选择课程分类、难度与简介。\n导入课件选择第2章-机器学习概述-okk.pdf，状态选草稿，点提交。\n进入课程详情，展开1章36课时，查看一个实际课时。导入等待压缩处保留字幕。",
+      "date": "2026年11月17日（操作指引整理日期）",
+      "source": {
+        "file": "recording/CORE_DEMO_0-335.md"
+      },
+      "links": [
+        [
+          "新建课程",
+          "http://127.0.0.1:24678/courses/create"
+        ],
+        [
+          "课程管理与详情入口",
+          "http://127.0.0.1:24678/courses"
+        ],
+        [
+          "逐句脚本",
+          "CORE_DEMO_0-335.md"
         ]
       ]
     },
     {
       "id": "live-teacher",
       "group": "现场",
-      "title": "教师资料处理与课程授权",
-      "role": "报告与画面入口",
-      "operation": "0:25–1:35在教师知识库现场操作。",
-      "quote": "gradient.md与一页自编gradient-review.pdf已真实上传、处理完成，并授权给演示课程1003911。可直接打开现有PDF逐页核验，展示原页与识别文字。上传过程镜头按旁白另录一份同内容资料，等待实际终态；随后打开既有课程授权，展示阅读与下载选项。",
-      "date": "2026年11月17日（材料日期）",
+      "title": "八份PDF入库、核验与课程授权",
+      "role": "现场操作指引",
+      "operation": "0:50–1:25在教师知识库现场操作。",
+      "quote": "新建本课程资料库，逐份上传全部8份人工智能基础PDF。展示实际处理状态。\n选择第二章PDF点逐页核验，对照原页与提取结果。\n逐份点课程授权，选择本次新建课程并授权阅读。重复上传和授权步骤压缩处保留字幕，等待压缩处另加说明。",
+      "date": "2026年11月17日（操作指引整理日期）",
       "source": {
-        "file": "demo/gradient.md"
+        "file": "recording/CORE_DEMO_0-335.md"
       },
       "links": [
         [
           "教师知识库",
-          "http://127.0.0.1:24739/teacher-knowledge-base"
+          "http://127.0.0.1:24678/teacher-knowledge-base"
         ],
         [
-          "下载gradient.md",
-          "../demo/gradient.md"
+          "逐句脚本",
+          "CORE_DEMO_0-335.md"
+        ]
+      ]
+    },
+    {
+      "id": "live-publish",
+      "group": "现场",
+      "title": "关联人工智能一班并发布给学生",
+      "role": "现场操作指引",
+      "operation": "1:25–1:45先关联教学班，再启用课程并刷新学生页面。",
+      "quote": "人工智能一班已包含czb_student，初始课程列为待关联课程。\n教师点编辑，选择刚创建的人工智能基础课程并保存。\n回到课程管理点启用。学生刷新我的班级，看到本次课程后点继续学习。",
+      "date": "2026年11月17日（操作指引整理日期）",
+      "source": {
+        "file": "recording/CORE_DEMO_0-335.md"
+      },
+      "links": [
+        [
+          "教学班管理",
+          "http://127.0.0.1:24678/teaching-classes"
         ],
         [
-          "自编核验PDF",
-          "demo-materials/gradient-review.pdf"
+          "教师课程管理",
+          "http://127.0.0.1:24678/courses"
         ],
         [
-          "11/17历史授权截图",
-          "../evidence/implementation/frontend/live-teacher-authorization.png"
+          "学生我的班级",
+          "http://127.0.0.1:24678/my-classes"
         ]
       ]
     },
     {
       "id": "live-student",
       "group": "现场",
-      "title": "学生进入课程并选文提问",
-      "role": "报告与画面入口",
-      "operation": "1:35–3:05在学生窗口操作。",
-      "quote": "进入我的班级，打开已发布课程及课时。选中正文或笔记，点击“解释这段”。保留真实生成状态，打开出处、恢复历史、开始新对话或停止生成。实际检索模式按当次页面显示录制。",
-      "date": "2026年11月17日（材料日期）",
+      "title": "学生智能问答与原文出处",
+      "role": "现场操作指引",
+      "operation": "1:45–2:20在学生当前课程课时中操作。",
+      "quote": "进入课时，打开问答，显示课程名和实际授权资料数量。\n提问“监督学习与无监督学习有什么区别？请结合课件中的例子说明。”\n保留本次检索和生成状态，阅读实际回答，再点参考资料查看原文出处。回答和来源按本次结果展示。",
+      "date": "2026年11月17日（操作指引整理日期）",
       "source": {
-        "file": "evidence/implementation/frontend/live-browser.json"
+        "file": "recording/CORE_DEMO_0-335.md"
       },
       "links": [
         [
           "学生我的班级",
-          "http://127.0.0.1:24739/my-classes"
+          "http://127.0.0.1:24678/my-classes"
         ],
         [
-          "11/17历史学生截图",
-          "../evidence/implementation/frontend/live-student-rag.png"
-        ],
-        [
-          "11/17历史出处截图",
-          "../evidence/implementation/frontend/live-course-source.png"
+          "逐句脚本",
+          "CORE_DEMO_0-335.md"
         ]
       ]
     },
     {
-      "id": "selection-only",
+      "id": "live-search",
       "group": "现场",
-      "title": "没有授权资料时解释选文",
-      "role": "报告与画面入口",
-      "operation": "3:05–3:35使用无资料授权的演示课程。",
-      "quote": "选中正文并提问，画面保留“仅依据选中文本”。现场录制实际过程，结果按当次页面核对。",
-      "date": "2026年11月17日（材料日期）",
+      "title": "教师检索同一个课程问题",
+      "role": "现场操作指引",
+      "operation": "2:20–2:40在同一资料库打开检索与验证。",
+      "quote": "输入学生同问“监督学习与无监督学习有什么区别？请结合课件中的例子说明。”并点检索。\n展示本次实际模式、命中文件、页码和片段。打开一条参考资料，查看原文内容。",
+      "date": "2026年11月17日（操作指引整理日期）",
       "source": {
-        "file": "evidence/implementation/live-http-results.json"
+        "file": "recording/CORE_DEMO_0-335.md"
       },
       "links": [
         [
-          "学生我的班级",
-          "http://127.0.0.1:24739/my-classes"
+          "教师知识库",
+          "http://127.0.0.1:24678/teacher-knowledge-base"
+        ],
+        [
+          "逐句脚本",
+          "CORE_DEMO_0-335.md"
+        ]
+      ]
+    },
+    {
+      "id": "live-graph-teacher",
+      "group": "现场",
+      "title": "可选图谱 · 教师整理与审核发布",
+      "role": "现场操作指引",
+      "operation": "选录2:40–3:08，可与学生图谱片段一起独立剪除。",
+      "quote": "此为可选图谱片段。主线建课、RAG问答与教师检索可独立录制。\n\n新建章节图谱，标题为图像聚类与无监督学习，选择本次课程章节、资料库与第二章PDF，起始页和结束页均为13。\n本次采用教师人工整理和核验。通过加入知识点表单依次添加图像聚类、聚类、无监督学习，再通过加入关系添加两条属于关系，每项依据下拉均选当前第13页。\n保存草稿，核对来源和方向，勾选我已核对实体、关系和来源，再点审核并发布。重复填写加速处保留字幕，发布状态按实际过程录制。",
+      "date": "2026年11月17日（操作指引整理日期）",
+      "source": {
+        "file": "recording/CORE_DEMO_0-335.md"
+      },
+      "links": [
+        [
+          "课程知识图谱",
+          "http://127.0.0.1:24678/chapter-knowledge-graph"
+        ],
+        [
+          "图谱逐项填写说明",
+          "graph/GRAPH_DEMO.md"
+        ],
+        [
+          "逐句脚本",
+          "CORE_DEMO_0-335.md"
+        ]
+      ]
+    },
+    {
+      "id": "live-graph-student",
+      "group": "现场",
+      "title": "可选图谱 · 学生搜索、依据与路径",
+      "role": "现场操作指引",
+      "operation": "选录3:08–3:35，整段图谱55秒可独立剪除。",
+      "quote": "整段图谱剪除后，成片6分35秒，AI协作前移至2:40–5:40，仍为3分钟。\n\n选择人工智能基础和本次已发布的图像聚类与无监督学习图谱。\n搜索图像聚类，点击匹配结果，再点展开相邻知识。\n选择图像聚类至聚类的属于关系，点击来源依据，查看第二章PDF第13页原文。\n路径起点选图像聚类，终点选无监督学习，点查看路径，显示图像聚类→聚类→无监督学习的连接路径。",
+      "date": "2026年11月17日（操作指引整理日期）",
+      "source": {
+        "file": "recording/CORE_DEMO_0-335.md"
+      },
+      "links": [
+        [
+          "学生章节知识图谱",
+          "http://127.0.0.1:24678/chapter-knowledge-graph"
+        ],
+        [
+          "逐句脚本",
+          "CORE_DEMO_0-335.md"
         ]
       ]
     },
@@ -821,18 +921,18 @@
   "evidenceMap": {
     "E01": "official",
     "E02": "overview",
-    "E03": "overview",
-    "E04": "live-teacher",
+    "E03": "live-course",
+    "E04": "live-course",
     "E05": "live-teacher",
     "E06": "live-teacher",
     "E07": "live-teacher",
-    "E08": "live-teacher",
-    "E09": "live-student",
+    "E08": "live-publish",
+    "E09": "live-publish",
     "E10": "live-student",
     "E11": "live-student",
-    "E12": "live-student",
-    "E13": "live-student",
-    "E14": "selection-only",
+    "E12": "live-search",
+    "E13": "live-graph-teacher",
+    "E14": "live-graph-student",
     "E15": "overview",
     "E16": "P01-5478",
     "E17": "P01-5598",
@@ -852,6 +952,6 @@
     "E31": "reproduction",
     "E32": "reproduction"
   },
-  "label": "原记录整理展示",
-  "generatedAt": "2026-11-17T09:13:47.874957+00:00"
+  "label": "现场操作指引与历史原记录整理",
+  "generatedAt": "2026-11-17T10:22:02.223486+00:00"
 }
