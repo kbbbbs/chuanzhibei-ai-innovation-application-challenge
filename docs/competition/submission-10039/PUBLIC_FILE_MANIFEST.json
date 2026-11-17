@@ -1,5 +1,5 @@
 {
-  "createdAt": "2026-11-17T12:48:29.339725+00:00",
+  "createdAt": "2026-11-17T12:57:14.634706+00:00",
   "scope": "Latest-source public review payload using canonical Git blob bytes. Historical bounded evidence retains original versions.",
   "files": {
     ".dockerignore": "d31428473a27dd77445482b7d5b5269ab13d2d576a7857c24a1318d02b49d0bf",
@@ -666,7 +666,7 @@
     "ai-learning-backend/src/test/java/com/cupk/aiacademy/analysis/LearningAnalysisReportTest.java": "ed8fc1018ce29e7b029b88a240676d1dbae8b87fd5b00465a218c2f169791029",
     "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/AssistantAnswerStreamTest.java": "86d097066a5576556be3bff8c5f785e776be6461ee10aa971d33417490c63c94",
     "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/AssistantLegacyAdapterTest.java": "cdf8d343c48d918c77eee94a74ad883b543d077f332b6314e9097f329a87defe",
-    "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantIntegrationTest.java": "f0584abbbfa9dab92c699e88a556f17e0eed5becc70a1962940d6d4623daef46",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantIntegrationTest.java": "4c91522aa61f021bac8abaed418618aa7ee98cb69d64d48a6f94342ea57b6a81",
     "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantPromptTest.java": "e5c96f41a9d85bb21cfb827d7fac3297106970f8167af75deeb734ce94f2860a",
     "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantSchemaTest.java": "15de598d71b2e03716ab2326541da64e49d74e00da193b5945707a9d6a622bcd",
     "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantServiceTest.java": "ab38492faea16b4c335ef0f5b036bb83bb090d7d99b425706554dd1f7f49f0e1",
@@ -1233,7 +1233,7 @@
     "docs/competition/submission-10039/recording/graph/GRAPH_IMPORT_TEMPLATE.json": "5d1a12ba4f9dc4410e0df8a8626ca527e65ffca45f9777ff4d1dcec2fecfbb76",
     "docs/competition/submission-10039/recording/index.html": "592a695e750e1b8b71bc56a062ca5b623850da6036db5da7daee3700c9d98951",
     "docs/competition/submission-10039/recording/录屏取材说明.md": "fd5f65634210c96c0f305ff71754875057b7fb4e66cec27487ed6fefaee07a08",
-    "docs/competition/submission-10039/repository/CURRENT_SOURCE_SNAPSHOT.json": "3d92229e93182d3b63caaa5bb4d0feb44393cf2ff26fba0e7bd056fddffbcf3e",
+    "docs/competition/submission-10039/repository/CURRENT_SOURCE_SNAPSHOT.json": "a77f1a6fc1eb2c3a827ad12aab8fd16dfb69bd2e85ba47d0eea299371fc26701",
     "docs/competition/submission-10039/repository/HISTORY_PROVENANCE.md": "21fab1ca11c2fd1973a18256e5cbe69c4c3a7e7ad4f49908e665f10aa6e2c760",
     "docs/competition/submission-10039/repository/PUBLICATION_REDACTION.md": "27e747da0134715a4244e8354ec7f73ea8b392b8d15256bb36017bce499076e1",
     "docs/competition/submission-10039/repository/README.md": "dd8967b40ec87eeb269200c7c600838700b2b325bca4f790d18ad3c935795830",

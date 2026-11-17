@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -70,8 +71,12 @@ class UnifiedAssistantIntegrationTest {
 
     @BeforeEach void seed() {
         reset(model);
-        course=IDS.incrementAndGet(); chapter=course; lesson=course; classroom=course;
-        db.update("INSERT INTO t_course(id,title,category_id,teacher_id,status,setup_stage) VALUES(?,'权限验收课程',1,2,1,'COMPLETED')",course);
+        chapter=IDS.incrementAndGet(); lesson=chapter; classroom=chapter;
+        var courseKey = new GeneratedKeyHolder();
+        db.update(connection -> connection.prepareStatement(
+                "INSERT INTO t_course(title,category_id,teacher_id,status,setup_stage) VALUES('权限验收课程',1,2,1,'COMPLETED')",
+                new String[]{"id"}), courseKey);
+        course = courseKey.getKey().intValue();
         db.update("INSERT INTO t_chapter(id,course_id,title,status) VALUES(?,?,?,1)",chapter,course,"测试章节");
         db.update("INSERT INTO t_lesson(id,chapter_id,title,content,status) VALUES(?,?,?,'梯度是函数变化方向。',1)",lesson,chapter,"梯度");
         db.update("INSERT INTO t_teaching_class(id,course_id,teacher_id,class_name,status,course_open) VALUES(?,?,2,'测试班',1,TRUE)",classroom,course);

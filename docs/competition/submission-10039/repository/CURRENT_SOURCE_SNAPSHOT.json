@@ -72,6 +72,38 @@
         "frontendRelatedTests": 35,
         "frontendProductionBuild": "PASS"
       }
+    },
+    {
+      "preparedAt": "2026-11-17T12:57:11.505052+00:00",
+      "sourceProject": "ai-learning-github-latest",
+      "description": "Use database-generated course IDs in assistant integration fixtures to avoid order-dependent collisions.",
+      "sourceRawFileSha256": {
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/planner/AssistantPageActionPlanner.java": "fa677212fb75e81225814523e84618a49dca395aff37e88dee4c1c12982f9d8a",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/planner/AgentPlanningOutcome.java": "d874f494960e82f1076b2cb1d2e786a4099e581f9cad31b75eec3003f78fa064",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/planner/UnifiedAgentPlanner.java": "f5ecbb51c114587bb5acbb10271eaed5520dcee54734d51ea8311c2496765fb0",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/agent/core/service/AgentChatService.java": "a00c6a59c0041095792e27858183b223bd7e9ad6eb25056060cabaf2a4cf5f7d",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/assistant/UnifiedAssistantService.java": "d8b284009a515bbe451a686d52c04983caecf071a2d9f77edce57537d347b8db",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/agent/planner/AssistantPageActionPlannerTest.java": "3b1b581fff0adc272a7c53d4b974d50f83c114001a2495192005476ab136e394",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/analysis/LearningAnalysisReportTest.java": "3f46079d3e94c50783412cd6851bed6e7a91745bf06bfe597db13229d2cba8c0",
+        "ai-learning-frontend/src/components/agent/AgentFloatingAssistant.vue": "33f51d01b24966fe7302a6ab54af9842b4d7826a197240de52fbf03738bd082a",
+        "ai-learning-frontend/src/components/assistant/AssistantConversation.vue": "5fdcaf4875fcad823ce13d99ced8aa53e7d8de90c644dab8056cf69952999b13",
+        "ai-learning-frontend/src/composables/useAssistant.js": "b7dd750aeb6864587e3b336d83f34ba2bb222dbb24a7df30474f5cc6064bd5ea",
+        "ai-learning-frontend/src/views/AiChat.vue": "faa1573db958399690f2154fd1b06a6daee3a4d1e5edea21c34472ab12f3ef05",
+        "ai-learning-frontend/src/views/teacher/CourseForm.vue": "a4381e31ea9d08aae6ce6c442544300aeb75f59628af7d378e8f128e69af08b1",
+        "ai-learning-frontend/src/views/teacher/GradeAnalysis.vue": "67359026f3bb90f8925a2ef98855f1f59de14e56bbfbb163cd3c359ad849ec56",
+        "ai-learning-frontend/src/utils/assistantPageAction.js": "878d80ac13740664159211c30bb2879028533bf68ec6c203e81d64d557187fa5",
+        "ai-learning-frontend/e2e/assistant-page-handoff.spec.js": "b3f11bf7a2d15539039ab0da76a245e0a80883ceef5e0e12de977f0e542c7e53",
+        "ai-learning-frontend/src/utils/agentConfirmation.js": "4d715d67ac9c0cafac3206e2df59d66c87915bed7e5d0d178b4cad1912790dc6",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantServiceTest.java": "f2b6258e5d66b454e341230ca9ce95ffe906e78a1ddac2a9ba409d01cd0d1681",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/assistant/UnifiedAssistantIntegrationTest.java": "863e168e92f72ef4c0b69923d187808755dec41733fb4fa9cdbf571887488972"
+      },
+      "verification": {
+        "backendRelatedTests": 51,
+        "realModelBrowserScenarios": 2,
+        "liveCourseAndReportCountsPreserved": true,
+        "frontendRelatedTests": 35,
+        "frontendProductionBuild": "PASS"
+      }
     }
   ]
 }
