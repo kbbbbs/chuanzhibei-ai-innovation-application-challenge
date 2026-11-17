@@ -1,0 +1,53 @@
+
+Running 2 tests using 1 worker
+
+(node:17052) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 e2e\learning-layout-assessment.spec.js:70:3 › HOMEWORK result retains its own labels (10.7s)
+(node:38388) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 2 e2e\learning-layout-assessment.spec.js:70:3 › EXAM result retains its own labels (994ms)
+
+
+  1) e2e\learning-layout-assessment.spec.js:70:3 › HOMEWORK result retains its own labels ──────────
+
+    Error: expect(locator).toContainText(expected) failed
+
+    Locator: locator('.exam-result .card-header')
+    Expected substring: "作业结果"
+    Received string:    "考试结果返回"
+    Timeout: 10000ms
+
+    Call log:
+      - Expect "toContainText" with timeout 10000ms
+      - waiting for locator('.exam-result .card-header')
+        20 × locator resolved to <div data-v-0f7fbd9f="" class="card-header">…</div>
+           - unexpected value "考试结果返回"
+
+
+      71 |     await fixture(page)
+      72 |     await page.goto(`/exam-result/1${kind === 'HOMEWORK' ? '?assessmentType=HOMEWORK' : ''}`)
+    > 73 |     await expect(page.locator('.exam-result .card-header')).toContainText(`${label}结果`)
+         |                                                             ^
+      74 |     await expect(page.locator('.el-descriptions')).toContainText(`${label}名称`)
+      75 |   })
+      76 | }
+        at D:\code\program\OnlineLearning\ai-learning-collaboration\ai-learning-frontend\e2e\learning-layout-assessment.spec.js:73:61
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-result-artifacts\learning-layout-assessment-7612a-sult-retains-its-own-labels\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-result-artifacts\learning-layout-assessment-7612a-sult-retains-its-own-labels\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-result-artifacts\learning-layout-assessment-7612a-sult-retains-its-own-labels\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\docs\competition\development\agent-records\2026-11-03-ui-agent-modules\ui\red-result-artifacts\learning-layout-assessment-7612a-sult-retains-its-own-labels\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    e2e\learning-layout-assessment.spec.js:70:3 › HOMEWORK result retains its own labels ───────────
+  1 passed (13.2s)

@@ -1,0 +1,58 @@
+{
+  "backend": [
+    {
+      "class": "com.cupk.aiacademy.rag.ingestion.IngestionJobRepositoryTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report_sha256": "20e7f223986c1ac11ef1ecd940a8493c01ce1b802fae8041c4e493e3a3597233"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.ingestion.K02IngestionServiceTest",
+      "tests": 20,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report_sha256": "b40831d9057ec3266d7a57f7f13bc4270ac9ea8c03b7f8708ace7b9e4d457ce0"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.ingestion.K02VisualIngestionTest",
+      "tests": 5,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report_sha256": "be9e8ded465fc865bea26151fa9909f8e662fe3002f209485331ea4b39afbca3"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.NativeRagServiceIntegrationTest",
+      "tests": 12,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report_sha256": "e493d5d2a0a1ddfd304528a922509266e1ad28ddb6422bcc5e87ff11433a45ea"
+    },
+    {
+      "class": "com.cupk.aiacademy.rag.chat.NativeRagChatServiceTest",
+      "tests": 10,
+      "failures": 0,
+      "errors": 0,
+      "skipped": 0,
+      "report_sha256": "57d7b871721db77be9fc7d223a6dde90a673654c843fcdb003d5fac9514e5e54"
+    }
+  ],
+  "backend_total": 57,
+  "frontend": {
+    "passed": 27,
+    "failed": 0,
+    "suites": [
+      "k02-processing-ui.spec.js",
+      "k03-retrieval-ui.spec.js",
+      "visual-rag-ui.spec.js"
+    ],
+    "controlled_api": true
+  },
+  "build_exit_code": 0,
+  "diff_check_exit_code": 0,
+  "server_deployed": false
+}

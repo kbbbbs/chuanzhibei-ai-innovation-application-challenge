@@ -1,0 +1,14 @@
+{
+  "frozenAt": "2026-11-17T06:56:54.919883+00:00",
+  "datasetSha256": "739c52046f6a83dd3d2d9148d4018a271ba14303229560dc3d87b888cf8008ef",
+  "sourceSha256": "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f",
+  "questionCount": 20,
+  "qualityThreshold": null,
+  "parameters": {
+    "rrfK": 1,
+    "candidateLimit": 20,
+    "topK": 5
+  },
+  "baselineCommit": "1d0b985b35d2bdf272990a114c16f5ea7c00735c",
+  "scope": "Full original PDF through current ingestion pipeline. Missing/failed pages remain visible in coverage and full-question denominator."
+}

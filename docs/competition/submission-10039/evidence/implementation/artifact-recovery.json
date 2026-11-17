@@ -1,0 +1,6 @@
+{
+  "reason": "Main workspace repackage could not rename locked existing .jar.original. Existing server retained. Restored runnable artifact from separately packaged identical backend source snapshot.",
+  "sha256": "53b96f0b84b9c9374be7cf27778fe8fa4cfab4e0b5bd950e05b4cdd4a5acd3b8",
+  "source": ".codex_tmp/10039-clean-reproduction/ai-learning-backend/target/Final_exam_question_bank-0.0.1-SNAPSHOT.jar",
+  "destination": "ai-learning-backend/target/Final_exam_question_bank-0.0.1-SNAPSHOT.jar"
+}

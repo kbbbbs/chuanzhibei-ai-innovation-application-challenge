@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "blobs": 1791,
+  "bytes": 15591183,
+  "findings": [],
+  "knownPrivateLiteralCount": 7,
+  "scope": "All sanitized reachable blob and commit bytes; no binaries or private runtime configuration retained."
+}

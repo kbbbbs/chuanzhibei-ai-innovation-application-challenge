@@ -91,6 +91,14 @@ public class IngestionJobRepository {
         return job(rows.getFirst());
     }
 
+    /** Called in the enqueue transaction before a worker can claim the new revision. */
+    public void seedReview(String id,List<Page> pages) {
+        var row=locked(id);
+        if(row==null || !"QUEUED".equals(text(row,"stage")))
+            throw new RagAccessException("409","修订任务已经开始，请刷新后重试");
+        for(var page:pages)save(row,page);
+    }
+
     /** SELECT FOR UPDATE participates in an outer publication transaction, keeping cancel and finish ordered. */
     public boolean ownsLease(Job lease){return withLease(lease,false,row->true);}
 

@@ -22,6 +22,7 @@ export const reindexDocument = (id) => checked(request.post(`${BASE}/documents/$
 export const getDocumentPages = (id, version, config = {}) => checked(request.get(`${BASE}/documents/${id}/pages`, {
   params: { version }, silentError: true, ...config
 }))
+export const reviewDocumentPage = (id, page, data) => checked(request.post(`${BASE}/documents/${id}/pages/${page}/review`, data))
 export const getDocumentPagePreview = async (id, page, version, config = {}) => {
   const blob = await request.get(`${BASE}/documents/${id}/pages/${page}/preview`, {
     params: { version }, responseType: 'blob', silentError: true, ...config
@@ -154,3 +155,8 @@ export function ragList(result) {
   const data = unwrapRag(result)
   return Array.isArray(data) ? data : data?.data || data?.items || data?.records || []
 }
+
+export const getCourseDocuments = (courseId, config = {}) => checked(request.get(`${BASE}/courses/${courseId}/documents`, config))
+export const getCourseDocument = (courseId, documentId, version, config = {}) => checked(request.get(`${BASE}/courses/${courseId}/documents/${documentId}/versions/${version}`, config))
+export const grantCourseDocument = (documentId, data) => checked(request.post(`${BASE}/documents/${documentId}/grants`, data))
+export const revokeCourseDocument = (documentId, courseId, version) => checked(request.delete(`${BASE}/documents/${documentId}/grants/${courseId}/versions/${version}`))

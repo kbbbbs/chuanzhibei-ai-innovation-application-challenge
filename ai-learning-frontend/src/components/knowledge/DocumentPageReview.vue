@@ -1,14 +1,14 @@
 <template>
   <section class="document-page-review" data-testid="document-page-review">
-    <div class="review-heading"><h3>原页与提取结果</h3><el-button size="small" :loading="loading" @click="loadPages">刷新处理结果</el-button></div>
+    <div class="review-heading"><h3>原页与提取结果</h3><el-button size="small" :loading="loading" :disabled="saving" @click="loadPages">刷新处理结果</el-button></div>
     <p class="review-note">核验版本：第 {{ sourceVersion }} 版<span v-if="sourceVersion !== activeVersion">；当前可用：第 {{ activeVersion }} 版</span></p>
     <p class="review-note">逐项对照原文。处理完成不代表文字、表格或公式已经核验。</p>
     <el-alert v-if="error" :title="error" type="error" :closable="false" show-icon />
     <el-empty v-if="!loading && !error && !pages.length" description="尚无处理结果，请等待当前任务或重新解析" />
     <div class="review-layout" v-loading="loading">
       <nav v-if="pages.length" class="review-pages" aria-label="选择核验位置">
-        <button v-for="page in pages" :key="page.pageNo" type="button" :data-testid="`review-page-${page.pageNo}`" :class="{ active: selectedNo === page.pageNo }" @click="selectPage(page.pageNo)">
-          <strong>{{ pageLabel(page) }}</strong><span>{{ statusLabel(page.pageStatus) }}</span>
+        <button v-for="page in pages" :key="page.pageNo" type="button" :disabled="saving" :data-testid="`review-page-${page.pageNo}`" :class="{ active: selectedNo === page.pageNo }" @click="selectPage(page.pageNo)">
+          <strong>{{ pageLabel(page) }}</strong><span>{{ page.method === 'MANUAL' && !page.needsReview ? '已人工确认' : statusLabel(page.pageStatus) }}</span>
         </button>
       </nav>
       <div v-if="selected" class="review-content">
@@ -23,7 +23,9 @@
           </div>
           <div class="extracted-panel">
             <strong>用于检索的文本</strong>
-            <pre v-if="selected.chosenText">{{ selected.chosenText }}</pre><p v-else class="review-note">该{{ paged ? '页' : '位置' }}尚无可用文本</p>
+            <el-input v-if="editing" v-model="draft" type="textarea" :rows="12" aria-label="修订后的检索文本" :disabled="saving" />
+            <template v-else><pre v-if="selected.chosenText">{{ selected.chosenText }}</pre><p v-else class="review-note">该{{ paged ? '页' : '位置' }}尚无可用文本</p></template>
+            <p v-if="selected.method === 'MANUAL' && !selected.needsReview" class="review-note">本页已人工确认</p>
             <section class="formula-review" data-testid="formula-review">
               <strong>公式核验</strong>
               <p v-if="!selected.formulaVersion" class="review-warning">旧解析结果尚未检查公式，请重新解析本页。</p>
@@ -33,7 +35,7 @@
                 <div>公式 {{ formula.ordinal }} · {{ formula.display ? '独立公式' : '行内公式' }} · 字符 {{ formula.start }}–{{ formula.end }}</div>
                 <p v-if="formula.status !== 'STRUCTURE_OK'" class="review-warning">公式结构不完整，本页未纳入有效检索。{{ processingError(formula.errorCode) }}</p>
                 <div v-else class="formula-preview" v-html="renderFormula(formula.latex, formula.display)"></div>
-                <details open><summary>公式源码（{{ selected.formulaSource === 'OCR' ? '图像识别' : '原始文本' }}）</summary><pre>{{ formula.latex }}</pre></details>
+                <details open><summary>公式源码（{{ selected.formulaSource === 'MANUAL' ? '人工修订' : selected.formulaSource === 'OCR' ? '图像识别' : '原始文本' }}）</summary><pre>{{ formula.latex }}</pre></details>
               </article>
             </section>
             <VisualEvidence :key="`${sourceVersion}-${selected.pageNo}`" :visuals="selected.visuals" :version="selected.visualVersion" :issues="selected.visualIssues" />
@@ -54,9 +56,15 @@
           </div>
         </div>
         <div v-if="canRetry" class="review-actions">
-          <el-button :disabled="busy" @click="$emit('retry', { pages: [selected.pageNo], forceOcr: false })">重试此{{ paged ? '页' : '位置' }}</el-button>
-          <el-button v-if="canPreview" type="primary" :disabled="busy" @click="$emit('retry', { pages: [selected.pageNo], forceOcr: true })">强制识别本页</el-button>
+          <el-button v-if="!editing" :disabled="busy || saving" @click="editPage">修改文本</el-button>
+          <el-button v-if="editing" :disabled="saving" @click="editing = false">取消修改</el-button>
+          <el-button type="success" :disabled="busy || saving || (!draft.trim() && editing) || (!editing && !selected.chosenText && selected.pageStatus !== 'BLANK')" :loading="saving" @click="saveReview">{{ editing ? '保存并确认本页' : '确认本页无误' }}</el-button>
+          <el-button :disabled="busy || saving" @click="$emit('retry', { pages: [selected.pageNo], forceOcr: false })">重试此{{ paged ? '页' : '位置' }}</el-button>
+          <el-button v-if="canPreview" type="primary" :disabled="busy || saving" @click="$emit('retry', { pages: [selected.pageNo], forceOcr: true })">强制识别本页</el-button>
         </div>
+        <p v-if="canRetry" class="review-note">对照原页核验文字、公式与配图后确认。保存后会重建检索索引，请等待完成再核验下一页。</p>
+        <el-alert v-if="saveError" :title="saveError" type="error" :closable="false" />
+        <el-alert v-if="saveMessage" :title="saveMessage" type="success" :closable="false" />
       </div>
     </div>
   </section>
@@ -70,7 +78,8 @@ import { renderMarkdown } from '@/utils/markdown'
 import VisualEvidence from './VisualEvidence.vue'
 import { documentIdOf, isPagedDocument, processingError, processingVersionOf } from '@/utils/documentProcessing'
 const props = defineProps({ document: { type: Object, required: true }, job: { type: Object, default: null }, canRetry: Boolean, busy: Boolean })
-defineEmits(['retry'])
+const emit = defineEmits(['retry', 'saved'])
+const editing = ref(false), draft = ref(''), saving = ref(false), saveError = ref(''), saveMessage = ref('')
 const pages = ref([]), selectedNo = ref(null), loading = ref(false), error = ref('')
 const previewUrl = ref(''), previewLoading = ref(false), previewError = ref('')
 const sourceVersion = computed(() => processingVersionOf(props.document, props.job))
@@ -90,13 +99,15 @@ function normalizedPage(page) {
     pageStatus: String(page.pageStatus || page.page_status || 'QUEUED').toUpperCase(),
     rawText: page.rawText ?? page.raw_text ?? '', ocrRawText: page.ocrRawText ?? page.ocr_raw_text ?? '',
     ocrText: page.ocrText ?? page.ocr_text ?? '', chosenText: page.chosenText ?? page.chosen_text ?? '',
-    method: page.method || '', confidence: page.confidence ?? null, errorCode: page.errorCode || page.error_code || '',
+    method: page.method || '', parseRevision: Number(page.parseRevision || props.job?.parseRevision || props.document.parse_revision || 0), confidence: page.confidence ?? null, errorCode: page.errorCode || page.error_code || '',
     needsReview: !!(page.needsReview ?? page.needs_review), location: page.location || '',
     formulaVersion: Number(page.formulaVersion || 0), formulas: Array.isArray(page.formulas) ? page.formulas : [], formulaSource: page.formulaSource,
     visualVersion: Number(page.visualVersion || 0), visuals: Array.isArray(page.visuals) ? page.visuals : [], visualIssues: Array.isArray(page.visualIssues) ? page.visualIssues : [],
     questions: Array.isArray(page.questions) ? page.questions.filter(question => question && typeof question === 'object') : [] }
 }
 async function loadPages() {
+  const preferred = selectedNo.value
+  editing.value = false
   pagesController?.abort(); clearImage()
   const version = ++loadVersion, controller = new AbortController(); pagesController = controller
   loading.value = true; error.value = ''; pages.value = []; selectedNo.value = null
@@ -104,12 +115,14 @@ async function loadPages() {
     const data = rag.ragList(await rag.getDocumentPages(documentIdOf(props.document), sourceVersion.value, { signal: controller.signal }))
     if (version !== loadVersion || controller.signal.aborted) return
     pages.value = data.map(normalizedPage).filter(page => Number.isInteger(page.pageNo) && page.pageNo > 0)
-    if (pages.value.length) await selectPage(pages.value[0].pageNo)
+    if (pages.value.length) await selectPage(pages.value.some(page => page.pageNo === preferred) ? preferred : pages.value[0].pageNo)
   } catch (problem) {
     if (version === loadVersion && !controller.signal.aborted) { pages.value = []; error.value = failure(problem, '无法读取逐页处理结果') }
   } finally { if (version === loadVersion) loading.value = false }
 }
 async function selectPage(number) {
+  if (saving.value) return
+  editing.value = false; saveError.value = ''; saveMessage.value = ''
   selectedNo.value = number; clearImage()
   if (!canPreview.value) return
   const version = ++imageVersion, controller = new AbortController(); previewController = controller
@@ -123,6 +136,24 @@ async function selectPage(number) {
     if (version === imageVersion && !controller.signal.aborted) previewError.value = failure(problem, '无法读取原页预览')
   } finally { if (version === imageVersion) previewLoading.value = false }
 }
+function editPage() {
+  draft.value = selected.value.chosenText || selected.value.ocrText || selected.value.rawText || ''
+  saveError.value = ''; saveMessage.value = ''; editing.value = true
+}
+async function saveReview() {
+  if (props.busy || saving.value || !selected.value) return
+  const page = selected.value
+  saving.value = true; saveError.value = ''; saveMessage.value = ''
+  try {
+    const result = await rag.reviewDocumentPage(documentIdOf(props.document), page.pageNo, {
+      version: sourceVersion.value, parseRevision: page.parseRevision, text: editing.value ? draft.value : page.chosenText
+    })
+    editing.value = false
+    emit('saved', result)
+    saveMessage.value = '核验修订已保存，正在重建检索索引。'
+  } catch (problem) { saveError.value = failure(problem, '保存核验失败，请刷新后重试') }
+  finally { saving.value = false }
+}
 function pageLabel(page) {
   if (page.pageNumber == null) return `位置 ${page.pageNo}`
   return /\.pptx$/i.test(props.document.file_name || '') ? `幻灯片 ${page.pageNumber}` : `第 ${page.pageNumber} 页`
@@ -133,8 +164,8 @@ function locationLabel(page) {
   if (Number.isFinite(start) && Number.isFinite(end)) return `字符 ${start}–${end}`
   return pageLabel(page)
 }
-function statusLabel(status) { return { READY: '已提取', TEXT_READY: '已提取', COMPLETED: '已提取', FAILED: '处理失败', BLANK: '空白', QUEUED: '等待处理', OCR: '识别中', PARTIAL: '需核验' }[status] || '待核验' }
-function methodLabel(method) { return { TEXT_LAYER: '文字层提取', TEXT: '文字层提取', OCR: '图中文字识别', MERGED: '文字层与识别文本合并', BLANK: '空白页', VISUAL_REFERENCE: '原页图像参考' }[method] || '处理方式待确认' }
+function statusLabel(status) { return { READY: '已提取', TEXT_READY: '已提取', OCR_READY: '已识别', COMPLETED: '已提取', FAILED: '处理失败', BLANK: '空白', QUEUED: '等待处理', OCR: '识别中', PARTIAL: '需核验' }[status] || '待核验' }
+function methodLabel(method) { return { MANUAL: '人工核验修订', TEXT_LAYER: '文字层提取', TEXT: '文字层提取', OCR: '图中文字识别', MERGED: '文字层与识别文本合并', BLANK: '空白页', VISUAL_REFERENCE: '原页图像参考' }[method] || '处理方式待确认' }
 function confidenceLabel(value) {
   return typeof value === 'number' && Number.isFinite(value) ? `模型返回置信度：${Math.round(value <= 1 ? value * 100 : value)}%（不代表文字正确率）` : '服务未提供置信度'
 }

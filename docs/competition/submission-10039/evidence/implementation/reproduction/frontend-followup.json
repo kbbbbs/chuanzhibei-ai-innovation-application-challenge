@@ -1,0 +1,10 @@
+{
+  "verifiedAt": "2026-11-17T07:09:53.994605+00:00",
+  "updatedFiles": [
+    "ai-learning-frontend/src/components/ai/LessonQuickChat.vue",
+    "ai-learning-frontend/src/views/student/CourseLearn.vue"
+  ],
+  "frontendBuildExitCode": 0,
+  "seconds": 3.167,
+  "backendSourcesUnchangedFromTimedLoginSnapshot": true
+}

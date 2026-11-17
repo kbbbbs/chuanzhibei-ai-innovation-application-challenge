@@ -1,0 +1,176 @@
+{
+  "id": "10039-course-chapter2-20-20261117",
+  "createdAt": "2026-11-17T06:56:54.914271+00:00",
+  "source": {
+    "file": "第2章-机器学习概述-okk.pdf",
+    "sha256": "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f",
+    "pageCount": 36
+  },
+  "annotationMethod": "Developer read the original PDF text layer before running retrieval. Gold pages are non-exhaustive developer annotations; questions cover the same source used for development.",
+  "evaluationPurpose": "Current-version small-sample measurement, no tuning and no fixed quality threshold",
+  "questions": [
+    {
+      "id": "q01",
+      "category": "原词",
+      "query": "机器学习如何利用观测数据预测未知情况？",
+      "goldPages": [
+        3
+      ]
+    },
+    {
+      "id": "q02",
+      "category": "原词",
+      "query": "芒果例子中的特征向量、标签和样本分别表示什么？",
+      "goldPages": [
+        5
+      ]
+    },
+    {
+      "id": "q03",
+      "category": "同义改写",
+      "query": "用来拟合模型的数据与检验模型好坏的数据有什么区别？",
+      "goldPages": [
+        5
+      ]
+    },
+    {
+      "id": "q04",
+      "category": "概念关系",
+      "query": "在机器学习基本流程里，训练与推理分别做什么？",
+      "goldPages": [
+        7
+      ]
+    },
+    {
+      "id": "q05",
+      "category": "原词",
+      "query": "为什么电影票房预测属于回归任务？",
+      "goldPages": [
+        9
+      ]
+    },
+    {
+      "id": "q06",
+      "category": "同义改写",
+      "query": "识别手写数字时，算法最终输出的值是连续数值还是离散类别？",
+      "goldPages": [
+        11
+      ]
+    },
+    {
+      "id": "q07",
+      "category": "原词",
+      "query": "垃圾邮件检测使用哪些特征，为什么是二分类？",
+      "goldPages": [
+        12
+      ]
+    },
+    {
+      "id": "q08",
+      "category": "同义改写",
+      "query": "一批没有人工标签的图片，要按相似性自动分组，属于哪类学习问题？",
+      "goldPages": [
+        13
+      ]
+    },
+    {
+      "id": "q09",
+      "category": "原词",
+      "query": "机器学习的三个基本要素是什么？",
+      "goldPages": [
+        14
+      ]
+    },
+    {
+      "id": "q10",
+      "category": "概念关系",
+      "query": "损失函数衡量什么，0-1损失难以优化的原因是什么？",
+      "goldPages": [
+        17
+      ]
+    },
+    {
+      "id": "q11",
+      "category": "原词",
+      "query": "交叉熵损失函数通常适用于什么任务？",
+      "goldPages": [
+        18
+      ]
+    },
+    {
+      "id": "q12",
+      "category": "同义改写",
+      "query": "为什么实际训练常常最小化训练样本上的平均损失，而不是直接计算真实分布上的期望风险？",
+      "goldPages": [
+        19
+      ]
+    },
+    {
+      "id": "q13",
+      "category": "原词",
+      "query": "欠拟合的表现是什么，通常由什么造成？",
+      "goldPages": [
+        21
+      ]
+    },
+    {
+      "id": "q14",
+      "category": "概念关系",
+      "query": "凸优化和非凸优化在解的唯一性上有什么区别？",
+      "goldPages": [
+        23
+      ]
+    },
+    {
+      "id": "q15",
+      "category": "原词",
+      "query": "梯度下降中的搜索步长在机器学习中通常叫什么？",
+      "goldPages": [
+        24,
+        25
+      ]
+    },
+    {
+      "id": "q16",
+      "category": "同义改写",
+      "query": "更新参数的步子太大或太小，会分别出现什么训练现象？",
+      "goldPages": [
+        26
+      ]
+    },
+    {
+      "id": "q17",
+      "category": "原词",
+      "query": "提前停止如何利用验证集防止过拟合？",
+      "goldPages": [
+        30
+      ]
+    },
+    {
+      "id": "q18",
+      "category": "概念关系",
+      "query": "验证集在提前停止过程中怎样帮助决定终止训练？",
+      "goldPages": [
+        30
+      ]
+    },
+    {
+      "id": "q19",
+      "category": "原词",
+      "query": "监督学习的训练样本具有什么信息，按标签类型又分成哪些问题？",
+      "goldPages": [
+        31
+      ]
+    },
+    {
+      "id": "q20",
+      "category": "概念关系",
+      "query": "连续票房、离散数字标签与无标签图片分组，分别对应什么机器学习任务？",
+      "goldPages": [
+        9,
+        11,
+        13
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+新增只读审查任务：检查我本轮新增CourseRagService.java、CourseRagController.java、chat修改及迁移，关注学生授权越权、旧调用兼容、流式/历史/撤权、数据库迁移风险。只读代码不跑Maven不改产品；给具体可执行缺陷建议，根记录捕捉你的操作不足部分请继续导出子会话actual start-line=115。

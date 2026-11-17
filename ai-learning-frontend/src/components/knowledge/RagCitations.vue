@@ -20,7 +20,7 @@
         </template>
         <pre v-else class="source-text">{{ selected?.content }}</pre>
         <VisualEvidence v-if="visible && !loading && !loadError && selected?.visuals?.length" :visuals="selected.visuals" />
-        <el-button v-if="selected?.documentId" :loading="downloading" @click="download">下载原始文件</el-button>
+        <el-button v-if="selected?.documentId && !courseId" :loading="downloading" @click="download">下载原始文件</el-button>
       </div>
     </el-drawer>
   </div>
@@ -31,9 +31,9 @@ import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { renderMarkdown } from '@/utils/markdown'
 import { sourceVersionLabel } from '@/utils/retrievalStatus'
 import { ElMessage } from 'element-plus'
-import { getChunk, downloadDocument, unwrapRag } from '@/api/rag'
+import { getChunk, getCourseDocument, downloadDocument, unwrapRag } from '@/api/rag'
 import VisualEvidence from './VisualEvidence.vue'
-defineProps({ citations: { type: Array, default: () => [] } })
+const props = defineProps({ citations: { type: Array, default: () => [] }, courseId: Number })
 const visible = ref(false)
 const loading = ref(false)
 const downloading = ref(false)
@@ -53,12 +53,17 @@ async function openSource(source) {
   if (!source.chunkId) return
   loading.value = true
   try {
-    const chunk = unwrapRag(await getChunk(source.chunkId, { signal: controller.signal, silentError: true }))
+    let chunk
+    if (props.courseId) {
+      const document = unwrapRag(await getCourseDocument(props.courseId, source.documentId, source.documentVersion, { signal: controller.signal, silentError: true }))
+      chunk = (document.chunks || []).find(item => (item.chunkId || item.id) === source.chunkId)
+      if (!chunk) throw new Error('引用片段已不可访问，请重新提问。')
+    } else chunk = unwrapRag(await getChunk(source.chunkId, { signal: controller.signal, silentError: true }))
     if (source.indexVersion && chunk.indexVersion && source.indexVersion !== chunk.indexVersion) throw new Error('引用对应的索引版本已改变，请重新检索。')
     if (source.documentVersion != null && chunk.documentVersion != null && source.documentVersion !== chunk.documentVersion) throw new Error('引用对应的资料版本已改变，请重新检索。')
     if (version === sourceVersion) selected.value = { ...source, ...chunk,
       indexVersion: chunk.indexVersion || null, documentVersion: chunk.documentVersion ?? null, parseRevision: chunk.parseRevision ?? null,
-      visuals: Array.isArray(chunk.visuals) ? chunk.visuals : [],
+      visuals: !props.courseId && Array.isArray(chunk.visuals) ? chunk.visuals : [],
       documentId: chunk.documentId || chunk.document_id || source.documentId }
   } catch (e) {
     if (version === sourceVersion && !controller.signal.aborted) {

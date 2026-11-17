@@ -1,0 +1,22 @@
+{
+  "scope": "All objects reachable from current HEAD only, plus ZIP XML/text members. Known literals, token signatures and private filenames. Screenshots/images not OCR-scanned.",
+  "head": "1d0b985b35d2bdf272990a114c16f5ea7c00735c",
+  "reachableObjects": 2572,
+  "blobsScanned": 2079,
+  "uncompressedBlobBytes": 161112732,
+  "commitsScanned": 5,
+  "knownSecretValuesLoaded": 7,
+  "findings": [
+    {
+      "object": "fc686aa6da6d2bf3be95ec8a7067e96442ad0942",
+      "path": "scripts/competition/tests/test_export_agent_development_records.py",
+      "kinds": [
+        "sk_key"
+      ],
+      "classification": "intentional_synthetic_redaction_test_fixture",
+      "reviewEvidence": "Test fixture creates a synthetic token in a tool-output event at line 139 and asserts it is removed at line 143; no known private literal matched."
+    }
+  ],
+  "status": "PASS_WITH_DOCUMENTED_TEST_FIXTURE",
+  "unresolvedFindings": 0
+}

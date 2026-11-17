@@ -14,17 +14,25 @@ export function useNativeRag() {
   const currentSessionId = ref(null)
   const currentAgentSessionId = ref(null)
   const currentKbId = ref(null)
+  const courseContext = ref(null)
   const error = ref(null)
   const progress = ref('')
   let activeRequest = null
   let sessionVersion = 0
 
   function cancel() { activeRequest?.abort() }
+  function resetCourseContext(courseId, lessonId) {
+    resetKnowledgeContext(null)
+    courseContext.value = { courseId: Number(courseId), lessonId: Number(lessonId) }
+  }
   function resetKnowledgeContext(knowledgeBaseId) {
     cancel()
     sessionVersion++
     currentSessionId.value = null
     currentKbId.value = knowledgeBaseId || null
+    courseContext.value = null
+    loading.value = generating.value = false
+    progress.value = ''
     messages.value = []
     error.value = null
   }
@@ -66,10 +74,12 @@ export function useNativeRag() {
   }
   async function restoreSession(session) {
     cancel()
+    loading.value = generating.value = false
     const version = ++sessionVersion
     const list = rag.ragList(await rag.getSessionMessages(session.id))
     if (version !== sessionVersion) return
     currentSessionId.value = session.id
+    courseContext.value = session.courseId ? { courseId: Number(session.courseId), lessonId: Number(session.lessonId) } : null
     currentKbId.value = session.knowledgeBaseId || session.kb_id || currentKbId.value
     messages.value = list
   }
@@ -123,12 +133,12 @@ export function useNativeRag() {
       }
     }
   }
-  function sendMessage(mode, query, displayContent = query) {
+  function sendMessage(mode, query, displayContent = query, selectedText = '') {
     if (generating.value) return Promise.reject(new Error('请等待当前回答完成或先停止生成'))
     if (mode === 'agent') return sendAgentMessage(query, displayContent)
-    if (!currentKbId.value) return Promise.reject(new Error('请先选择知识库'))
+    if (!currentKbId.value && !courseContext.value) return Promise.reject(new Error('请先选择知识库'))
     const message = reactive({ role: 'assistant', content: '', streaming: true, citations: [], status: 'generating' })
-    messages.value.push({ role: 'user', content: displayContent }, message)
+    messages.value.push({ role: 'user', content: displayContent, selectedText }, message)
     loading.value = generating.value = true
     progress.value = '正在检索资料…'
     error.value = null
@@ -145,10 +155,17 @@ export function useNativeRag() {
           activeRequest = null
         }
       }
-      requestHandle = rag.streamChat({ query, sessionId: currentSessionId.value, knowledgeBaseIds: [currentKbId.value] }, {
-        onProgress: data => { if (version === sessionVersion) progress.value = data.message || '正在处理…' },
-        onDelta: data => { message.content += data.content || '' },
+      const payload = {
+        query,
+        sessionId: currentSessionId.value,
+        knowledgeBaseIds: currentKbId.value ? [currentKbId.value] : [],
+        ...(courseContext.value ? { ...courseContext.value, selectedText } : {})
+      }
+      requestHandle = rag.streamChat(payload, {
+        onProgress: data => { if (!settled && version === sessionVersion) progress.value = data.message || '正在处理…' },
+        onDelta: data => { if (!settled && version === sessionVersion) message.content += data.content || '' },
         onComplete: data => {
+          if (settled || version !== sessionVersion) return
           message.content = data.answer || ''
           message.citations = Array.isArray(data.citations) ? data.citations : []
           message.mode = data.mode
@@ -185,7 +202,7 @@ export function useNativeRag() {
 
   return {
     messages, sessions, knowledgeBases, loading, generating, currentSessionId, currentAgentSessionId, currentKbId,
-    error: readonly(error), progress: readonly(progress), cancel, resetKnowledgeContext, loadKnowledgeBases, createNewSession,
+    error: readonly(error), progress: readonly(progress), cancel, resetKnowledgeContext, resetCourseContext, loadKnowledgeBases, createNewSession,
     createNewAgentSession, loadSessions, restoreSession, removeSession, searchInKB, sendMessage, uploadToKB
   }
 }

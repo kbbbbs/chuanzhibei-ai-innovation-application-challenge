@@ -90,6 +90,7 @@ async function fixture(page, { state = 'OCR', empty = false, textSource = false,
       phase = 'QUEUED'
       return ok({ ...document(), ...job() })
     }
+    if (path === `/api/rag/documents/${docId}/pages/1/review`) return ok({ ...document(), jobId: retriedJob })
     if (path === `/api/rag/documents/${docId}/reindex`) return ok(document())
     if (path.endsWith('/chunks')) return ok([])
     if (path.endsWith('/sessions')) return ok([])
@@ -99,6 +100,40 @@ async function fixture(page, { state = 'OCR', empty = false, textSource = false,
   await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
   return calls
 }
+
+test('owner can correct and confirm a page with the displayed revision', async ({ page }) => {
+  const calls = await fixture(page, { state: 'COMPLETED' })
+  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  const review = page.getByTestId('document-page-review')
+  await review.getByRole('button', { name: '修改文本', exact: true }).click()
+  await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('教师修订后的文字')
+  await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()
+  await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)
+  expect(calls.find(call => call.path.endsWith('/pages/1/review')).body).toEqual({ version: 1, parseRevision: 1, text: '教师修订后的文字' })
+})
+
+test('processing pages cannot be edited or confirmed', async ({ page }) => {
+  await fixture(page, { state: 'OCR' })
+  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  const review = page.getByTestId('document-page-review')
+  await expect(review.getByRole('button', { name: '修改文本', exact: true })).toBeDisabled()
+  await expect(review.getByRole('button', { name: '确认本页无误', exact: true })).toBeDisabled()
+})
+
+test('confirmation submits the displayed text and conflicts retain the correction', async ({ page }) => {
+  const calls = await fixture(page, { state: 'COMPLETED' })
+  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  const review = page.getByTestId('document-page-review')
+  await review.getByRole('button', { name: '确认本页无误', exact: true }).click()
+  await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)
+  expect(calls.find(call => call.path.endsWith('/pages/1/review')).body.text).toBe('文字层标题\n识别正文')
+  await page.route(`**/api/rag/documents/${docId}/pages/1/review`, route => route.fulfill({ json: { code: '409', msg: '页面版本已改变，请刷新后重新核验' } }))
+  await review.getByRole('button', { name: '修改文本', exact: true }).click()
+  await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('保留未保存的修订')
+  await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()
+  await expect(review).toContainText('页面版本已改变')
+  await expect(review.getByRole('textbox', { name: '修订后的检索文本' })).toHaveValue('保留未保存的修订')
+})
 
 test('queued upload shows background work and cancellation never means parsed successfully', async ({ page }) => {
   const calls = await fixture(page, { empty: true })

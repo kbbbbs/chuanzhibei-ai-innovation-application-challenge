@@ -1,0 +1,24 @@
+WARNING: A terminally deprecated method in sun.misc.Unsafe has been called
+WARNING: sun.misc.Unsafe::objectFieldOffset has been called by lombok.permit.Permit
+WARNING: Please consider reporting this to the maintainers of class lombok.permit.Permit
+WARNING: sun.misc.Unsafe::objectFieldOffset will be removed in a future release
+[ERROR] COMPILATION ERROR : 
+[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/chat/CourseRagChatTest.java:[51,21] 对于NativeRagService(org.springframework.jdbc.core.JdbcTemplate,com.cupk.aiacademy.rag.RagDocumentParser,com.cupk.aiacademy.rag.RagEmbeddingClient,com.fasterxml.jackson.databind.ObjectMapper,com.cupk.aiacademy.rag.RagAuthorizationService,com.cupk.aiacademy.rag.RagFileStore,com.cupk.aiacademy.rag.RagSchemaMigrator), 找不到合适的构造器
+    构造器 com.cupk.aiacademy.rag.NativeRagService.NativeRagService(org.springframework.jdbc.core.JdbcTemplate,com.cupk.aiacademy.rag.RagDocumentParser,com.cupk.aiacademy.rag.RagEmbeddingClient,com.fasterxml.jackson.databind.ObjectMapper,java.lang.String)不适用
+      (实际参数列表和形式参数列表长度不同)
+    构造器 com.cupk.aiacademy.rag.NativeRagService.NativeRagService(org.springframework.jdbc.core.JdbcTemplate,com.cupk.aiacademy.rag.RagDocumentParser,com.cupk.aiacademy.rag.RagEmbeddingClient,com.fasterxml.jackson.databind.ObjectMapper,com.cupk.aiacademy.rag.RagAuthorizationService,com.cupk.aiacademy.rag.RagFileStore,com.cupk.aiacademy.rag.RagSchemaMigrator,com.cupk.aiacademy.rag.repository.RagIndexVersionRepository)不适用
+      (实际参数列表和形式参数列表长度不同)
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.14.1:testCompile (default-testCompile) on project Final_exam_question_bank: Compilation failure
+[ERROR] /D:/ai-learning-collaboration-verified/ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/chat/CourseRagChatTest.java:[51,21] 对于NativeRagService(org.springframework.jdbc.core.JdbcTemplate,com.cupk.aiacademy.rag.RagDocumentParser,com.cupk.aiacademy.rag.RagEmbeddingClient,com.fasterxml.jackson.databind.ObjectMapper,com.cupk.aiacademy.rag.RagAuthorizationService,com.cupk.aiacademy.rag.RagFileStore,com.cupk.aiacademy.rag.RagSchemaMigrator), 找不到合适的构造器
+[ERROR]     构造器 com.cupk.aiacademy.rag.NativeRagService.NativeRagService(org.springframework.jdbc.core.JdbcTemplate,com.cupk.aiacademy.rag.RagDocumentParser,com.cupk.aiacademy.rag.RagEmbeddingClient,com.fasterxml.jackson.databind.ObjectMapper,java.lang.String)不适用
+[ERROR]       (实际参数列表和形式参数列表长度不同)
+[ERROR]     构造器 com.cupk.aiacademy.rag.NativeRagService.NativeRagService(org.springframework.jdbc.core.JdbcTemplate,com.cupk.aiacademy.rag.RagDocumentParser,com.cupk.aiacademy.rag.RagEmbeddingClient,com.fasterxml.jackson.databind.ObjectMapper,com.cupk.aiacademy.rag.RagAuthorizationService,com.cupk.aiacademy.rag.RagFileStore,com.cupk.aiacademy.rag.RagSchemaMigrator,com.cupk.aiacademy.rag.repository.RagIndexVersionRepository)不适用
+[ERROR]       (实际参数列表和形式参数列表长度不同)
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

@@ -111,6 +111,12 @@ class NativeRagChatServiceTest {
         verifyNoInteractions(model);
     }
 
+    @Test void legacyKnowledgeRequestAcceptsAnEmptyOptionalSelection() {
+        when(model.call(any(Prompt.class))).thenReturn(response("参数更新。[1]"));
+        var result=chat.chat(new RagChatRequest(List.of(base),"梯度下降",null,null,null,""));
+        assertEquals("ANSWERED",result.status());
+    }
+
     @Test void failedRetrievalDoesNotBecomeAnUngroundedAnswer() {
         when(knowledge.searchForOwner(anyList(), anyString(), eq(2), anyInt())).thenReturn(Result.error("403", "denied"));
         assertThrows(BusinessException.class, () -> chat.chat(new RagChatRequest(List.of(base), "问题", null)));

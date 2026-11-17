@@ -1,0 +1,53 @@
+{
+  "startedAt": "2026-11-17T07:07:18.189806+00:00",
+  "stages": [
+    {
+      "name": "copy-source",
+      "seconds": 8.339,
+      "files": 810
+    },
+    {
+      "name": "npm-ci",
+      "seconds": 41.777,
+      "exitCode": 0
+    },
+    {
+      "name": "frontend-build",
+      "seconds": 2.763,
+      "exitCode": 0
+    },
+    {
+      "name": "backend-package",
+      "seconds": 25.425,
+      "exitCode": 0
+    },
+    {
+      "name": "backend-start-and-login",
+      "seconds": 10.5,
+      "login": {
+        "httpStatus": 200,
+        "businessCode": "200",
+        "authenticatedRole": "student",
+        "tokenReturned": true
+      }
+    }
+  ],
+  "status": "COMPLETED",
+  "target": "D:\\ai-learning-collaboration-verified\\.codex_tmp\\10039-clean-reproduction",
+  "privateSettingsCopied": false,
+  "sourcePdfCopied": false,
+  "cacheConditions": "Same Windows host, existing shared npm and Maven caches; target has no node_modules or target at start. npm ci performs normal registry checks.",
+  "network": "Normal host network, no registry mirror changes during this run",
+  "port": 18040,
+  "versions": {
+    "node": "v24.13.1",
+    "npm": "11.8.0",
+    "java": "openjdk version \"24\" 2025-03-18",
+    "maven": "Apache Maven 3.9.16 (2bdd9fddda4b155ebf8000e807eb73fd829a51d5)"
+  },
+  "serverPid": 51704,
+  "ownServerStopped": true,
+  "finishedAt": "2026-11-17T07:08:47.821251+00:00",
+  "totalSeconds": 89.631,
+  "underTenMinutes": true
+}

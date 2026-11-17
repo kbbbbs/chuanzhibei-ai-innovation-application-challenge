@@ -10,7 +10,8 @@ const props = defineProps({ status:String, warning:String, mode:String, actualMo
 const effectiveMode = computed(() => actualRetrievalMode(props.actualMode, props.mode))
 const modeLabel = computed(() => retrievalModeLabel(props.actualMode, props.mode))
 const warningText = computed(() => retrievalWarning(props.degradedReason, props.warning))
-const text = computed(() => ({
+const text = computed(() => props.mode === 'selection' ? '仅依据选中文本。' : ({
+  SELECTION_ONLY:'仅依据选中文本。',
   NO_EVIDENCE:'资料中未找到足够依据，可以调整问题或添加资料。',
   CITATION_CHECK_FAILED:'回答引用未通过校验，当前展示本次检索的原文摘录，请核实后使用。',
   MODEL_UNAVAILABLE:'模型暂不可用，请稍后重试。'

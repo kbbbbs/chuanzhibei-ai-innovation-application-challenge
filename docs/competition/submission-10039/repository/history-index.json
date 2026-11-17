@@ -1,0 +1,1535 @@
+{
+  "recordedAt": "2026-11-17T07:22:25.843698+00:00",
+  "repositories": [
+    {
+      "label": "submission",
+      "localPath": "D:\\ai-learning-collaboration-verified",
+      "head": "1d0b985b35d2bdf272990a114c16f5ea7c00735c",
+      "branch": "main",
+      "origin": "https://github.com/kbbbbs/ai-learning-collaboration.git",
+      "commitCount": 5,
+      "rootCommits": [
+        "1896bce4cedee21ca656a6e16a1c442f9c093201"
+      ],
+      "licensePaths": [],
+      "commits": [
+        {
+          "commit": "1896bce4cedee21ca656a6e16a1c442f9c093201",
+          "authoredAt": "2026-10-31T19:43:06+08:00",
+          "subject": "Initialize sanitized AI learning collaboration snapshot and verification"
+        },
+        {
+          "commit": "6849731b1a211fdac8664a79f467c81975be116f",
+          "authoredAt": "2026-10-31T19:49:19+08:00",
+          "subject": "Document clean-clone verification and development evidence"
+        },
+        {
+          "commit": "1f51881d074ac6943d2c8fcabc06700656de35b2",
+          "authoredAt": "2026-11-03T22:07:56+08:00",
+          "subject": "fix: 项目 Bug 修正版，明确保留未解决问题"
+        },
+        {
+          "commit": "d6bb3d959ab8cbf6490a69d1e94a56dd4d23bf4d",
+          "authoredAt": "2026-11-16T16:31:29+08:00",
+          "subject": "feat: add persistent chapter knowledge graph and interactive visualization"
+        },
+        {
+          "commit": "1d0b985b35d2bdf272990a114c16f5ea7c00735c",
+          "authoredAt": "2026-11-16T16:33:03+08:00",
+          "subject": "docs: archive knowledge graph publication verification"
+        }
+      ]
+    },
+    {
+      "label": "original-base",
+      "localPath": "D:\\ai-learning",
+      "head": "8a59b50dbad18688270f8bb3274940a57a678e06",
+      "branch": "dev",
+      "origin": "https://github.com/QingYingZero/ai-learning.git",
+      "commitCount": 112,
+      "rootCommits": [
+        "460e1131e5943ba485c440c779c92530888a7df9"
+      ],
+      "licensePaths": [],
+      "commits": [
+        {
+          "commit": "460e1131e5943ba485c440c779c92530888a7df9",
+          "authoredAt": "2026-07-02T09:52:05+08:00",
+          "subject": "仓库建立"
+        },
+        {
+          "commit": "57f9f30c4b23430b207408c8ba713b537e623c32",
+          "authoredAt": "2026-07-02T11:11:04+08:00",
+          "subject": "初始化AI智学平台项目，添加基础前后端结构及配置文件"
+        },
+        {
+          "commit": "903166ed94d0c19e334f2bd451562dc2554fc86d",
+          "authoredAt": "2026-07-02T11:50:51+08:00",
+          "subject": "feat: 添加课程数据模型和持久层配置"
+        },
+        {
+          "commit": "ab0c9a02319bf118d13cf0b0657cfce39f505571",
+          "authoredAt": "2026-07-02T11:11:04+08:00",
+          "subject": "feat: 初始化AI智学平台项目，添加基础前后端结构及配置文件"
+        },
+        {
+          "commit": "c1a47fb8bd1bdc4de6ce89678af7e289b86802be",
+          "authoredAt": "2026-07-02T11:50:51+08:00",
+          "subject": "feat: 添加课程数据模型和持久层配置"
+        },
+        {
+          "commit": "e6f8cead47102cd7c726fcd9cabe088d3208b889",
+          "authoredAt": "2026-07-02T12:36:08+08:00",
+          "subject": "feat: 添加用户认证功能，包括注册、登录和角色管理"
+        },
+        {
+          "commit": "82f4ca1dcc933fc0b5fa3ac943e6bb5664b38050",
+          "authoredAt": "2026-07-02T12:36:49+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "ca19b9c4de33a5f487ff33c27541e04ae539ca60",
+          "authoredAt": "2026-07-02T18:19:49+08:00",
+          "subject": "feat: 添加课程分类、考试记录、作业提交等数据模型及相关接口（未经测试）"
+        },
+        {
+          "commit": "43fb13b4d6e503b261a035634523e427612b57b5",
+          "authoredAt": "2026-07-02T18:19:49+08:00",
+          "subject": "feat: 添加课程分类、考试记录、作业提交等数据模型及相关接口（未经测试）"
+        },
+        {
+          "commit": "5a14b9d2503e6d466a7ac397b19cdeb57455731e",
+          "authoredAt": "2026-07-02T18:27:10+08:00",
+          "subject": "feat: 添加后端接口简表文档"
+        },
+        {
+          "commit": "f07a38bde5396a5c8b0037085fb963489019e681",
+          "authoredAt": "2026-07-02T18:27:23+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "02cc7a67d6cdf6b0521170510cb85e53c30811a8",
+          "authoredAt": "2026-07-02T19:08:24+08:00",
+          "subject": "Day1"
+        },
+        {
+          "commit": "2dc03f5ffb1c6035acde7df5fc7632911b888a21",
+          "authoredAt": "2026-07-03T10:48:07+08:00",
+          "subject": "Day2"
+        },
+        {
+          "commit": "0563841dc332a20c0683bc72e41525233de0cce5",
+          "authoredAt": "2026-07-03T10:56:49+08:00",
+          "subject": "feat: 完善课程资源模块后端接口"
+        },
+        {
+          "commit": "ffb7980b9b5e23e453433f7ed80263d6bb70f4db",
+          "authoredAt": "2026-07-03T11:12:23+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "c2d4b3238825c3b00805cd1a846cf0e5c1b575c9",
+          "authoredAt": "2026-07-03T11:12:45+08:00",
+          "subject": "feat: 添加后端接口简表文档"
+        },
+        {
+          "commit": "bd17bbbb879215b82a79beb6e25daa6024693bed",
+          "authoredAt": "2026-07-03T11:13:15+08:00",
+          "subject": "feat: 添加ignore"
+        },
+        {
+          "commit": "22f19f71d7bc63bc464386802b8700335ad4a072",
+          "authoredAt": "2026-07-03T11:14:03+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "4a6c61e5e1f9e266247840cd8b3ecdc76b7eca58",
+          "authoredAt": "2026-07-03T11:53:33+08:00",
+          "subject": "Day2"
+        },
+        {
+          "commit": "8fd458fdb20d4a9694fd9bd4cff7b163b261dabb",
+          "authoredAt": "2026-07-03T11:57:46+08:00",
+          "subject": "Merge branch 'dev' of https://github.com/QingYingZero/ai-learning into dev"
+        },
+        {
+          "commit": "6710965359f6d812876f988e042546880fb6292d",
+          "authoredAt": "2026-07-03T12:13:29+08:00",
+          "subject": "Day2-3"
+        },
+        {
+          "commit": "22d8756566b3662056ce1c724af408f95350149e",
+          "authoredAt": "2026-07-03T12:50:50+08:00",
+          "subject": "bugs: 接口修复v1"
+        },
+        {
+          "commit": "4042fc9d0c5a7e5f88620e842aeac86ac2682759",
+          "authoredAt": "2026-07-03T12:51:51+08:00",
+          "subject": "Day2-4"
+        },
+        {
+          "commit": "17743b8f85e11f877ecbde2f359eed77223d65ed",
+          "authoredAt": "2026-07-03T14:54:55+08:00",
+          "subject": "feat: 整合教学班与学习模块"
+        },
+        {
+          "commit": "e14db9e407b90a6a61dce99e7a8eef7d9e947b77",
+          "authoredAt": "2026-07-03T14:55:37+08:00",
+          "subject": "feat: 整合 youpeng 考试分支"
+        },
+        {
+          "commit": "83dbb94abf980cf683d4831c8b8497477b6442a5",
+          "authoredAt": "2026-07-03T15:26:26+08:00",
+          "subject": "feat: 完整融合考试业务流程"
+        },
+        {
+          "commit": "2d493800241566145b6e5fb66a468785b6c40a22",
+          "authoredAt": "2026-07-03T15:41:35+08:00",
+          "subject": "fix: 补齐融合分支业务行为契约"
+        },
+        {
+          "commit": "9458ef7bd00084226040ec41e4df8dce3449be22",
+          "authoredAt": "2026-07-03T16:06:25+08:00",
+          "subject": "docs: 补充全量接口文档和Apifox报告"
+        },
+        {
+          "commit": "7450d0fec23228158c949b15eb5a6c057b1729c4",
+          "authoredAt": "2026-07-03T16:08:35+08:00",
+          "subject": "Merge pull request #2 from QingYingZero/dev-integrated"
+        },
+        {
+          "commit": "2f1102c773d84694eaf4a72c5a7ebf58c5c78d3e",
+          "authoredAt": "2026-07-04T10:10:39+08:00",
+          "subject": "DAY3-1"
+        },
+        {
+          "commit": "9a6790853dbc02140ceca7384b173b1b34d5c8f1",
+          "authoredAt": "2026-07-04T10:05:26+08:00",
+          "subject": "新建Dto，参数校验"
+        },
+        {
+          "commit": "f5d57cd284fd6074e583e9f2bcaca05493a7bbea",
+          "authoredAt": "2026-07-04T10:10:04+08:00",
+          "subject": "新建Dto，参数校验"
+        },
+        {
+          "commit": "3f4d68f09c931a9f11fe72ef78cebd26b5624d3d",
+          "authoredAt": "2026-07-04T10:46:45+08:00",
+          "subject": "Merge remote-tracking branch 'origin/addDto' into dev"
+        },
+        {
+          "commit": "258f2966298092ca6f1bf12b239f074359b31351",
+          "authoredAt": "2026-07-04T10:05:26+08:00",
+          "subject": "新建Dto，参数校验"
+        },
+        {
+          "commit": "17c5a07ddcd5a026420c3939e1f5f59a49006217",
+          "authoredAt": "2026-07-04T10:10:04+08:00",
+          "subject": "新建Dto，参数校验"
+        },
+        {
+          "commit": "7da22e61f43619c414fa2614dcd46d92834ebc56",
+          "authoredAt": "2026-07-04T11:42:37+08:00",
+          "subject": "feat: 添加了权限确认和课程等模块"
+        },
+        {
+          "commit": "59c6e16b805c78905e4ea9640a07718bb574ae99",
+          "authoredAt": "2026-07-04T11:46:54+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "fce8a35fb2049994463eb58336ae20510d80db8b",
+          "authoredAt": "2026-07-04T12:13:22+08:00",
+          "subject": "agent"
+        },
+        {
+          "commit": "795ce67d2d2d337deb2ceef84fc3685c0868f5a5",
+          "authoredAt": "2026-07-04T16:36:12+08:00",
+          "subject": "feature--课程资源模块详细功能实现及CourseResourceServiec的实现"
+        },
+        {
+          "commit": "c9269b56cc67789b28cde23cb29fc6d4acac3e06",
+          "authoredAt": "2026-07-04T16:48:39+08:00",
+          "subject": "fix: stabilize frontend workflows and permissions"
+        },
+        {
+          "commit": "06c673fea9a7e5ecd3829a2d73d66baf6332eecc",
+          "authoredAt": "2026-07-04T16:48:39+08:00",
+          "subject": "fix: 修复了前端功能和权限"
+        },
+        {
+          "commit": "2fcbc2d22ad76ad48cc1d9fb4b1fbdac55e67a08",
+          "authoredAt": "2026-07-04T16:56:20+08:00",
+          "subject": "feat: 添加了权限确认和课程等模块"
+        },
+        {
+          "commit": "a2a81d66ccbbc2599b1750e129eefd53afff967c",
+          "authoredAt": "2026-07-04T16:57:28+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "9bca54301d4f474014c42a65ec52d3575ddcc685",
+          "authoredAt": "2026-07-04T16:58:11+08:00",
+          "subject": "fix: 细节修复"
+        },
+        {
+          "commit": "7100a6cf3ae30dc2f18d2559c04bbc70ee4fb97f",
+          "authoredAt": "2026-07-04T17:33:59+08:00",
+          "subject": "fix: 修正了教学班管理、试卷管理、考试管理逻辑逻辑"
+        },
+        {
+          "commit": "e36789308d057d77ee01ca9a71f23bee3d9ec281",
+          "authoredAt": "2026-07-04T17:35:56+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into feature--课程资源模块详细功能实现"
+        },
+        {
+          "commit": "8474f6a48f3f694abf56adc59273ab7e7b518b82",
+          "authoredAt": "2026-07-04T17:36:38+08:00",
+          "subject": "bugs: 合并test"
+        },
+        {
+          "commit": "09bef1a9d09da408e8ece83b8671b2c05097a35d",
+          "authoredAt": "2026-07-04T19:04:55+08:00",
+          "subject": "Merge remote-tracking branch 'origin/feature--课程资源模块详细功能实现' into dev"
+        },
+        {
+          "commit": "cf46463d4d5c0c2cf882f0983313d5d5a145293b",
+          "authoredAt": "2026-07-04T19:05:41+08:00",
+          "subject": "fix: 修正了教学班管理、试卷管理、考试管理逻辑逻辑"
+        },
+        {
+          "commit": "35555542cb14814b2cc93f8f4c7aa4b65b852212",
+          "authoredAt": "2026-07-04T19:05:41+08:00",
+          "subject": "fix: 藏污纳垢了smy的屎山"
+        },
+        {
+          "commit": "ed8fc082f732132304389ab1d9415611b3bcf231",
+          "authoredAt": "2026-07-04T19:08:10+08:00",
+          "subject": "fix: 细节修复"
+        },
+        {
+          "commit": "4b6dfff9e960aa6880342a15375c0c0c325c2439",
+          "authoredAt": "2026-07-04T19:08:22+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "c2d33d7d1790fbedc7a3e56c1fb78fba75aa6752",
+          "authoredAt": "2026-07-04T21:08:15+08:00",
+          "subject": "feat: 添加智能推荐和智能资源生成模块，优化首页和AI助手界面"
+        },
+        {
+          "commit": "b913fc9c70694aabbe1b6843476f10f52c4fa82f",
+          "authoredAt": "2026-07-04T21:06:20+08:00",
+          "subject": "agent CURD"
+        },
+        {
+          "commit": "df11457000ff2ac369b3a493825f4dcfb405ea68",
+          "authoredAt": "2026-07-04T22:13:54+08:00",
+          "subject": "Merge branch 'dev' into agent_curd"
+        },
+        {
+          "commit": "548c17c0911c45d3b755aba5cb9bc461f9837df6",
+          "authoredAt": "2026-07-04T22:20:25+08:00",
+          "subject": "增加了论文检索模块和AI知识库模块"
+        },
+        {
+          "commit": "764e2ad791e4691b0457b7bf0588aa20b365dfa7",
+          "authoredAt": "2026-07-05T00:51:04+08:00",
+          "subject": "Merge origin/dev and integrate agent RAG features"
+        },
+        {
+          "commit": "da2a926f0027c2c7168f479403843e5d42fb6c2d",
+          "authoredAt": "2026-07-05T01:08:16+08:00",
+          "subject": "fix: 合并了后端"
+        },
+        {
+          "commit": "c3fd42f5614881712de24daa8f248f9c64ef6fdb",
+          "authoredAt": "2026-07-05T09:46:31+08:00",
+          "subject": "1. 新增 Agent 定义管理 (#4)"
+        },
+        {
+          "commit": "378c1795029e72bf90eda8d3c7f0ef058295dcaf",
+          "authoredAt": "2026-07-05T16:19:05+08:00",
+          "subject": "Agent (#5)"
+        },
+        {
+          "commit": "d77bf6265dc07df97960f45c6020ac3c4cdad869",
+          "authoredAt": "2026-07-05T16:34:40+08:00",
+          "subject": "后端权限边界与敏感信息泄露修复 (#6)"
+        },
+        {
+          "commit": "15de62e3048d20a442502bad9844d997df262d76",
+          "authoredAt": "2026-07-05T17:31:59+08:00",
+          "subject": "对知识库和论文查找功能进行修改"
+        },
+        {
+          "commit": "8b6894c7a6f04fa66c12dc4e5e49abd530ba0cf4",
+          "authoredAt": "2026-07-05T21:27:45+08:00",
+          "subject": "合并权限重构与勤工助学模块，补充前端 E2E 覆盖并清理重复修复 (#7)"
+        },
+        {
+          "commit": "ddbdec10b45ab524e2cecd154251c37995842b63",
+          "authoredAt": "2026-07-06T10:28:52+08:00",
+          "subject": "fix: 修复了数据库示例"
+        },
+        {
+          "commit": "a787ee886543453ea9104f7b2ce74f8144017444",
+          "authoredAt": "2026-07-06T13:11:01+08:00",
+          "subject": "增加了根据知识库出题，修复了知识库的一些bug"
+        },
+        {
+          "commit": "472ed6a0efc29ae91c3ed8aea7e6923add7b1338",
+          "authoredAt": "2026-07-06T13:13:10+08:00",
+          "subject": "Merge branch 'dev' of https://github.com/QingYingZero/ai-learning into dev"
+        },
+        {
+          "commit": "ee0ac96e8fa52a6f58c491e41bbd99b21d6fadb8",
+          "authoredAt": "2026-07-06T13:30:41+08:00",
+          "subject": "修复老师学生前端流程并补齐控制台与勤工俭学契约 (#10)"
+        },
+        {
+          "commit": "2c9bb5e5fba297dbfd7927136bd604b9b3309504",
+          "authoredAt": "2026-07-06T15:22:58+08:00",
+          "subject": "Feature/teacher exam wizard (#12)"
+        },
+        {
+          "commit": "05770e521f0c2fde3f9366664d95065629f76e18",
+          "authoredAt": "2026-07-06T17:47:38+08:00",
+          "subject": "修复了知识库增删bug"
+        },
+        {
+          "commit": "6852f18d6ea1c27dd86730276d3a7767563ca5be",
+          "authoredAt": "2026-07-06T20:07:12+08:00",
+          "subject": "网课、评论与笔记模块 (#13)"
+        },
+        {
+          "commit": "eceb037aab50bfeca7e0d42d4a78cdbb4da79765",
+          "authoredAt": "2026-07-06T21:29:25+08:00",
+          "subject": "Integrate/agent to dev (#14)"
+        },
+        {
+          "commit": "84b6f5d8a513e8ceb6b774944e4010009ba5723b",
+          "authoredAt": "2026-07-07T09:58:26+08:00",
+          "subject": "加入了知识图谱"
+        },
+        {
+          "commit": "b022697bb7bb6fdaad5fff00086bed56212f3a34",
+          "authoredAt": "2026-07-07T09:58:52+08:00",
+          "subject": "Merge branch 'dev' of https://github.com/QingYingZero/ai-learning into dev"
+        },
+        {
+          "commit": "c75c8e6f0efee32f719beeee353b05f1e0652cbe",
+          "authoredAt": "2026-07-07T16:46:36+08:00",
+          "subject": "对知识库UI界面进行优化，解决一些bug"
+        },
+        {
+          "commit": "53950412871f8d397f9e6b4f3a879e312b533786",
+          "authoredAt": "2026-07-05T04:51:59+08:00",
+          "subject": "1. 新增 Agent 定义管理    - 查询 Agent 列表    - 查询 Agent 详情    - 新建 Agent    - 修改 Agent    - 启用/禁用 Agent"
+        },
+        {
+          "commit": "644509262c14711f45cc7f6632f23e0de1799dac",
+          "authoredAt": "2026-07-05T21:10:36+08:00",
+          "subject": "feat：json输出规范化"
+        },
+        {
+          "commit": "2ec7036292ef792fe22971b84a1b054f0a5d406e",
+          "authoredAt": "2026-07-05T12:55:49+08:00",
+          "subject": "feat(agent): 完善 Agent 配置校验、知识库检索、工具调用和权限控制"
+        },
+        {
+          "commit": "25bcf3e07c9dccb1e2cb7a7e5418a2d95dfae907",
+          "authoredAt": "2026-07-05T14:31:29+08:00",
+          "subject": "feat：新增上传md文档功能"
+        },
+        {
+          "commit": "7de2aba0fff2ca656ca5f0734186a534d9f3a61f",
+          "authoredAt": "2026-07-05T20:58:20+08:00",
+          "subject": "feat：新增agent读写tools"
+        },
+        {
+          "commit": "2231284bd5bf1ceac70e75ce2dbed7db77d3f45f",
+          "authoredAt": "2026-07-06T09:41:04+08:00",
+          "subject": "feat：新增教学班写操作闭环、新增班级学生写操作闭环"
+        },
+        {
+          "commit": "223892c4471f29c49637373ef531e5185127463f",
+          "authoredAt": "2026-07-06T12:26:18+08:00",
+          "subject": "feat：新增agent：question_delete tool"
+        },
+        {
+          "commit": "5b23ce3deb97dd1e9df61756c6a109f4d504782e",
+          "authoredAt": "2026-07-07T21:39:02+08:00",
+          "subject": "把知识库源文件加入了，修复了知识图谱"
+        },
+        {
+          "commit": "d6aeae337d07514c41c1510207197f1c5f318313",
+          "authoredAt": "2026-07-08T20:33:53+08:00",
+          "subject": "feat: 添加教师入驻申请功能并优化课时内容管理"
+        },
+        {
+          "commit": "c87c33cb19dfe298e24c4d537d987ffdbbfdf742",
+          "authoredAt": "2026-07-08T22:11:05+08:00",
+          "subject": "修复了知识库一些问题，优化了论文搜索"
+        },
+        {
+          "commit": "61cfaa70fcda70ef173d03b91a43bf4860ff82db",
+          "authoredAt": "2026-07-09T15:38:07+08:00",
+          "subject": "feat(agent): integrate natural language write actions"
+        },
+        {
+          "commit": "3e3ea174314c5e8cfeb35816ef8f309208bcc7ca",
+          "authoredAt": "2026-07-09T15:59:33+08:00",
+          "subject": "merge origin/dev into agent integration branch"
+        },
+        {
+          "commit": "ebecf65dc6e353449025186553835d31fa2a9880",
+          "authoredAt": "2026-07-09T17:56:54+08:00",
+          "subject": "整合了agnet优化了PPT导入"
+        },
+        {
+          "commit": "1d5b4a163b82e35045bf1fd39b06c85ba2a39142",
+          "authoredAt": "2026-07-10T01:45:47+08:00",
+          "subject": "feat: agentPlan模式 fix: 删除了流式输出"
+        },
+        {
+          "commit": "557e717f794e87657c5b12089846fe9b03bbea4c",
+          "authoredAt": "2026-07-10T01:49:57+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "984d9939db8f623de43507eb262c5f7982ebfb8e",
+          "authoredAt": "2026-07-10T09:29:15+08:00",
+          "subject": "最总版初版"
+        },
+        {
+          "commit": "1cf7a9769e4179738c4f7cc27708f5723a113ec0",
+          "authoredAt": "2026-07-10T09:54:44+08:00",
+          "subject": "增加了可视化"
+        },
+        {
+          "commit": "3c15b4e06317309b52f70013c4b489977ec67e2f",
+          "authoredAt": "2026-07-10T09:57:52+08:00",
+          "subject": "Merge branch 'dev' of https://github.com/QingYingZero/ai-learning into dev"
+        },
+        {
+          "commit": "7eef951b67f484cfd43fe763b0510d08550d0077",
+          "authoredAt": "2026-07-10T16:54:30+08:00",
+          "subject": "fix: 前端uibug修复"
+        },
+        {
+          "commit": "81638151ca54dd2f3c0da57b928e92a80fef6674",
+          "authoredAt": "2026-07-10T20:30:54+08:00",
+          "subject": "feat: 统一考试作业评测流程"
+        },
+        {
+          "commit": "8306ea195735b5ef3a281e63d7486a3254eb6670",
+          "authoredAt": "2026-07-10T22:54:48+08:00",
+          "subject": "agent 修改"
+        },
+        {
+          "commit": "bc2fe3a6ea55c9a2626aacb070d0a1ab027c4734",
+          "authoredAt": "2026-07-11T00:41:58+08:00",
+          "subject": "feat: 重构导入与考试评测流程"
+        },
+        {
+          "commit": "6eb6b19787d87c9ab5caec24798736a9d487231d",
+          "authoredAt": "2026-07-11T00:52:01+08:00",
+          "subject": "agent 修改"
+        },
+        {
+          "commit": "21d054a3588424d3e44e469c1970c86751f57ac4",
+          "authoredAt": "2026-07-11T00:41:58+08:00",
+          "subject": "feat: 重构导入与考试评测流程"
+        },
+        {
+          "commit": "612f0c7db6e0a314c2ffdfad5bb55b65eb8b8006",
+          "authoredAt": "2026-07-11T01:20:27+08:00",
+          "subject": "feat(database): 更新数据库初始化脚本以包含基础启动数据"
+        },
+        {
+          "commit": "01dcd2282da9680aaeed4c8a6491713f1cec2b58",
+          "authoredAt": "2026-07-11T01:25:40+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "13466294833aa8603e95bc429fdc20e58af1b914",
+          "authoredAt": "2026-07-11T09:24:17+08:00",
+          "subject": "feat(agent): 优化Agent聊天服务及前端浮动助手交互体验"
+        },
+        {
+          "commit": "d606f57fa08bc103e0a1087a3cd62fe17e997c0c",
+          "authoredAt": "2026-07-11T10:12:24+08:00",
+          "subject": "修改了论文查询模块，增加了可视化"
+        },
+        {
+          "commit": "d7a38b704df4749ad630a00595c740354a7a8af7",
+          "authoredAt": "2026-07-11T11:02:27+08:00",
+          "subject": "feat: integrate visualization without legacy regressions"
+        },
+        {
+          "commit": "4d2ac35a31aded438290c65481aefa5f643fd416",
+          "authoredAt": "2026-07-11T11:21:35+08:00",
+          "subject": "chore(config): 更新.gitignore配置并清理文档文件"
+        },
+        {
+          "commit": "3e4f367e0fe92d97785ce772cd95cfe4a5ddaf2d",
+          "authoredAt": "2026-07-11T11:24:19+08:00",
+          "subject": "removes(agent): 删除智能代理相关功能的测试代码"
+        },
+        {
+          "commit": "e7fbace99bc9ddd69084526a56c85a54e12285cc",
+          "authoredAt": "2026-07-11T11:58:55+08:00",
+          "subject": "fix: 修复文件上传题与考试批改重提逻辑"
+        },
+        {
+          "commit": "9e7df61c7f1e556b20b4e397e3003cf8fa677b29",
+          "authoredAt": "2026-07-11T14:27:59+08:00",
+          "subject": "知识库修复"
+        },
+        {
+          "commit": "66c677dbd153f1b8ac785ddbd9d9ae914e4c853a",
+          "authoredAt": "2026-07-11T14:28:51+08:00",
+          "subject": "Merge branch 'dev' of https://github.com/QingYingZero/ai-learning into dev"
+        },
+        {
+          "commit": "754199bb7e0b489399e91f6fc31e3bb9ed40d73e",
+          "authoredAt": "2026-07-11T17:57:34+08:00",
+          "subject": "feat(agent): 优化Agent聊天服务及前端浮动助手交互体验"
+        },
+        {
+          "commit": "9f6bb18b004aebb43bd845f7219411d0fd2d77a6",
+          "authoredAt": "2026-07-11T17:58:49+08:00",
+          "subject": "Merge remote-tracking branch 'origin/dev' into dev"
+        },
+        {
+          "commit": "f203d2456ac36075725304d7ec9765d18941eaf8",
+          "authoredAt": "2026-07-11T19:43:39+08:00",
+          "subject": "feat: 监考系统更新"
+        },
+        {
+          "commit": "8a59b50dbad18688270f8bb3274940a57a678e06",
+          "authoredAt": "2026-07-11T19:44:55+08:00",
+          "subject": "Merge branch 'dev' of https://github.com/QingYingZero/ai-learning into dev"
+        }
+      ]
+    },
+    {
+      "label": "other-workflow-branch",
+      "localPath": "D:\\ai-learning-github-latest",
+      "head": "89ad68b72049acce534ce7fc75cb51ad6837ef4b",
+      "branch": "codex/course-workflow",
+      "origin": "https://github.com/kbbbbs/ai-learning-collaboration.git",
+      "commitCount": 64,
+      "rootCommits": [
+        "1896bce4cedee21ca656a6e16a1c442f9c093201"
+      ],
+      "licensePaths": [],
+      "commits": [
+        {
+          "commit": "1896bce4cedee21ca656a6e16a1c442f9c093201",
+          "authoredAt": "2026-10-31T19:43:06+08:00",
+          "subject": "Initialize sanitized AI learning collaboration snapshot and verification"
+        },
+        {
+          "commit": "6849731b1a211fdac8664a79f467c81975be116f",
+          "authoredAt": "2026-10-31T19:49:19+08:00",
+          "subject": "Document clean-clone verification and development evidence"
+        },
+        {
+          "commit": "1f51881d074ac6943d2c8fcabc06700656de35b2",
+          "authoredAt": "2026-11-03T22:07:56+08:00",
+          "subject": "fix: 项目 Bug 修正版，明确保留未解决问题"
+        },
+        {
+          "commit": "63c73b9d635a6dee76be79d679e97aa19c7dfba2",
+          "authoredAt": "2026-11-16T11:41:06+08:00",
+          "subject": "chore: 忽略本地测试产物与安装私有数据"
+        },
+        {
+          "commit": "c33369f5de39d516d38eefe8d9a0128343a9ce72",
+          "authoredAt": "2026-11-16T11:41:06+08:00",
+          "subject": "fix(backend): 拒绝重复分类名，论文 year 列加引号"
+        },
+        {
+          "commit": "c33397a02e442e059623781000439c8e3182b2ff",
+          "authoredAt": "2026-11-16T11:41:14+08:00",
+          "subject": "feat(backend): 安装启动器、安装向导接口与管理员模型设置"
+        },
+        {
+          "commit": "9a7ca329d59102c446f2b43b419e8a6d5cb474e0",
+          "authoredAt": "2026-11-16T11:42:42+08:00",
+          "subject": "feat(frontend): 工作区界面重写与主题系统"
+        },
+        {
+          "commit": "19a230d2d0b6ded739b2d4cebe514177a25b2225",
+          "authoredAt": "2026-11-16T11:42:52+08:00",
+          "subject": "feat(frontend): 安装向导、恢复流程与管理员模型设置页"
+        },
+        {
+          "commit": "36208dd10299a9ff93d1bda99a2d15103bfe6a4c",
+          "authoredAt": "2026-11-16T11:42:59+08:00",
+          "subject": "fix(frontend): 修复知识图谱 Wiki 渲染的存储型 XSS"
+        },
+        {
+          "commit": "9d4dd4eee646fc677e41d17a593af363e31348a3",
+          "authoredAt": "2026-11-16T11:43:09+08:00",
+          "subject": "test(frontend): 补充路由矩阵、安装验收与回归 e2e 用例"
+        },
+        {
+          "commit": "8921ea6f01fd055f26793575e0af74ba5fe71d8f",
+          "authoredAt": "2026-11-16T11:43:09+08:00",
+          "subject": "feat(deploy): Docker Compose 部署（可选托管 MySQL）"
+        },
+        {
+          "commit": "7ece52b643a0acb8906fd4a6363037f060774233",
+          "authoredAt": "2026-11-16T11:43:22+08:00",
+          "subject": "docs: 安装向导、部署与模型配置文档"
+        },
+        {
+          "commit": "9828d6cc590659183ca05dfedc744cae9cbbcac5",
+          "authoredAt": "2026-11-16T11:43:31+08:00",
+          "subject": "docs(records): 归档 2026-11-05 至 11-15 脱敏开发记录"
+        },
+        {
+          "commit": "54c8f3e5e92721ae8aa543eb3f93d43bf75d760b",
+          "authoredAt": "2026-11-16T11:48:37+08:00",
+          "subject": "test(backend): 守护 /api/admin/settings/** 全部接口拒绝匿名访问"
+        },
+        {
+          "commit": "24cea1fd48e86616b83146ad7c3b02323e8ba9c9",
+          "authoredAt": "2026-11-16T11:48:37+08:00",
+          "subject": "fix(backend): 启动器失败时输出异常类型与错误码"
+        },
+        {
+          "commit": "c984c60ffc5a6c4787f0c844cc40474423036df0",
+          "authoredAt": "2026-11-16T11:49:10+08:00",
+          "subject": "chore(frontend): 移除未使用的 pdfjs-dist"
+        },
+        {
+          "commit": "6da33290a3ff0e5ef732768d6d40cb4b378060e0",
+          "authoredAt": "2026-11-16T11:49:34+08:00",
+          "subject": "ci: 后端测试与前端构建工作流"
+        },
+        {
+          "commit": "039aacec22167bbc261b58b4869a5cf6a104d4d7",
+          "authoredAt": "2026-11-16T11:50:36+08:00",
+          "subject": "docs: 更新 CLAUDE.md 以匹配当前代码"
+        },
+        {
+          "commit": "8ff41f3852455d11e1f1c02d4cf52c0e94e310da",
+          "authoredAt": "2026-11-16T11:55:47+08:00",
+          "subject": "chore: 统一换行符规则"
+        },
+        {
+          "commit": "66be4e560bee65531a656ec38fca5f3f98f5776a",
+          "authoredAt": "2026-11-16T11:58:24+08:00",
+          "subject": "fix(backend): CORS 默认仅同源，按需配置精确 Origin"
+        },
+        {
+          "commit": "8a5f7c17ae231547613cff244df630a9a4445e03",
+          "authoredAt": "2026-11-16T12:53:39+08:00",
+          "subject": "chore(backend): Maven 坐标改为 com.cupk:ai-learning-backend"
+        },
+        {
+          "commit": "f20ab153e3f4b7aeaf3c261123757fbd0cae888c",
+          "authoredAt": "2026-11-16T12:56:55+08:00",
+          "subject": "perf(frontend): ECharts 按需引入"
+        },
+        {
+          "commit": "89a059239461b86bcb69e88fb7e3e54adb7bd751",
+          "authoredAt": "2026-11-16T12:57:22+08:00",
+          "subject": "chore: 移除误入库的 LibreOffice 转换配置缓存"
+        },
+        {
+          "commit": "8a5085aafbfef3c17647ae515b92e795ce653778",
+          "authoredAt": "2026-11-16T13:01:38+08:00",
+          "subject": "style(backend): 按项目风格重排安装模块的压缩代码"
+        },
+        {
+          "commit": "65ba69e4356e3006459ec6e712d2112951b10b48",
+          "authoredAt": "2026-11-16T13:17:19+08:00",
+          "subject": "feat(frontend): 支持部署在子路径（VITE_BASE_PATH）"
+        },
+        {
+          "commit": "9a1055b4efdfb0ac5236a23b50b72cf3ce28b7c5",
+          "authoredAt": "2026-11-16T13:26:21+08:00",
+          "subject": "feat(deploy): 公开演示实例的原生部署（nginx + systemd）"
+        },
+        {
+          "commit": "ed2f04cce1778675e7d522dec5fa3e0578c5bb0d",
+          "authoredAt": "2026-11-16T13:26:31+08:00",
+          "subject": "chore: deploy/demo 全部固定 LF 换行"
+        },
+        {
+          "commit": "f35ecdee71c2971a86453ccb451f4bbbd2ba16d4",
+          "authoredAt": "2026-11-16T13:38:23+08:00",
+          "subject": "feat(deploy): 演示实例种子脚本（合成课程内容）"
+        },
+        {
+          "commit": "d3c7acf88682dcf7f2d43b5aee504c16a2a05ef5",
+          "authoredAt": "2026-11-16T13:55:59+08:00",
+          "subject": "fix(backend): 课时摘要取首段正文，不再显示 Markdown 源码"
+        },
+        {
+          "commit": "31493715488a0bb3a02f4cc2dece702f6ffd1ba9",
+          "authoredAt": "2026-11-16T13:55:59+08:00",
+          "subject": "fix(frontend): 成绩分析的教学班下拉框不再塌缩"
+        },
+        {
+          "commit": "020455c5073362c35849ce32fa7b4b6064a5467f",
+          "authoredAt": "2026-11-16T14:03:11+08:00",
+          "subject": "feat(site): EduLoop 展示站（首页 + 文档，VitePress）"
+        },
+        {
+          "commit": "5f64654f7d5749034ca6dc742c7597b99693cc35",
+          "authoredAt": "2026-11-16T14:13:20+08:00",
+          "subject": "fix(frontend): 批改页显示学生姓名而非「学生{id}」"
+        },
+        {
+          "commit": "11c8a47f779dc3ab67b9502c4e0973de2bfb17df",
+          "authoredAt": "2026-11-16T14:17:55+08:00",
+          "subject": "feat(deploy): 种子脚本在全新库上先轮换默认密码"
+        },
+        {
+          "commit": "fad3b22fd092d990f671f8258a44821341ce3387",
+          "authoredAt": "2026-11-16T14:18:30+08:00",
+          "subject": "docs: 演示实例运维说明（部署、密钥、重建数据、截图、换域名）"
+        },
+        {
+          "commit": "c28a785534d71d52536b39cab4f9907512bb1017",
+          "authoredAt": "2026-11-16T19:24:51+08:00",
+          "subject": "feat(rag): 识别结果直接可用，页面文字可修改后按需更新检索"
+        },
+        {
+          "commit": "aca8f56f41848b82a5c3cca97ebbefbb30469eef",
+          "authoredAt": "2026-11-16T19:32:15+08:00",
+          "subject": "feat(preparation): 部分可用的资料不再卡住备课"
+        },
+        {
+          "commit": "5df78fab2e36702465587b8d0af43058189a4756",
+          "authoredAt": "2026-11-16T19:38:01+08:00",
+          "subject": "feat(frontend): 笔记与作答自动暂存，刷新、断网和切课时不丢内容"
+        },
+        {
+          "commit": "87be1b01db5a4278570edc6fb71db714515f8fdb",
+          "authoredAt": "2026-11-16T19:50:03+08:00",
+          "subject": "feat(rag): 课时问答自动使用本课程授权资料，并按课时保留对话"
+        },
+        {
+          "commit": "4319075cf3aedbd4865719fcb6209d59492636de",
+          "authoredAt": "2026-11-16T19:52:56+08:00",
+          "subject": "feat(preparation): 备课审核阶段的修改自动保存为草稿"
+        },
+        {
+          "commit": "61f401e28222d3a93994b95a42c0919b14c70da2",
+          "authoredAt": "2026-11-16T20:12:04+08:00",
+          "subject": "feat(preparation): 一次生成完整草稿、题目可选，生成失败可从中断处继续"
+        },
+        {
+          "commit": "dfbc182cd77112dc590799be91a96515eba515b4",
+          "authoredAt": "2026-11-16T20:24:30+08:00",
+          "subject": "feat(questions): 知识库出题改为可恢复的后台任务，结果自动存为草稿"
+        },
+        {
+          "commit": "4ef35c4b0a88029c09ddaeb6cafd5f3c7740d0f5",
+          "authoredAt": "2026-11-16T20:37:13+08:00",
+          "subject": "docs(site): 按本轮改进更新资料处理、备课、出题和自动保存的说明"
+        },
+        {
+          "commit": "62d653aed3bef05c0fb6590c58bc9702cb80726a",
+          "authoredAt": "2026-11-16T22:15:07+08:00",
+          "subject": "feat(knowledge): show original pages and optional source text previews"
+        },
+        {
+          "commit": "fc559ef4b56ed380633f9056e12931ffc2df3abd",
+          "authoredAt": "2026-11-17T00:03:09+08:00",
+          "subject": "feat(courses): integrate materials and preparation into course workflow"
+        },
+        {
+          "commit": "6822d0b8ac458dc50a1e9fc3101c65ab59ca8cd4",
+          "authoredAt": "2026-11-17T00:13:49+08:00",
+          "subject": "fix(preparation): restore the requested draft from legacy course links"
+        },
+        {
+          "commit": "da638bf56db26a1b109c0a9b56f2c918fb6eef1a",
+          "authoredAt": "2026-11-17T05:05:16+08:00",
+          "subject": "feat(courses): unify assistant sessions and class-scoped course workflows"
+        },
+        {
+          "commit": "493969382c238043d2366fcc9e3102c02463e336",
+          "authoredAt": "2026-11-17T05:18:45+08:00",
+          "subject": "docs: archive unified assistant release verification"
+        },
+        {
+          "commit": "ef1dc78c0d1272b136a4ebab193fcf565d6e806c",
+          "authoredAt": "2026-11-17T06:10:34+08:00",
+          "subject": "feat: add course knowledge graph and grounded graph retrieval"
+        },
+        {
+          "commit": "3ded19e86a0b3f570c943c70f30585d409340c04",
+          "authoredAt": "2026-11-17T06:23:35+08:00",
+          "subject": "docs: record course graph deployment verification"
+        },
+        {
+          "commit": "0d2779bcd510e20e5fa026eb270b1318110972d3",
+          "authoredAt": "2026-11-17T06:53:31+08:00",
+          "subject": "fix: extract complete course graph with durable resumable progress"
+        },
+        {
+          "commit": "6dfa7b3f7db4bde35adc0f5e8dc19cee234fa094",
+          "authoredAt": "2026-11-17T07:04:54+08:00",
+          "subject": "fix: clarify course graph recovery states and record live validation"
+        },
+        {
+          "commit": "c77e5addc6703da7bc9769d70a0c85ff3bc7f355",
+          "authoredAt": "2026-11-17T07:13:05+08:00",
+          "subject": "fix: restore assistant chat presentation and actual answer streaming"
+        },
+        {
+          "commit": "84eba3524c06a4c3b7ff1cc2c82ca6ae7a1af079",
+          "authoredAt": "2026-11-17T07:22:24+08:00",
+          "subject": "docs: verify deployed course graph full coverage and recovery"
+        },
+        {
+          "commit": "d588bfcd6c7fd8b5e08dc5080119836f048d6059",
+          "authoredAt": "2026-11-17T07:22:56+08:00",
+          "subject": "docs: record assistant interface and streaming release verification"
+        },
+        {
+          "commit": "0a7aad9c0915307b5e930e72ea64df44d4c5adfa",
+          "authoredAt": "2026-11-17T08:00:56+08:00",
+          "subject": "fix: restore original assistant execution timeline and streaming interactions"
+        },
+        {
+          "commit": "ca9e14c13cee687dc8e81682a9856373211a648d",
+          "authoredAt": "2026-11-17T08:06:59+08:00",
+          "subject": "docs: record original assistant interaction deployment verification"
+        },
+        {
+          "commit": "dfbecfe720b5c85543be515916d00755e8d579af",
+          "authoredAt": "2026-11-17T08:28:39+08:00",
+          "subject": "fix: simplify assistant progress and enlarge floating conversation"
+        },
+        {
+          "commit": "828e669dab8e426f25971b60bcc7e1d1d64b7c9d",
+          "authoredAt": "2026-11-17T08:31:33+08:00",
+          "subject": "docs: record assistant display refinement release checks"
+        },
+        {
+          "commit": "25f19614a16daef0902ac8e78219c24f24bff184",
+          "authoredAt": "2026-11-17T09:27:32+08:00",
+          "subject": "fix: simplify course entry and default creation to AI preparation"
+        },
+        {
+          "commit": "35e7f8e1e3ee5d0c745f84ae511c4bbf022a2861",
+          "authoredAt": "2026-11-17T09:30:44+08:00",
+          "subject": "docs: record simplified course creation release verification"
+        },
+        {
+          "commit": "ceb06979d332fdd2e61d148f0e83694cef7fbd28",
+          "authoredAt": "2026-11-17T09:30:33+08:00",
+          "subject": "feat: restore original Cytoscape course graph and native Neo4j storage"
+        },
+        {
+          "commit": "c34f10ca8d584a1da2ecf5446bd3caf78613d6ac",
+          "authoredAt": "2026-11-17T09:36:15+08:00",
+          "subject": "fix: keep restored graph presentation titles readable"
+        },
+        {
+          "commit": "25ae05924332706b3108faf7e481882176f1bf18",
+          "authoredAt": "2026-11-17T09:51:13+08:00",
+          "subject": "docs: record original graph restoration and native Neo4j deployment"
+        },
+        {
+          "commit": "89ad68b72049acce534ce7fc75cb51ad6837ef4b",
+          "authoredAt": "2026-11-17T13:41:32+08:00",
+          "subject": "课程管理页面UI优化"
+        }
+      ]
+    },
+    {
+      "label": "other-graph-restore-branch",
+      "localPath": "D:\\ai-learning-course-graph-restore",
+      "head": "c34f10ca8d584a1da2ecf5446bd3caf78613d6ac",
+      "branch": "codex/course-graph-restore",
+      "origin": "https://github.com/kbbbbs/ai-learning-collaboration.git",
+      "commitCount": 62,
+      "rootCommits": [
+        "1896bce4cedee21ca656a6e16a1c442f9c093201"
+      ],
+      "licensePaths": [],
+      "commits": [
+        {
+          "commit": "1896bce4cedee21ca656a6e16a1c442f9c093201",
+          "authoredAt": "2026-10-31T19:43:06+08:00",
+          "subject": "Initialize sanitized AI learning collaboration snapshot and verification"
+        },
+        {
+          "commit": "6849731b1a211fdac8664a79f467c81975be116f",
+          "authoredAt": "2026-10-31T19:49:19+08:00",
+          "subject": "Document clean-clone verification and development evidence"
+        },
+        {
+          "commit": "1f51881d074ac6943d2c8fcabc06700656de35b2",
+          "authoredAt": "2026-11-03T22:07:56+08:00",
+          "subject": "fix: 项目 Bug 修正版，明确保留未解决问题"
+        },
+        {
+          "commit": "63c73b9d635a6dee76be79d679e97aa19c7dfba2",
+          "authoredAt": "2026-11-16T11:41:06+08:00",
+          "subject": "chore: 忽略本地测试产物与安装私有数据"
+        },
+        {
+          "commit": "c33369f5de39d516d38eefe8d9a0128343a9ce72",
+          "authoredAt": "2026-11-16T11:41:06+08:00",
+          "subject": "fix(backend): 拒绝重复分类名，论文 year 列加引号"
+        },
+        {
+          "commit": "c33397a02e442e059623781000439c8e3182b2ff",
+          "authoredAt": "2026-11-16T11:41:14+08:00",
+          "subject": "feat(backend): 安装启动器、安装向导接口与管理员模型设置"
+        },
+        {
+          "commit": "9a7ca329d59102c446f2b43b419e8a6d5cb474e0",
+          "authoredAt": "2026-11-16T11:42:42+08:00",
+          "subject": "feat(frontend): 工作区界面重写与主题系统"
+        },
+        {
+          "commit": "19a230d2d0b6ded739b2d4cebe514177a25b2225",
+          "authoredAt": "2026-11-16T11:42:52+08:00",
+          "subject": "feat(frontend): 安装向导、恢复流程与管理员模型设置页"
+        },
+        {
+          "commit": "36208dd10299a9ff93d1bda99a2d15103bfe6a4c",
+          "authoredAt": "2026-11-16T11:42:59+08:00",
+          "subject": "fix(frontend): 修复知识图谱 Wiki 渲染的存储型 XSS"
+        },
+        {
+          "commit": "9d4dd4eee646fc677e41d17a593af363e31348a3",
+          "authoredAt": "2026-11-16T11:43:09+08:00",
+          "subject": "test(frontend): 补充路由矩阵、安装验收与回归 e2e 用例"
+        },
+        {
+          "commit": "8921ea6f01fd055f26793575e0af74ba5fe71d8f",
+          "authoredAt": "2026-11-16T11:43:09+08:00",
+          "subject": "feat(deploy): Docker Compose 部署（可选托管 MySQL）"
+        },
+        {
+          "commit": "7ece52b643a0acb8906fd4a6363037f060774233",
+          "authoredAt": "2026-11-16T11:43:22+08:00",
+          "subject": "docs: 安装向导、部署与模型配置文档"
+        },
+        {
+          "commit": "9828d6cc590659183ca05dfedc744cae9cbbcac5",
+          "authoredAt": "2026-11-16T11:43:31+08:00",
+          "subject": "docs(records): 归档 2026-11-05 至 11-15 脱敏开发记录"
+        },
+        {
+          "commit": "54c8f3e5e92721ae8aa543eb3f93d43bf75d760b",
+          "authoredAt": "2026-11-16T11:48:37+08:00",
+          "subject": "test(backend): 守护 /api/admin/settings/** 全部接口拒绝匿名访问"
+        },
+        {
+          "commit": "24cea1fd48e86616b83146ad7c3b02323e8ba9c9",
+          "authoredAt": "2026-11-16T11:48:37+08:00",
+          "subject": "fix(backend): 启动器失败时输出异常类型与错误码"
+        },
+        {
+          "commit": "c984c60ffc5a6c4787f0c844cc40474423036df0",
+          "authoredAt": "2026-11-16T11:49:10+08:00",
+          "subject": "chore(frontend): 移除未使用的 pdfjs-dist"
+        },
+        {
+          "commit": "6da33290a3ff0e5ef732768d6d40cb4b378060e0",
+          "authoredAt": "2026-11-16T11:49:34+08:00",
+          "subject": "ci: 后端测试与前端构建工作流"
+        },
+        {
+          "commit": "039aacec22167bbc261b58b4869a5cf6a104d4d7",
+          "authoredAt": "2026-11-16T11:50:36+08:00",
+          "subject": "docs: 更新 CLAUDE.md 以匹配当前代码"
+        },
+        {
+          "commit": "8ff41f3852455d11e1f1c02d4cf52c0e94e310da",
+          "authoredAt": "2026-11-16T11:55:47+08:00",
+          "subject": "chore: 统一换行符规则"
+        },
+        {
+          "commit": "66be4e560bee65531a656ec38fca5f3f98f5776a",
+          "authoredAt": "2026-11-16T11:58:24+08:00",
+          "subject": "fix(backend): CORS 默认仅同源，按需配置精确 Origin"
+        },
+        {
+          "commit": "8a5f7c17ae231547613cff244df630a9a4445e03",
+          "authoredAt": "2026-11-16T12:53:39+08:00",
+          "subject": "chore(backend): Maven 坐标改为 com.cupk:ai-learning-backend"
+        },
+        {
+          "commit": "f20ab153e3f4b7aeaf3c261123757fbd0cae888c",
+          "authoredAt": "2026-11-16T12:56:55+08:00",
+          "subject": "perf(frontend): ECharts 按需引入"
+        },
+        {
+          "commit": "89a059239461b86bcb69e88fb7e3e54adb7bd751",
+          "authoredAt": "2026-11-16T12:57:22+08:00",
+          "subject": "chore: 移除误入库的 LibreOffice 转换配置缓存"
+        },
+        {
+          "commit": "8a5085aafbfef3c17647ae515b92e795ce653778",
+          "authoredAt": "2026-11-16T13:01:38+08:00",
+          "subject": "style(backend): 按项目风格重排安装模块的压缩代码"
+        },
+        {
+          "commit": "65ba69e4356e3006459ec6e712d2112951b10b48",
+          "authoredAt": "2026-11-16T13:17:19+08:00",
+          "subject": "feat(frontend): 支持部署在子路径（VITE_BASE_PATH）"
+        },
+        {
+          "commit": "9a1055b4efdfb0ac5236a23b50b72cf3ce28b7c5",
+          "authoredAt": "2026-11-16T13:26:21+08:00",
+          "subject": "feat(deploy): 公开演示实例的原生部署（nginx + systemd）"
+        },
+        {
+          "commit": "ed2f04cce1778675e7d522dec5fa3e0578c5bb0d",
+          "authoredAt": "2026-11-16T13:26:31+08:00",
+          "subject": "chore: deploy/demo 全部固定 LF 换行"
+        },
+        {
+          "commit": "f35ecdee71c2971a86453ccb451f4bbbd2ba16d4",
+          "authoredAt": "2026-11-16T13:38:23+08:00",
+          "subject": "feat(deploy): 演示实例种子脚本（合成课程内容）"
+        },
+        {
+          "commit": "d3c7acf88682dcf7f2d43b5aee504c16a2a05ef5",
+          "authoredAt": "2026-11-16T13:55:59+08:00",
+          "subject": "fix(backend): 课时摘要取首段正文，不再显示 Markdown 源码"
+        },
+        {
+          "commit": "31493715488a0bb3a02f4cc2dece702f6ffd1ba9",
+          "authoredAt": "2026-11-16T13:55:59+08:00",
+          "subject": "fix(frontend): 成绩分析的教学班下拉框不再塌缩"
+        },
+        {
+          "commit": "020455c5073362c35849ce32fa7b4b6064a5467f",
+          "authoredAt": "2026-11-16T14:03:11+08:00",
+          "subject": "feat(site): EduLoop 展示站（首页 + 文档，VitePress）"
+        },
+        {
+          "commit": "5f64654f7d5749034ca6dc742c7597b99693cc35",
+          "authoredAt": "2026-11-16T14:13:20+08:00",
+          "subject": "fix(frontend): 批改页显示学生姓名而非「学生{id}」"
+        },
+        {
+          "commit": "11c8a47f779dc3ab67b9502c4e0973de2bfb17df",
+          "authoredAt": "2026-11-16T14:17:55+08:00",
+          "subject": "feat(deploy): 种子脚本在全新库上先轮换默认密码"
+        },
+        {
+          "commit": "fad3b22fd092d990f671f8258a44821341ce3387",
+          "authoredAt": "2026-11-16T14:18:30+08:00",
+          "subject": "docs: 演示实例运维说明（部署、密钥、重建数据、截图、换域名）"
+        },
+        {
+          "commit": "c28a785534d71d52536b39cab4f9907512bb1017",
+          "authoredAt": "2026-11-16T19:24:51+08:00",
+          "subject": "feat(rag): 识别结果直接可用，页面文字可修改后按需更新检索"
+        },
+        {
+          "commit": "aca8f56f41848b82a5c3cca97ebbefbb30469eef",
+          "authoredAt": "2026-11-16T19:32:15+08:00",
+          "subject": "feat(preparation): 部分可用的资料不再卡住备课"
+        },
+        {
+          "commit": "5df78fab2e36702465587b8d0af43058189a4756",
+          "authoredAt": "2026-11-16T19:38:01+08:00",
+          "subject": "feat(frontend): 笔记与作答自动暂存，刷新、断网和切课时不丢内容"
+        },
+        {
+          "commit": "87be1b01db5a4278570edc6fb71db714515f8fdb",
+          "authoredAt": "2026-11-16T19:50:03+08:00",
+          "subject": "feat(rag): 课时问答自动使用本课程授权资料，并按课时保留对话"
+        },
+        {
+          "commit": "4319075cf3aedbd4865719fcb6209d59492636de",
+          "authoredAt": "2026-11-16T19:52:56+08:00",
+          "subject": "feat(preparation): 备课审核阶段的修改自动保存为草稿"
+        },
+        {
+          "commit": "61f401e28222d3a93994b95a42c0919b14c70da2",
+          "authoredAt": "2026-11-16T20:12:04+08:00",
+          "subject": "feat(preparation): 一次生成完整草稿、题目可选，生成失败可从中断处继续"
+        },
+        {
+          "commit": "dfbc182cd77112dc590799be91a96515eba515b4",
+          "authoredAt": "2026-11-16T20:24:30+08:00",
+          "subject": "feat(questions): 知识库出题改为可恢复的后台任务，结果自动存为草稿"
+        },
+        {
+          "commit": "4ef35c4b0a88029c09ddaeb6cafd5f3c7740d0f5",
+          "authoredAt": "2026-11-16T20:37:13+08:00",
+          "subject": "docs(site): 按本轮改进更新资料处理、备课、出题和自动保存的说明"
+        },
+        {
+          "commit": "62d653aed3bef05c0fb6590c58bc9702cb80726a",
+          "authoredAt": "2026-11-16T22:15:07+08:00",
+          "subject": "feat(knowledge): show original pages and optional source text previews"
+        },
+        {
+          "commit": "fc559ef4b56ed380633f9056e12931ffc2df3abd",
+          "authoredAt": "2026-11-17T00:03:09+08:00",
+          "subject": "feat(courses): integrate materials and preparation into course workflow"
+        },
+        {
+          "commit": "6822d0b8ac458dc50a1e9fc3101c65ab59ca8cd4",
+          "authoredAt": "2026-11-17T00:13:49+08:00",
+          "subject": "fix(preparation): restore the requested draft from legacy course links"
+        },
+        {
+          "commit": "da638bf56db26a1b109c0a9b56f2c918fb6eef1a",
+          "authoredAt": "2026-11-17T05:05:16+08:00",
+          "subject": "feat(courses): unify assistant sessions and class-scoped course workflows"
+        },
+        {
+          "commit": "493969382c238043d2366fcc9e3102c02463e336",
+          "authoredAt": "2026-11-17T05:18:45+08:00",
+          "subject": "docs: archive unified assistant release verification"
+        },
+        {
+          "commit": "ef1dc78c0d1272b136a4ebab193fcf565d6e806c",
+          "authoredAt": "2026-11-17T06:10:34+08:00",
+          "subject": "feat: add course knowledge graph and grounded graph retrieval"
+        },
+        {
+          "commit": "3ded19e86a0b3f570c943c70f30585d409340c04",
+          "authoredAt": "2026-11-17T06:23:35+08:00",
+          "subject": "docs: record course graph deployment verification"
+        },
+        {
+          "commit": "0d2779bcd510e20e5fa026eb270b1318110972d3",
+          "authoredAt": "2026-11-17T06:53:31+08:00",
+          "subject": "fix: extract complete course graph with durable resumable progress"
+        },
+        {
+          "commit": "6dfa7b3f7db4bde35adc0f5e8dc19cee234fa094",
+          "authoredAt": "2026-11-17T07:04:54+08:00",
+          "subject": "fix: clarify course graph recovery states and record live validation"
+        },
+        {
+          "commit": "c77e5addc6703da7bc9769d70a0c85ff3bc7f355",
+          "authoredAt": "2026-11-17T07:13:05+08:00",
+          "subject": "fix: restore assistant chat presentation and actual answer streaming"
+        },
+        {
+          "commit": "84eba3524c06a4c3b7ff1cc2c82ca6ae7a1af079",
+          "authoredAt": "2026-11-17T07:22:24+08:00",
+          "subject": "docs: verify deployed course graph full coverage and recovery"
+        },
+        {
+          "commit": "d588bfcd6c7fd8b5e08dc5080119836f048d6059",
+          "authoredAt": "2026-11-17T07:22:56+08:00",
+          "subject": "docs: record assistant interface and streaming release verification"
+        },
+        {
+          "commit": "0a7aad9c0915307b5e930e72ea64df44d4c5adfa",
+          "authoredAt": "2026-11-17T08:00:56+08:00",
+          "subject": "fix: restore original assistant execution timeline and streaming interactions"
+        },
+        {
+          "commit": "ca9e14c13cee687dc8e81682a9856373211a648d",
+          "authoredAt": "2026-11-17T08:06:59+08:00",
+          "subject": "docs: record original assistant interaction deployment verification"
+        },
+        {
+          "commit": "dfbecfe720b5c85543be515916d00755e8d579af",
+          "authoredAt": "2026-11-17T08:28:39+08:00",
+          "subject": "fix: simplify assistant progress and enlarge floating conversation"
+        },
+        {
+          "commit": "828e669dab8e426f25971b60bcc7e1d1d64b7c9d",
+          "authoredAt": "2026-11-17T08:31:33+08:00",
+          "subject": "docs: record assistant display refinement release checks"
+        },
+        {
+          "commit": "25f19614a16daef0902ac8e78219c24f24bff184",
+          "authoredAt": "2026-11-17T09:27:32+08:00",
+          "subject": "fix: simplify course entry and default creation to AI preparation"
+        },
+        {
+          "commit": "35e7f8e1e3ee5d0c745f84ae511c4bbf022a2861",
+          "authoredAt": "2026-11-17T09:30:44+08:00",
+          "subject": "docs: record simplified course creation release verification"
+        },
+        {
+          "commit": "ceb06979d332fdd2e61d148f0e83694cef7fbd28",
+          "authoredAt": "2026-11-17T09:30:33+08:00",
+          "subject": "feat: restore original Cytoscape course graph and native Neo4j storage"
+        },
+        {
+          "commit": "c34f10ca8d584a1da2ecf5446bd3caf78613d6ac",
+          "authoredAt": "2026-11-17T09:36:15+08:00",
+          "subject": "fix: keep restored graph presentation titles readable"
+        }
+      ]
+    },
+    {
+      "label": "other-graph-build",
+      "localPath": "D:\\ai-learning-graph-recovery-build",
+      "head": "3ded19e86a0b3f570c943c70f30585d409340c04",
+      "branch": "",
+      "origin": "https://github.com/kbbbbs/ai-learning-collaboration.git",
+      "commitCount": 49,
+      "rootCommits": [
+        "1896bce4cedee21ca656a6e16a1c442f9c093201"
+      ],
+      "licensePaths": [],
+      "commits": [
+        {
+          "commit": "1896bce4cedee21ca656a6e16a1c442f9c093201",
+          "authoredAt": "2026-10-31T19:43:06+08:00",
+          "subject": "Initialize sanitized AI learning collaboration snapshot and verification"
+        },
+        {
+          "commit": "6849731b1a211fdac8664a79f467c81975be116f",
+          "authoredAt": "2026-10-31T19:49:19+08:00",
+          "subject": "Document clean-clone verification and development evidence"
+        },
+        {
+          "commit": "1f51881d074ac6943d2c8fcabc06700656de35b2",
+          "authoredAt": "2026-11-03T22:07:56+08:00",
+          "subject": "fix: 项目 Bug 修正版，明确保留未解决问题"
+        },
+        {
+          "commit": "63c73b9d635a6dee76be79d679e97aa19c7dfba2",
+          "authoredAt": "2026-11-16T11:41:06+08:00",
+          "subject": "chore: 忽略本地测试产物与安装私有数据"
+        },
+        {
+          "commit": "c33369f5de39d516d38eefe8d9a0128343a9ce72",
+          "authoredAt": "2026-11-16T11:41:06+08:00",
+          "subject": "fix(backend): 拒绝重复分类名，论文 year 列加引号"
+        },
+        {
+          "commit": "c33397a02e442e059623781000439c8e3182b2ff",
+          "authoredAt": "2026-11-16T11:41:14+08:00",
+          "subject": "feat(backend): 安装启动器、安装向导接口与管理员模型设置"
+        },
+        {
+          "commit": "9a7ca329d59102c446f2b43b419e8a6d5cb474e0",
+          "authoredAt": "2026-11-16T11:42:42+08:00",
+          "subject": "feat(frontend): 工作区界面重写与主题系统"
+        },
+        {
+          "commit": "19a230d2d0b6ded739b2d4cebe514177a25b2225",
+          "authoredAt": "2026-11-16T11:42:52+08:00",
+          "subject": "feat(frontend): 安装向导、恢复流程与管理员模型设置页"
+        },
+        {
+          "commit": "36208dd10299a9ff93d1bda99a2d15103bfe6a4c",
+          "authoredAt": "2026-11-16T11:42:59+08:00",
+          "subject": "fix(frontend): 修复知识图谱 Wiki 渲染的存储型 XSS"
+        },
+        {
+          "commit": "9d4dd4eee646fc677e41d17a593af363e31348a3",
+          "authoredAt": "2026-11-16T11:43:09+08:00",
+          "subject": "test(frontend): 补充路由矩阵、安装验收与回归 e2e 用例"
+        },
+        {
+          "commit": "8921ea6f01fd055f26793575e0af74ba5fe71d8f",
+          "authoredAt": "2026-11-16T11:43:09+08:00",
+          "subject": "feat(deploy): Docker Compose 部署（可选托管 MySQL）"
+        },
+        {
+          "commit": "7ece52b643a0acb8906fd4a6363037f060774233",
+          "authoredAt": "2026-11-16T11:43:22+08:00",
+          "subject": "docs: 安装向导、部署与模型配置文档"
+        },
+        {
+          "commit": "9828d6cc590659183ca05dfedc744cae9cbbcac5",
+          "authoredAt": "2026-11-16T11:43:31+08:00",
+          "subject": "docs(records): 归档 2026-11-05 至 11-15 脱敏开发记录"
+        },
+        {
+          "commit": "54c8f3e5e92721ae8aa543eb3f93d43bf75d760b",
+          "authoredAt": "2026-11-16T11:48:37+08:00",
+          "subject": "test(backend): 守护 /api/admin/settings/** 全部接口拒绝匿名访问"
+        },
+        {
+          "commit": "24cea1fd48e86616b83146ad7c3b02323e8ba9c9",
+          "authoredAt": "2026-11-16T11:48:37+08:00",
+          "subject": "fix(backend): 启动器失败时输出异常类型与错误码"
+        },
+        {
+          "commit": "c984c60ffc5a6c4787f0c844cc40474423036df0",
+          "authoredAt": "2026-11-16T11:49:10+08:00",
+          "subject": "chore(frontend): 移除未使用的 pdfjs-dist"
+        },
+        {
+          "commit": "6da33290a3ff0e5ef732768d6d40cb4b378060e0",
+          "authoredAt": "2026-11-16T11:49:34+08:00",
+          "subject": "ci: 后端测试与前端构建工作流"
+        },
+        {
+          "commit": "039aacec22167bbc261b58b4869a5cf6a104d4d7",
+          "authoredAt": "2026-11-16T11:50:36+08:00",
+          "subject": "docs: 更新 CLAUDE.md 以匹配当前代码"
+        },
+        {
+          "commit": "8ff41f3852455d11e1f1c02d4cf52c0e94e310da",
+          "authoredAt": "2026-11-16T11:55:47+08:00",
+          "subject": "chore: 统一换行符规则"
+        },
+        {
+          "commit": "66be4e560bee65531a656ec38fca5f3f98f5776a",
+          "authoredAt": "2026-11-16T11:58:24+08:00",
+          "subject": "fix(backend): CORS 默认仅同源，按需配置精确 Origin"
+        },
+        {
+          "commit": "8a5f7c17ae231547613cff244df630a9a4445e03",
+          "authoredAt": "2026-11-16T12:53:39+08:00",
+          "subject": "chore(backend): Maven 坐标改为 com.cupk:ai-learning-backend"
+        },
+        {
+          "commit": "f20ab153e3f4b7aeaf3c261123757fbd0cae888c",
+          "authoredAt": "2026-11-16T12:56:55+08:00",
+          "subject": "perf(frontend): ECharts 按需引入"
+        },
+        {
+          "commit": "89a059239461b86bcb69e88fb7e3e54adb7bd751",
+          "authoredAt": "2026-11-16T12:57:22+08:00",
+          "subject": "chore: 移除误入库的 LibreOffice 转换配置缓存"
+        },
+        {
+          "commit": "8a5085aafbfef3c17647ae515b92e795ce653778",
+          "authoredAt": "2026-11-16T13:01:38+08:00",
+          "subject": "style(backend): 按项目风格重排安装模块的压缩代码"
+        },
+        {
+          "commit": "65ba69e4356e3006459ec6e712d2112951b10b48",
+          "authoredAt": "2026-11-16T13:17:19+08:00",
+          "subject": "feat(frontend): 支持部署在子路径（VITE_BASE_PATH）"
+        },
+        {
+          "commit": "9a1055b4efdfb0ac5236a23b50b72cf3ce28b7c5",
+          "authoredAt": "2026-11-16T13:26:21+08:00",
+          "subject": "feat(deploy): 公开演示实例的原生部署（nginx + systemd）"
+        },
+        {
+          "commit": "ed2f04cce1778675e7d522dec5fa3e0578c5bb0d",
+          "authoredAt": "2026-11-16T13:26:31+08:00",
+          "subject": "chore: deploy/demo 全部固定 LF 换行"
+        },
+        {
+          "commit": "f35ecdee71c2971a86453ccb451f4bbbd2ba16d4",
+          "authoredAt": "2026-11-16T13:38:23+08:00",
+          "subject": "feat(deploy): 演示实例种子脚本（合成课程内容）"
+        },
+        {
+          "commit": "d3c7acf88682dcf7f2d43b5aee504c16a2a05ef5",
+          "authoredAt": "2026-11-16T13:55:59+08:00",
+          "subject": "fix(backend): 课时摘要取首段正文，不再显示 Markdown 源码"
+        },
+        {
+          "commit": "31493715488a0bb3a02f4cc2dece702f6ffd1ba9",
+          "authoredAt": "2026-11-16T13:55:59+08:00",
+          "subject": "fix(frontend): 成绩分析的教学班下拉框不再塌缩"
+        },
+        {
+          "commit": "020455c5073362c35849ce32fa7b4b6064a5467f",
+          "authoredAt": "2026-11-16T14:03:11+08:00",
+          "subject": "feat(site): EduLoop 展示站（首页 + 文档，VitePress）"
+        },
+        {
+          "commit": "5f64654f7d5749034ca6dc742c7597b99693cc35",
+          "authoredAt": "2026-11-16T14:13:20+08:00",
+          "subject": "fix(frontend): 批改页显示学生姓名而非「学生{id}」"
+        },
+        {
+          "commit": "11c8a47f779dc3ab67b9502c4e0973de2bfb17df",
+          "authoredAt": "2026-11-16T14:17:55+08:00",
+          "subject": "feat(deploy): 种子脚本在全新库上先轮换默认密码"
+        },
+        {
+          "commit": "fad3b22fd092d990f671f8258a44821341ce3387",
+          "authoredAt": "2026-11-16T14:18:30+08:00",
+          "subject": "docs: 演示实例运维说明（部署、密钥、重建数据、截图、换域名）"
+        },
+        {
+          "commit": "c28a785534d71d52536b39cab4f9907512bb1017",
+          "authoredAt": "2026-11-16T19:24:51+08:00",
+          "subject": "feat(rag): 识别结果直接可用，页面文字可修改后按需更新检索"
+        },
+        {
+          "commit": "aca8f56f41848b82a5c3cca97ebbefbb30469eef",
+          "authoredAt": "2026-11-16T19:32:15+08:00",
+          "subject": "feat(preparation): 部分可用的资料不再卡住备课"
+        },
+        {
+          "commit": "5df78fab2e36702465587b8d0af43058189a4756",
+          "authoredAt": "2026-11-16T19:38:01+08:00",
+          "subject": "feat(frontend): 笔记与作答自动暂存，刷新、断网和切课时不丢内容"
+        },
+        {
+          "commit": "87be1b01db5a4278570edc6fb71db714515f8fdb",
+          "authoredAt": "2026-11-16T19:50:03+08:00",
+          "subject": "feat(rag): 课时问答自动使用本课程授权资料，并按课时保留对话"
+        },
+        {
+          "commit": "4319075cf3aedbd4865719fcb6209d59492636de",
+          "authoredAt": "2026-11-16T19:52:56+08:00",
+          "subject": "feat(preparation): 备课审核阶段的修改自动保存为草稿"
+        },
+        {
+          "commit": "61f401e28222d3a93994b95a42c0919b14c70da2",
+          "authoredAt": "2026-11-16T20:12:04+08:00",
+          "subject": "feat(preparation): 一次生成完整草稿、题目可选，生成失败可从中断处继续"
+        },
+        {
+          "commit": "dfbc182cd77112dc590799be91a96515eba515b4",
+          "authoredAt": "2026-11-16T20:24:30+08:00",
+          "subject": "feat(questions): 知识库出题改为可恢复的后台任务，结果自动存为草稿"
+        },
+        {
+          "commit": "4ef35c4b0a88029c09ddaeb6cafd5f3c7740d0f5",
+          "authoredAt": "2026-11-16T20:37:13+08:00",
+          "subject": "docs(site): 按本轮改进更新资料处理、备课、出题和自动保存的说明"
+        },
+        {
+          "commit": "62d653aed3bef05c0fb6590c58bc9702cb80726a",
+          "authoredAt": "2026-11-16T22:15:07+08:00",
+          "subject": "feat(knowledge): show original pages and optional source text previews"
+        },
+        {
+          "commit": "fc559ef4b56ed380633f9056e12931ffc2df3abd",
+          "authoredAt": "2026-11-17T00:03:09+08:00",
+          "subject": "feat(courses): integrate materials and preparation into course workflow"
+        },
+        {
+          "commit": "6822d0b8ac458dc50a1e9fc3101c65ab59ca8cd4",
+          "authoredAt": "2026-11-17T00:13:49+08:00",
+          "subject": "fix(preparation): restore the requested draft from legacy course links"
+        },
+        {
+          "commit": "da638bf56db26a1b109c0a9b56f2c918fb6eef1a",
+          "authoredAt": "2026-11-17T05:05:16+08:00",
+          "subject": "feat(courses): unify assistant sessions and class-scoped course workflows"
+        },
+        {
+          "commit": "493969382c238043d2366fcc9e3102c02463e336",
+          "authoredAt": "2026-11-17T05:18:45+08:00",
+          "subject": "docs: archive unified assistant release verification"
+        },
+        {
+          "commit": "ef1dc78c0d1272b136a4ebab193fcf565d6e806c",
+          "authoredAt": "2026-11-17T06:10:34+08:00",
+          "subject": "feat: add course knowledge graph and grounded graph retrieval"
+        },
+        {
+          "commit": "3ded19e86a0b3f570c943c70f30585d409340c04",
+          "authoredAt": "2026-11-17T06:23:35+08:00",
+          "subject": "docs: record course graph deployment verification"
+        }
+      ]
+    }
+  ]
+}

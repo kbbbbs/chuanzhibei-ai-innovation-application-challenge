@@ -46,6 +46,10 @@ public class RagSchemaMigrator {
             jdbc.update("INSERT INTO native_rag_schema_migration(version) VALUES('K09_006')");
     }
 
+    public void migrateChatSessions() {
+        applyResource("V007__course_rag_chat.sql");
+    }
+
     private void applyResource(String name) {
         String script;
         try(var source=new ClassPathResource("db/migration/"+name).getInputStream()) {

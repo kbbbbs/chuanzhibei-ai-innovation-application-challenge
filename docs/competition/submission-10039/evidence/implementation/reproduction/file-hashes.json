@@ -1,0 +1,13 @@
+{
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/backend-package.log": "e81781fe716e5029e48e013a8971bd209c47f905944e72a71b76ba9afae7228a",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/backend-startup.log": "8c0229ec90b7c6dec220ef41356b36cf2203b98f3a430243a017d0bf58ade85d",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/copied-source-hashes.json": "341a908847fdb47aa10144925598e2d6f329e6f0fd0e02bb516cf63477a524e3",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/final-source-hashes.json": "89fb5bf4b760e9dd2cb3ea47e2dcd2c481752938e82f3234a738f5e834f0d000",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/frontend-build.log": "a412eed7f28cfc0f184eb1297db4e525001a5fe3fa5cbeea5a9b2e4889015c8e",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/frontend-followup-build.log": "5e2104f905b64813419021fd55b1b3458018f14915f5968a178fd6aeb7fe76f0",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/frontend-followup.json": "95a90d6b8b8e88a1019ee3b5a98f39135a0e8392054ef49ea5f424f39597ab33",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/npm-ci.log": "e4f21eea45c0c79d1fbafcaf095484d62bfb9e8ba6c1ab9f0ba2ac2ee56fde5e",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/result.json": "4f51f60733b0091c4978dfcfbde486f0854cfc36de559c6c0a5d8c157bee1969",
+  "docs/competition/development/agent-records/2026-11-17-10039-implementation/reproduction/verification.json": "e3b6a9b7326bc4ebefe96dfbcf2c005eea0feb43777482568654de2a61ae1962",
+  "docs/competition/submission-10039/reproduction.md": "7bc10b9297ef925c0fb75aa8764a51c4b41b6eeccb9600678c5128cd427a1b14"
+}

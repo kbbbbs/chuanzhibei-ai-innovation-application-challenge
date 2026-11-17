@@ -1,0 +1,31 @@
+{
+  "verifiedAt": "2026-11-17T07:04:35.506283+00:00",
+  "liveRun": "20261117T065931Z",
+  "datasetSha256": "739c52046f6a83dd3d2d9148d4018a271ba14303229560dc3d87b888cf8008ef",
+  "pythonTests": {
+    "run": 6,
+    "passed": 6,
+    "failed": 0
+  },
+  "liveJUnit": {
+    "tests": "1",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "1",
+    "time": "0.0"
+  },
+  "runnerInitialFailure": "Windows PowerShell NativeCommandError on Mockito stderr after JUnit completion",
+  "runnerCorrectionChecks": [
+    "PowerShell parser",
+    "native stderr warning with zero exit code"
+  ],
+  "paidMeasurementRerunAfterWrapperFix": false,
+  "qualityThreshold": null,
+  "historicalReportPreserved": true,
+  "limitations": [
+    "32/36 source pages indexed",
+    "Developer-authored 20-question same-source sample",
+    "Any annotated page hit, not complete multihop support",
+    "No answer accuracy measurement"
+  ]
+}

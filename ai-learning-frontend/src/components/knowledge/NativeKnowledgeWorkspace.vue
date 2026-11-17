@@ -42,26 +42,13 @@
               <el-table-column label="资料" min-width="180"><template #default="{row}"><strong>{{ row.title || row.file_name }}</strong><div class="muted">{{ row.file_name }}</div><div v-if="row.errorMessage || row.error_message" class="error-text">{{ row.errorMessage || row.error_message }}</div><div v-if="row.parse_warning" class="parse-warning">{{ row.parse_warning }}</div></template></el-table-column>
               <el-table-column label="处理状态" min-width="250"><template #default="{row}"><DocumentProcessingStatus :document="row" :job="documentJobs[row.id]" :can-write="canWrite" :busy="!!processingBusy[row.id]" :error="jobErrors[row.id] || ''" @cancel="cancelDocumentProcessing(row)" @retry="retryParsing(row,$event)" @reindex="rebuildIndex(row)" /></template></el-table-column>
               <el-table-column label="出处片段" width="100"><template #default="{row}">{{ row.chunk_count ?? '—' }}</template></el-table-column>
-              <el-table-column label="操作" min-width="240"><template #default="{row}"><div class="document-actions"><el-button size="small" @click="openPageReview(row)">逐页核验</el-button><el-button size="small" @click="previewDocument(row)">查看出处</el-button><el-button size="small" @click="download(row)">下载</el-button><el-button v-if="canWrite" size="small" type="danger" plain @click="deleteFile(row)">删除</el-button></div></template></el-table-column>
+              <el-table-column label="操作" min-width="240"><template #default="{row}"><div class="document-actions"><el-button size="small" @click="openPageReview(row)">逐页核验</el-button><el-button size="small" @click="previewDocument(row)">查看出处</el-button><el-button size="small" @click="download(row)">下载</el-button><el-button v-if="canWrite" size="small" @click="openGrant(row)">课程授权</el-button><el-button v-if="canWrite" size="small" type="danger" plain @click="deleteFile(row)">删除</el-button></div></template></el-table-column>
             </el-table>
             <el-pagination v-if="selected.knowledge_count > 100" v-model:current-page="documentPage" :page-size="100" :total="selected.knowledge_count" layout="prev, pager, next" @current-change="loadDocuments" />
           </el-tab-pane>
           <el-tab-pane label="知识问答" name="chat">
             <div class="chat-toolbar"><el-select v-model="historyId" clearable placeholder="历史对话" @change="switchHistory"><el-option v-for="session in currentSessions" :key="session.id" :label="session.title || '学习对话'" :value="session.id" /></el-select><el-button :disabled="generating" @click="newConversation">新对话</el-button><el-button v-if="historyId" :disabled="generating" @click="deleteConversation">删除对话</el-button></div>
-            <div ref="chatContainer" class="conversation" aria-live="polite">
-              <el-empty v-if="!messages.length" description="向课程资料提问，回答会附原文出处" />
-              <article v-for="(message,index) in messages" :key="message.id || index" class="chat-message" :class="message.role">
-                <strong class="message-role">{{ message.role === 'user' ? '你' : '学习助手' }}</strong>
-                <div v-if="message.content" v-html="renderMarkdown(message.content)"></div>
-                <p v-if="message.streaming" class="muted">{{ progress || '正在生成…' }}</p>
-                <el-alert v-if="message.error" :title="message.errorMessage || '回答未完成，请重试'" type="error" :closable="false" />
-                <p v-if="message.status === 'cancelled'" class="muted">已停止生成，此回答未完成。</p>
-                <p v-if="message.status === 'no_hits'" class="muted">资料中未找到相关内容，可以调整问题或添加资料。</p>
-                <p v-if="message.status === 'extractive' || message.status === 'model_unavailable'" class="muted">模型暂不可用，以下为检索到的原文资料。</p>
-                <RagCitations :citations="message.citations || []" />
-                <RagAnswerStatus :status="message.status" :warning="message.warning" :mode="message.mode" :actual-mode="message.actualMode" :degraded-reason="message.degradedReason" />
-              </article>
-            </div>
+            <RagConversation :messages="messages" :progress="progress" />
             <el-input v-model="question" type="textarea" :rows="3" placeholder="例如：这节课的核心概念是什么？" :disabled="generating" @keydown.ctrl.enter="ask" />
             <div class="input-footer"><span class="muted">Ctrl + Enter 发送 · 以资料来源核实回答</span><el-button v-if="generating" @click="cancel">停止生成</el-button><el-button type="primary" :loading="generating" :disabled="!question.trim() || generating" @click="ask">发送</el-button></div>
             <el-alert v-if="error && !generating" :title="String(error)" type="error" :closable="false" show-icon />
@@ -80,13 +67,20 @@
       </template>
     </main>
 
+    <el-dialog v-model="grantVisible" title="课程资料授权" width="min(520px, 95vw)">
+      <p>{{ grantFile?.title || grantFile?.file_name }}</p>
+      <el-select v-model="grantCourseId" placeholder="选择课程" aria-label="选择课程" :disabled="grantSaving" :loading="grantLoading" @change="loadGrantState"><el-option v-for="course in grantCourses" :key="course.id" :label="course.title" :value="Number(course.id)" /></el-select>
+      <p class="muted">{{ grantActive ? '当前版本已授权给此课程。' : '授权后，该课程有学习资格的学生可检索这份资料。' }}</p>
+      <el-alert v-if="grantError" :title="grantError" type="error" :closable="false" />
+      <template #footer><el-button @click="grantVisible=false">关闭</el-button><el-button v-if="grantActive" type="danger" plain :loading="grantSaving" @click="saveGrant(false)">撤销授权</el-button><el-button v-else type="primary" :disabled="!grantCourseId || grantLoading || !!grantError" :loading="grantSaving" @click="saveGrant(true)">授权阅读</el-button></template>
+    </el-dialog>
     <el-dialog v-model="editVisible" :title="editing ? '编辑资料库' : '新建知识库'" width="min(520px, 95vw)">
       <el-form label-position="top"><el-form-item label="名称" required><el-input v-model="form.name" maxlength="80" /></el-form-item><el-form-item label="描述"><el-input v-model="form.description" type="textarea" :rows="3" maxlength="500" /></el-form-item></el-form>
       <el-alert title="资料库保持私有，课程学习资料需由所有者另行授权。" type="info" :closable="false" show-icon />
       <template #footer><el-button @click="editVisible=false">取消</el-button><el-button type="primary" :loading="saving" :disabled="!form.name.trim()" @click="saveLibrary">保存</el-button></template>
     </el-dialog>
     <el-drawer v-model="pageReviewVisible" :title="reviewFile?.title || reviewFile?.file_name || '资料核验'" size="min(1080px, 96vw)" destroy-on-close>
-      <DocumentPageReview v-if="pageReviewVisible && reviewFile" :document="reviewFile" :job="documentJobs[reviewFile.id]" :can-retry="canWrite" :busy="!!processingBusy[reviewFile.id] || isProcessingActive(reviewFile, documentJobs[reviewFile.id])" @retry="retryParsing(reviewFile,$event)" />
+      <DocumentPageReview v-if="pageReviewVisible && reviewFile" :document="reviewFile" :job="documentJobs[reviewFile.id]" :can-retry="canWrite" :busy="!!processingBusy[reviewFile.id] || isProcessingActive(reviewFile, documentJobs[reviewFile.id])" @retry="retryParsing(reviewFile,$event)" @saved="reviewSaved" />
     </el-drawer>
     <el-drawer v-model="previewVisible" :title="previewFile?.title || previewFile?.file_name || '原文出处'" size="min(720px, 96vw)">
       <div v-loading="previewLoading"><el-alert v-if="previewError" :title="previewError" type="error" :closable="false" /><el-alert v-if="previewFile?.parse_warning" :title="previewFile.parse_warning" type="warning" :closable="false" /><el-empty v-if="!previewError && !chunks.length && !previewLoading" description="暂无可读片段，请确认解析状态" /><div v-for="chunk in chunks" :key="chunk.id || chunk.chunkId" class="document-chunk"><p class="source-position">{{ chunk.page ? `第 ${chunk.page} 页 · ` : '' }}片段 {{ chunk.ordinal }}</p><pre>{{ chunk.content }}</pre></div><el-button v-if="previewFile" @click="download(previewFile)">下载原始文件</el-button></div>
@@ -95,16 +89,16 @@
 </template>
 
 <script setup>
-import { computed, ref, reactive, onMounted, onBeforeUnmount, nextTick, watch } from 'vue'
+import { computed, ref, reactive, onMounted, onBeforeUnmount, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useRoute } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import * as rag from '@/api/rag'
 import { useNativeRag } from '@/composables/useNativeRag'
-import { renderMarkdown } from '@/utils/markdown'
+import { getCourses } from '@/utils/course'
 import { actualRetrievalMode, retrievalModeLabel, retrievalWarning, sourceVersionLabel } from '@/utils/retrievalStatus'
 import RagCitations from './RagCitations.vue'
-import RagAnswerStatus from './RagAnswerStatus.vue'
+import RagConversation from './RagConversation.vue'
 import DocumentProcessingStatus from './DocumentProcessingStatus.vue'
 import DocumentPageReview from './DocumentPageReview.vue'
 import { documentIdOf, jobIdOf, isProcessingActive } from '@/utils/documentProcessing'
@@ -117,6 +111,38 @@ const kbLoading = ref(false), kbError = ref(''), documents = ref([]), documentLo
 const documentPage = ref(1)
 const activeTab = ref('documents'), editVisible = ref(false), editing = ref(false), saving = ref(false)
 const form = reactive({ name: '', description: '' })
+const grantVisible = ref(false), grantFile = ref(null), grantCourseId = ref(null), grantCourses = ref([])
+const grantLoading = ref(false), grantSaving = ref(false), grantError = ref(''), grantActive = ref(false)
+let grantVersion = 0
+async function openGrant(file) {
+  grantFile.value = file; grantCourseId.value = null; grantVisible.value = true; grantError.value = ''; grantActive.value = false
+  grantLoading.value = true
+  try { grantCourses.value = rag.ragList(await getCourses({ pageNum:1, pageSize:100 })) }
+  catch (e) { grantError.value = failure(e, '无法读取课程') }
+  finally { grantLoading.value = false }
+}
+async function loadGrantState() {
+  const version = ++grantVersion
+  grantLoading.value = true; grantError.value = ''; grantActive.value = false
+  try {
+    const list = rag.ragList(await rag.getCourseDocuments(grantCourseId.value))
+    if (version !== grantVersion) return
+    const documentVersion = Number(grantFile.value.document_version || grantFile.value.documentVersion || 1)
+    grantActive.value = list.some(doc => (doc.documentId || doc.document_id || doc.id) === grantFile.value.id && Number(doc.documentVersion || doc.document_version) === documentVersion)
+  } catch (e) { if (version === grantVersion) grantError.value = failure(e, '无法读取授权状态') }
+  finally { if (version === grantVersion) grantLoading.value = false }
+}
+async function saveGrant(enabled) {
+  grantSaving.value = true; grantError.value = ''
+  try {
+    const version = Number(grantFile.value.document_version || grantFile.value.documentVersion || 1)
+    if (enabled) await rag.grantCourseDocument(grantFile.value.id, { courseId:grantCourseId.value, documentVersion:version, readExcerpt:true, downloadAllowed:false })
+    else await rag.revokeCourseDocument(grantFile.value.id, grantCourseId.value, version)
+    ElMessage.success(enabled ? '课程资料已授权' : '课程授权已撤销')
+    await loadGrantState()
+  } catch (e) { grantError.value = failure(e, '授权操作失败') }
+  finally { grantSaving.value = false }
+}
 const documentJobs = ref({}), jobErrors = ref({}), processingBusy = ref({})
 const pageReviewVisible = ref(false), reviewFile = ref(null)
 const previewVisible = ref(false), previewLoading = ref(false), previewError = ref(''), previewFile = ref(null), chunks = ref([])
@@ -127,7 +153,7 @@ const searchEffectiveMode = computed(() => actualRetrievalMode(searchActualMode.
 const searchModeLabel = computed(() => retrievalModeLabel(searchActualMode.value, searchMode.value))
 const searchWarningText = computed(() => retrievalWarning(searchDegradedReason.value, searchWarning.value))
 const snapshotTitle = snapshot => hits.value.find(hit => hit.documentId === snapshot.documentId)?.title || '资料'
-const question = ref(''), historyId = ref(''), chatContainer = ref(null)
+const question = ref(''), historyId = ref('')
 const { messages, sessions, generating, currentSessionId, progress, error, cancel, resetKnowledgeContext, createNewSession, loadSessions, restoreSession, removeSession, sendMessage } = useNativeRag()
 const canWrite = computed(() => props.manage && selected.value && !selected.value.read_only && String(selected.value.owner_id) === String(user.userId))
 const filteredLibraries = computed(() => libraries.value.filter(kb => `${kb.name} ${kb.description || ''}`.toLowerCase().includes(keyword.value.trim().toLowerCase())))
@@ -141,7 +167,6 @@ function cancelSearch() {
 }
 onBeforeUnmount(() => { clearTimeout(pollTimer); cancelSearch(); documentVersion++; libraryVersion++; previewVersion++ })
 onMounted(() => { loadLibraries(); loadSessions() })
-watch(messages, async () => { await nextTick(); if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight }, { deep:true })
 async function loadLibraries(preferredId) {
   const version = ++libraryVersion
   kbLoading.value = true; kbError.value = ''
@@ -194,6 +219,11 @@ async function loadDocuments() {
   } finally { if (version === documentVersion) documentLoading.value = false }
 }
 function openCreate() { editing.value = false; Object.assign(form,{name:'',description:''}); editVisible.value = true }
+async function reviewSaved(result) {
+  const updated = rag.unwrapRag(result)
+  if (reviewFile.value && updated) Object.assign(reviewFile.value, updated)
+  await loadDocuments()
+}
 function openEdit() { editing.value = true; Object.assign(form,{name:selected.value.name,description:selected.value.description || ''}); editVisible.value = true }
 async function saveLibrary() {
   saving.value = true

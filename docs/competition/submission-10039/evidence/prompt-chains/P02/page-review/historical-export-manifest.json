@@ -1,0 +1,53 @@
+{
+  "format_version": 1,
+  "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+  "since": "2026-11-16T09:14:22Z",
+  "source_file": "rollout-2026-11-16T17-14-21-01a1e3a2-d311-7fa2-844c-0435c46af8b8.jsonl",
+  "source_sha256": "7e5b0292678e49e76d7799a1875f147d7838afb65fb278669a84a3263ca2aafe",
+  "source_size_bytes": 1700913,
+  "source_total_lines": 371,
+  "source_start_line": 1,
+  "session_kind": "root_or_user",
+  "fork_inherited_prefix_omitted": null,
+  "fork_boundary_selection": null,
+  "source_line_range": [
+    8,
+    371
+  ],
+  "event_timestamp_range": [
+    "2026-11-16T09:14:41.564Z",
+    "2026-11-16T09:37:31.257Z"
+  ],
+  "record_count": 104,
+  "event_counts": {
+    "message": 11,
+    "tool_call": 46,
+    "tool_output": 47
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 6,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 0,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "d9d53145699730db2d13f1a90f1e8ba4604d0d99e1a501d9600009ea7a25cde5"
+}

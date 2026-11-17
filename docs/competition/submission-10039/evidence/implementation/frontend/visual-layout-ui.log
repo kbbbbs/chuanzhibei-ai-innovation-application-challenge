@@ -1,0 +1,25 @@
+
+Running 18 tests using 1 worker
+
+(node:51936) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok  1 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 375px (1.8s)
+  ok  2 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 768px (1.6s)
+  ok  3 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 1080px (1.7s)
+  ok  4 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:37:3 › lesson tools remain readable and usable at 1440px (1.7s)
+  ok  5 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:68:1 › same submission id switches result API when assessment query changes (961ms)
+  ok  6 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:82:1 › mobile lesson navigation keeps the first content block nearby (1.2s)
+  ok  7 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:94:3 › HOMEWORK grading retains its own label (1.1s)
+  ok  8 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:99:3 › HOMEWORK result retains its own labels (870ms)
+  ok  9 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:94:3 › EXAM grading retains its own label (1.0s)
+  ok 10 ai-learning-frontend\e2e\learning-layout-assessment.spec.js:99:3 › EXAM result retains its own labels (1.1s)
+  ok 11 ai-learning-frontend\e2e\visual-rag-ui.spec.js:87:1 › page review associates private figures with original question text beside formulas and releases switched images (2.0s)
+  ok 12 ai-learning-frontend\e2e\visual-rag-ui.spec.js:111:1 › search citations show authenticated figure and discard its object URL on drawer close or lost access (2.5s)
+  ok 13 ai-learning-frontend\e2e\visual-rag-ui.spec.js:132:1 › failed image authorization clears previous content and explains unavailable figure (1.9s)
+  ok 14 ai-learning-frontend\e2e\visual-rag-ui.spec.js:143:1 › old parsing results require image reparse instead of claiming no image exists (1.5s)
+  ok 15 ai-learning-frontend\e2e\visual-rag-ui.spec.js:149:1 › unsafe visual identifiers never become network paths (1.6s)
+  ok 16 ai-learning-frontend\e2e\visual-rag-ui.spec.js:156:1 › a delayed previous-page image cannot reappear after selecting another page (2.3s)
+  ok 17 ai-learning-frontend\e2e\visual-rag-ui.spec.js:171:1 › fresh source metadata replaces the cached image list even when it has no visual field (1.3s)
+  ok 18 ai-learning-frontend\e2e\visual-rag-ui.spec.js:183:1 › question review preserves original options and formulas while showing association counts and pending verification (2.0s)
+
+  18 passed (29.3s)

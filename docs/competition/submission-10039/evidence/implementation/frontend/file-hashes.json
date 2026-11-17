@@ -1,0 +1,22 @@
+{
+  "ai-learning-frontend/src/components/ai/LessonQuickChat.vue": "a45e02e7e5d4a49983d085a7f2ec93abd08e6ff63282cbd8b01b94dee7f966cf",
+  "ai-learning-frontend/src/views/student/CourseLearn.vue": "f1b763c30317680d8771cf5bfdc7de71645b4a7502cbb39f909579e20576ba3a",
+  "ai-learning-frontend/src/composables/useNativeRag.js": "6a5b7dff1a8476b0fcd440edfc6ecf25290bc8abb7327f2ab77e68fe78588e72",
+  "ai-learning-frontend/src/components/knowledge/RagConversation.vue": "c09d325c6bdc8e980e93e26d1b4b89803dd2b5eeb974c9b67c8ba636ad9bae16",
+  "ai-learning-frontend/src/components/knowledge/RagCitations.vue": "674eb26f6e22a5c4cb38468b30c551b5620b7a85e57042f996cc16cc32c162a1",
+  "ai-learning-frontend/src/components/knowledge/RagAnswerStatus.vue": "b50bb5b374348b4ee4aa4323950add9ac4af3da7d49fc53b3ddab35188bb94ba",
+  "ai-learning-frontend/src/components/knowledge/NativeKnowledgeWorkspace.vue": "f09d4f6df6fc3513ad32a0fb54c4da1ae237f6bb2936871f74a4d94a76a17b6d",
+  "ai-learning-frontend/src/api/rag.js": "d2f0a4fc118376d5e8237358b09076f57f29b1d0584413905d27f971d51303b2",
+  "ai-learning-frontend/e2e/lesson-rag-ui.spec.js": "15e3ce037846527630d35a10e57f25f125bf5d955ccb2ab61e642b307f7e18e1",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\build.log": "6c592ced8fc9cafb823b36f635362c17314c20bc14d3f3dd376ebec5f358a158",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\delegation.txt": "91cdb38108d0913b5704724b099585bc8849d67a30719d115611eb6fdc83760c",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\final-lesson-ui.log": "9704495c63763d62c0feed38142468ef6d4109277534a334df3f26f1b654a4bd",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\formula-rendering.log": "5fcda15b38b3cfebc5f47995950e2b49b8682b5a244c9022cca07850fed03902",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\green-ui.log": "e2dd51af94ae0ac3b04df398a2e8c2342b02ee42386ba2b6723eba1129a97655",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\live-browser.json": "77ebd40dfb92ec9fddf76091bebee354a63198c966cbcb5da0bafebd945adcdd",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\live-course-source.png": "adc11d8f63b70a3a4b5800b015af4916db54c76807ba59a96376e90572b82142",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\live-student-rag.png": "886159c8b68230fec71f39948dffee05aa107c73b04381cf7832041ccd44a3a1",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\live-teacher-authorization.png": "0ba58b2926fe68940d6e7bf236dca60e1c8356ec9519b04f0cbbea680ef30392",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\REPORT.md": "46438024eac95f95dffa47709189ba677b5d588f80869f33c606e916da89ee55",
+  "docs\\competition\\development\\agent-records\\2026-11-17-10039-implementation\\frontend\\visual-layout-ui.log": "d5681c928f31f32867c25f8cdbd1903554d593402ad995248c35b6a419649674"
+}

@@ -50,6 +50,15 @@ public class RagAuthorizationService {
 
     public void requirePersonalLibraryWrite(RagActor actor) { writer(actor); }
 
+    public void requireCourseRead(RagActor actor, Integer courseId) {
+        RagActor active = revalidate(actor);
+        var user = new AuthUtils.LoginUser();
+        user.setUserId(active.userId());
+        user.setRoleCode(active.roleCode());
+        if (permissions == null || !permissions.canReadCourseMaterials(user, courseId))
+            throw denied("403", "没有该课程的有效学习或教学资格");
+    }
+
     public void requireBaseOwner(RagActor actor, Integer ownerId) {
         RagActor active = writer(actor);
         if (!Objects.equals(active.userId(), ownerId)) throw denied("403", "只有资料所有者可以访问或修改私有资料");

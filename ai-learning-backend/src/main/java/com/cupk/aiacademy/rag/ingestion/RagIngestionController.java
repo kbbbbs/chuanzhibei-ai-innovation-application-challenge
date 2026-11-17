@@ -12,6 +12,10 @@ public class RagIngestionController {
     private final RagIngestionService service;
     public RagIngestionController(RagIngestionService service){this.service=service;}
     public record RetryRequest(List<Integer> pages,boolean forceOcr) { }
+    public record ReviewRequest(int version,int parseRevision,String text) { }
+    @PostMapping("/documents/{id}/pages/{page}/review") public Result review(@PathVariable String id,@PathVariable int page,@RequestBody ReviewRequest request){
+        return service.review(id,page,request.version(),request.parseRevision(),request.text());
+    }
     @GetMapping("/jobs/{id}") public Result status(@PathVariable String id){return service.status(id);}
     @PostMapping("/jobs/{id}/cancel") public Result cancel(@PathVariable String id){return service.cancel(id);}
     @PostMapping("/documents/{id}/parse-retry") public Result retry(@PathVariable String id,@RequestBody(required=false) RetryRequest request){

@@ -1,0 +1,1054 @@
+{
+  "startedAt" : "2026-11-17T06:59:36.013059600Z",
+  "status" : "MEASUREMENT_COMPLETED",
+  "datasetSha256" : "739c52046f6a83dd3d2d9148d4018a271ba14303229560dc3d87b888cf8008ef",
+  "sourceSha256" : "61d9f7c56111ce8ea07e6581fca828c09af5e4b8f95e0836de9b0f3d8d49d52f",
+  "questions" : [ {
+    "id" : "q01",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 7, 3, 5, 29, 32 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 441
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 3, 32, 29, 7, 16 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 16
+    }
+  }, {
+    "id" : "q02",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 5, 7, 6, 17, 31 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 333
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 5, 6, 7, 31, 12 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 16
+    }
+  }, {
+    "id" : "q03",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 5, 17, 30, 20, 19 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 311
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 5, 20, 17, 16, 3 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 13
+    }
+  }, {
+    "id" : "q04",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 7, 5, 24, 33, 19 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 305
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 7, 24, 20, 22, 28 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 13
+    }
+  }, {
+    "id" : "q05",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 36, 7, 17, 5, 35 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 443
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 36, 7, 17, 35, 13 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 12
+    }
+  }, {
+    "id" : "q06",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 11, 18, 5, 17, 3 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 288
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 11, 3, 5, 18, 4 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 7
+    }
+  }, {
+    "id" : "q07",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 12, 5, 36, 7, 17 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 291
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 12, 36, 13, 6, 31 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 7
+    }
+  }, {
+    "id" : "q08",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 13, 5, 36, 32, 33 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 356
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 13, 32, 36, 3, 11 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 7
+    }
+  }, {
+    "id" : "q09",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 34, 5, 14, 7, 15 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 282
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 34, 14, 2, 22, 20 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 6
+    }
+  }, {
+    "id" : "q10",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 17, 18, 23, 5, 16 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 276
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 17, 18, 22, 16, 14 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 7
+    }
+  }, {
+    "id" : "q11",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 18, 17, 5, 7, 14 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 272
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 18, 17, 14, 22, 7 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 7
+    }
+  }, {
+    "id" : "q12",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 19, 16, 33, 5, 17 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 276
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 19, 16, 33, 18, 17 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 6
+    }
+  }, {
+    "id" : "q13",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 5, 35, 20, 30, 17 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 277
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 35, 20, 3, 30, 5 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 7
+    }
+  }, {
+    "id" : "q14",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 23, 33, 17, 29, 14 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 547
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 23, 14, 22, 24, 35 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 5
+    }
+  }, {
+    "id" : "q15",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 25, 24, 5, 22, 28 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 294
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 24, 25, 22, 28, 36 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 6
+    }
+  }, {
+    "id" : "q16",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 24, 29, 20, 23, 22 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 263
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 24, 20, 22, 15, 26 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 8
+    }
+  }, {
+    "id" : "q17",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 30, 20, 29, 5, 14 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 312
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 30, 20, 14, 28, 29 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 6
+    }
+  }, {
+    "id" : "q18",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 30, 28, 5, 19, 14 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 294
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 30, 28, 14, 22, 20 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 6
+    }
+  }, {
+    "id" : "q19",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 31, 5, 33, 13, 7 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 283
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 31, 13, 32, 33, 36 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 5
+    }
+  }, {
+    "id" : "q20",
+    "hybrid" : {
+      "actualMode" : "HYBRID",
+      "degradedReason" : null,
+      "pages" : [ 11, 33, 5, 36, 32 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 265
+    },
+    "keyword" : {
+      "actualMode" : "KEYWORD",
+      "degradedReason" : "EMBEDDING_DISABLED",
+      "pages" : [ 11, 32, 13, 36, 5 ],
+      "indexVersions" : [ {
+        "documentId" : "4acf8fb5-82a0-4bb7-8488-d5928a066494",
+        "indexVersion" : "89484b11-915f-4395-b1e5-fa755b4bf078",
+        "documentVersion" : 1,
+        "parseRevision" : 1,
+        "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+        "dimensions" : 4096,
+        "normalized" : true,
+        "chunkRevision" : "native-formula-chunker-v3",
+        "parserRevision" : "native-page-parser-formula1-visual1",
+        "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6"
+      } ],
+      "elapsedMs" : 4
+    }
+  } ],
+  "qualityThreshold" : null,
+  "parameters" : {
+    "topK" : 5,
+    "rrfK" : 1,
+    "candidateLimit" : 20
+  },
+  "execution" : "Current Java ingestion, PDF page analysis, real configured OCR and embedding HTTP, isolated H2 rows, production retrieval. No cached OCR/vector replay.",
+  "embeddingModel" : "Qwen/Qwen3-VL-Embedding-8B",
+  "embeddingFingerprint" : "fe96c72b9777ec07e09f8853c48e7f8bae34c4129454354f39b92ca321bea6d6",
+  "ocrModel" : "deepseek-ai/DeepSeek-OCR",
+  "ingestion" : {
+    "processing_state" : "PARTIAL",
+    "page_count" : 36,
+    "chunk_count" : 32,
+    "embedding_status" : "indexed",
+    "document_version" : 1,
+    "parse_revision" : 1,
+    "active_index_version" : "89484b11-915f-4395-b1e5-fa755b4bf078"
+  },
+  "pageCoverage" : [ {
+    "page_no" : 1,
+    "method" : "TEXT",
+    "page_status" : "TEXT_READY",
+    "error_code" : null,
+    "needs_review" : false,
+    "chosen_characters" : 35
+  }, {
+    "page_no" : 2,
+    "method" : "TEXT",
+    "page_status" : "TEXT_READY",
+    "error_code" : null,
+    "needs_review" : false,
+    "chosen_characters" : 64
+  }, {
+    "page_no" : 3,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 428
+  }, {
+    "page_no" : 4,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 148
+  }, {
+    "page_no" : 5,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 406
+  }, {
+    "page_no" : 6,
+    "method" : "TEXT",
+    "page_status" : "TEXT_READY",
+    "error_code" : null,
+    "needs_review" : false,
+    "chosen_characters" : 306
+  }, {
+    "page_no" : 7,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 195
+  }, {
+    "page_no" : 8,
+    "method" : "OCR",
+    "page_status" : "FAILED",
+    "error_code" : "FORMULA_STRUCTURE_MISSING",
+    "needs_review" : true,
+    "chosen_characters" : 0
+  }, {
+    "page_no" : 9,
+    "method" : "OCR",
+    "page_status" : "FAILED",
+    "error_code" : "FORMULA_STRUCTURE_MISSING",
+    "needs_review" : true,
+    "chosen_characters" : 0
+  }, {
+    "page_no" : 10,
+    "method" : "OCR",
+    "page_status" : "FAILED",
+    "error_code" : "FORMULA_UNCLOSED",
+    "needs_review" : true,
+    "chosen_characters" : 0
+  }, {
+    "page_no" : 11,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 131
+  }, {
+    "page_no" : 12,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 279
+  }, {
+    "page_no" : 13,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 336
+  }, {
+    "page_no" : 14,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 213
+  }, {
+    "page_no" : 15,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 317
+  }, {
+    "page_no" : 16,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 694
+  }, {
+    "page_no" : 17,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 495
+  }, {
+    "page_no" : 18,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 468
+  }, {
+    "page_no" : 19,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 506
+  }, {
+    "page_no" : 20,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 308
+  }, {
+    "page_no" : 21,
+    "method" : "OCR",
+    "page_status" : "FAILED",
+    "error_code" : "FORMULA_STRUCTURE_MISSING",
+    "needs_review" : true,
+    "chosen_characters" : 0
+  }, {
+    "page_no" : 22,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 280
+  }, {
+    "page_no" : 23,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 143
+  }, {
+    "page_no" : 24,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 447
+  }, {
+    "page_no" : 25,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 289
+  }, {
+    "page_no" : 26,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 412
+  }, {
+    "page_no" : 27,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 379
+  }, {
+    "page_no" : 28,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 546
+  }, {
+    "page_no" : 29,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 529
+  }, {
+    "page_no" : 30,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 244
+  }, {
+    "page_no" : 31,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 340
+  }, {
+    "page_no" : 32,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 697
+  }, {
+    "page_no" : 33,
+    "method" : "OCR",
+    "page_status" : "OCR_READY",
+    "error_code" : null,
+    "needs_review" : true,
+    "chosen_characters" : 518
+  }, {
+    "page_no" : 34,
+    "method" : "TEXT",
+    "page_status" : "TEXT_READY",
+    "error_code" : null,
+    "needs_review" : false,
+    "chosen_characters" : 61
+  }, {
+    "page_no" : 35,
+    "method" : "TEXT",
+    "page_status" : "TEXT_READY",
+    "error_code" : null,
+    "needs_review" : false,
+    "chosen_characters" : 147
+  }, {
+    "page_no" : 36,
+    "method" : "TEXT",
+    "page_status" : "TEXT_READY",
+    "error_code" : null,
+    "needs_review" : false,
+    "chosen_characters" : 137
+  } ],
+  "indexes" : [ {
+    "document_version" : 1,
+    "parse_revision" : 1,
+    "state" : "HYBRID_READY",
+    "dimensions" : 4096,
+    "embedding_model" : "Qwen/Qwen3-VL-Embedding-8B",
+    "chunk_revision" : "native-formula-chunker-v3",
+    "parser_revision" : "native-page-parser-formula1-visual1"
+  } ],
+  "indexedPages" : [ 1, 2, 3, 4, 5, 6, 7, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36 ],
+  "finishedAt" : "2026-11-17T07:02:15.360935500Z",
+  "elapsedMs" : 159287,
+  "ocrPageInvocations" : 39,
+  "embeddingFacadeInvocations" : 21,
+  "embeddingInputs" : 52
+}

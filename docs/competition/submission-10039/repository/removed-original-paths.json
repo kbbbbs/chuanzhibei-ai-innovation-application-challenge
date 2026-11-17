@@ -1,0 +1,396 @@
+{
+  "paths": [
+    {
+      "path": ".apifox-run.zip",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": ".claude-upload-test.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": ".claude/update_weknora_graphs.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": ".claude/verify_weknora_graphs.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": ".kilo/kilo.jsonc",
+      "reason": "private_runtime_or_tool_state"
+    },
+    {
+      "path": "AGENTS.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "CLAUDE.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/.gitattributes",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/.gitignore",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/.mvn/wrapper/maven-wrapper.properties",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/README.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/backend-api.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_database.sql",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_exam_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_exam_payload_future.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_paper_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_paper_payload_2.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_question_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_short_question_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/create_short_question_payload_2.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/database/administrative_class.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "ai-learning-backend/database/ai_academy.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "ai-learning-backend/database/seed_course_papers.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "ai-learning-backend/database/seed_expand.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "ai-learning-backend/grade_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/mvnw",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/mvnw.cmd",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/save_answers_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/src/main/resources/application.properties",
+      "reason": "historical_runtime_configuration"
+    },
+    {
+      "path": "ai-learning-backend/src/main/resources/application.yml",
+      "reason": "historical_runtime_configuration"
+    },
+    {
+      "path": "ai-learning-backend/src/test/resources/application.properties",
+      "reason": "historical_runtime_configuration"
+    },
+    {
+      "path": "ai-learning-backend/src/test/resources/test-schema.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "ai-learning-backend/start_submission_payload.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-backend/uploads/lesson-resource/20260708/373e3f2a361747dea33ce63086cfc475.pptx",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-backend/~$附录A.docx",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-backend/组号-项目名称-项目开发总结报告2026.docx",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-backend/附录A.docx",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-frontend/public/favicon.svg",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-frontend/src/assets/home/hero-flow.png",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-frontend/src/assets/home/learning-recommendation.png",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-frontend/src/assets/home/research-discovery.png",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/.gitignore",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/README.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/TODO.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/config.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/downloader.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/main.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/requirements.txt",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/setup_service.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "ai-learning-ytdlp-service/start_service.py",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "backend-api.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "database/agent_default_seed.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "database/ai_academy.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "database/ai_academy.sql.bak",
+      "reason": "runtime_or_data_records"
+    },
+    {
+      "path": "database/ai_academy_content_seed.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "database/ai_academy_export.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "database/ai_academy_schema.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "database/data_expansion.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "database/最新点这个.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    },
+    {
+      "path": "outputs/AI智学平台项目介绍.pptx",
+      "reason": "binary_or_unverifiable_container"
+    },
+    {
+      "path": "outputs/AI智学平台项目介绍.pptx.inspect.ndjson",
+      "reason": "private_runtime_or_tool_state"
+    },
+    {
+      "path": "outputs/demo-question-import.csv",
+      "reason": "private_runtime_or_tool_state"
+    },
+    {
+      "path": "package-lock.json",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/README.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/common/Result.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/controller/PaperSearchController.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/dto/PaperSearchResponse.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/entity/Paper.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/entity/PaperAuthor.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/mapper/PaperAuthorMapper.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/mapper/PaperMapper.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/ArxivSearchService.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/OpenAlexSearchService.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/PaperLocalService.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/PaperSearchService.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/impl/ArxivSearchServiceImpl.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/impl/OpenAlexSearchServiceImpl.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/impl/PaperLocalServiceImpl.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/backend/service/impl/PaperSearchServiceImpl.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/config/application-paper.yml",
+      "reason": "historical_runtime_configuration"
+    },
+    {
+      "path": "paper-search-package/config/pom-dependencies.xml",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/database/paper_tables.sql",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/frontend/api/index.js",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/frontend/api/paperSearch.js",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/frontend/router/paperSearchRoute.js",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "paper-search-package/frontend/views/PaperSearch.vue",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/README.md",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/common/R.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/config/WeKnoraConfig.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/controller/WeKnoraController.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/dto/WeKnoraChatRequest.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/dto/WeKnoraSearchRequest.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/dto/WeKnoraSessionRequest.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/service/WeKnoraService.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/backend/src/main/java/com/weknora/service/impl/WeKnoraServiceImpl.java",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/frontend/src/api/weknora.js",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "weknora-integration-package/frontend/src/composables/useWeKnora.js",
+      "reason": "outside_reviewed_source_scope"
+    },
+    {
+      "path": "work_study_init.sql",
+      "reason": "sql_with_seed_or_instance_rows"
+    }
+  ]
+}

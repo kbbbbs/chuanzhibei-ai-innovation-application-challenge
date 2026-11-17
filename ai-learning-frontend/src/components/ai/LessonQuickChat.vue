@@ -2,297 +2,166 @@
   <el-card class="quick-chat-card">
     <template #header>
       <div class="chat-header">
-        <div class="chat-title">
-          <el-icon><ChatDotRound /></el-icon>
-          <span>课时快问</span>
-        </div>
-        <div class="chat-controls">
-          <el-select
-            v-model="selectedKbId"
-            size="small"
-            class="kb-select"
-            placeholder="知识库"
-            :disabled="!canUseAssistant"
-            @change="handleKbChange"
-          >
-            <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
-          </el-select>
-          <el-button size="small" :icon="RefreshRight" title="新对话" :disabled="!selectedKbId" @click="handleNewSession" />
-        </div>
+        <strong>课时知识问答</strong>
+        <el-button size="small" @click="newConversation">新对话</el-button>
       </div>
     </template>
-
-    <div ref="messagesContainer" class="chat-messages">
-      <el-empty v-if="messages.length === 0" description="暂无对话" />
-      <div
-        v-for="(msg, index) in messages"
-        :key="index"
-        class="message-row"
-        :class="msg.role === 'user' ? 'user-row' : 'assistant-row'"
-      >
-        <div class="message-bubble" :class="{ streaming: msg.streaming, error: msg.error }">
-          <div v-if="msg.content" v-html="renderMarkdown(msg.content)"></div>
-          <span v-else-if="msg.streaming" class="typing-text">...</span>
-          <p v-if="msg.streaming" class="typing-text">{{ progress }}</p>
-          <p v-if="msg.status === 'cancelled'" class="typing-text">已停止生成，回答未完成。</p>
-          <p v-if="msg.error" class="error-text">{{ msg.errorMessage }}</p>
-          <RagCitations :citations="msg.citations || []" />
-          <RagAnswerStatus :status="msg.status" :warning="msg.warning" />
-        </div>
-      </div>
+    <p class="course-scope">{{ courseTitle || '当前课程' }} · {{ documentSummary }}</p>
+    <el-alert v-if="documentError" :title="documentError" type="error" :closable="false" />
+    <div class="history-toolbar">
+      <el-select v-model="historyId" clearable placeholder="历史对话" :disabled="loading" @change="switchHistory">
+        <el-option v-for="session in currentSessions" :key="session.id" :label="session.title || '课时问答'" :value="session.id" />
+      </el-select>
+      <el-button v-if="historyId" :disabled="loading" @click="deleteConversation">删除</el-button>
     </div>
-
-    <div class="chat-input">
-      <el-input
-        v-model="question"
-        type="textarea"
-        :rows="2"
-        resize="none"
-        placeholder="输入问题"
-        :disabled="!canUseAssistant || !selectedKbId"
-        @keydown.ctrl.enter="handleSend"
-      />
-      <div class="input-actions">
-        <el-button v-if="loading" size="small" @click="cancel">停止生成</el-button>
-        <el-button
-          type="primary"
-          size="small"
-          :icon="Position"
-          :loading="loading"
-          :disabled="!canSend"
-          @click="handleSend"
-        >
-          发送
-        </el-button>
+    <RagConversation
+      :messages="messages"
+      :progress="progress"
+      :course-id="courseId"
+      empty-text="输入课程问题，或选中正文、笔记中的文字提问"
+    />
+    <div v-if="selection" class="selection-card">
+      <div>
+        <strong>选中内容</strong>
+        <el-button text size="small" aria-label="移除选中文本" @click="clearSelection">移除</el-button>
       </div>
+      <p>{{ selection }}</p>
     </div>
+    <el-input
+      v-model="question"
+      type="textarea"
+      :rows="2"
+      :maxlength="2000"
+      resize="none"
+      placeholder="输入问题，或直接解释选中文本"
+      :disabled="!canUseAssistant"
+      @keydown.ctrl.enter="handleSend"
+    />
+    <div class="input-actions">
+      <el-button v-if="loading" size="small" @click="cancel">停止生成</el-button>
+      <el-button type="primary" size="small" :loading="loading" :disabled="!canSend" @click="handleSend">发送</el-button>
+    </div>
+    <el-alert v-if="error && !loading" :title="String(error)" type="error" :closable="false" />
   </el-card>
 </template>
-
 <script setup>
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import { ElMessage } from 'element-plus'
-import { ChatDotRound, Position, RefreshRight } from '@element-plus/icons-vue'
+import { computed, onMounted, onBeforeUnmount, ref, watch } from 'vue'
 import { useUserStore } from '@/store/user'
 import { useNativeRag } from '@/composables/useNativeRag'
-import RagCitations from '@/components/knowledge/RagCitations.vue'
-import RagAnswerStatus from '@/components/knowledge/RagAnswerStatus.vue'
-import { renderMarkdown } from '@/utils/markdown'
-import { buildLessonAiPrompt } from '@/utils/lessonAiPrompt'
+import { getCourseDocuments, ragList } from '@/api/rag'
+import RagConversation from '@/components/knowledge/RagConversation.vue'
 
 const props = defineProps({
-  lessonTitle: {
-    type: String,
-    default: ''
-  },
-  noteContent: {
-    type: String,
-    default: ''
-  },
-  videoSummaryMd: {
-    type: String,
-    default: ''
-  },
-  currentVideoTime: {
-    type: Number,
-    default: 0
-  }
+  courseId: { type: Number, required: true },
+  lessonId: { type: Number, required: true },
+  courseTitle: String,
+  selectedText: { type: String, default: '' }
 })
-
+const emit = defineEmits(['update:selectedText'])
 const userStore = useUserStore()
 const {
-  messages,
-  loading,
-  knowledgeBases,
-  currentSessionId,
-  loadKnowledgeBases,
-  createNewSession,
-  progress,
-  cancel,
-  sendMessage
+  messages, sessions, loading, currentSessionId, progress, error, cancel,
+  resetCourseContext, loadSessions, restoreSession, removeSession, sendMessage
 } = useNativeRag()
-
-const selectedKbId = ref('')
 const question = ref('')
-const messagesContainer = ref(null)
+const historyId = ref('')
+const documents = ref([])
+const documentError = ref('')
+const documentsLoading = ref(false)
+const selection = ref(props.selectedText)
+const documentSummary = computed(() => {
+  if (documentsLoading.value) return '正在读取课程资料'
+  return documents.value.length ? `${documents.value.length} 份授权资料` : '暂无授权资料'
+})
+const canUseAssistant = computed(() => userStore.isLoggedIn && props.courseId > 0 && props.lessonId > 0)
+const canSend = computed(() => canUseAssistant.value && Boolean(question.value.trim() || selection.value) && !loading.value)
+const currentSessions = computed(() => sessions.value.filter(session =>
+  Number(session.courseId) === props.courseId && Number(session.lessonId) === props.lessonId
+))
+let scopeVersion = 0
 
-const canUseAssistant = computed(() => userStore.isLoggedIn)
-const canSend = computed(() => canUseAssistant.value && Boolean(selectedKbId.value) && Boolean(question.value.trim()) && !loading.value)
-
-onMounted(async () => {
-  if (!canUseAssistant.value) return
-  const list = await loadKnowledgeBases()
-  if (list.length > 0) {
-    selectedKbId.value = list[0].id
-    await createNewSession(selectedKbId.value, '课时快问')
-  }
+watch(() => props.selectedText, value => { selection.value = value })
+watch(() => [props.courseId, props.lessonId], loadScope)
+onMounted(loadScope)
+onBeforeUnmount(() => {
+  scopeVersion++
+  cancel()
 })
 
-watch(messages, async () => {
-  await nextTick()
-  if (messagesContainer.value) {
-    messagesContainer.value.scrollTop = messagesContainer.value.scrollHeight
-  }
-}, { deep: true })
-
-watch(
-  () => props.lessonTitle,
-  () => {
-    messages.value = []
-    if (selectedKbId.value) {
-      createNewSession(selectedKbId.value, '课时快问')
-    }
-  }
-)
-
-const handleKbChange = async (kbId) => {
-  messages.value = []
-  await createNewSession(kbId, '课时快问')
+function clearSelection() {
+  selection.value = ''
+  emit('update:selectedText', '')
 }
 
-const handleNewSession = async () => {
-  if (!selectedKbId.value) return
-  messages.value = []
-  await createNewSession(selectedKbId.value, '课时快问')
+function newConversation() {
+  resetCourseContext(props.courseId, props.lessonId)
+  historyId.value = ''
+  question.value = ''
+  clearSelection()
 }
 
-const handleSend = async () => {
-  const value = question.value.trim()
-  if (!canUseAssistant.value) {
-    ElMessage.warning('请先登录后使用 AI')
+async function loadScope() {
+  const version = ++scopeVersion
+  newConversation()
+  documents.value = []
+  documentError.value = ''
+  documentsLoading.value = true
+  try {
+    const list = ragList(await getCourseDocuments(props.courseId))
+    if (version === scopeVersion) documents.value = list
+  } catch (failure) {
+    if (version === scopeVersion) documentError.value = failure?.message || '课程资料暂不可用，请重试'
+  } finally {
+    if (version === scopeVersion) documentsLoading.value = false
+  }
+  await loadSessions()
+}
+
+async function switchHistory(id) {
+  if (!id) {
+    newConversation()
     return
   }
-  if (!selectedKbId.value) {
-    ElMessage.warning('请选择知识库')
-    return
+  const session = currentSessions.value.find(item => item.id === id)
+  if (!session) return
+  clearSelection()
+  try {
+    await restoreSession(session)
+  } catch {
+    newConversation()
   }
-  if (!value || loading.value) return
+}
 
-  const prompt = buildLessonAiPrompt({
-    task: 'quick_chat',
-    question: value,
-    lessonTitle: props.lessonTitle,
-    noteContent: props.noteContent,
-    videoSummaryMd: props.videoSummaryMd,
-    selectedText: readSelectedText(),
-    currentVideoTime: props.currentVideoTime
-  })
+async function deleteConversation() {
+  await removeSession(historyId.value)
+  newConversation()
+}
 
+async function handleSend() {
+  if (!canSend.value) return
+  const query = question.value.trim() || '请解释选中文本。'
+  const selectedText = selection.value
+  const version = scopeVersion
   question.value = ''
   try {
-    if (!currentSessionId.value) {
-      await createNewSession(selectedKbId.value, '课时快问')
-    }
-    await sendMessage('knowledge', prompt, value)
-  } catch (e) {
-    // useNativeRag 已提示
+    await sendMessage('knowledge', query, query, selectedText)
+    if (version !== scopeVersion) return
+    historyId.value = currentSessionId.value || ''
+    await loadSessions()
+  } catch {
+    if (version === scopeVersion) question.value = query
   }
 }
-
-const readSelectedText = () => {
-  const text = window.getSelection?.().toString()?.trim()
-  return text || ''
-}
 </script>
-
 <style scoped>
-.quick-chat-card {
-  margin-top: 16px;
-}
-
-.chat-header,
-.chat-title,
-.chat-controls,
-.input-actions {
-  display: flex;
-  align-items: center;
-}
-
-.chat-header {
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.chat-title {
-  gap: 6px;
-  font-weight: 600;
-}
-
-.chat-controls {
-  gap: 6px;
-}
-
-.kb-select {
-  width: 128px;
-}
-
-.chat-messages {
-  height: 260px;
-  overflow-y: auto;
-  padding-right: 4px;
-}
-
-.message-row {
-  display: flex;
-  margin-bottom: 10px;
-}
-
-.user-row {
-  justify-content: flex-end;
-}
-
-.assistant-row {
-  justify-content: flex-start;
-}
-
-.message-bubble {
-  max-width: 88%;
-  padding: 8px 10px;
-  border-radius: 6px;
-  color: #303133;
-  line-height: 1.6;
-  font-size: 13px;
-  word-break: break-word;
-}
-
-.user-row .message-bubble {
-  background: #ecf5ff;
-  border: 1px solid #d9ecff;
-}
-
-.assistant-row .message-bubble {
-  background: #f5f7fa;
-  border: 1px solid #ebeef5;
-}
-
-.message-bubble.error {
-  border-color: #f56c6c;
-}
-
-.typing-text {
-  color: #909399;
-}
-
-.chat-input {
-  margin-top: 10px;
-}
-
-.input-actions {
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-:deep(.message-bubble p) {
-  margin: 0 0 6px;
-}
-
-:deep(.message-bubble p:last-child) {
-  margin-bottom: 0;
-}
-
-:deep(.message-bubble ul),
-:deep(.message-bubble ol) {
-  padding-left: 18px;
-  margin: 4px 0;
-}
+.quick-chat-card { margin-top:16px; }
+.chat-header,.input-actions,.selection-card>div,.history-toolbar { display:flex; align-items:center; gap:8px; }
+.chat-header,.selection-card>div { justify-content:space-between; }
+.course-scope { font-size:12px; color:#64748b; margin:0 0 10px; }
+.history-toolbar .el-select { flex:1; min-width:0; }
+.selection-card { border-left:3px solid #60a5fa; padding:8px 12px; margin:10px 0; background:#eff6ff; border-radius:6px; }
+.selection-card p { max-height:120px; overflow:auto; margin:6px 0; white-space:pre-wrap; font-size:13px; }
+.input-actions { justify-content:flex-end; margin-top:8px; }
+:deep(.conversation) { max-height:360px; min-height:220px; }
+:deep(.chat-message.user) { margin-left:12px; }
 </style>

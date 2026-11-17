@@ -1,0 +1,42 @@
+ README.md                                          |   4 +-
+ .../aiacademy/rag/RagAuthorizationService.java     |   9 +
+ .../com/cupk/aiacademy/rag/RagSchemaMigrator.java  |   4 +
+ .../aiacademy/rag/chat/NativeRagChatService.java   | 105 +++++-
+ .../cupk/aiacademy/rag/chat/RagChatRequest.java    |   7 +-
+ .../rag/ingestion/IngestionJobRepository.java      |   8 +
+ .../rag/ingestion/RagIngestionController.java      |   4 +
+ .../rag/ingestion/RagIngestionService.java         |  39 +++
+ .../cupk/aiacademy/rag/K03RetrievalLiveTest.java   |   4 +-
+ .../rag/chat/NativeRagChatServiceTest.java         |   6 +
+ .../rag/ingestion/K02IngestionServiceTest.java     |  57 +++
+ ai-learning-frontend/e2e/k02-processing-ui.spec.js |  35 ++
+ ai-learning-frontend/src/api/rag.js                |   6 +
+ .../src/components/ai/LessonQuickChat.vue          | 385 +++++++--------------
+ .../components/knowledge/DocumentPageReview.vue    |  55 ++-
+ .../knowledge/NativeKnowledgeWorkspace.vue         |  72 ++--
+ .../src/components/knowledge/RagAnswerStatus.vue   |   3 +-
+ .../src/components/knowledge/RagCitations.vue      |  15 +-
+ .../src/composables/useNativeRag.js                |  31 +-
+ .../src/views/student/CourseLearn.vue              |  33 +-
+ 20 files changed, 551 insertions(+), 331 deletions(-)
+
+3	1	README.md
+9	0	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagAuthorizationService.java
+4	0	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java
+86	19	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/chat/NativeRagChatService.java
+6	1	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/chat/RagChatRequest.java
+8	0	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/IngestionJobRepository.java
+4	0	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagIngestionController.java
+39	0	ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagIngestionService.java
+3	1	ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03RetrievalLiveTest.java
+6	0	ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/chat/NativeRagChatServiceTest.java
+57	0	ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java
+35	0	ai-learning-frontend/e2e/k02-processing-ui.spec.js
+6	0	ai-learning-frontend/src/api/rag.js
+127	258	ai-learning-frontend/src/components/ai/LessonQuickChat.vue
+43	12	ai-learning-frontend/src/components/knowledge/DocumentPageReview.vue
+51	21	ai-learning-frontend/src/components/knowledge/NativeKnowledgeWorkspace.vue
+2	1	ai-learning-frontend/src/components/knowledge/RagAnswerStatus.vue
+10	5	ai-learning-frontend/src/components/knowledge/RagCitations.vue
+24	7	ai-learning-frontend/src/composables/useNativeRag.js
+28	5	ai-learning-frontend/src/views/student/CourseLearn.vue

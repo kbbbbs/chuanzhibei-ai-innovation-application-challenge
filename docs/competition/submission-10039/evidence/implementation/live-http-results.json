@@ -1,0 +1,17 @@
+{
+  "checks": [
+    "teacher_student_login",
+    "teacher_course_lesson_and_student_membership",
+    "real_generation_course_rag_answer",
+    "student_history_and_granted_source",
+    "existing_private_knowledge_chat",
+    "revocation_blocks_old_history",
+    "real_generation_selection_only",
+    "no_sources_no_selection"
+  ],
+  "status": "PASS",
+  "scope": "isolated H2 with real model calls, self-written teaching sample",
+  "courseAnswerStatus": "ANSWERED",
+  "courseRetrievalMode": "HYBRID",
+  "selectionMode": "selection"
+}

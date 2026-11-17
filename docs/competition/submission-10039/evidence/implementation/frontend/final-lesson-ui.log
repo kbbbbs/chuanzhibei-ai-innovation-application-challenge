@@ -1,0 +1,15 @@
+
+Running 8 tests using 1 worker
+
+(node:76344) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:60:1 › selected text survives focus and is sent with current course RAG scope (2.1s)
+  ok 2 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:79:1 › empty course still explains selected text with explicit selection-only mode (1.6s)
+  ok 3 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:87:1 › switching lessons cancels old answer and clears selected text (2.9s)
+  ok 4 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:98:1 › teacher authorizes document to a course with original download disabled (2.5s)
+  ok 5 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:112:1 › selection can be removed and saved course history can be restored (2.4s)
+  ok 6 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:126:1 › stopping a lesson response leaves it incomplete and new conversation clears selection (2.8s)
+  ok 7 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:138:1 › model errors retain the question and selection for retry (1.9s)
+  ok 8 ai-learning-frontend\e2e\lesson-rag-ui.spec.js:151:1 › selected note editor text can be explained after switching to the chat tab (1.8s)
+
+  8 passed (19.3s)

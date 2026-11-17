@@ -117,6 +117,44 @@ public class RagIngestionService {
         });
     });}
 
+    public Result review(String id,int unit,int targetVersion,int expectedRevision,String correctedText){return result(()->{
+        RagActor actor=auth.currentActor();ownedDocument(id);
+        return transaction.execute(status->{
+            var current=lockedDocument(id);ownedBase(text(current,"kb_id"),actor);ensureIdle(current);
+            int version=processingVersion(current),revision=latestRevision(id,version);
+            if(version!=targetVersion || revision!=expectedRevision)
+                throw failure("409","页面版本已改变，请刷新后重新核验");
+            var previous=new LinkedHashMap<Integer,IngestionJobRepository.Page>();
+            var revisions=db.queryForList("SELECT DISTINCT parse_revision FROM native_rag_page WHERE document_id=? AND document_version=? ORDER BY parse_revision DESC",Integer.class,id,version);
+            for(int historical:revisions)for(var page:jobs.pages(id,version,historical))previous.putIfAbsent(page.unitNo(),page);
+            var original=previous.get(unit);
+            if(original==null)throw failure("404","核验位置不存在");
+            var source=version(id,version);
+            try(var opened=extractor.open(originalBytes(source),text(source,"file_name"))) {
+                if(previous.size()!=opened.unitCount())
+                    throw failure("409","页面记录尚不完整，请重新解析全部后核验");
+            } catch(java.io.IOException error){throw failure("400","文件结构读取失败");}
+            if(correctedText==null || correctedText.length()>RagPageExtractor.MAX_TEXT || correctedText.isBlank() && !"BLANK".equals(original.state()))
+                throw failure("400","请填写有效文本，单页不能超过100万字");
+            var math=FormulaText.analyze(correctedText);
+            if(!math.valid())throw failure("400","公式结构不完整，请修正公式后保存");
+            Map<String,Object> location=new LinkedHashMap<>();
+            try {location.putAll(json.readValue(original.locationJson(),Map.class));}catch(Exception ignored){}
+            location.put("reviewedBy",actor.userId());location.put("reviewedAt",java.time.Instant.now().toString());
+            location.put("reviewedFromRevision",revision);
+            var metadata=new LinkedHashMap<String,Object>();metadata.put("version",FormulaText.VERSION);
+            metadata.put("source","MANUAL");metadata.put("blocks",math.blocks());metadata.put("issues",math.issues());
+            previous.put(unit,new IngestionJobRepository.Page(unit,original.rawText(),original.ocrRawText(),original.ocrText(),correctedText,
+                    "MANUAL",correctedText.isBlank()?"BLANK":"TEXT_READY",null,null,false,write(location),null,write(metadata)));
+            if(previous.values().stream().mapToLong(page->page.chosenText()==null?0:page.chosenText().length()).sum()>RagPageExtractor.MAX_TEXT)
+                throw failure("400","文档提取内容超过100万字上限");
+            String job=jobs.enqueue(actor.userId(),id,version,revision+1,nullable(current,"active_index_version"),number(current,"document_version"),List.of(),List.of(unit));
+            jobs.seedReview(job,new ArrayList<>(previous.values()));
+            db.update("UPDATE native_rag_document SET processing_job_id=?,processing_version=?,processing_state='QUEUED' WHERE id=?",job,version,id);
+            return uploadView(document(id),false);
+        });
+    });}
+
     public Result status(String jobId){return result(()->{
         var job=jobs.get(checkedId(jobId));ownedDocument(job.documentId());return jobView(job);
     });}
@@ -356,6 +394,7 @@ public class RagIngestionService {
     }
     private Map<String,Object> pageView(IngestionJobRepository.Page page,String documentId,int version,int revision) {
         var view=new LinkedHashMap<String,Object>();view.put("pageNo",page.unitNo());view.put("pageStatus",page.state());
+        view.put("parseRevision",revision);view.put("documentVersion",version);
         view.put("rawText",page.rawText());view.put("ocrRawText",page.ocrRawText());view.put("ocrText",page.ocrText());view.put("chosenText",page.chosenText());
         view.put("method",page.method());view.put("confidence",page.confidence());view.put("errorCode",page.errorCode());view.put("needsReview",page.needsReview());
         view.put("formulaVersion",0);view.put("formulas",List.of());view.put("formulaIssues",List.of());

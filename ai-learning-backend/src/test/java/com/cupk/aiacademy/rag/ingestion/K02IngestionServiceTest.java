@@ -52,6 +52,63 @@ class K02IngestionServiceTest {
     String value(Map<String,Object> row,String key){return row.get(key).toString();}
     Map<String,Object> doc(String id){return db.queryForMap("SELECT * FROM native_rag_document WHERE id=?",id);}
 
+    @Test void manualReviewCreatesRevisionAndRebuildsSearchWithoutCallingOcr() throws Exception {
+        var uploaded=data(service.submit(base,pdf(true),"review.pdf"));
+        String id=value(uploaded,"documentId");service.runNext("initial");
+        var original=jobs.pages(id,1,1).getFirst();
+        String oldIndex=value(doc(id),"active_index_version");
+        clearInvocations(ocr);
+        data(service.review(id,1,1,1,"Teacher corrected gradient descent."));
+        assertEquals(oldIndex,doc(id).get("active_index_version"));
+        assertEquals("409",service.review(id,1,1,1,"Concurrent edit").getCode());
+        service.runNext("review");
+        var reviewed=jobs.pages(id,1,2).getFirst();
+        assertFalse(reviewed.needsReview());assertEquals("MANUAL",reviewed.method());
+        assertEquals(original.ocrRawText(),reviewed.ocrRawText());
+        assertTrue(reviewed.locationJson().contains("reviewedBy"));
+        assertEquals(original,jobs.pages(id,1,1).getFirst());
+        assertNotEquals(oldIndex,doc(id).get("active_index_version"));
+        assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM native_rag_chunk WHERE index_version=? AND content LIKE '%Teacher corrected%'",Integer.class,doc(id).get("active_index_version")));
+        verify(ocr,never()).recognize(any());
+        assertEquals("409",service.review(id,1,1,1,"Stale edit").getCode());
+        login(2);assertEquals("403",service.review(id,1,1,2,"Unauthorized").getCode());
+    }
+
+    @Test void confirmationAndCorrectionValidatePageAndFormulaBeforeEnqueue() throws Exception {
+        var uploaded=data(service.submit(base,"Source text.".getBytes(StandardCharsets.UTF_8),"review.md"));
+        String id=value(uploaded,"documentId");service.runNext("initial");
+        assertEquals("400",service.review(id,1,1,1," ").getCode());
+        assertEquals("400",service.review(id,1,1,1,"Broken $$x").getCode());
+        assertEquals("404",service.review(id,9,1,1,"Missing page").getCode());
+        data(service.review(id,1,1,1,"Source text."));service.runNext("confirm");
+        assertFalse(jobs.pages(id,1,2).getFirst().needsReview());
+    }
+
+    @Test void manualCorrectionRepairsFailedPageAndPreservesOtherPages() throws Exception {
+        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException("OCR_NOT_CONFIGURED"));
+        var uploaded=data(service.submit(base,pdf(false),"partial-review.pdf"));
+        String id=value(uploaded,"documentId");service.runNext("initial");
+        var original=jobs.pages(id,1,1);
+        assertEquals("FAILED",original.get(1).state());
+        data(service.review(id,2,1,1,"Corrected scanned page."));service.runNext("repair");
+        var reviewed=jobs.pages(id,1,2);
+        assertEquals(original.get(0),reviewed.get(0));assertEquals(original.get(2),reviewed.get(2));
+        assertEquals("READY",doc(id).get("processing_state"));assertFalse(reviewed.get(1).needsReview());
+        assertEquals("TEXT_READY",reviewed.get(1).state());
+        verify(ocr,times(1)).recognize(any());
+    }
+
+    @Test void confirmingAnotherPagePreservesUnrepairedFailures() throws Exception {
+        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException("OCR_NOT_CONFIGURED"));
+        var uploaded=data(service.submit(base,pdf(false),"partial-confirm.pdf"));
+        String id=value(uploaded,"documentId");service.runNext("initial");
+        var first=jobs.pages(id,1,1).getFirst();
+        data(service.review(id,1,1,1,first.chosenText()));service.runNext("confirm");
+        assertEquals("PARTIAL",doc(id).get("processing_state"));
+        assertEquals("FAILED",jobs.pages(id,1,2).get(1).state());
+        verify(ocr,times(1)).recognize(any());
+    }
+
     @Test void mathFontWithoutReadableOperatorsStillRequestsDocumentRecognition() throws Exception {
         byte[] input;
         try(var pdf=new PDDocument();var bytes=new ByteArrayOutputStream()) {

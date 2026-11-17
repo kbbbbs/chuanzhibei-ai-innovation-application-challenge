@@ -1,0 +1,16 @@
+{
+  "recordedAt": "2026-11-17T07:04:58.963915+00:00",
+  "sha256": {
+    "scripts/competition/measure_course_retrieval.py": "a2e7b2a28703fe8f633f2af45f3d70e3b01728c23347eb21aa90e8ba06af4aae",
+    "scripts/competition/run_course_retrieval_measurement.ps1": "84208c98d8c8d8d8afe7de5ccae9984ca98fb16220eb3c5abe0202e7f1990c11",
+    "scripts/competition/tests/test_measure_course_retrieval.py": "a5482548d4d3a8ed0bc54ed8b4d959fa3340cac4f65375c33b258f3ac012b272",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ContestCourseRetrievalMeasurementTest.java": "86569e3d4a1716c4c4a8405757b592a02a9ca5c48628aa344a1618d8c422dacc",
+    "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/K03RetrievalLiveTest.java": "9efbe184b2fc92d0d5a8fff36d1088aa5829d4a676e6f326365680fde03b2082",
+    "docs/competition/submission-10039/retrieval/dataset.json": "739c52046f6a83dd3d2d9148d4018a271ba14303229560dc3d87b888cf8008ef",
+    "docs/competition/submission-10039/retrieval/freeze.json": "9e2bed0a5db748854bc5f27c3d08f5e718eb762244f3cb3b597b49b0ca804234",
+    "docs/competition/submission-10039/retrieval/REPORT.md": "ed097ce9f3f07353feb9ef82798e52953e9d1f46c45827f4f49dabc1d866f96d",
+    "docs/competition/submission-10039/retrieval/runs/20261117T065931Z/metrics.json": "282b45547f00132d9bf172c35a1b107b29ec50b1613e5c5ae255e7de87bc7a80",
+    "docs/competition/submission-10039/retrieval/runs/20261117T065931Z/report.json": "f054dd5dc1b082190b5d409e1716f01ee1199a4bf8f71ff80485fa70072ed44e",
+    "docs/competition/submission-10039/retrieval/verification.json": "200c46192dfa2eeaade1b50792634b1d0822ce0b3accd93ceaea8b9b67f39f01"
+  }
+}

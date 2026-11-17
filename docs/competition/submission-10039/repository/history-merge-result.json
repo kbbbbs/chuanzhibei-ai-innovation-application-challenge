@@ -1,0 +1,21 @@
+{
+  "archivedAt": "2026-11-17T07:31:37.589917+00:00",
+  "branch": "refs/heads/codex/contest-10039-history",
+  "mergeCommit": "d54aabda39c96df47a2cae4988b902fbb19d5fe1",
+  "mergeTree": "e86688ae87ed4a17a70e61dd62a28dcb353e7254",
+  "parents": [
+    "1d0b985b35d2bdf272990a114c16f5ea7c00735c",
+    "9e00193f52baab26f59d0895784c97283649c391"
+  ],
+  "originalHead": "8a59b50dbad18688270f8bb3274940a57a678e06",
+  "originalCommits": 112,
+  "redactedBlobs": 113,
+  "redactedMessages": 0,
+  "removedPaths": 98,
+  "currentHeadIndexWorktreeUnchanged": true,
+  "sourceRepositoryUnchanged": true,
+  "sanitizedScanPassedBeforeImport": true,
+  "totalReachableCommits": 118,
+  "newCommitDate": "2026-11-17T15:31:35+08:00",
+  "pushed": false
+}

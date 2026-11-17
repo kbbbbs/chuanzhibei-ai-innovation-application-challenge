@@ -1,0 +1,54 @@
+{
+  "format_version": 1,
+  "session_id": "01a1e830-452d-7822-a12f-e48b323b8e92",
+  "since": "2026-11-17T06:51:04.701Z",
+  "source_file": "rollout-2026-11-17T14-27-20-01a1e830-452d-7822-a12f-e48b323b8e92.jsonl",
+  "source_sha256": "7819ec8cdbbb28977f7612ec9fc2c4274a63a2f0c2095015e73522ee126e8f8d",
+  "source_size_bytes": 3068390,
+  "source_total_lines": 713,
+  "source_start_line": 206,
+  "session_kind": "root_or_user",
+  "fork_inherited_prefix_omitted": null,
+  "fork_boundary_selection": null,
+  "source_line_range": [
+    206,
+    711
+  ],
+  "event_timestamp_range": [
+    "2026-11-17T06:51:04.701Z",
+    "2026-11-17T07:14:39.558Z"
+  ],
+  "record_count": 152,
+  "event_counts": {
+    "agent_message": 25,
+    "message": 6,
+    "tool_call": 61,
+    "tool_output": 60
+  },
+  "source_parse_complete": true,
+  "malformed_source_lines": [],
+  "missing_or_invalid_timestamp_lines": [],
+  "assistant_messages_without_visible_channel_omitted": [],
+  "outputs_without_exported_call": [],
+  "redaction": {
+    "known_secret_count": 6,
+    "methods": [
+      "known environment and private-env literal replacement",
+      "Bearer and sk-key patterns",
+      "credential assignments",
+      "URL userinfo and secret query fields",
+      "JSON-encoded tool-output hidden-field filtering"
+    ],
+    "private_env_files_read": 0,
+    "redacted_before_write": true
+  },
+  "limitations": [
+    "Explicit snapshot only; not a permanent platform hook.",
+    "No hidden analysis/reasoning, system/developer messages, encrypted content, or context summaries are exported.",
+    "Source may already contain truncated tool output; unavailable original output is not reconstructed.",
+    "Child-agent internal operations require that child's own session export; root delegation and visible replies alone do not establish full child coverage.",
+    "Logs do not automatically establish three complete contest prompt chains or eligibility.",
+    "Later appends, including the export itself and final reply, require a subsequent refresh."
+  ],
+  "records_sha256": "ed1e4534da264f231e4cfc6a93a6897978c43f5db81c33c2906ce607824f9a49"
+}

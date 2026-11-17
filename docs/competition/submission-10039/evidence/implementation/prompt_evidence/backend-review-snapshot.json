@@ -1,0 +1,15 @@
+{
+  "observed_at": "2026-11-17T07:04:47.757663+00:00",
+  "review_type": "static read-only",
+  "product_tests_run": false,
+  "skip_reason": "Root requested read-only review without Maven.",
+  "sha256": {
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/CourseRagService.java": "0e1f768da147047b7d382e1aa40900ca0f22d3a46f6d6fe80a0f30c4129502c9",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/CourseRagController.java": "f3fe77a2439facecbd9464196f496b827189d992604dbd110d22446668ccbba6",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/chat/NativeRagChatService.java": "55d019dcf768282af6c1e146ab386f4459e76602bc5da405290de25e33193fc3",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/chat/RagChatRequest.java": "0065d53c608cebe6934b834379584b7a33c86e0074df43ef7e16d563854fdd78",
+    "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/RagSchemaMigrator.java": "bcd73f9f84529db937b808ba8587168fb45d3aefc8c0b8279793e1588b260d76",
+    "ai-learning-backend/src/main/resources/db/migration/V007__course_rag_chat.sql": "4eddf0d77851f349bd1008100ba862f5a9f3c39190a0608d0f959d5d1741fcf5",
+    "ai-learning-frontend/src/composables/useNativeRag.js": "ff1260264fc31263a67692dc08ff97b36177784b42dfb5aa5e063f10f324fa09"
+  }
+}

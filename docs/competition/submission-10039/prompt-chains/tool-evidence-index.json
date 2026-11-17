@@ -1,0 +1,3006 @@
+[
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5482,
+    "timestamp": "2026-10-27T15:20:52.567Z",
+    "call_id": "call_6b9432b5cf044fb19017ba6e362665dc",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5486
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5490,
+    "timestamp": "2026-10-27T15:21:05.560Z",
+    "call_id": "call_d19be9732aa240869b09055dd4304e40",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5494
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5498,
+    "timestamp": "2026-10-27T15:21:20.545Z",
+    "call_id": "call_1314e9e7f2fd4779b931eb40be021c7e",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5501
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5505,
+    "timestamp": "2026-10-27T15:21:41.837Z",
+    "call_id": "call_bd3940e5c12248d498956091c71e7dfe",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5509
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5515,
+    "timestamp": "2026-10-27T15:22:00.511Z",
+    "call_id": "call_877a5140229f476ba3b027e9fc97c8fd",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5518
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5522,
+    "timestamp": "2026-10-27T15:22:18.927Z",
+    "call_id": "call_a3aacee275be45b0a7d58e0869ba596b",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5525
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-audit",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5529,
+    "timestamp": "2026-10-27T15:23:01.147Z",
+    "call_id": "call_da64f9a1789c49c987dcef0ed9f54877",
+    "tool_name": "exec",
+    "output_source_lines": [],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-audit/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "industry-review",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5546,
+    "timestamp": "2026-10-27T15:25:45.748Z",
+    "call_id": "call_79ac62d71ab744ce9904de10cf409c20",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5549
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/industry-review/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "industry-review",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5553,
+    "timestamp": "2026-10-27T15:26:05.701Z",
+    "call_id": "call_79e41bfb758047b8ac27d9aa42b6d8ca",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5556
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/industry-review/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "industry-review",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5560,
+    "timestamp": "2026-10-27T15:26:29.190Z",
+    "call_id": "call_2afbb722aa0e47eb950bc7059d7d2ab8",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5563
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/industry-review/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "industry-review",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5569,
+    "timestamp": "2026-10-27T15:27:15.348Z",
+    "call_id": "call_c854fce4c15949e1abba3258595ef8cc",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5573
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/industry-review/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "industry-review",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5577,
+    "timestamp": "2026-10-27T15:27:53.853Z",
+    "call_id": "call_8de73be07c224784b45f39046c3ba0df",
+    "tool_name": "exec",
+    "output_source_lines": [],
+    "evidence_file": "../evidence/prompt-chains/P01/industry-review/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5599,
+    "timestamp": "2026-10-27T16:36:27.730Z",
+    "call_id": "call_256750fac4bb4dda8c383ab891e86e7e",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5602
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5606,
+    "timestamp": "2026-10-27T16:37:02.833Z",
+    "call_id": "call_58d4c01e075a4249970ca23f4439f297",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5611
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5615,
+    "timestamp": "2026-10-27T16:37:22.960Z",
+    "call_id": "call_39dedd95e6384b1a91b2235a18dbd7c8",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5618
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5622,
+    "timestamp": "2026-10-27T16:37:32.240Z",
+    "call_id": "call_89b7ee7997f5426798d3cfa1566093c9",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5625
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5629,
+    "timestamp": "2026-10-27T16:38:13.133Z",
+    "call_id": "call_a7312aff25964997b36e1d3c14b01136",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5633
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5641,
+    "timestamp": "2026-10-27T16:39:58.019Z",
+    "call_id": "call_e78a4401eabd495fbc815f87f3221855",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5645
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5650,
+    "timestamp": "2026-10-27T16:40:55.861Z",
+    "call_id": "call_9d9226519fe5407fb596f360c3cb00b9",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5653
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5657,
+    "timestamp": "2026-10-27T16:41:23.792Z",
+    "call_id": "call_f470a5d8f22f4ffeac0ddac5fe4dfdea",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5661
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5666,
+    "timestamp": "2026-10-27T16:42:56.920Z",
+    "call_id": "call_65b77d49cf9749c4b9324d5cd59fd87e",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5669
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5674,
+    "timestamp": "2026-10-27T16:43:46.786Z",
+    "call_id": "call_db9b8127b98b4aee9c3be44dc93b081e",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5677
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5681,
+    "timestamp": "2026-10-27T16:44:03.156Z",
+    "call_id": "call_4c639e2abe8f4ab7921845365baf93c7",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5684
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5688,
+    "timestamp": "2026-10-27T16:44:30.715Z",
+    "call_id": "call_29cc3c5e6e7e4bb0af43e7442b2ed554",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5693
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5699,
+    "timestamp": "2026-10-27T16:45:08.722Z",
+    "call_id": "call_e8e60fee551d40a2a2e5825e192e23a3",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5703
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5708,
+    "timestamp": "2026-10-27T16:46:14.983Z",
+    "call_id": "call_8dfb04d8b6d64fde8694ee335ea8fdc0",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5711
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5715,
+    "timestamp": "2026-10-27T16:46:58.746Z",
+    "call_id": "call_e261b054f3d5419aa6081f122a36062b",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5719
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5724,
+    "timestamp": "2026-10-27T16:47:31.035Z",
+    "call_id": "call_681e656bbcd44bab81555e73e8a7f8f5",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5727
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5733,
+    "timestamp": "2026-10-27T16:48:44.866Z",
+    "call_id": "call_f904e9d0cdf74d6cb8f81ea7e77a1c0e",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5738
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5742,
+    "timestamp": "2026-10-27T16:49:17.902Z",
+    "call_id": "call_a10795662c764b0ca976a6a2d6b8aa3b",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5746
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5753,
+    "timestamp": "2026-10-27T16:50:03.755Z",
+    "call_id": "call_0212807a79c84fab9f97213242364e33",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5756
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5760,
+    "timestamp": "2026-10-27T16:50:24.579Z",
+    "call_id": "call_fd41e91f71314b5eb7f2c35e1ecc1611",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5765
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5769,
+    "timestamp": "2026-10-27T16:51:04.636Z",
+    "call_id": "call_0ab7dd67170b4bfea40dcce634d1d3da",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5773
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5777,
+    "timestamp": "2026-10-27T16:52:00.003Z",
+    "call_id": "call_82ee544e0d904d129f6711e6b8eba847",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5781
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5788,
+    "timestamp": "2026-10-27T16:53:14.717Z",
+    "call_id": "call_391805c51fa346c087d2c06f250bd1cf",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5791
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5797,
+    "timestamp": "2026-10-27T16:54:33.048Z",
+    "call_id": "call_35081c161e954eef993ab18126477db9",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5800
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5804,
+    "timestamp": "2026-10-27T16:55:35.264Z",
+    "call_id": "call_379ea3ed698148b4b020107dfc091510",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5808
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5813,
+    "timestamp": "2026-10-27T16:56:23.190Z",
+    "call_id": "call_1843309294404b42af79161a63a12c68",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5816
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5821,
+    "timestamp": "2026-10-27T16:57:12.597Z",
+    "call_id": "call_cb77066078074189b39cffccd0c5f5ca",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5824
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5835,
+    "timestamp": "2026-10-28T01:40:45.582Z",
+    "call_id": "call_2daa9eae655040198dc1da519a840f49",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5838
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5850,
+    "timestamp": "2026-10-28T01:42:41.387Z",
+    "call_id": "call_0ae995c7fb714722a9027d0ee3989624",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5854
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5859,
+    "timestamp": "2026-10-28T01:43:24.665Z",
+    "call_id": "call_644e20bbec72498d926b35fcc0bb92f3",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5863
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5872,
+    "timestamp": "2026-10-28T01:45:00.163Z",
+    "call_id": "call_67e9590c62cc4bc2993328e45e9d22ce",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5876
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5881,
+    "timestamp": "2026-10-28T01:46:09.959Z",
+    "call_id": "call_2597ef58270b4e0189b8c14e4fc9b11a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5884
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5889,
+    "timestamp": "2026-10-28T01:47:10.525Z",
+    "call_id": "call_d59ef61280004de280866defaf526156",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5892
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5899,
+    "timestamp": "2026-10-28T01:47:57.099Z",
+    "call_id": "call_d09637904fbd47fa9fadba2e5f0516c4",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5902
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5906,
+    "timestamp": "2026-10-28T01:48:21.744Z",
+    "call_id": "call_f4aa71fc4b8c4d8190e916a086451c07",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5909
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5913,
+    "timestamp": "2026-10-28T01:48:54.188Z",
+    "call_id": "call_f0d6c09e75a04f29b298c635646e28c6",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5917
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5922,
+    "timestamp": "2026-10-28T01:49:19.388Z",
+    "call_id": "call_ed8a33ac835c41588a6d8089076234ef",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5925
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5929,
+    "timestamp": "2026-10-28T01:49:42.361Z",
+    "call_id": "call_a14f1b614aa34d66bed577047f23ea7f",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5933
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5938,
+    "timestamp": "2026-10-28T01:50:21.077Z",
+    "call_id": "call_28ca56aa2f3c4e21b0843fedfeb12d0b",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5941
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5945,
+    "timestamp": "2026-10-28T01:50:53.035Z",
+    "call_id": "call_432b60ed2f9e4ad682f249f864a5f4bb",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5949
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5954,
+    "timestamp": "2026-10-28T01:51:25.674Z",
+    "call_id": "call_3184a447213743619258652533cdddbd",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5958
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5963,
+    "timestamp": "2026-10-28T01:51:45.921Z",
+    "call_id": "call_4ebd704fa4ff460c9911cfefec7d33c6",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5967
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5974,
+    "timestamp": "2026-10-28T01:52:50.736Z",
+    "call_id": "call_59c7676f502749238b644504378bdbb5",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5977
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5981,
+    "timestamp": "2026-10-28T01:53:04.448Z",
+    "call_id": "call_e553a90f2cd24dd7adc88a6d0ae0e0f1",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5984
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 5990,
+    "timestamp": "2026-10-28T01:53:58.690Z",
+    "call_id": "call_221b0f795a614a0c8e99aa592c2ac4a0",
+    "tool_name": "exec",
+    "output_source_lines": [
+      5993
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6003,
+    "timestamp": "2026-10-28T01:56:04.532Z",
+    "call_id": "call_f7ffd6444114464590fa69a47066dcd5",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6006
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6013,
+    "timestamp": "2026-10-28T01:57:13.949Z",
+    "call_id": "call_0d25a624b70b4be390ae084876a5ed7a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6016
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6026,
+    "timestamp": "2026-10-28T02:01:43.906Z",
+    "call_id": "call_4261fa43536849ecb6ef2d33256b7cdd",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6029
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6035,
+    "timestamp": "2026-10-28T02:01:59.994Z",
+    "call_id": "call_45ef25a3875e469ea9d515820ad605a1",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6039
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6043,
+    "timestamp": "2026-10-28T02:02:37.580Z",
+    "call_id": "call_e84f342e7ba04034bea6f2db59fd3a64",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6048
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6052,
+    "timestamp": "2026-10-28T02:03:21.578Z",
+    "call_id": "call_3ce39ecf1d6442289c288913764c947f",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6057
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6061,
+    "timestamp": "2026-10-28T02:03:44.636Z",
+    "call_id": "call_6faa80e8c2ed4d7bbd66b3e215cd1983",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6065
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6071,
+    "timestamp": "2026-10-28T02:04:30.137Z",
+    "call_id": "call_b9dd30e2af3e44efb8b5fb373183bb90",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6076
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6080,
+    "timestamp": "2026-10-28T02:04:42.859Z",
+    "call_id": "call_805bd8d33a474744844ecefa6299c1ba",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6084
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6089,
+    "timestamp": "2026-10-28T02:05:05.456Z",
+    "call_id": "call_fb35d0cbd8ca40fabb036f18a77e4066",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6092
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6096,
+    "timestamp": "2026-10-28T02:06:11.165Z",
+    "call_id": "call_3e24d4f37fc94e9897130c94785b69a2",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6100
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6104,
+    "timestamp": "2026-10-28T02:06:21.912Z",
+    "call_id": "call_7db422174bd245d7a04fd237039c03f8",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6107
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6114,
+    "timestamp": "2026-10-28T02:07:58.023Z",
+    "call_id": "call_37909f9404c943a6bf04a51f4d94bf09",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6118
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6122,
+    "timestamp": "2026-10-28T02:08:13.829Z",
+    "call_id": "call_77c0c17fe5254441b18932b34f95647c",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6125
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6132,
+    "timestamp": "2026-10-28T02:08:40.286Z",
+    "call_id": "call_d87c096cc83f41669764e2bde42ac7e2",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6136
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6140,
+    "timestamp": "2026-10-28T02:09:11.954Z",
+    "call_id": "call_681e661f73f94749b708ddee1ae66d7c",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6147
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6152,
+    "timestamp": "2026-10-28T02:09:54.080Z",
+    "call_id": "call_cf0ef20c3d9a41b294323552a0ae7ca1",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6156
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6163,
+    "timestamp": "2026-10-28T02:12:06.596Z",
+    "call_id": "call_4a356ad93dd94d6f8437497dd28cd90d",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6167
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6171,
+    "timestamp": "2026-10-28T02:12:35.392Z",
+    "call_id": "call_cd0877a08eac4cb7a99b7fbc5176d544",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6175
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6180,
+    "timestamp": "2026-10-28T02:13:34.306Z",
+    "call_id": "call_933c77abe1c44d5785e68a0c1ee3395a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6185
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6189,
+    "timestamp": "2026-10-28T02:15:07.001Z",
+    "call_id": "call_b792f73f3b8649c38d024a37c7a3b660",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6192
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6198,
+    "timestamp": "2026-10-28T02:16:27.800Z",
+    "call_id": "call_2918edd211ae45458d8dabd3ded5776c",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6202
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6206,
+    "timestamp": "2026-10-28T02:17:15.263Z",
+    "call_id": "call_d0e700e460e845e49343ec4a86cbc60f",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6211
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6215,
+    "timestamp": "2026-10-28T02:18:00.807Z",
+    "call_id": "call_e7a4c506d6a648d8923d4bef87295d85",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6221
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6242,
+    "timestamp": "2026-10-28T02:41:21.909Z",
+    "call_id": "call_c51cb87a40c94188b266f0225cbe1c55",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6246
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6250,
+    "timestamp": "2026-10-28T02:41:38.259Z",
+    "call_id": "call_242d578d24554589b3bcb7ef4c1a33d2",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6253
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6257,
+    "timestamp": "2026-10-28T02:42:02.919Z",
+    "call_id": "call_182ab21c286147c9ab23024daacc4f1b",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6260
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6274,
+    "timestamp": "2026-10-28T02:59:49.503Z",
+    "call_id": "call_feed51e9f98c42bcb89aac6ddb214652",
+    "tool_name": "exec",
+    "output_source_lines": [
+      6279
+    ],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P01",
+    "source": "formula-development",
+    "session_id": "01a11a5b-d413-7b51-aaf0-7320ae85ce4a",
+    "source_line": 6283,
+    "timestamp": "2026-10-28T03:00:14.845Z",
+    "call_id": "call_6eda898e0a70466a9a8f4b378f0974f5",
+    "tool_name": "exec",
+    "output_source_lines": [],
+    "evidence_file": "../evidence/prompt-chains/P01/formula-development/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 18,
+    "timestamp": "2026-11-16T09:16:25.746Z",
+    "call_id": "call_dc11d7057f4048f78ab3167865b86ca9",
+    "tool_name": "exec",
+    "output_source_lines": [
+      22
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 24,
+    "timestamp": "2026-11-16T09:16:33.382Z",
+    "call_id": "call_be65b9b69f86427dbe276bb6883e67fb",
+    "tool_name": "exec",
+    "output_source_lines": [
+      27
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 29,
+    "timestamp": "2026-11-16T09:16:39.534Z",
+    "call_id": "call_25827bd006554f12aa1949994b5417d6",
+    "tool_name": "exec",
+    "output_source_lines": [
+      32
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 34,
+    "timestamp": "2026-11-16T09:16:48.613Z",
+    "call_id": "call_b564abde2ae64955a18dfec8315dd7c1",
+    "tool_name": "exec",
+    "output_source_lines": [
+      37
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 41,
+    "timestamp": "2026-11-16T09:17:00.759Z",
+    "call_id": "call_7b2cca8df7de4791ac5150df3d3efd27",
+    "tool_name": "exec",
+    "output_source_lines": [
+      44
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 48,
+    "timestamp": "2026-11-16T09:17:17.177Z",
+    "call_id": "call_37784b6aaaed482e8eb7c4203c24b5ce",
+    "tool_name": "exec",
+    "output_source_lines": [
+      52
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 56,
+    "timestamp": "2026-11-16T09:17:30.670Z",
+    "call_id": "call_01b853ffb4a84321a2faa35daa425949",
+    "tool_name": "exec",
+    "output_source_lines": [
+      59
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 65,
+    "timestamp": "2026-11-16T09:17:45.264Z",
+    "call_id": "call_96822152a3d54167b1c81629227d2a9a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      68
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 72,
+    "timestamp": "2026-11-16T09:18:04.466Z",
+    "call_id": "call_9b0a52f654c34dbf9cd18379f80568f8",
+    "tool_name": "exec",
+    "output_source_lines": [
+      75
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 79,
+    "timestamp": "2026-11-16T09:18:37.630Z",
+    "call_id": "call_348c15037bc641ee81e5b98cc5977e73",
+    "tool_name": "exec",
+    "output_source_lines": [
+      84
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 88,
+    "timestamp": "2026-11-16T09:18:59.237Z",
+    "call_id": "call_f6ef03f71e4f4d18a508ef505403674c",
+    "tool_name": "exec",
+    "output_source_lines": [
+      91
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 96,
+    "timestamp": "2026-11-16T09:19:23.080Z",
+    "call_id": "call_19932214e6fd4e12a3ad3bf2fe7da8bf",
+    "tool_name": "exec",
+    "output_source_lines": [
+      99
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 103,
+    "timestamp": "2026-11-16T09:20:07.575Z",
+    "call_id": "call_fd4fe4109aca493d8ce723410cd01379",
+    "tool_name": "exec",
+    "output_source_lines": [
+      106
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 111,
+    "timestamp": "2026-11-16T09:21:20.325Z",
+    "call_id": "call_706745ec6f17409d9ab336b15f18b8ca",
+    "tool_name": "exec",
+    "output_source_lines": [
+      115
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 119,
+    "timestamp": "2026-11-16T09:21:41.406Z",
+    "call_id": "call_6d41a28e179d4b08a84fb6bec902447f",
+    "tool_name": "exec",
+    "output_source_lines": [
+      122
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 126,
+    "timestamp": "2026-11-16T09:21:49.830Z",
+    "call_id": "call_8eea4a76749f41eab03033f3d0af4f57",
+    "tool_name": "exec",
+    "output_source_lines": [
+      129
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 133,
+    "timestamp": "2026-11-16T09:22:01.481Z",
+    "call_id": "call_0435fbd62d8949bcb1dbdd92532151b6",
+    "tool_name": "exec",
+    "output_source_lines": [
+      136
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 141,
+    "timestamp": "2026-11-16T09:22:31.556Z",
+    "call_id": "call_69a4dc7b13d54e4798ed6213c2035cf8",
+    "tool_name": "request_user_input_async",
+    "output_source_lines": [
+      144
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 147,
+    "timestamp": "2026-11-16T09:22:42.250Z",
+    "call_id": "call_e4e7ae86135d4624b8b4687edf7f500a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      149
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 155,
+    "timestamp": "2026-11-16T09:22:59.585Z",
+    "call_id": "call_165f37e6c52448fc822ef48038c4de3a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      161
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 168,
+    "timestamp": "2026-11-16T09:23:55.664Z",
+    "call_id": "call_db30b83dc1bd480b90adc2f41bd77509",
+    "tool_name": "exec",
+    "output_source_lines": [
+      172
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 178,
+    "timestamp": "2026-11-16T09:24:09.751Z",
+    "call_id": "call_08cc86cb71584815be4d5a302d0e7c58",
+    "tool_name": "js",
+    "output_source_lines": [
+      181
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 183,
+    "timestamp": "2026-11-16T09:24:36.948Z",
+    "call_id": "call_fdea3307e863433e883fff6351663e7d",
+    "tool_name": "js",
+    "output_source_lines": [
+      186
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 190,
+    "timestamp": "2026-11-16T09:25:14.691Z",
+    "call_id": "call_e0813a1aadb044b5a48516d32a65795e",
+    "tool_name": "js",
+    "output_source_lines": [
+      193
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 197,
+    "timestamp": "2026-11-16T09:26:20.506Z",
+    "call_id": "call_3ee3f6d548a14293b92692388681299e",
+    "tool_name": "js",
+    "output_source_lines": [
+      200
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 204,
+    "timestamp": "2026-11-16T09:26:51.319Z",
+    "call_id": "call_d0003e7324c94784a90d8c6a3c46cc3a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      209
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 214,
+    "timestamp": "2026-11-16T09:27:44.195Z",
+    "call_id": "call_918e22afca464d439052ba5f3ab9367a",
+    "tool_name": "exec",
+    "output_source_lines": [
+      217
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 221,
+    "timestamp": "2026-11-16T09:28:16.954Z",
+    "call_id": "call_e6603f5f6c744bc09366be4ff83ea3ed",
+    "tool_name": "exec",
+    "output_source_lines": [
+      223
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 227,
+    "timestamp": "2026-11-16T09:28:25.921Z",
+    "call_id": "call_394489b953cb47fb97310b369f95378c",
+    "tool_name": "exec",
+    "output_source_lines": [
+      230
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 234,
+    "timestamp": "2026-11-16T09:28:57.744Z",
+    "call_id": "call_528f9012936a496893de941cb815fafb",
+    "tool_name": "exec",
+    "output_source_lines": [
+      238
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 243,
+    "timestamp": "2026-11-16T09:29:35.751Z",
+    "call_id": "call_bc15a32247584637be8d4ba222750513",
+    "tool_name": "exec",
+    "output_source_lines": [
+      247
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 256,
+    "timestamp": "2026-11-16T09:30:07.308Z",
+    "call_id": "call_a8ecbaa76a72491190457074e532c2eb",
+    "tool_name": "exec",
+    "output_source_lines": [
+      260
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 264,
+    "timestamp": "2026-11-16T09:30:29.964Z",
+    "call_id": "call_fc082c79d1ae4a82909ddf723b437953",
+    "tool_name": "exec",
+    "output_source_lines": [
+      267
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 271,
+    "timestamp": "2026-11-16T09:30:46.795Z",
+    "call_id": "call_89a577c40b2b4bc792481fe16d06e978",
+    "tool_name": "exec",
+    "output_source_lines": [
+      275
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 280,
+    "timestamp": "2026-11-16T09:31:41.021Z",
+    "call_id": "call_0ff941a8af8c45839a51e5f02e68360b",
+    "tool_name": "exec",
+    "output_source_lines": [
+      284
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 288,
+    "timestamp": "2026-11-16T09:32:10.508Z",
+    "call_id": "call_e6ac31572eb0465fbb14944001de6619",
+    "tool_name": "exec",
+    "output_source_lines": [
+      292
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 309,
+    "timestamp": "2026-11-16T09:34:45.083Z",
+    "call_id": "call_f86c64354d9b49d7ae2008d15901ab22",
+    "tool_name": "exec",
+    "output_source_lines": [
+      312
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 316,
+    "timestamp": "2026-11-16T09:34:58.099Z",
+    "call_id": "call_57a713d3fd884ab3a5e3432661f402a9",
+    "tool_name": "exec",
+    "output_source_lines": [
+      320
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 324,
+    "timestamp": "2026-11-16T09:35:12.664Z",
+    "call_id": "call_517d226ded1349a4b908e5af108e5b2e",
+    "tool_name": "exec",
+    "output_source_lines": [
+      327
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 331,
+    "timestamp": "2026-11-16T09:35:47.019Z",
+    "call_id": "call_f06e749155c7415092e882867b18dd12",
+    "tool_name": "js",
+    "output_source_lines": [
+      334
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 338,
+    "timestamp": "2026-11-16T09:36:28.067Z",
+    "call_id": "call_823061f24a92440d8b7e52a63a7bfe6d",
+    "tool_name": "exec",
+    "output_source_lines": [
+      341
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 345,
+    "timestamp": "2026-11-16T09:36:38.980Z",
+    "call_id": "call_268f57f3bea34cef9df0307f506b4b3f",
+    "tool_name": "js",
+    "output_source_lines": [
+      348
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 352,
+    "timestamp": "2026-11-16T09:36:46.484Z",
+    "call_id": "call_0dbf83deb663495aafa3ed1479443436",
+    "tool_name": "js",
+    "output_source_lines": [
+      355
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 359,
+    "timestamp": "2026-11-16T09:36:58.037Z",
+    "call_id": "call_a4fdccbf00904e179bd06822d88a3188",
+    "tool_name": "js",
+    "output_source_lines": [
+      362
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 364,
+    "timestamp": "2026-11-16T09:37:04.413Z",
+    "call_id": "call_c469520850344453a008cd4bd5b9dbb8",
+    "tool_name": "js",
+    "output_source_lines": [
+      367
+    ],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P02",
+    "source": "page-review",
+    "session_id": "01a1e3a2-d311-7fa2-844c-0435c46af8b8",
+    "source_line": 371,
+    "timestamp": "2026-11-16T09:37:31.257Z",
+    "call_id": "call_1e542dadaf314f67abdc6fe183bd4bd6",
+    "tool_name": "exec",
+    "output_source_lines": [],
+    "evidence_file": "../evidence/prompt-chains/P02/page-review/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1466,
+    "timestamp": "2026-11-03T00:53:10.218Z",
+    "call_id": "call_HmEt14P3jkRVz7i3Tlp7MRGm",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1470
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1474,
+    "timestamp": "2026-11-03T00:53:57.157Z",
+    "call_id": "call_gXlJd7717DNuF7bZNrqzqa62",
+    "tool_name": "spawn_agent",
+    "output_source_lines": [
+      1477
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1480,
+    "timestamp": "2026-11-03T00:54:31.514Z",
+    "call_id": "call_ZJPddSWuOFVqtSnOgY922Vlk",
+    "tool_name": "spawn_agent",
+    "output_source_lines": [
+      1483
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1486,
+    "timestamp": "2026-11-03T00:54:59.507Z",
+    "call_id": "call_qye8E2PJ7jE1dUXJVLm4TdQx",
+    "tool_name": "spawn_agent",
+    "output_source_lines": [
+      1489
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1494,
+    "timestamp": "2026-11-03T00:55:21.594Z",
+    "call_id": "call_ieplq7gnzIxoyd0zPtBL8Fqo",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1497
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1499,
+    "timestamp": "2026-11-03T00:56:04.575Z",
+    "call_id": "call_k44FaCWZrtfTzh3bXXxqOb6s",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1503
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1513,
+    "timestamp": "2026-11-03T00:56:26.296Z",
+    "call_id": "call_CXEKKLIr2XUHpX7aOQwZ3UGQ",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1517
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1524,
+    "timestamp": "2026-11-03T00:57:09.240Z",
+    "call_id": "call_XQt0Lhvr7nQvwgQpQplXkVk6",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1527
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1529,
+    "timestamp": "2026-11-03T00:57:37.280Z",
+    "call_id": "call_hR1Lo0O0wQIBL6Dafrps4E8f",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1532
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1539,
+    "timestamp": "2026-11-03T00:58:15.053Z",
+    "call_id": "call_rLpdCKxFzkxNJZvfuFv8XtfA",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1542
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1546,
+    "timestamp": "2026-11-03T00:58:33.776Z",
+    "call_id": "call_vpVE3MIpzDuLFPrWVEmyvLGo",
+    "tool_name": "wait_agent",
+    "output_source_lines": [
+      1549
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1555,
+    "timestamp": "2026-11-03T00:59:00.430Z",
+    "call_id": "call_E0oQOGpuvOCsLUg0WbJAVjfJ",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1558
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1560,
+    "timestamp": "2026-11-03T00:59:22.523Z",
+    "call_id": "call_1Y9e91YHF7CWi3lyCauOpjol",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1563
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1576,
+    "timestamp": "2026-11-03T01:00:04.378Z",
+    "call_id": "call_pdb18rObU1fegjDyacjS7DAs",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1579
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1583,
+    "timestamp": "2026-11-03T01:00:28.700Z",
+    "call_id": "call_zAiGlsGoz1m0zloTGlktxaDg",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1586
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1588,
+    "timestamp": "2026-11-03T01:01:01.355Z",
+    "call_id": "call_vSRf4a7lBmrTlbxlEV0lAtfa",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1591
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1604,
+    "timestamp": "2026-11-03T01:02:32.975Z",
+    "call_id": "call_GnYxB4QmlZaOIfjwm6Uj5aHB",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1607
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1615,
+    "timestamp": "2026-11-03T01:03:04.068Z",
+    "call_id": "call_2ZmeyxAE44FGtbr3hns7dfbt",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1618
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1624,
+    "timestamp": "2026-11-03T01:03:40.028Z",
+    "call_id": "call_WZVSlFaaXb4XzFSACO7x6y8B",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1627
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1636,
+    "timestamp": "2026-11-03T01:04:46.744Z",
+    "call_id": "call_Xf65QKvPfMUlqO5WoOzNZzCf",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1639
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1643,
+    "timestamp": "2026-11-03T01:05:14.036Z",
+    "call_id": "call_CtXctahkX7mGXRlvcTxw8pic",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1646
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1648,
+    "timestamp": "2026-11-03T01:05:32.670Z",
+    "call_id": "call_r93hnVzUDDiOJSEQrg9f5Jpt",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1653
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1663,
+    "timestamp": "2026-11-03T01:06:21.290Z",
+    "call_id": "call_HeaeeeW2KlcrIkI9ueJpOf2x",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1666
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1676,
+    "timestamp": "2026-11-03T01:06:51.592Z",
+    "call_id": "call_XT6ZfruEz9WY5nUbQUu2XDCU",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1680
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1689,
+    "timestamp": "2026-11-03T01:07:39.973Z",
+    "call_id": "call_YIzuZb3EKkpXx1USz7szU9fF",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1692
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1694,
+    "timestamp": "2026-11-03T01:08:03.927Z",
+    "call_id": "call_0a5Y8iv1rfVVAArCTG65aWxr",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1697
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1699,
+    "timestamp": "2026-11-03T01:08:27.457Z",
+    "call_id": "call_qKjn1Dnx5PKbDDYfB7nBGRsc",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      1702
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1708,
+    "timestamp": "2026-11-03T01:08:53.239Z",
+    "call_id": "call_i6o0Upfhvv4uwS3DdpRHwGl5",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1711
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1713,
+    "timestamp": "2026-11-03T01:09:11.651Z",
+    "call_id": "call_dmBZuWsGehtENsDhsqJjYOOp",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1718
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1726,
+    "timestamp": "2026-11-03T01:09:49.702Z",
+    "call_id": "call_1OMrOGzwgPhZqvowojWKAJcF",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1729
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1740,
+    "timestamp": "2026-11-03T01:11:57.728Z",
+    "call_id": "call_EGFJ47fGsZDXe5OnwcV7Nn2I",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1743
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1748,
+    "timestamp": "2026-11-03T01:12:51.223Z",
+    "call_id": "call_D9OLQVWMPbBxA5dgF6WV2aqt",
+    "tool_name": "exec",
+    "output_source_lines": [
+      1752
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-root",
+    "session_id": "01a19a2e-c08e-7723-9c0a-87cb96f47e37",
+    "source_line": 1758,
+    "timestamp": "2026-11-03T01:13:21.737Z",
+    "call_id": "call_oOEVghpcWmIEDChCZckWOkwe",
+    "tool_name": "exec",
+    "output_source_lines": [],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-root/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 12,
+    "timestamp": "2026-11-03T00:54:03.783Z",
+    "call_id": "call_pcMfWk5wnvJoqXjTbQ7l6RuF",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      15
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 17,
+    "timestamp": "2026-11-03T00:54:10.800Z",
+    "call_id": "call_O4qE7Vrl3ZfFc5qwryM10tDu",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      20
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 22,
+    "timestamp": "2026-11-03T00:54:19.641Z",
+    "call_id": "call_qtazdH8e6suervu2rX0uyoSc",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      25
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 27,
+    "timestamp": "2026-11-03T00:54:27.640Z",
+    "call_id": "call_m41tdr4z5bNTHxfjzlFG5hNQ",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      30
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 32,
+    "timestamp": "2026-11-03T00:54:34.241Z",
+    "call_id": "call_wNCQfjR6h286u0rs9pOuw4WA",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      35
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 37,
+    "timestamp": "2026-11-03T00:54:46.536Z",
+    "call_id": "call_EV5kzu5b9Mp5DA801BDbyoqu",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      43
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 38,
+    "timestamp": "2026-11-03T00:54:46.726Z",
+    "call_id": "call_jQ0E96gdt9mYAyFPQhk1CnQW",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      45
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 39,
+    "timestamp": "2026-11-03T00:54:46.921Z",
+    "call_id": "call_HyGPDnJu2A3dKlTZ8XzYIn5Y",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      46
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 48,
+    "timestamp": "2026-11-03T00:54:56.487Z",
+    "call_id": "call_RVDXGkTBjNutuRDDPePaQ6Yf",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      51
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 53,
+    "timestamp": "2026-11-03T00:55:06.300Z",
+    "call_id": "call_6qyx8sLxmSZputo9Al9XwuST",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      56
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 58,
+    "timestamp": "2026-11-03T00:55:16.588Z",
+    "call_id": "call_qOZDYqZ2doxqodbrrXVbtCUo",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      61
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 63,
+    "timestamp": "2026-11-03T00:55:25.776Z",
+    "call_id": "call_KtvbILYW8wDGmSuGHaJMcjUn",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      66
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 68,
+    "timestamp": "2026-11-03T00:55:36.451Z",
+    "call_id": "call_eE33ypEISa3lF1Op3RQoukQP",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      71
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 75,
+    "timestamp": "2026-11-03T00:55:48.695Z",
+    "call_id": "call_WHObp7Fw63A5WGnZnNJiiXNA",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      78
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 80,
+    "timestamp": "2026-11-03T00:56:01.358Z",
+    "call_id": "call_7NWVjtTDA8loFEsgN9MdCD9L",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      83
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 89,
+    "timestamp": "2026-11-03T00:56:34.405Z",
+    "call_id": "call_BIyJw1QysUK00EqGaOH1vVGJ",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      92
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 94,
+    "timestamp": "2026-11-03T00:56:45.368Z",
+    "call_id": "call_CxrqFYn7aXhnskxh7L9MS2xS",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      96
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 98,
+    "timestamp": "2026-11-03T00:57:02.457Z",
+    "call_id": "call_QlZKT981rkBLpcEaLdgKB63l",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      100
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 104,
+    "timestamp": "2026-11-03T00:57:20.966Z",
+    "call_id": "call_ADFQ2XNIqyijT9pKkwjFmFbh",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      107
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 111,
+    "timestamp": "2026-11-03T00:57:35.849Z",
+    "call_id": "call_KEcYufMzFL4YwLzabhrESRnO",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      114
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 116,
+    "timestamp": "2026-11-03T00:57:47.013Z",
+    "call_id": "call_FmxjSJt4lNWqodgyAjYsoMAr",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      118
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 122,
+    "timestamp": "2026-11-03T00:58:06.608Z",
+    "call_id": "call_5J9jnZlVaTSox1zBmuv20uL3",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      125
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 128,
+    "timestamp": "2026-11-03T00:58:14.610Z",
+    "call_id": "call_fsGmyCmTStn9fIYoAy95vJHM",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      130
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 132,
+    "timestamp": "2026-11-03T00:58:23.086Z",
+    "call_id": "call_nKlOelJc6uW5XihLOTCl29zY",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      134
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 139,
+    "timestamp": "2026-11-03T00:58:41.699Z",
+    "call_id": "call_4VQbm39wtjZgoX4oLHnh53PL",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      142
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 146,
+    "timestamp": "2026-11-03T00:59:20.461Z",
+    "call_id": "call_8WB165n85dLiiR0XK9QiMAgN",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      149
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 151,
+    "timestamp": "2026-11-03T00:59:26.138Z",
+    "call_id": "call_O0DO3PhEE8iF353sz8OUCz4y",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      153
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 155,
+    "timestamp": "2026-11-03T00:59:36.770Z",
+    "call_id": "call_7U2bx7a3IuIz8K3J3A06g7zO",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      157
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 166,
+    "timestamp": "2026-11-03T01:00:06.744Z",
+    "call_id": "call_GqnPc0rCJLR17pu5yQ6ek2m2",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      168
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 170,
+    "timestamp": "2026-11-03T01:00:13.938Z",
+    "call_id": "call_4bIcWptJU9PM5RfMVihhINYj",
+    "tool_name": "browser_tabs",
+    "output_source_lines": [
+      173
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 175,
+    "timestamp": "2026-11-03T01:00:29.813Z",
+    "call_id": "call_86VhmaD7w8keRIkYnJC67ojC",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      180
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 176,
+    "timestamp": "2026-11-03T01:00:30.615Z",
+    "call_id": "call_VoKT4AMHtfy3U8A8I3lVawH6",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      181
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 185,
+    "timestamp": "2026-11-03T01:00:40.294Z",
+    "call_id": "call_2cNDGnzDWzUBwJfngmhfMYxs",
+    "tool_name": "browser_navigate",
+    "output_source_lines": [
+      188
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 190,
+    "timestamp": "2026-11-03T01:00:46.342Z",
+    "call_id": "call_AjVLNN2ryuvk1G91ux2luvzn",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      193
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 195,
+    "timestamp": "2026-11-03T01:00:55.864Z",
+    "call_id": "call_XKrGtytZF4QWePoWp6ScvCSi",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      198
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 200,
+    "timestamp": "2026-11-03T01:01:08.167Z",
+    "call_id": "call_VCok601zxgIMUKRVdDl0aaJG",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      202
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 204,
+    "timestamp": "2026-11-03T01:01:31.114Z",
+    "call_id": "call_LkGl74mYSAdH5odSa0GWuzSN",
+    "tool_name": "browser_navigate",
+    "output_source_lines": [
+      207
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 210,
+    "timestamp": "2026-11-03T01:02:04.495Z",
+    "call_id": "call_6xMK8fZCXIGt9EB9oUnP81tu",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      213
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 215,
+    "timestamp": "2026-11-03T01:02:12.054Z",
+    "call_id": "call_JqDYw02Ii0FFMv4OjCdluN1l",
+    "tool_name": "view_image",
+    "output_source_lines": [
+      218
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 222,
+    "timestamp": "2026-11-03T01:02:22.848Z",
+    "call_id": "call_geyyjMsk9BZBF1ZmwqfNMDas",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      225
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 227,
+    "timestamp": "2026-11-03T01:02:32.680Z",
+    "call_id": "call_ySVJvzdW3B7ITXUfkGuSRnmK",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      229
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 231,
+    "timestamp": "2026-11-03T01:02:50.214Z",
+    "call_id": "call_jQyQcpuMHDTArBDg11TxVyWE",
+    "tool_name": "view_image",
+    "output_source_lines": [
+      234
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 240,
+    "timestamp": "2026-11-03T01:03:28.859Z",
+    "call_id": "call_4Y8TquS9dqgRNSw4BqoB2Pze",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      243
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 245,
+    "timestamp": "2026-11-03T01:03:47.370Z",
+    "call_id": "call_vFnrn9IEefAJFzuNdq8yvruf",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      248
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 252,
+    "timestamp": "2026-11-03T01:04:31.507Z",
+    "call_id": "call_6xljFOovNVmD2g4forQB9JQe",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      255
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 257,
+    "timestamp": "2026-11-03T01:04:45.220Z",
+    "call_id": "call_kolpexe039tgoP7IUdXumm4L",
+    "tool_name": "view_image",
+    "output_source_lines": [
+      260
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 262,
+    "timestamp": "2026-11-03T01:05:05.456Z",
+    "call_id": "call_KLBiwcF09nShRCBre9gljpYv",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      264
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 271,
+    "timestamp": "2026-11-03T01:05:34.931Z",
+    "call_id": "call_kESxteTNsBp66Iy8b6XUnqAm",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      274
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 276,
+    "timestamp": "2026-11-03T01:05:52.254Z",
+    "call_id": "call_8W9B0KKlfAk7asNrcduBEOao",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      279
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 281,
+    "timestamp": "2026-11-03T01:06:07.221Z",
+    "call_id": "call_LgFtyPtK1EWBR5nbqUojs76g",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      284
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 286,
+    "timestamp": "2026-11-03T01:06:21.077Z",
+    "call_id": "call_CYG8hzpGDhVhgL4AzXUTnC4t",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      289
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 297,
+    "timestamp": "2026-11-03T01:06:40.136Z",
+    "call_id": "call_VOD5j897SerMmw7zGE77G9WX",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      300
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 302,
+    "timestamp": "2026-11-03T01:06:49.584Z",
+    "call_id": "call_yxYpyxX1wB8RkGeNGSJWPMkh",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      304
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 306,
+    "timestamp": "2026-11-03T01:07:02.074Z",
+    "call_id": "call_dt0q1NSZm6kBtD0KhT90q4NX",
+    "tool_name": "exec_command",
+    "output_source_lines": [
+      308
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 311,
+    "timestamp": "2026-11-03T01:07:29.009Z",
+    "call_id": "call_TUtghxRZdHEr17bf3Wyp7kqd",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      314
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 321,
+    "timestamp": "2026-11-03T01:08:03.548Z",
+    "call_id": "call_JrNnH4WFNF8zgRsfCrVLiJ0e",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      324
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 326,
+    "timestamp": "2026-11-03T01:08:17.576Z",
+    "call_id": "call_0SUrpevh9qx1NAwH45mwwVWg",
+    "tool_name": "view_image",
+    "output_source_lines": [
+      329
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 331,
+    "timestamp": "2026-11-03T01:08:30.506Z",
+    "call_id": "call_j5gbwBLgIEssbry4crMYlBe5",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      334
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 336,
+    "timestamp": "2026-11-03T01:08:42.070Z",
+    "call_id": "call_MQYkdjoicGSVXzMB9TPXqOxC",
+    "tool_name": "browser_navigate",
+    "output_source_lines": [
+      339
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 341,
+    "timestamp": "2026-11-03T01:08:53.772Z",
+    "call_id": "call_WgRDT1l0leJTpZCh3kzNzySf",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      344
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 346,
+    "timestamp": "2026-11-03T01:09:43.065Z",
+    "call_id": "call_YUPnGNlPf6eTxZGlf5mY9ku7",
+    "tool_name": "browser_run_code_unsafe",
+    "output_source_lines": [
+      349
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 351,
+    "timestamp": "2026-11-03T01:09:55.766Z",
+    "call_id": "call_cafjiypxFPneFCPcU1JMC8y9",
+    "tool_name": "write_stdin",
+    "output_source_lines": [
+      353
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 357,
+    "timestamp": "2026-11-03T01:10:07.499Z",
+    "call_id": "call_AXBtpDZYUd2QrKce2mW536pm",
+    "tool_name": "view_image",
+    "output_source_lines": [
+      360
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 362,
+    "timestamp": "2026-11-03T01:10:21.132Z",
+    "call_id": "call_dEB8FJ6ka7em09tWS8Vl6jHG",
+    "tool_name": "view_image",
+    "output_source_lines": [
+      365
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 369,
+    "timestamp": "2026-11-03T01:10:41.827Z",
+    "call_id": "call_vtWDR6tcunBqzlQ8QQDUQP6G",
+    "tool_name": "send_message",
+    "output_source_lines": [
+      372
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 376,
+    "timestamp": "2026-11-03T01:11:21.427Z",
+    "call_id": "call_jzyadClmPAnymJRi94QuZTt3",
+    "tool_name": "apply_patch",
+    "output_source_lines": [
+      379
+    ],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  },
+  {
+    "chain": "P03",
+    "source": "learning-ui",
+    "session_id": "01a19ee6-0642-7690-a5ab-86a78e37d691",
+    "source_line": 381,
+    "timestamp": "2026-11-03T01:11:37.583Z",
+    "call_id": "call_cchzxSc19O5OPqVAVlvSEGOd",
+    "tool_name": "exec_command",
+    "output_source_lines": [],
+    "evidence_file": "../evidence/prompt-chains/P03/learning-ui/records.jsonl"
+  }
+]

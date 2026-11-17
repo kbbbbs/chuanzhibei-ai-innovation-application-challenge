@@ -1,5 +1,5 @@
 <template>
-  <div class="course-learn" :class="{ 'sidebar-collapsed': isLessonSidebarCollapsed }" v-loading="loading">
+  <div @mouseup="captureSelection" class="course-learn" :class="{ 'sidebar-collapsed': isLessonSidebarCollapsed }" v-loading="loading">
     <div v-if="isLessonSidebarCollapsed" class="floating-sidebar-toggle">
       <el-tooltip content="展开课程目录" placement="right">
         <el-button
@@ -10,6 +10,7 @@
         />
       </el-tooltip>
     </div>
+    <el-button v-if="pendingSelection" class="selection-action" type="primary" size="small" @mousedown.prevent @click="explainSelection">解释这段</el-button>
     <el-row :gutter="20" class="study-layout">
       <!-- Chapter & Lesson List -->
       <el-col
@@ -152,10 +153,10 @@
           <el-tab-pane label="问答" name="chat">
             <LessonQuickChat
               :key="`chat-${currentLesson.id}`"
-              :lesson-title="currentLesson.title"
-              :note-content="noteContent"
-              :video-summary-md="playback?.summaryMd || ''"
-              :current-video-time="currentVideoTime"
+              :course-id="courseId"
+              :lesson-id="Number(currentLesson.id)"
+              :course-title="course.title"
+              v-model:selected-text="selectedQuote"
             />
           </el-tab-pane>
         </el-tabs>
@@ -201,6 +202,27 @@ const completedLessons = ref(new Set())
 const progressByLessonId = ref(new Map())
 const playerRenderVersion = ref(0)
 const activeToolTab = ref('notes')
+const pendingSelection = ref('')
+const selectedQuote = ref('')
+function captureSelection(event) {
+  if (event.target.closest('.selection-action, .quick-chat-card')) return
+  const noteInput = event.target.closest('.note-card textarea, .note-card input')
+  if (noteInput && typeof noteInput.selectionStart === 'number') {
+    pendingSelection.value = noteInput.value.slice(noteInput.selectionStart, noteInput.selectionEnd).trim().slice(0, 1500)
+    return
+  }
+  const selected = window.getSelection()
+  const anchor = selected?.anchorNode?.nodeType === Node.ELEMENT_NODE ? selected.anchorNode : selected?.anchorNode?.parentElement
+  const focus = selected?.focusNode?.nodeType === Node.ELEMENT_NODE ? selected.focusNode : selected?.focusNode?.parentElement
+  const insideLesson = anchor?.closest('.lesson-main-card, .note-card') && focus?.closest('.lesson-main-card, .note-card')
+  pendingSelection.value = insideLesson ? selected.toString().trim().slice(0, 1500) : ''
+}
+function explainSelection() {
+  selectedQuote.value = pendingSelection.value
+  pendingSelection.value = ''
+  activeToolTab.value = 'chat'
+}
+watch(() => currentLesson.value?.id, () => { pendingSelection.value = ''; selectedQuote.value = '' })
 const experience = ref({ overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] })
 let playbackRequestSeq = 0
 
@@ -605,6 +627,7 @@ watch(
 </script>
 
 <style scoped>
+.selection-action { position:fixed; right:32px; bottom:110px; z-index:100; box-shadow:0 4px 20px #0002; }
 .course-learn {
   position: relative;
 }

@@ -1,0 +1,6 @@
+{
+  "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/IngestionJobRepository.java": "504f1329c1be4822e7aaad976019c5fc417a4da7ec85fc90f71460147791d197",
+  "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagIngestionController.java": "3722e2333be73e3242e2ea71a2f258e2e1e17305948bfdd9eaad5d841f3e25ab",
+  "ai-learning-backend/src/main/java/com/cupk/aiacademy/rag/ingestion/RagIngestionService.java": "3075b502f0b2755935cc3b16b232d8fd0bb6ab9e49b18465ac50c693843135d1",
+  "ai-learning-backend/src/test/java/com/cupk/aiacademy/rag/ingestion/K02IngestionServiceTest.java": "d2abc5874c454ce7421236f7ecb99909a12f1674bb24de9b3bba43df352879ae"
+}
