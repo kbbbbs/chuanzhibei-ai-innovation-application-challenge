@@ -1,6 +1,7 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
 import { API_BASE_URL } from '@/utils/backendUrl'
+import { useUserStore } from '@/store/user'
 
 const request = axios.create({
   baseURL: API_BASE_URL,
@@ -11,7 +12,7 @@ request.interceptors.request.use(config => {
   if (!(config.data instanceof FormData)) {
     config.headers['Content-Type'] = 'application/json;charset=utf-8'
   }
-  const token = localStorage.getItem('token')
+  const token = useUserStore().token
   if (token) {
     config.headers.Authorization = 'Bearer ' + token
   }
@@ -86,12 +87,11 @@ request.interceptors.response.use(response => {
 
   const silent = error.config?.silent
   if (status === 401) {
+    const user = useUserStore()
+    // A delayed response from a previous login must not log out its replacement.
+    if (error.config?.headers?.Authorization !== `Bearer ${user.token}`) return Promise.reject(error)
     if (!silent) ElMessage.error('登录已过期，请重新登录')
-    localStorage.removeItem('token')
-    localStorage.removeItem('userId')
-    localStorage.removeItem('username')
-    localStorage.removeItem('nickname')
-    localStorage.removeItem('roleCode')
+    user.logout()
     window.location.href = `${import.meta.env.BASE_URL}login`
   } else if (status === 403) {
     if (!silent) ElMessage.error('无权限访问该资源')

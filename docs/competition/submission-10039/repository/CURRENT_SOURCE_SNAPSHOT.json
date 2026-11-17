@@ -21,5 +21,25 @@
     "failures": 0,
     "errors": 0,
     "skipped": 0
-  }
+  },
+  "postSnapshotPatches": [
+    {
+      "preparedAt": "2026-11-17T12:10:45.954971+00:00",
+      "sourceProject": "ai-learning-github-latest",
+      "description": "Per-tab login isolation and consistent request identity for teacher learning analysis.",
+      "sourceRawFileSha256": {
+        "ai-learning-frontend/src/store/user.js": "87a5df349270c6b903b04346748c64fe59f894507a3d35d14530dd6dcec8f042",
+        "ai-learning-frontend/src/utils/request.js": "bd57cb5f2f709060a00c32e1dca5323a700ede7a0ace9eba23b58baeecde5b29",
+        "ai-learning-frontend/src/utils/userSession.js": "a56b2118817ee072f49c4e3420213b58fb0f96e6303688730d360379199f886a",
+        "ai-learning-frontend/e2e/tab-auth-session.spec.js": "c2160dbb2ed1d3c589df018ba1a0fad9ccb42e9f8df5a1aef959ecdf0c4c5276"
+      },
+      "verification": {
+        "backendRelatedTests": 27,
+        "liveApiChecks": 9,
+        "liveBrowserSameContextTeacherStudent": "PASS",
+        "frontendRelatedTests": 10,
+        "frontendProductionBuild": "PASS"
+      }
+    }
+  ]
 }
