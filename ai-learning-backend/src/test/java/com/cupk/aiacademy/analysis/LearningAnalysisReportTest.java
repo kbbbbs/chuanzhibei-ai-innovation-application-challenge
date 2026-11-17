@@ -38,6 +38,7 @@ class LearningAnalysisReportTest {
     @Autowired JdbcTemplate db;
     @Autowired com.cupk.aiacademy.agent.tool.AgentToolExecutor tools;
     @Autowired com.cupk.aiacademy.agent.core.service.AgentChatService agentChat;
+    @Autowired com.cupk.aiacademy.assistant.UnifiedAssistantService assistant;
     @MockBean ChatModelClient model;
     @MockBean com.cupk.aiacademy.agent.planner.UnifiedAgentPlanner planner;
 
@@ -65,7 +66,7 @@ class LearningAnalysisReportTest {
     }
 
     @Test void emptyAssessmentsKeepMissingMetricsNull() {
-        db.update("INSERT INTO t_course(id,title,teacher_id,status) VALUES(1800003,'空评测课程',1003901,1)");
+        db.update("INSERT INTO t_course(id,title,category_id,teacher_id,status) VALUES(1800003,'空评测课程',5,1003901,1)");
         var snapshot = snapshots.capture(1800003);
         db.update("DELETE FROM t_course WHERE id=1800003");
         assertEquals(0, snapshot.exam().assessmentCount());
@@ -201,6 +202,77 @@ class LearningAnalysisReportTest {
         assertTrue(response.getContent().contains(response.getReportId()));
         assertEquals(response.getReportId(), agentChat.listMessages(session.getId()).getLast().getReportId());
         verify(model, never()).call(any(Prompt.class), any(Duration.class));
+    }
+
+    @Test void latestUnifiedAssistantCreatesAndRestoresTheReportReference() throws Exception {
+        when(planner.plan(any(), any())).thenAnswer(invocation ->
+                com.cupk.aiacademy.agent.planner.AgentPlanningOutcome.readResult(
+                        tools.executeReadTool("learning_analysis_report", Map.of("courseId",1004911)).orElseThrow()));
+        int session = ((Number) assistant.createSession(Map.of("courseId",1004911,"title","新版学情报告")).get("id")).intValue();
+        assistant.send(session, Map.of("requestId","report-port-test","content","生成课程学情分析报告"));
+        Map<String,Object> state = Map.of();
+        long deadline = System.nanoTime() + Duration.ofSeconds(12).toNanos();
+        while (System.nanoTime() < deadline) {
+            state = assistant.request(session,"report-port-test");
+            if (!"RUNNING".equals(state.get("status"))) break;
+            Thread.sleep(30);
+        }
+        assertEquals("COMPLETED",state.get("status"),state.toString());
+        var message = assistant.messages(session).getLast();
+        assertNotNull(message.get("reportId"));
+        assertEquals("QUEUED",reports.detail(message.get("reportId").toString()).status());
+        assertTrue(message.get("content").toString().contains(message.get("reportId").toString()));
+        verify(model,never()).call(any(Prompt.class),any(Duration.class));
+    }
+
+    @Test void latestCourseScopeRejectsCrossCourseReports() {
+        db.update("INSERT INTO t_course(id,title,category_id,teacher_id,status) VALUES(1800004,'另一门自有课程',5,1003901,1)");
+        try {
+            assertThrows(RuntimeException.class, () ->
+                    com.cupk.aiacademy.agent.tool.support.AgentToolScope.inCourse(1004911,
+                            () -> tools.executeReadTool("learning_analysis_report", Map.of("courseId",1800004))));
+        } finally {
+            db.update("DELETE FROM t_course WHERE id=1800004");
+        }
+    }
+
+    @Test void sidebarAnalysisPersistsPageSelectionWithoutCreatingReport() throws Exception {
+        var action=Map.<String,Object>of("type","learning-analysis","courseId",1004911,"courseTitle","机器学习演示课程");
+        when(planner.planForPage(any(),anyString())).thenReturn(
+                com.cupk.aiacademy.agent.planner.AgentPlanningOutcome.page("请在页面点击生成。",action));
+        assertPageHandoff(action,"分析机器学习演示课程学情");
+    }
+
+    @Test void sidebarCourseCreationPersistsPartialFieldsWithoutWritingCourse() throws Exception {
+        var action=Map.<String,Object>of("type","course-create","fields",Map.of("title","人工智能基础"));
+        when(planner.planForPage(any(),anyString())).thenReturn(
+                com.cupk.aiacademy.agent.planner.AgentPlanningOutcome.page("请补全页面后点击下一步。",action));
+        assertPageHandoff(action,"新建一门叫人工智能基础的课");
+    }
+
+    private void assertPageHandoff(Map<String,Object> action,String content) throws Exception {
+        int courses=db.queryForObject("SELECT COUNT(*) FROM t_course",Integer.class);
+        int reportsBefore=db.queryForObject("SELECT COUNT(*) FROM learning_analysis_report",Integer.class);
+        int pending=db.queryForObject("SELECT COUNT(*) FROM t_agent_pending_action",Integer.class);
+        int session=((Number)assistant.createSession(Map.of("title","页面准备测试")).get("id")).intValue();
+        String requestId=UUID.randomUUID().toString();
+        assistant.send(session,Map.of("requestId",requestId,"content",content,"context",Map.of("pageHandoff",true)));
+        Map<String,Object> state=Map.of();
+        long deadline=System.nanoTime()+Duration.ofSeconds(12).toNanos();
+        while(System.nanoTime()<deadline) {
+            state=assistant.request(session,requestId);
+            if(!"RUNNING".equals(state.get("status")))break;
+            Thread.sleep(30);
+        }
+        assertEquals("COMPLETED",state.get("status"),state.toString());
+        var message=assistant.messages(session).getLast();
+        assertEquals(action,message.get("pageAction"));
+        assertNull(message.get("reportId"));
+        assertNull(message.get("pendingAction"));
+        assertEquals(courses,db.queryForObject("SELECT COUNT(*) FROM t_course",Integer.class));
+        assertEquals(reportsBefore,db.queryForObject("SELECT COUNT(*) FROM learning_analysis_report",Integer.class));
+        assertEquals(pending,db.queryForObject("SELECT COUNT(*) FROM t_agent_pending_action",Integer.class));
+        verify(planner).planForPage(any(),eq(content));
     }
 
     private ChatResponse validResponse() throws Exception {

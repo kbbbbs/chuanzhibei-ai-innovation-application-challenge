@@ -9,6 +9,7 @@ public class AgentPlanningOutcome {
     private AgentDirectActionReply directReply;
     private String toolContext;
     private AgentToolResult readToolResult;
+    private java.util.Map<String, Object> pageAction;
 
     public AgentPlanningOutcome(AgentDirectActionReply directReply, String toolContext) {
         this.directReply = directReply;
@@ -31,5 +32,11 @@ public class AgentPlanningOutcome {
 
     public static AgentPlanningOutcome write(AgentDirectActionReply directReply) {
         return new AgentPlanningOutcome(directReply, "");
+    }
+
+    public static AgentPlanningOutcome page(String content, java.util.Map<String, Object> action) {
+        var outcome = write(new AgentDirectActionReply(content, null));
+        outcome.setPageAction(action);
+        return outcome;
     }
 }

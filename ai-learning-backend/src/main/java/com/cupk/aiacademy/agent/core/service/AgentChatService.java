@@ -485,8 +485,11 @@ public class AgentChatService {
 
     /** Shared tool step used by the unified assistant without a second chat/model pipeline. */
     public record AssistantToolStep(AgentDirectActionReply reply, String context,
-                                    com.cupk.aiacademy.agent.tool.api.AgentToolResult reportResult) {
-        public AssistantToolStep(AgentDirectActionReply reply, String context) { this(reply, context, null); }
+                                    com.cupk.aiacademy.agent.tool.api.AgentToolResult reportResult,
+                                    Map<String, Object> pageAction) {
+        public AssistantToolStep(AgentDirectActionReply reply, String context) { this(reply, context, null, null); }
+        public AssistantToolStep(AgentDirectActionReply reply, String context,
+                                 com.cupk.aiacademy.agent.tool.api.AgentToolResult reportResult) { this(reply, context, reportResult, null); }
     }
 
     public com.cupk.aiacademy.analysis.LearningAnalysisReportService.Report createAssistantLearningReport(
@@ -510,6 +513,14 @@ public class AgentChatService {
     }
 
     public AssistantToolStep planAssistantTools(Integer sessionId, String content) {
+        return planAssistantTools(sessionId, content, false);
+    }
+
+    public AssistantToolStep planAssistantPageTools(Integer sessionId, String content) {
+        return planAssistantTools(sessionId, content, true);
+    }
+
+    private AssistantToolStep planAssistantTools(Integer sessionId, String content, boolean pageHandoff) {
         AgentSession session = ensureSession(sessionId);
         AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
         // Course evidence is selected by the session scope, independently of Agent bindings.
@@ -518,6 +529,7 @@ public class AgentChatService {
         if (!history.isEmpty() && "user".equals(history.getLast().getRole()))
             history = history.subList(0, history.size() - 1);
         var draft = readActiveClarificationDraft(history);
+        if (pageHandoff && draft != null && "course.create".equals(draft.actionCode())) draft = null;
         if (draft != null && isClarificationCancellation(content))
             return new AssistantToolStep(new AgentDirectActionReply("已取消本次操作。", null), "");
         if (draft != null && schemaDrivenAgentPlanner != null) {
@@ -525,8 +537,8 @@ public class AgentChatService {
             if (continuation.isPresent()) return new AssistantToolStep(continuation.get(), "");
         }
         if (unifiedAgentPlanner == null) return new AssistantToolStep(null, "");
-        var outcome = unifiedAgentPlanner.plan(agent, content);
-        return new AssistantToolStep(outcome.getDirectReply(), outcome.getToolContext(), outcome.getReadToolResult());
+        var outcome = pageHandoff ? unifiedAgentPlanner.planForPage(agent, content) : unifiedAgentPlanner.plan(agent, content);
+        return new AssistantToolStep(outcome.getDirectReply(), outcome.getToolContext(), outcome.getReadToolResult(), outcome.getPageAction());
     }
 
     private String guardUnsupportedOperationClaim(String content) {

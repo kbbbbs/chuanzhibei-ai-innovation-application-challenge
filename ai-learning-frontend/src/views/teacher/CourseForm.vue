@@ -31,7 +31,6 @@
         <div v-if="!isEdit || creationStep" class="creation-heading">
           <h2>先认识这门课程</h2>
           <p>保存基本信息后，将自动建立课程专属资料库。</p>
-          <p v-if="!isEdit" class="field-hint" role="status">填写内容自动暂存，课程以草稿保存。</p>
         </div>
         <el-form :model="form" :rules="rules" :disabled="formLocked || submitLoading" ref="formRef" label-position="top" @submit.prevent>
           <el-form-item label="课程名称" prop="title">
@@ -84,6 +83,7 @@ import PageHeader from '@/components/ui/PageHeader.vue'
 import { useGuardedLoad } from '@/composables/useGuardedLoad'
 import { getCourseById, addCourse, updateCourse, getCategories } from '@/utils/course'
 import { currentUserId, requireSuccess } from '@/utils/apiHelpers'
+import { readAssistantCoursePrefill, saveAssistantCoursePrefill, clearAssistantCoursePrefill } from '@/utils/assistantPageAction'
 
 const router = useRouter()
 const route = useRoute()
@@ -115,20 +115,10 @@ const formLocked = computed(() => isEdit.value && loadedCourseId.value !== editi
 const canSubmit = computed(() => (isEdit.value ? !formLocked.value : !categoriesFailed.value))
 const submitLoading = ref(false)
 const categories = ref([])
+let pendingAssistantCategory = null
+let activeAssistantDraft = null
 const categoriesEmpty = computed(() => !categoriesLoading.value && !categoriesFailed.value && !categories.value.length)
-const draftStorageKey = `eduloop:course-create:${currentUserId(userStore)}`
 const creationKey = ref(crypto.randomUUID())
-function restoreCreateDraft() {
-  try {
-    const saved = JSON.parse(localStorage.getItem(draftStorageKey) || 'null')
-    if (saved?.form) Object.assign(form, saved.form, { status: 2, publishNotice: false })
-    if (saved?.creationKey) creationKey.value = saved.creationKey
-  } catch { /* A new draft remains usable if browser storage is unavailable. */ }
-}
-function persistCreateDraft() {
-  if (isEdit.value) return
-  try { localStorage.setItem(draftStorageKey, JSON.stringify({ form: { ...form }, creationKey: creationKey.value })) } catch { /* Keep the current form available. */ }
-}
 
 const defaultForm = () => ({
   title: '',
@@ -160,8 +150,54 @@ const rules = {
 
 const loadCategories = () => guardedCategories(async (isCurrent) => {
   const res = requireSuccess(await getCategories())
-  if (isCurrent()) categories.value = Array.isArray(res.data) ? res.data : []
+  if (isCurrent()) {
+    categories.value = Array.isArray(res.data) ? res.data : []
+    applyAssistantCategory()
+  }
 })
+
+function applyAssistantCategory() {
+  const pending = pendingAssistantCategory
+  if (!pending || isEdit.value) return
+  pendingAssistantCategory = null
+  if (form.categoryId !== pending.previousValue) return
+  const matches = categories.value.filter(category => pending.id
+    ? Number(category.id) === pending.id
+    : category.name === pending.name)
+  form.categoryId = matches.length === 1 ? matches[0].id : null
+  if (matches.length !== 1) ElMessage.warning('课程分类未匹配，请手动选择。')
+}
+
+function applyAssistantPrefill() {
+  if (isEdit.value || props.dialogMode || !userStore.isTeacher) return
+  const fields = readAssistantCoursePrefill(userStore.userId, route.query.assistantDraft)
+  if (!fields) return
+  activeAssistantDraft = route.query.assistantDraft
+  const hasDraft = Boolean(form.title || form.description || form.categoryId)
+  for (const key of ['title', 'description', 'coverUrl', 'difficulty']) {
+    if (typeof fields[key] === 'string') form[key] = fields[key]
+  }
+  if (fields.categoryId || fields.categoryName) {
+    form.categoryId = fields.categoryId || null
+    pendingAssistantCategory = { id: fields.categoryId, name: fields.categoryName, previousValue: form.categoryId }
+    if (categories.value.length) applyAssistantCategory()
+  }
+  if (hasDraft) ElMessage.info('已填入助手提供的信息，当前页面未提及的内容已保留，请核对后继续。')
+}
+
+function rememberAssistantPrefill() {
+  if (isEdit.value || activeAssistantDraft !== route.query.assistantDraft) return
+  if (!activeAssistantDraft) return
+  const { title, categoryId, difficulty, description, coverUrl } = form
+  const fields = { title, categoryId, difficulty, description, coverUrl }
+  if (pendingAssistantCategory && categoryId === pendingAssistantCategory.previousValue) fields.categoryName = pendingAssistantCategory.name
+  saveAssistantCoursePrefill(userStore.userId, activeAssistantDraft, fields)
+}
+
+function discardAssistantPrefill() {
+  clearAssistantCoursePrefill(userStore.userId, activeAssistantDraft)
+  activeAssistantDraft = null
+}
 
 const loadCourse = (id) => guarded(async (isCurrent) => {
   const res = requireSuccess(await getCourseById(id))
@@ -204,8 +240,8 @@ const handleSubmit = async (exitAfterSave = false, notifyParent = true) => {
     } else {
       const id = Number(res.data?.id || res.data?.courseId)
       if (!id) throw new Error('课程保存结果缺少课程编号，请重试')
-      try { localStorage.removeItem(draftStorageKey) } catch { /* Storage unavailable. */ }
-      ElMessage.success('课程草稿已保存')
+      discardAssistantPrefill()
+      ElMessage.success('课程基本信息已保存')
       router.replace(exitAfterSave ? '/courses/drafts' : { path: `/courses/${id}`, query: { setup: 'materials' } })
     }
     return true
@@ -228,8 +264,8 @@ defineExpose({ saveForNavigation })
 const handleExit = async () => {
   if (props.dialogMode) return emit('cancel')
   if (isEdit.value && !props.creationStep) return router.push(returnPath.value)
-  if (!isEdit.value && (!form.title.trim() || !form.categoryId || !form.difficulty)) {
-    persistCreateDraft()
+  if (!isEdit.value) {
+    discardAssistantPrefill()
     return router.push('/courses/drafts')
   }
   await handleSubmit(true)
@@ -247,12 +283,13 @@ watch(
     formRef.value?.clearValidate?.()
     Object.assign(form, defaultForm())
     if (id) loadCourse(id)
-    else restoreCreateDraft()
+    else creationKey.value = crypto.randomUUID()
   },
   { immediate: true }
 )
 
-watch(form, persistCreateDraft, { deep: true })
+watch(() => [route.query.assistantDraft, editingId.value], applyAssistantPrefill, { immediate: true })
+watch(form, rememberAssistantPrefill, { deep: true })
 
 </script>
 

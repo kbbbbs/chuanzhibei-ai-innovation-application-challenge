@@ -40,6 +40,7 @@ class UnifiedAssistantServiceTest {
         db = new JdbcTemplate(source);
         var schema = new UnifiedAssistantSchema(db);
         schema.initialize();
+        db.execute("CREATE TABLE t_course(id INT PRIMARY KEY,title VARCHAR(100),teacher_id INT)");
         permissions = mock(PermissionService.class);
         model = mock(ChatModelClient.class);
         tools = mock(AgentChatService.class);
@@ -56,6 +57,8 @@ class UnifiedAssistantServiceTest {
                             return active;
                         });
         when(tools.assistantAgentId()).thenReturn(1);
+        when(tools.planAssistantTools(anyInt(), anyString()))
+                .thenReturn(new AgentChatService.AssistantToolStep(null, ""));
         when(tools.assistantPrompt(anyInt(), anyList()))
                 .thenAnswer(
                         call ->
@@ -123,6 +126,21 @@ class UnifiedAssistantServiceTest {
     }
 
     @Test
+    void naturalCourseCreationAlwaysReachesTheToolPlanner() throws Exception {
+        for (String question : List.of(
+                "帮我建立一门课程，名字叫人工智能基础，课程分类人工智能",
+                "帮我开一门人工智能基础课",
+                "把课程建起来，名字叫AA，分类BB",
+                "新建一门名字叫人工智能基础并且分类为人工智能的课程")) {
+            int id = create();
+            assistant.send(id, Map.of("requestId", "course-routing", "content", question));
+            release.countDown();
+            await(id, "course-routing");
+            verify(tools).planAssistantTools(id, question);
+        }
+    }
+
+    @Test
     void executionTimelineIsVisibleBeforeTokensAndSurvivesCompletionAndHistory() throws Exception {
         int id = create();
         assistant.send(id, Map.of("requestId", "timeline", "content", "解释梯度"));
@@ -160,7 +178,7 @@ class UnifiedAssistantServiceTest {
     }
 
     @Test
-    void retryUsesOneRequestAndOneUserMessageAndOrdinaryQuestionSkipsToolPlanner()
+    void retryUsesOneRequestAndOneUserMessageAndOneIntentPlanningStep()
             throws Exception {
         int id = create();
         var input = Map.<String, Object>of("requestId", "r1", "content", "解释梯度的含义");
@@ -182,7 +200,7 @@ class UnifiedAssistantServiceTest {
         var result = await(id, "r1");
         assertEquals("COMPLETED", result.get("status"));
         assertEquals(2, assistant.messages(id).size());
-        verify(tools, never()).planAssistantTools(anyInt(), anyString());
+        verify(tools, times(1)).planAssistantTools(anyInt(), anyString());
     }
 
     @Test
@@ -243,7 +261,7 @@ class UnifiedAssistantServiceTest {
 
     @Test
     void generalPlatformReplyRechecksTheCourseSnapshotFromBeforeModelCall() throws Exception {
-        db.execute("CREATE TABLE t_course(id INT PRIMARY KEY,title VARCHAR(100),teacher_id INT)");
+        db.execute("CREATE TABLE IF NOT EXISTS t_course(id INT PRIMARY KEY,title VARCHAR(100),teacher_id INT)");
         db.update("INSERT INTO t_course VALUES(129,'人工智能基础',7)");
         doAnswer(
                         call -> {
@@ -273,7 +291,7 @@ class UnifiedAssistantServiceTest {
 
     @Test
     void missingPlanningConfigurationExplainsHowToConfigureIt() throws Exception {
-        db.execute("CREATE TABLE t_course(id INT PRIMARY KEY,teacher_id INT)");
+        db.execute("CREATE TABLE IF NOT EXISTS t_course(id INT PRIMARY KEY,teacher_id INT)");
         when(tools.planAssistantTools(anyInt(), anyString()))
                 .thenThrow(
                         new com.cupk.aiacademy.agent.planner.AgentPlanningException(

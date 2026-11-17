@@ -78,8 +78,32 @@ class UnifiedAssistantIntegrationTest {
         db.update("INSERT INTO t_class_student(class_id,student_id,status) VALUES(?,3,1)",classroom);
         login(2,"teacher"); libraries.ensureCourseBase(course);
         when(model.stream(any(Prompt.class))).thenReturn(reactor.core.publisher.Flux.just(response("{\"sections\":[{\"type\":\"GENERAL\",\"content\":\"可以把梯度理解为变化方向。\"}]}")));
+        when(model.callPlanning(any(Prompt.class), any(Duration.class)))
+                .thenReturn(response("{\"decision\":\"CHAT\",\"confidence\":0.99}"));
     }
     @AfterEach void clear() { UserContext.clear(); }
+
+    @Test
+    void establishesCourseThroughUnifiedAssistantAndConfirmedBusinessAction() throws Exception {
+        when(model.callPlanning(any(Prompt.class), any(Duration.class))).thenReturn(
+                response("{\"decision\":\"WRITE\",\"code\":\"course.create\",\"confidence\":0.99}"),
+                response("{\"decision\":\"ACTION\",\"actionCode\":\"course.create\",\"arguments\":{\"title\":\"AA\",\"categoryId\":1},\"confidence\":0.99}"));
+        int session = ((Number) assistant.createSession(Map.of()).get("id")).intValue();
+        assistant.send(session, Map.of("requestId", "establish-course", "content", "帮我建立一门课程，名字叫AA，分类编号1"));
+        var completed = await(session, "establish-course");
+        assertEquals("COMPLETED", completed.get("status"));
+        var message = (Map<?, ?>) completed.get("message");
+        var pending = (Map<?, ?>) message.get("pendingAction");
+        assertNotNull(pending, "course creation must produce a structured pending action");
+        assertEquals("course.create", pending.get("actionCode"));
+        assertEquals(0, db.queryForObject("SELECT COUNT(*) FROM t_course WHERE title='AA'", Integer.class));
+        actions.confirm(new com.cupk.aiacademy.agent.action.AgentActionConfirmRequest(
+                null, true, Map.of(), pending.get("actionId").toString()), "127.0.0.1");
+        assertEquals(1, db.queryForObject("SELECT COUNT(*) FROM t_course WHERE title='AA' AND teacher_id=2", Integer.class));
+        verify(model, never()).stream(any(Prompt.class));
+    }
+
+    @Autowired com.cupk.aiacademy.agent.action.AgentActionExecutionService actions;
 
     @Test
     void platformQueryShowsRealPlannerToolEventsAndStreamsItsAnswer() throws Exception {

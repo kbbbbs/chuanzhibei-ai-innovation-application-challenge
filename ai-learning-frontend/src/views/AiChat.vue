@@ -10,8 +10,10 @@
       :draft-version="draftVersion"
       compact
       expandable
+      page-handoff
       @context-consumed="$emit('context-consumed')"
       @expand="$emit('expand')"
+      @page-handoff="$emit('page-handoff')"
     />
   </div>
   <div v-else class="ai-chat-page assistant-page">
@@ -127,7 +129,7 @@ const props = defineProps({
   draftPrompt: String,
   draftVersion: Number,
 })
-defineEmits(['context-consumed', 'expand'])
+defineEmits(['context-consumed', 'expand', 'page-handoff'])
 const user = useUserStore(),
   route = useRoute(),
   router = useRouter(),

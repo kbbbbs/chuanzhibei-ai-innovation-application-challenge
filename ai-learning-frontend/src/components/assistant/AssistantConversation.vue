@@ -214,7 +214,7 @@
       ><el-button
         v-if="state.canRetry"
         size="small"
-        @click="assistant.retry(state)"
+        @click="assistant.retry(state, props.pageHandoff ? handlePageAction : undefined)"
         >重试</el-button
       ></el-alert
     >
@@ -272,7 +272,7 @@
     >
       <p>
         {{
-          action?.summary || action?.description || '请检查操作对象和变更内容'
+          action?.actionName || '请核对以下信息'
         }}
       </p>
       <dl class="action-parameters">
@@ -318,7 +318,8 @@
 </template>
 
 <script setup>
-import { computed, nextTick, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { confirmationFields } from '@/utils/agentConfirmation'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import {
@@ -345,6 +346,7 @@ import RagAnswerStatus from '@/components/knowledge/RagAnswerStatus.vue'
 import GraphEvidencePaths from '@/components/knowledge/GraphEvidencePaths.vue'
 import { kernelStateLabels } from '@/utils/kernelStream'
 import { renderMarkdown } from '@/utils/markdown'
+import { assistantPageDestination } from '@/utils/assistantPageAction'
 
 const props = defineProps({
   courseId: Number,
@@ -354,6 +356,7 @@ const props = defineProps({
   sessionId: [Number, String],
   compact: Boolean,
   sidebar: Boolean,
+  pageHandoff: Boolean,
   expandable: Boolean,
   selectedContext: Object,
   draftPrompt: String,
@@ -361,10 +364,13 @@ const props = defineProps({
   taskContext: Object,
   historyEnabled: { type: Boolean, default: true },
 })
-const emit = defineEmits(['context-consumed', 'session-change', 'expand'])
+const emit = defineEmits(['context-consumed', 'session-change', 'expand', 'page-handoff'])
+let active = true
+onBeforeUnmount(() => { active = false })
 const user = useUserStore(),
   router = useRouter(),
   assistant = useAssistant()
+const ownerId = String(user.userId)
 const scope = computed(() => ({
   courseId: props.courseId || null,
   lessonId: props.lessonId || null,
@@ -417,31 +423,12 @@ const actionParameters = computed(() => {
   const schema = Array.isArray(parameters.parameterSchema)
     ? parameters.parameterSchema
     : []
-  return Object.entries(parameters)
-    .filter(
-      ([key]) =>
-        ![
-          'parameterSchema',
-          'missingRequiredFields',
-          'requiredAnyOf',
-          'rawRequest',
-          'workflowVersion',
-          'contentVersion',
-          'version',
-          'expectedVersion',
-        ].includes(key),
-    )
-    .map(([key, value]) => ({
-      key,
-      label:
-        schema.find((field) => field.name === key)?.label ||
-        actionLabels[key] ||
-        '操作参数',
-      value: Array.isArray(value)
-        ? value.join('、')
-        : typeof value === 'object'
-          ? JSON.stringify(value)
-          : value,
+  const fields = schema.length ? schema : Object.keys(actionLabels).map(name => ({ name, label: actionLabels[name] }))
+  return confirmationFields(fields, parameters, parameters.rawRequest || '', parameters.requiredAnyOf || [])
+    .map(field => ({
+      key: field.name,
+      label: field.label || actionLabels[field.name] || '确认信息',
+      value: parameters[field.name] ?? '待定',
     }))
 })
 
@@ -578,15 +565,24 @@ async function send() {
   followMessages.value = true
   const context = {
     ...props.taskContext,
+    pageHandoff: props.pageHandoff,
     selectedText:
       props.selectedContext?.text || props.taskContext?.selectedText || '',
   }
   try {
-    await assistant.send(scope.value, state.value.draft.trim(), 'CHAT', context)
+    await assistant.send(scope.value, state.value.draft.trim(), 'CHAT', context, props.pageHandoff ? handlePageAction : undefined)
     emit('context-consumed')
   } catch {
     /* visible error */
   }
+}
+
+async function handlePageAction(action, requestId) {
+  if (!active || !props.pageHandoff || String(user.userId) !== ownerId) return
+  const destination = assistantPageDestination(action, user, requestId)
+  if (!destination) return
+  await router.push(destination)
+  emit('page-handoff')
 }
 async function expand() {
   if (!state.value.sessionId) await startNew()

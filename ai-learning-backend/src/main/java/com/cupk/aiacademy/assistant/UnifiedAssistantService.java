@@ -51,7 +51,7 @@ public class UnifiedAssistantService {
             Pattern.compile(
                     "(?:创建|新建|删除|修改|更新|发布|启用|停用|添加|移除|调整).{0,12}(?:课程|章节|课时|教学班|学生|通知|作业|考试|题目|成绩)"
                             + "|(?:查询|查一下|查看|列出|统计).{0,10}(?:我的课程|课程列表|教学班|作业|考试|成绩|学习进度|通知)"
-                            + "|我的(?:进度|成绩)|学习进度|课程列表");
+                            + "|我的(?:进度|成绩)|学习进度|课程列表|学情分析|学情报告");
     private static final Set<String> TASKS =
             Set.of(
                     "chat",
@@ -557,8 +557,10 @@ public class UnifiedAssistantService {
                         write(Map.of("platformCourses", permittedCourses)), id, requestId);
                 result = AgentExecutionProgress.observe(
                         (state, tool, summary) -> eventTransactions.executeWithoutResult(ignored -> recordEvent(id, requestId, state, tool, summary)),
-                        () -> platformReply(id, scope, question, requestId, permittedCourses));
-                result.put("platformCourses", permittedCourses);
+                        () -> platformReply(id, scope, question, requestId, permittedCourses,
+                                Boolean.TRUE.equals(((Map<?, ?>) input.getOrDefault("context", Map.of())).get("pageHandoff"))));
+                if (Set.of("ACTION", "PLATFORM").contains(result.get("status")))
+                    result.put("platformCourses", permittedCourses);
             } else result = answer(id, scope, input, requestId);
             recordEvent(id, requestId, "RESULT_VALIDATING", null);
             session(id);
@@ -623,21 +625,14 @@ public class UnifiedAssistantService {
     private boolean platformIntent(
             Map<String, Object> scope, String question, Map<String, Object> input) {
         if (!"chat".equals(input.get("taskType"))) return false;
-        if (!"student".equals(UserContext.getCurrentRoleCode())) {
-            var latest =
-                    db.queryForList(
-                            "SELECT tool_name FROM t_agent_message WHERE session_id=? AND"
-                                    + " role='assistant' ORDER BY id DESC LIMIT 1",
-                            scope.get("id"));
-            if (!latest.isEmpty()
-                    && "action_clarification".equals(latest.getFirst().get("tool_name")))
-                return true;
-        }
+        // The planner already distinguishes chat, reads and confirmed writes.
+        // A keyword gate here drops valid requests such as “建立一门课”.
+        if (!"student".equals(UserContext.getCurrentRoleCode())) return true;
         return PLATFORM_INTENT.matcher(question).find();
     }
 
     private Map<String, Object> platformReply(
-            int id, Map<String, Object> scope, String question, String requestId, List<Integer> permittedCourses) {
+            int id, Map<String, Object> scope, String question, String requestId, List<Integer> permittedCourses, boolean pageHandoff) {
         if ("student".equals(UserContext.getCurrentRoleCode()))
             return studentDataReply(scope, question, requestId);
         String scoped = question;
@@ -647,7 +642,21 @@ public class UnifiedAssistantService {
         var planned =
                 com.cupk.aiacademy.agent.tool.support.AgentToolScope.inCourse(
                         integer(scope.get("course_id")),
-                        () -> tools.planAssistantTools(id, instruction));
+                        () -> pageHandoff ? tools.planAssistantPageTools(id, instruction) : tools.planAssistantTools(id, instruction));
+        if (planned.pageAction() != null) {
+            var result = baseMessage(planned.reply().content(), "PLATFORM");
+            result.put("pageAction", planned.pageAction());
+            return result;
+        }
+        if (planned.reportResult() != null
+                && "learning_analysis_report".equals(planned.reportResult().toolName())) {
+            var report = tools.createAssistantLearningReport(id, planned.reportResult(), requestId);
+            var result = baseMessage("学情报告任务已创建，正在生成。\n\n[查看报告](/grade-analysis?reportId="
+                    + report.id() + ")", "PLATFORM");
+            result.put("reportId", report.id());
+            result.put("reportStatus", report.status());
+            return result;
+        }
         if (planned.reply() != null) {
             var reply = planned.reply();
             var result = baseMessage(reply.content(), "ACTION");
@@ -680,6 +689,8 @@ public class UnifiedAssistantService {
             if (response.isBlank()) throw new BusinessException("模型返回空回答，请重试");
             return baseMessage(response, "PLATFORM");
         }
+        db.update("UPDATE assistant_request SET events_scope_json=NULL WHERE session_id=? AND request_id=? AND status='RUNNING'",
+                id, requestId);
         return answer(
                 id,
                 scope,
@@ -1286,6 +1297,7 @@ public class UnifiedAssistantService {
     private Map<String, Object> normalizeContext(Object raw) {
         if (!(raw instanceof Map<?, ?> input)) return Map.of();
         var result = new LinkedHashMap<String, Object>();
+        if (Boolean.TRUE.equals(input.get("pageHandoff"))) result.put("pageHandoff", true);
         for (String name : List.of("noteContent", "selectedText", "currentVideoTime")) {
             Object value = input.get(name);
             if (value != null && !text(value).isBlank())
@@ -1340,7 +1352,7 @@ public class UnifiedAssistantService {
         for (int depth = 0; cause != null && depth < 16; depth++, cause = cause.getCause()) {
             if (cause instanceof com.cupk.aiacademy.model.ModelConfigurationException
                     && text(cause.getMessage()).contains("MODEL_NOT_CONFIGURED"))
-                return platformRequest
+                return error instanceof com.cupk.aiacademy.agent.planner.AgentPlanningException
                         ? "操作规划模型尚未配置。请管理员在模型设置配置规划模型，或启用“规划继承生成模型”，并确认生成模型可用。"
                         : "生成模型尚未配置，请管理员在模型设置中完成生成模型配置后重试。";
         }

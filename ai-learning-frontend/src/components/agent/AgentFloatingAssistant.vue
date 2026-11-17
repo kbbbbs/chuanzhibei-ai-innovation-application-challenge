@@ -39,6 +39,7 @@
             :draft-version="draftVersion"
             @context-consumed="clearSelectedContext"
             @expand="closePanel"
+            @page-handoff="closePanel"
           />
         </div>
       </section>

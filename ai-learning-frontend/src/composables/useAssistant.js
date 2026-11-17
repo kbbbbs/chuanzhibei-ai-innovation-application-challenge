@@ -75,6 +75,7 @@ export function useAssistant() {
         terminalPayload: null,
         stoppedRequestId: null,
         canRetry: true,
+        pageActionHandler: null,
       }
     }
     return workspace.scopes[key]
@@ -245,11 +246,17 @@ export function useAssistant() {
         return
       }
       const previousPayload = state.retryPayload
+      const pageActionHandler = state.pageActionHandler
+      state.pageActionHandler = null
       clearPreview(state)
       state.generating = false
       state.requestId = null
       state.retryPayload = null
       save(state)
+      const status = String(result.status || '').toUpperCase()
+      if (status === 'COMPLETED' && state.stoppedRequestId !== requestId && result.message?.pageAction) {
+        await pageActionHandler?.(result.message.pageAction, requestId)
+      }
       await refreshMessages(state)
       if (
         !state.messages.some(
@@ -259,7 +266,6 @@ export function useAssistant() {
       )
         state.messages.push(result.message)
       if (result.message || state.messages.some((message) => message.requestId === requestId && message.events?.length)) state.events = []
-      const status = String(result.status || '').toUpperCase()
       if (status === 'FAILED' || status === 'INTERRUPTED') {
         state.error = result.error || '回答已中断，请重新提问'
         state.terminalPayload = previousPayload || {
@@ -320,7 +326,7 @@ export function useAssistant() {
     streams.set(key, handle)
   }
 
-  async function send(scope, content, taskType, context = {}) {
+  async function send(scope, content, taskType, context = {}, onPageAction) {
     const state = stateFor(scope)
     if (state.readOnly) throw new Error('历史对话仅供查看，请开始新对话')
     if (state.requestId) throw new Error('请先恢复查询或停止当前回答')
@@ -338,6 +344,7 @@ export function useAssistant() {
     state.events = []
     state.canRetry = true
     state.retryPayload = payload
+    state.pageActionHandler = context.pageHandoff === true ? onPageAction : null
     state.requestId = payload.requestId
     state.generating = true
     state.error = ''
@@ -368,7 +375,7 @@ export function useAssistant() {
     }
   }
 
-  async function retry(state) {
+  async function retry(state, onPageAction) {
     state.error = ''
     if (state.terminalPayload?.content) {
       const payload = state.terminalPayload
@@ -377,10 +384,12 @@ export function useAssistant() {
         payload.content,
         payload.taskType,
         payload.context,
+        onPageAction,
       )
       return
     }
     if (state.retryPayload) {
+      if (state.retryPayload.context?.pageHandoff === true && onPageAction) state.pageActionHandler = onPageAction
       state.generating = true
       try {
         await api.sendAssistantMessage(state.sessionId, state.retryPayload)
