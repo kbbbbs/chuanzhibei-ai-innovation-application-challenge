@@ -2,8 +2,10 @@ import { test, expect } from '@playwright/test'
 
 const ok = data => ({ code: '200', data })
 const draft = (id, stage) => ({
-  id, currentStage: stage, projectStatus: 'DRAFT', config: { title: `草稿${id}` },
-  outline: { chapters: [] }, lessons: [], questions: [],
+  id, currentStage: stage, projectStatus: 'DRAFT', generationStatus: 'SUCCEEDED', config: { title: `草稿${id}` },
+  outline: { chapters: [{ chapterKey: `chapter-${id}`, title: '示例章节', lessons: [{ lessonKey: `lesson-${id}`, title: '示例课时' }] }] },
+  lessons: [{ lessonKey: `lesson-${id}`, chapterKey: `chapter-${id}`, title: '示例课时', contentMd: '# 已完成正文', status: 'GENERATED' }],
+  questions: [{ chapterKey: `chapter-${id}`, chapterTitle: '示例章节', status: 'GENERATED', questions: [{ questionKey: `question-${id}`, type: 'SHORT_ANSWER', content: '示例问题', answer: '示例答案' }] }],
 })
 
 async function setup(page, handler) {
@@ -20,7 +22,20 @@ async function setup(page, handler) {
       : /^\/api\/preparations\/[12]$/.test(path) ? draft(Number(path.at(-1)), 'READY_TO_PUBLISH') : []
     await route.fulfill({ json: ok(data) })
   })
-  await page.goto('/resource-gen')
+  // The legacy resource route now redirects to course creation. Exercise the retained editor directly.
+  const source = await (await page.request.get('/src/views/teacher/IntelligentResourceGen.vue')).text()
+  const store = await (await page.request.get('/src/store/user.js')).text()
+  const dependency = name => (source + store).match(new RegExp('/node_modules/[^"\\s]*' + name + '\\.js\\?v=[a-z0-9]+'))?.[0]
+  await page.route('**/__preparation-races', route => route.fulfill({ contentType: 'text/html', body: `<html><body><div id="app"></div><script type="module">
+import {createApp} from '${dependency('vue')}'
+import {createPinia} from '${dependency('pinia')}'
+import ElementPlus from '${dependency('element-plus')}'
+import {createRouter,createMemoryHistory} from '${dependency('vue-router')}'
+import Component from '/src/views/teacher/IntelligentResourceGen.vue'
+const app=createApp(Component)
+app.use(createPinia());app.use(ElementPlus);app.use(createRouter({history:createMemoryHistory(),routes:[]}));app.mount('#app')
+</script></body></html>` }))
+  await page.goto('/__preparation-races')
 }
 
 async function selectDraft(page, name) {

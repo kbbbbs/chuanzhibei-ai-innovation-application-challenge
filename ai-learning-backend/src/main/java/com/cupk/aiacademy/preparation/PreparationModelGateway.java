@@ -14,34 +14,27 @@ import org.springframework.ai.chat.messages.SystemMessage;
 import org.springframework.ai.chat.messages.UserMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.openai.OpenAiChatModel;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
+import com.cupk.aiacademy.agent.core.llm.ChatModelTimeoutException;
+import com.cupk.aiacademy.model.ModelConfigurationException;
+import com.cupk.aiacademy.model.ModelInvocationException;
 import org.springframework.beans.factory.annotation.Value;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 @Component
 public class PreparationModelGateway {
     private static final Logger log = LoggerFactory.getLogger(PreparationModelGateway.class);
-    private final OpenAiChatModel chatModel;
+    private final ChatModelClient chatModel;
     private final ObjectMapper objectMapper;
     private final ObjectMapper tolerantObjectMapper;
-    private final ExecutorService modelExecutor;
-    private final long timeoutSeconds;
     private final int maxAttempts;
 
-    public PreparationModelGateway(OpenAiChatModel chatModel,
+    public PreparationModelGateway(ChatModelClient chatModel,
                                    ObjectMapper objectMapper,
-                                   @Qualifier("preparationModelExecutor") ExecutorService modelExecutor,
-                                   @Value("${preparation.model-timeout-seconds:90}") long timeoutSeconds,
                                    @Value("${preparation.model-max-attempts:2}") int maxAttempts) {
         this.chatModel = chatModel;
         this.objectMapper = objectMapper;
@@ -51,8 +44,6 @@ public class PreparationModelGateway {
                 .enable(JsonReadFeature.ALLOW_UNQUOTED_FIELD_NAMES.mappedFeature())
                 .enable(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature())
                 .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES);
-        this.modelExecutor = modelExecutor;
-        this.timeoutSeconds = Math.max(1, timeoutSeconds);
         this.maxAttempts = Math.max(1, Math.min(3, maxAttempts));
     }
 
@@ -61,8 +52,10 @@ public class PreparationModelGateway {
         try {
             return parseOutline(raw);
         } catch (RuntimeException first) {
-            return parseOutline(call("你是JSON格式修复器。只输出修复后的合法JSON，不添加解释。",
-                    "目标结构为{courseDescription:string,chapters:[{chapterKey,title,description,sortOrder,lessons:[{lessonKey,title,objectives,knowledgePoints:string[],durationMinutes,sortOrder}]}]}。\n待修复内容：\n" + raw));
+            String repaired = call("你是JSON格式修复器。只输出修复后的合法JSON，不添加解释。",
+                    "目标结构为{courseDescription:string,chapters:[{chapterKey,title,description,sortOrder,lessons:[{lessonKey,title,objectives,knowledgePoints:string[],durationMinutes,sortOrder}]}]}。\n待修复内容：\n" + raw);
+            try { return parseOutline(repaired); }
+            catch (RuntimeException invalid) { throw new Failure("智能备课返回的课程骨架格式不正确，请重试"); }
         }
     }
 
@@ -108,9 +101,11 @@ public class PreparationModelGateway {
         try {
             return parseQuestions(raw);
         } catch (RuntimeException first) {
-            return parseQuestions(call("你是JSON格式修复器。只输出修复后的合法JSON数组，不添加解释。",
+            String repaired = call("你是JSON格式修复器。只输出修复后的合法JSON数组，不添加解释。",
                     "将下面内容修复为QuestionRequestDTO数组。options必须为[{optionKey,optionContent,sortOrder}]；"
-                            + "answers必须为[{answerContent,sortOrder}]。\n" + raw));
+                            + "answers必须为[{answerContent,sortOrder}]。\n" + raw);
+            try { return parseQuestions(repaired); }
+            catch (RuntimeException invalid) { throw new Failure("智能备课返回的题目格式不正确，请重试"); }
         }
     }
 
@@ -343,35 +338,39 @@ public class PreparationModelGateway {
     }
 
     private String call(String systemPrompt, String userPrompt) {
-        String lastError = "未知错误";
+        Prompt prompt = new Prompt(List.of(new SystemMessage(systemPrompt), new UserMessage(userPrompt)));
+        RuntimeException lastError = null;
         for (int attempt = 1; attempt <= maxAttempts; attempt++) {
-            Future<ChatResponse> future = modelExecutor.submit(() -> chatModel.call(new Prompt(List.of(
-                    new SystemMessage(systemPrompt), new UserMessage(userPrompt)))));
             try {
-                ChatResponse response = future.get(timeoutSeconds, TimeUnit.SECONDS);
-                String text = response == null || response.getResult() == null
+                // The shared client owns the configured generation deadline and cancellation.
+                ChatResponse response = chatModel.call(prompt);
+                String text = response == null || response.getResult() == null || response.getResult().getOutput() == null
                         ? null : response.getResult().getOutput().getText();
-                if (text == null || text.isBlank()) throw new BusinessException("模型返回为空");
+                if (text == null || text.isBlank()) throw new ModelInvocationException("EMPTY_RESPONSE");
                 return text;
-            } catch (InterruptedException e) {
-                future.cancel(true);
-                Thread.currentThread().interrupt();
-                throw new BusinessException("智能备课模型调用被中断");
-            } catch (TimeoutException e) {
-                future.cancel(true);
-                lastError = "单次调用超过" + timeoutSeconds + "秒";
-            } catch (ExecutionException e) {
-                future.cancel(true);
-                lastError = rootMessage(e);
-            } catch (BusinessException e) {
-                future.cancel(true);
-                lastError = e.getMessage();
-            }
-            if (attempt < maxAttempts) {
-                log.warn("Preparation model call failed on attempt {}/{}, retrying: {}", attempt, maxAttempts, lastError);
+            } catch (RuntimeException error) {
+                if (Thread.currentThread().isInterrupted()) throw new Failure("智能备课生成已中断，请稍后重试");
+                if (error instanceof ModelConfigurationException)
+                    throw new Failure("智能备课生成模型尚未正确配置，请检查生成模型配置后重试");
+                if (error instanceof ModelInvocationException invocation
+                        && Set.of("MODEL_HTTP_401", "MODEL_HTTP_403").contains(invocation.code()))
+                    throw new Failure("智能备课模型访问认证失败，请检查模型凭据和访问权限后重试");
+                lastError = error;
+                if (attempt < maxAttempts)
+                    log.warn("Preparation model call failed on attempt {}/{}, retrying: {}",
+                            attempt, maxAttempts, error.getClass().getSimpleName());
             }
         }
-        throw new BusinessException("智能备课模型调用失败，已重试" + maxAttempts + "次: " + lastError);
+        boolean timeout = lastError instanceof ChatModelTimeoutException
+                || lastError instanceof ModelInvocationException invocation && "MODEL_TIMEOUT".equals(invocation.code());
+        throw new Failure(timeout
+                ? "智能备课模型调用超时（已尝试" + maxAttempts + "次），请稍后重试，已完成内容可继续使用"
+                : "智能备课模型调用失败（已尝试" + maxAttempts + "次），请检查模型服务状态后重试");
+    }
+
+    /** Only messages created by this boundary can pass through to the course draft. */
+    static final class Failure extends BusinessException {
+        private Failure(String message) { super(message); }
     }
 
     <T> T parse(String raw, Class<T> type) {

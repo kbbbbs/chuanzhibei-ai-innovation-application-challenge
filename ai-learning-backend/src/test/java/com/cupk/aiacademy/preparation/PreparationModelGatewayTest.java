@@ -2,36 +2,33 @@ package com.cupk.aiacademy.preparation;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.cupk.aiacademy.dto.QuestionRequestDTO;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ai.chat.messages.AssistantMessage;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.model.Generation;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.ai.openai.OpenAiChatModel;
+import com.cupk.aiacademy.agent.core.llm.ChatModelClient;
+import com.cupk.aiacademy.agent.core.llm.ChatModelTimeoutException;
+import com.cupk.aiacademy.common.BusinessException;
+import com.cupk.aiacademy.model.ModelInvocationException;
 
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
 
 class PreparationModelGatewayTest {
-    private final ExecutorService executor = Executors.newCachedThreadPool();
-
-    @AfterEach
-    void shutdownExecutor() {
-        executor.shutdownNow();
-    }
-
     @Test
     void parsesFencedJsonWithTrailingExplanationAndLenientSyntax() {
-        PreparationModelGateway gateway = gateway(mock(OpenAiChatModel.class), 1, 1);
+        PreparationModelGateway gateway = gateway(mock(ChatModelClient.class), 1);
         String raw = """
                 下面是结果：
                 ```json
@@ -49,14 +46,14 @@ class PreparationModelGatewayTest {
 
     @Test
     void retriesOnceAfterModelTimeout() throws Exception {
-        OpenAiChatModel chatModel = mock(OpenAiChatModel.class);
+        ChatModelClient chatModel = mock(ChatModelClient.class);
         AtomicInteger calls = new AtomicInteger();
         ChatResponse response = new ChatResponse(List.of(new Generation(new AssistantMessage("重试成功"))));
         when(chatModel.call(any(Prompt.class))).thenAnswer(invocation -> {
-            if (calls.incrementAndGet() == 1) Thread.sleep(2_000);
+            if (calls.incrementAndGet() == 1) throw new ChatModelTimeoutException("controlled timeout", null);
             return response;
         });
-        PreparationModelGateway gateway = gateway(chatModel, 1, 2);
+        PreparationModelGateway gateway = gateway(chatModel, 2);
 
         String result = gateway.generateMarkdown("system", "user");
 
@@ -66,7 +63,7 @@ class PreparationModelGatewayTest {
 
     @Test
     void normalizesStringOptionsAndAnswersBeforeDtoDeserialization() {
-        PreparationModelGateway gateway = gateway(mock(OpenAiChatModel.class), 1, 1);
+        PreparationModelGateway gateway = gateway(mock(ChatModelClient.class), 1);
         String raw = """
                 [{
                   "content":"Transformer使用自注意力机制。",
@@ -92,7 +89,7 @@ class PreparationModelGatewayTest {
 
     @Test
     void normalizesOptionAndAnswerAliasObjects() {
-        PreparationModelGateway gateway = gateway(mock(OpenAiChatModel.class), 1, 1);
+        PreparationModelGateway gateway = gateway(mock(ChatModelClient.class), 1);
         String raw = """
                 [{
                   "content":"选择正确选项",
@@ -112,7 +109,7 @@ class PreparationModelGatewayTest {
 
     @Test
     void acceptsChineseEnumsUnknownFieldsAndMissingTrueFalseOptions() {
-        PreparationModelGateway gateway = gateway(mock(OpenAiChatModel.class), 1, 1);
+        PreparationModelGateway gateway = gateway(mock(ChatModelClient.class), 1);
         String raw = """
                 [{
                   "content":"图灵测试关注机器的外在行为。",
@@ -134,7 +131,7 @@ class PreparationModelGatewayTest {
 
     @Test
     void coercesArraysReturnedForStringFields() {
-        PreparationModelGateway gateway = gateway(mock(OpenAiChatModel.class), 1, 1);
+        PreparationModelGateway gateway = gateway(mock(ChatModelClient.class), 1);
         String raw = """
                 [{
                   "content":["图灵测试", "关注机器的外在行为"],
@@ -155,7 +152,7 @@ class PreparationModelGatewayTest {
 
     @Test
     void coercesOutlineStringFieldsAndFlattensKnowledgePoints() {
-        OpenAiChatModel chatModel = mock(OpenAiChatModel.class);
+        ChatModelClient chatModel = mock(ChatModelClient.class);
         String raw = """
                 {
                   "courseDescription":["人工智能", "基础课程"],
@@ -177,7 +174,7 @@ class PreparationModelGatewayTest {
                 """;
         when(chatModel.call(any(Prompt.class))).thenReturn(
                 new ChatResponse(List.of(new Generation(new AssistantMessage(raw)))));
-        PreparationModelGateway gateway = gateway(chatModel, 1, 1);
+        PreparationModelGateway gateway = gateway(chatModel, 1);
 
         PreparationModels.Outline outline = gateway.generateOutline("system", "user");
 
@@ -187,7 +184,59 @@ class PreparationModelGatewayTest {
         assertEquals(List.of("图灵测试", "中文屋"), outline.getChapters().get(0).getLessons().get(0).getKnowledgePoints());
     }
 
-    private PreparationModelGateway gateway(OpenAiChatModel chatModel, long timeoutSeconds, int maxAttempts) {
-        return new PreparationModelGateway(chatModel, new ObjectMapper(), executor, timeoutSeconds, maxAttempts);
+    @Test
+    void usesTheSharedGenerationClientsConfiguredBudget() {
+        ChatModelClient chatModel = mock(ChatModelClient.class);
+        when(chatModel.call(any(Prompt.class))).thenReturn(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("课时内容")))));
+
+        assertEquals("课时内容", gateway(chatModel, 1).generateMarkdown("system", "user"));
+
+        verify(chatModel).call(any(Prompt.class));
+    }
+
+    @Test
+    void exhaustedTimeoutKeepsAnActionableSafeReason() {
+        ChatModelClient chatModel = mock(ChatModelClient.class);
+        when(chatModel.call(any(Prompt.class)))
+                .thenThrow(new ChatModelTimeoutException("PRIVATE_PROVIDER_RESPONSE", null));
+
+        BusinessException error = assertThrows(BusinessException.class,
+                () -> gateway(chatModel, 2).generateMarkdown("system", "user"));
+
+        assertTrue(error.getMessage().contains("超时"));
+        assertTrue(error.getMessage().contains("2次"));
+        assertFalse(error.getMessage().contains("PRIVATE_PROVIDER_RESPONSE"));
+        verify(chatModel, times(2)).call(any(Prompt.class));
+    }
+
+    @Test
+    void authenticationFailureIsReportedWithoutRetryingOrLeakingProviderText() {
+        ChatModelClient chatModel = mock(ChatModelClient.class);
+        when(chatModel.call(any(Prompt.class))).thenThrow(new ModelInvocationException("MODEL_HTTP_401"));
+
+        BusinessException error = assertThrows(BusinessException.class,
+                () -> gateway(chatModel, 2).generateMarkdown("system", "user"));
+
+        assertTrue(error.getMessage().contains("认证失败"));
+        verify(chatModel).call(any(Prompt.class));
+    }
+
+    @Test
+    void malformedOutlineAfterOneRepairKeepsASafeFormatReason() {
+        ChatModelClient chatModel = mock(ChatModelClient.class);
+        when(chatModel.call(any(Prompt.class))).thenReturn(
+                new ChatResponse(List.of(new Generation(new AssistantMessage("PRIVATE_MODEL_CONTENT")))));
+
+        BusinessException error = assertThrows(BusinessException.class,
+                () -> gateway(chatModel, 1).generateOutline("system", "user"));
+
+        assertTrue(error.getMessage().contains("骨架格式不正确"));
+        assertFalse(error.getMessage().contains("PRIVATE_MODEL_CONTENT"));
+        verify(chatModel, times(2)).call(any(Prompt.class));
+    }
+
+    private PreparationModelGateway gateway(ChatModelClient chatModel, int maxAttempts) {
+        return new PreparationModelGateway(chatModel, new ObjectMapper(), maxAttempts);
     }
 }

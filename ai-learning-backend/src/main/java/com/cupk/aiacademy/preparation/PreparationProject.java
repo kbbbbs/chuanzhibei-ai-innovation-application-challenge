@@ -1,6 +1,7 @@
 package com.cupk.aiacademy.preparation;
 
 import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.FieldStrategy;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -38,7 +39,7 @@ public class PreparationProject {
     @TableField("generation_status")
     private String generationStatus;
     private Integer progress;
-    @TableField("error_message")
+    @TableField(value = "error_message", updateStrategy = FieldStrategy.ALWAYS)
     private String errorMessage;
     @TableField("published_course_id")
     private Integer publishedCourseId;

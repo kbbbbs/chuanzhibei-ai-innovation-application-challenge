@@ -290,6 +290,28 @@ class PreparationNativeKnowledgeTest {
     }
 
     @Test
+    void timeoutReasonFromTheSharedGatewaySurvivesTheAsyncFailureBoundary() throws Exception {
+        PreparationProject project = project();
+        requestOwner(project);
+        when(rag.searchForOwner(anyList(), anyString(), eq(7), eq(10)))
+                .thenReturn(Result.success(new RagSearchResponse(List.of(source()), "bm25", "")));
+        var client = mock(com.cupk.aiacademy.agent.core.llm.ChatModelClient.class);
+        when(client.call(any(org.springframework.ai.chat.prompt.Prompt.class)))
+                .thenThrow(new com.cupk.aiacademy.agent.core.llm.ChatModelTimeoutException("PRIVATE_PROVIDER_RESPONSE", null));
+        var gateway = new PreparationModelGateway(client, json, 1);
+        BusinessException timeout = assertThrows(BusinessException.class,
+                () -> gateway.generateMarkdown("system", "user"));
+        when(model.generateOutline(anyString(), anyString())).thenThrow(timeout);
+
+        service.startOutline(1L);
+        runWorker();
+
+        assertUpdateContains("FAILED");
+        assertUpdateContains("调用超时");
+        assertUpdateDoesNotContain("PRIVATE_PROVIDER_RESPONSE");
+    }
+
+    @Test
     void courseDraftUsesAvailableSourcesWithoutWaitingForOtherFiles() throws Exception {
         PreparationProject project = project();
         when(categories.selectById(1)).thenReturn(new CourseCategory());

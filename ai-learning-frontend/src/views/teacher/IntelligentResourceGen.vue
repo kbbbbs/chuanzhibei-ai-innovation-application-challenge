@@ -74,6 +74,7 @@
       :closable="false"
     >
       <el-button v-if="project.outline?.chapters?.length" size="small" type="primary" :loading="regenerating" :disabled="contextBusy" data-testid="resume-generation" @click="resumeGeneration">继续生成未完成部分</el-button>
+      <el-button v-else size="small" type="primary" :loading="regenerating" :disabled="contextBusy" data-testid="retry-empty-outline" @click="resumeGeneration">{{ config.generationMode === 'STEP' ? '重试课程骨架' : '重试生成完整草稿' }}</el-button>
     </el-alert>
 
     <section class="content-panel workspace-card" aria-label="备课流程">
@@ -101,7 +102,11 @@
           <strong>{{ generatingLabel }}</strong>
           <span>可以离开页面，生成进度会保存在草稿中。</span>
         </div>
-        <el-progress :percentage="project?.progress || 0" :stroke-width="10" />
+        <div v-if="awaitingOutline" class="generation-awaiting" aria-busy="true">
+          <el-icon class="is-loading" aria-hidden="true"><Loading /></el-icon>
+          <span>等待模型返回课程骨架</span>
+        </div>
+        <el-progress v-else :percentage="project?.progress || 0" :stroke-width="10" />
       </div>
 
       <div v-if="!creationMode && readyForApplication && activeStep > 0 && activeStep < 4" class="stage-actions">
@@ -425,7 +430,7 @@ import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } 
 import { useAutosave } from '@/composables/useAutosave'
 import { useRouter, useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Check, Delete, Lightning, Plus, Reading, Refresh, Upload } from '@element-plus/icons-vue'
+import { Check, Delete, Lightning, Loading, Plus, Reading, Refresh, Upload } from '@element-plus/icons-vue'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import ErrorNotice from '@/components/ui/ErrorNotice.vue'
@@ -559,6 +564,7 @@ const questionTypes = [
 ]
 
 const isGenerating = computed(() => ['RUNNING', 'WAITING'].includes(project.value?.generationStatus))
+const awaitingOutline = computed(() => project.value?.generationStatus === 'RUNNING' && project.value?.currentStage === 'CONFIG')
 const configLocked = computed(() => isGenerating.value || project.value?.projectStatus === 'PUBLISHED')
 const generatingLabel = computed(() => {
   if (project.value?.generationStatus === 'WAITING') return '等待课程资料处理，有可用内容后自动生成'
@@ -1307,6 +1313,7 @@ onBeforeUnmount(() => {
 .generation-banner strong, .generation-banner span { display: block; }
 .generation-banner strong { color: var(--text-strong); }
 .generation-banner span { margin-top: 2px; color: var(--text-body); font-size: var(--text-sm); }
+.generation-awaiting { display: flex; align-items: center; gap: var(--space-2); color: var(--text-body); }
 .outline-list { display: grid; gap: var(--space-3); }
 .chapter-editor { display: flex; flex-wrap: wrap; gap: var(--space-3); align-items: center; margin-bottom: var(--space-3); }
 .chapter-title-input { flex: 1 1 220px; max-width: 520px; }

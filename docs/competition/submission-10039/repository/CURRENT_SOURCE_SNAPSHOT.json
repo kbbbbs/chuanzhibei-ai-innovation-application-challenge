@@ -104,6 +104,35 @@
         "frontendRelatedTests": 35,
         "frontendProductionBuild": "PASS"
       }
+    },
+    {
+      "preparedAt": "2026-11-17T14:40:28.496348+00:00",
+      "sourceProject": "ai-learning-github-latest",
+      "description": "Use the shared generation deadline for preparation and show truthful outline waiting and retry states.",
+      "sourceRawFileSha256": {
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/preparation/PreparationConfiguration.java": "29590392d37697bccc017dc10e54b481151841dfd226e1683e9364cf6a96238e",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/preparation/PreparationModelGateway.java": "059dff28133306fd8badcce2c1361b3e9d40f1b18fa547b930a32e8bb3bc1bee",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/preparation/PreparationProject.java": "69359de500ceb8610bf0ba209b072ccebd396c6621bdcb90cfd34fa15e1be24c",
+        "ai-learning-backend/src/main/java/com/cupk/aiacademy/preparation/PreparationService.java": "54ff963060927ba60524c4562c05dffa59555cd1a58d4ec13cf1be71482e473e",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/preparation/PreparationModelGatewayTest.java": "7fbd084d343da1e5074dfb90dfa018ce77a3968bdf2c128606f6b9f6dee9da0d",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/preparation/PreparationNativeKnowledgeTest.java": "b783edbadf50910968c63b8caeb338033d8ffe931578b8d13e4ec5a5853d43fe",
+        "ai-learning-backend/src/test/java/com/cupk/aiacademy/preparation/PreparationRetryPersistenceTest.java": "457092529df0ed87ba18360424fd8bc7b26cc46a1ef1b90a3dbe762a5b7a8a0e",
+        "ai-learning-frontend/src/views/teacher/IntelligentResourceGen.vue": "6fbe43b33bee6a9fe1b9a52cad16df3bfdd242b69d27266f9a5bf4105fdf10cd",
+        "ai-learning-frontend/e2e/preparation-skeleton-progress.spec.js": "6d0ec2aaba1f0c05de0d5fa8377ce8d52b424255f072e016d07999b851449c2c",
+        "ai-learning-frontend/e2e/terra-preparation-races.spec.js": "9b519608bd85886c08aea2213b5d0b1f2e9c51f360d7747c46a29ac64c19fe0f"
+      },
+      "verification": {
+        "backendRelatedTests": 54,
+        "frontendRelatedTests": 21,
+        "publicBackendTests": 54,
+        "actualCourseGeneration": "PASS",
+        "chapters": 8,
+        "lessons": 32,
+        "questions": 40,
+        "runtimeGenerationModel": "deepseek-v4-flash",
+        "runtimePlanningModel": "deepseek-v4-flash",
+        "frontendProductionBuild": "PASS"
+      }
     }
   ]
 }

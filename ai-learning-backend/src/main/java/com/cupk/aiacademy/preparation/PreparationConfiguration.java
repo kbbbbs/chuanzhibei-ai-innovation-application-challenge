@@ -6,8 +6,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 @Configuration
 public class PreparationConfiguration {
@@ -23,8 +21,4 @@ public class PreparationConfiguration {
         return executor;
     }
 
-    @Bean(name = "preparationModelExecutor", destroyMethod = "shutdownNow")
-    public ExecutorService preparationModelExecutor() {
-        return Executors.newThreadPerTaskExecutor(Thread.ofVirtual().name("preparation-model-", 0).factory());
-    }
 }
