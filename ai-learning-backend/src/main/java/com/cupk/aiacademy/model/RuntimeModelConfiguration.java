@@ -31,7 +31,9 @@ public class RuntimeModelConfiguration {
         var factory = new JdkClientHttpRequestFactory(HttpClient.newBuilder().connectTimeout(duration).build());
         factory.setReadTimeout(duration);
         var api = new OpenAiApi(base, ready ? endpoint.getApiKey() : "NOT_CONFIGURED", path, "/v1/embeddings",
-                RestClient.builder().requestFactory(factory), WebClient.builder(), new DefaultResponseErrorHandler());
+                RestClient.builder().requestFactory(factory)
+                        .requestInterceptor(new GraphExtractionRequestInterceptor()),
+                WebClient.builder(), new DefaultResponseErrorHandler());
         return new GuardedChatModel(api, endpoint);
     }
 }

@@ -8,6 +8,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @EnableScheduling
 public class AiAcademyApplication {
     public static void main(String[] args) {
-        SpringApplication.run(AiAcademyApplication.class, args);
+        com.cupk.installation.InstallationLauncher.main(args);
     }
 }

@@ -1,91 +1,82 @@
 <template>
-  <div class="my-classes">
-    <el-card v-loading="loading">
-      <template #header>
-        <div class="class-header">
-          <div>
-            <span class="header-title">我的课程与学习路线</span>
-            <p>从这里进入可视化路线图、互动课本、实验和在线 IDE。</p>
+  <div class="my-classes workspace-page" v-loading="loading">
+    <PageHeader
+      eyebrow="学习"
+      title="我的班级"
+      description="从这里进入可视化路线图、互动课本、实验和在线 IDE。"
+    >
+      <template #actions>
+        <el-button :loading="loading" @click="loadClasses">刷新</el-button>
+      </template>
+    </PageHeader>
+
+    <ErrorNotice
+      v-if="loadFailed"
+      title="班级列表未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadClasses"
+    />
+
+    <ErrorNotice
+      v-if="skippedCount"
+      title="部分班级未加载"
+      :message="`有 ${skippedCount} 个班级读取失败，下方列表不完整。`"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadClasses"
+    />
+
+    <div v-if="!loading && !allClassList.length && !loadFailed && !skippedCount" class="empty-panel">
+      <AppEmpty description="暂无已开放的课程，请联系任课教师或管理员。" />
+    </div>
+
+    <section v-if="classList.length" class="card-collection" aria-label="我的课程">
+      <article v-for="row in classList" :key="`card-${row.classId}`" class="item-card course-card">
+        <div class="course-card-main">
+          <StatusBadge :label="row.semester || '当前学期'" tone="accent" />
+          <h2>{{ row.courseName }}</h2>
+          <p class="course-summary">{{ row.courseDescription || row.description || '这门课还没有课程简介。' }}</p>
+          <div class="course-meta">
+            <span>班级：{{ row.className }}</span>
+            <span v-if="row.difficulty">难度：{{ row.difficulty }}</span>
+            <span v-if="row.rating">评分：{{ row.rating }}</span>
           </div>
         </div>
-      </template>
-
-      <div class="course-card-grid">
-        <article v-for="row in classList" :key="`card-${row.classStudentId}`" class="course-card">
-          <div class="course-card-main">
-            <el-tag type="success">{{ row.semester || '当前学期' }}</el-tag>
-            <h2>{{ row.courseName }}</h2>
-            <p>{{ row.courseDescription || row.description || '这门课还没有课程简介。' }}</p>
-            <div class="course-meta">
-              <span>班级：{{ row.className }}</span>
-              <span v-if="row.difficulty">难度：{{ row.difficulty }}</span>
-              <span v-if="row.rating">评分：{{ row.rating }}</span>
-            </div>
+        <div v-if="row.paperCount > 0" class="paper-info">
+          <div class="paper-count">
+            <span>{{ row.paperCount }} 篇相关论文</span>
+            <span v-if="row.yearRange" class="year-range">{{ row.yearRange }}</span>
           </div>
-          <div class="course-card-actions">
-            <el-button type="primary" size="large" :disabled="!canOpenCourse(row)" @click="handleLearn(row)">继续学习</el-button>
-            <el-button size="large" :disabled="!canOpenCourse(row)" @click="handleMap(row)">查看学习路线</el-button>
+          <div v-if="row.directions?.length" class="paper-directions">
+            <el-tag
+              v-for="direction in row.directions"
+              :key="direction"
+              size="small"
+              type="info"
+              effect="plain"
+              class="direction-tag"
+            >{{ direction.length > 30 ? `${direction.slice(0, 30)}...` : direction }}</el-tag>
           </div>
-        </article>
-      </div>
+        </div>
+        <div class="item-card-foot">
+          <el-button type="primary" :disabled="!canOpenCourse(row)" @click="handleLearn(row)">继续学习</el-button>
+          <el-button :disabled="!canOpenCourse(row)" @click="handleMap(row)">查看学习路线</el-button>
+        </div>
+      </article>
+    </section>
 
-      <el-pagination
-        class="pagination"
-        v-model:current-page="pagination.pageNum"
-        v-model:page-size="pagination.pageSize"
-        :total="allClassList.length"
-        :page-sizes="[5, 10, 20, 50]"
-        layout="total, sizes, prev, pager, next, jumper"
-        @size-change="handleSizeChange"
-      />
-
-<!--      <el-table :data="classList" border stripe>-->
-<!--        <template #empty><AppEmpty /></template>-->
-<!--        <el-table-column prop="className" label="班级名称" min-width="140" />-->
-<!--        <el-table-column prop="courseName" label="课程名称" min-width="140" />-->
-<!--        <el-table-column prop="semester" label="学期" width="100" />-->
-<!--        <el-table-column label="论文方向" min-width="280">-->
-<!--          <template #default="{ row }">-->
-<!--            <div v-if="row.paperLoading" class="paper-loading">-->
-<!--              <el-icon class="is-loading"><i class="el-icon-loading" /></el-icon>-->
-<!--              <span>加载中...</span>-->
-<!--            </div>-->
-<!--            <div v-else-if="row.paperCount > 0" class="paper-info">-->
-<!--              <div class="paper-count">-->
-<!--                <el-tag size="small" type="success">{{ row.paperCount }} 篇相关论文</el-tag>-->
-<!--                <span v-if="row.yearRange" class="year-range">{{ row.yearRange }}</span>-->
-<!--              </div>-->
-<!--              <div v-if="row.directions && row.directions.length" class="paper-directions">-->
-<!--                <el-tag-->
-<!--                  v-for="d in row.directions"-->
-<!--                  :key="d"-->
-<!--                  size="small"-->
-<!--                  type="info"-->
-<!--                  class="direction-tag"-->
-<!--                  effect="plain"-->
-<!--                >{{ d.length > 30 ? d.slice(0, 30) + '...' : d }}</el-tag>-->
-<!--              </div>-->
-<!--              <div v-if="row.sampleTitle" class="paper-sample">-->
-<!--                <el-icon><i class="el-icon-document" /></el-icon>-->
-<!--                <span class="sample-text">{{ row.sampleTitle }}</span>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <span v-else class="no-paper">暂无相关论文</span>-->
-<!--          </template>-->
-<!--        </el-table-column>-->
-<!--        <el-table-column label="加入时间" width="170">-->
-<!--          <template #default="{ row }">-->
-<!--            {{ row.joinTime ? new Date(row.joinTime).toLocaleString() : '-' }}-->
-<!--          </template>-->
-<!--        </el-table-column>-->
-<!--        <el-table-column label="操作" width="210">-->
-<!--          <template #default="{ row }">-->
-<!--            <el-button size="small" type="success" :disabled="!canOpenCourse(row)" @click="handleMap(row)">学习地图</el-button>-->
-<!--            <el-button size="small" type="primary" :disabled="!canOpenCourse(row)" @click="handleLearn(row)">进入学习</el-button>-->
-<!--          </template>-->
-<!--        </el-table-column>-->
-<!--      </el-table>-->
-    </el-card>
+    <el-pagination
+      v-if="allClassList.length"
+      class="list-pagination"
+      v-model:current-page="pagination.pageNum"
+      v-model:page-size="pagination.pageSize"
+      :total="allClassList.length"
+      :page-sizes="[5, 10, 20, 50]"
+      layout="total, sizes, prev, pager, next, jumper"
+      @size-change="handleSizeChange"
+    />
   </div>
 </template>
 
@@ -93,13 +84,15 @@
 import { computed, reactive, ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, paginateRecords } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { getRecords, getTotal, paginateRecords, requireSuccess } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
-const userStore = useUserStore()
 
 const allClassList = ref([])
 const pagination = reactive({
@@ -107,52 +100,66 @@ const pagination = reactive({
   pageSize: 10
 })
 const classList = computed(() => paginateRecords(allClassList.value, pagination.pageNum, pagination.pageSize))
-const loading = ref(false)
+const skippedCount = ref(0)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  allClassList.value = []
+  skippedCount.value = 0
+})
 
-const loadClasses = async () => {
-  loading.value = true
-  try {
-    const res = await request.get(`/class-students/student/${userStore.userId}`)
-    if (res.code === '200') {
-      const memberships = getRecords(res.data).filter(isActiveMembership)
-      const rows = []
-      for (const item of memberships) {
-        const classRes = await request.get(`/teaching-classes/${item.classId}`, { silentError: true })
-        if (classRes.code !== '200' || !classRes.data) continue
-        const teachingClass = classRes.data
-        if (!teachingClass.courseId || Number(teachingClass.status) !== 1) continue
-        const courseRes = await request.get(`/courses/${teachingClass.courseId}`, { silentError: true })
-        const course = courseRes.code === '200' ? courseRes.data : {}
-        if (!course?.id || !course?.title || Number(course.status) !== 1) continue
-        rows.push({
-          ...item,
-          ...teachingClass,
-          classStudentId: item.id,
-          classId: item.classId,
-          courseId: teachingClass.courseId,
-          className: teachingClass.className || `教学班${item.classId}`,
-          courseName: course.title || '-',
-          courseDescription: course.description || '',
-          difficulty: course.difficulty || '',
-          rating: course.rating || '',
-          paperLoading: true,
-          paperCount: 0,
-          directions: [],
-          sampleTitle: '',
-          yearRange: ''
-        })
-      }
-      allClassList.value = rows
-      normalizePage()
-      // 加载每门课程的论文方向
-      rows.forEach(row => { loadPaperDirections(row) })
-    }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
-  } finally {
-    loading.value = false
+const loadClassRow = async (teachingClass) => {
+  if (!teachingClass?.courseId) return null
+  const courseRes = requireSuccess(await request.get(`/courses/${teachingClass.courseId}`, { silentError: true }))
+  const course = courseRes.data
+  if (!course?.id || !course?.title) return null
+  return {
+    ...teachingClass,
+    classId: teachingClass.id,
+    courseId: teachingClass.courseId,
+    className: teachingClass.className || `教学班${teachingClass.id}`,
+    courseName: course.title || '-',
+    courseDescription: course.description || '',
+    difficulty: course.difficulty || '',
+    rating: course.rating || '',
+    paperLoading: true,
+    paperCount: 0,
+    directions: [],
+    sampleTitle: '',
+    yearRange: ''
   }
 }
+
+const loadClasses = () => guarded(async (isCurrent) => {
+  // The server returns only classes with current learning access.
+  const teachingClasses = []
+  let pageNum = 1
+  let total = 0
+  do {
+    const res = requireSuccess(await request.get('/teaching-classes/my', { params: { pageNum, pageSize: 100 } }))
+    if (!isCurrent()) return
+    const records = getRecords(res.data)
+    teachingClasses.push(...records)
+    total = getTotal(res.data)
+    pageNum += 1
+    if (!records.length) break
+  } while (teachingClasses.length < total)
+  const rows = []
+  let skipped = 0
+  for (const item of teachingClasses) {
+    try {
+      const row = await loadClassRow(item)
+      if (row) rows.push(row)
+    } catch (e) {
+      // One deleted course must not hide the student's other classes.
+      skipped += 1
+    }
+    if (!isCurrent()) return
+  }
+  allClassList.value = rows
+  skippedCount.value = skipped
+  normalizePage()
+  // 加载每门课程的论文方向；经响应式数组访问，结果才会更新到卡片
+  allClassList.value.forEach(row => { loadPaperDirections(row) })
+})
 
 const normalizePage = () => {
   const maxPage = Math.max(1, Math.ceil(allClassList.value.length / pagination.pageSize))
@@ -188,8 +195,6 @@ const loadPaperDirections = async (row) => {
   }
 }
 
-const isActiveMembership = (item) => Number(item.status ?? 1) === 1
-
 const canOpenCourse = (row) => {
   return Number.isFinite(Number(row?.courseId)) && Number(row.courseId) > 0 && Number.isFinite(Number(row?.classId)) && Number(row.classId) > 0
 }
@@ -216,136 +221,63 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.course-card-grid {
+.course-card-main {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 16px;
-  margin-bottom: 18px;
-}
-
-.class-header {
-  display: flex;
-  justify-content: space-between;
-  gap: 16px;
-  align-items: center;
-}
-
-.header-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: #172033;
-}
-
-.class-header p {
-  margin: 4px 0 0;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.course-card {
-  min-height: 210px;
-  padding: 22px;
-  border-radius: 24px;
-  border: 1px solid #dbeafe;
-  background:
-    radial-gradient(circle at 12% 18%, rgba(59, 130, 246, .22), transparent 28%),
-    linear-gradient(135deg, #ffffff, #eff6ff);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  gap: 18px;
-  box-shadow: 0 16px 34px rgba(15, 23, 42, .08);
+  justify-items: start;
+  gap: var(--space-2);
 }
 
 .course-card h2 {
-  margin: 12px 0 8px;
-  font-size: 24px;
-  color: #172033;
+  margin: 0;
+  font-size: var(--text-xl);
+  overflow-wrap: anywhere;
 }
 
-.course-card p {
-  margin: 0;
-  color: #475569;
-  line-height: 1.8;
+.course-summary {
   display: -webkit-box;
+  overflow: hidden;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.course-meta,
-.course-card-actions {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 10px;
 }
 
 .course-meta {
-  margin-top: 12px;
-  color: #64748b;
-  font-size: 13px;
-}
-
-.paper-loading {
   display: flex;
-  align-items: center;
-  gap: 6px;
-  color: #909399;
-  font-size: 13px;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-3);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
 }
 
 .paper-info {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-subtle);
 }
 
 .paper-count {
   display: flex;
-  align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  color: var(--text-body);
+  font-size: var(--text-sm);
 }
 
 .year-range {
-  font-size: 12px;
-  color: #909399;
+  color: var(--text-subtle);
 }
 
 .paper-directions {
   display: flex;
   flex-wrap: wrap;
-  gap: 4px;
+  gap: var(--space-1);
 }
 
 .direction-tag {
-  max-width: 200px;
+  max-width: 100%;
 }
 
-.paper-sample {
-  display: flex;
-  align-items: flex-start;
-  gap: 4px;
-  font-size: 12px;
-  color: #606266;
-  line-height: 1.4;
-}
-
-.sample-text {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-}
-
-.no-paper {
-  color: #c0c4cc;
-  font-size: 13px;
-}
-
-.pagination {
-  margin-top: 16px;
+.list-pagination {
   justify-content: center;
 }
 </style>

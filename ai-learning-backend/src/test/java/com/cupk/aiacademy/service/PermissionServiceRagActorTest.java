@@ -58,7 +58,7 @@ class PermissionServiceRagActorTest {
         var student=actor(7,"student");course(10,8,1);
         var membership=new ClassStudent();membership.setClassId(12);membership.setStatus(1);
         when(members.selectList(any())).thenReturn(List.of(membership));
-        var classroom=new TeachingClass();classroom.setId(12);classroom.setCourseId(10);classroom.setStatus(1);
+        var classroom=new TeachingClass();classroom.setId(12);classroom.setCourseId(10);classroom.setStatus(1);classroom.setCourseOpen(true);
         when(classes.selectList(any())).thenReturn(List.of(classroom));
         assertTrue(service.canReadCourseMaterials(student,10));
         classroom.setStatus(0);assertFalse(service.canReadCourseMaterials(student,10));

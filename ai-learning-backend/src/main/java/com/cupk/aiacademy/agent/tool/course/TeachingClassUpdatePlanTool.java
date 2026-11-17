@@ -51,7 +51,7 @@ public class TeachingClassUpdatePlanTool implements AgentTool {
                 true,
                 "根据用户自然语言请求准备修改教学班；执行前必须补齐教学班ID和至少一个可修改字段，并由用户确认。",
                 parameters,
-                List.of("会修改教学班基础信息或归属课程", "教师只能修改自己负责的教学班",
+                List.of("会修改教学班基础信息或归属课程", "仅管理员可以修改教学班",
                         "如需结束或恢复教学班，优先使用状态变更动作")
         );
 

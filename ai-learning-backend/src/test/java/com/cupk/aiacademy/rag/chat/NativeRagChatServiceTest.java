@@ -61,6 +61,22 @@ class NativeRagChatServiceTest {
         assertEquals(List.of(snapshot),history.getLast().get("indexVersions"));
     }
 
+    @Test void lessonChatSearchesCourseMaterialsAndKeepsItsSessionBoundToTheLesson() {
+        when(knowledge.searchForCourse(eq(10),anyString(),eq(2),anyInt()))
+                .thenReturn(Result.success(new RagSearchResponse(List.of(source),"bm25",null)));
+        when(model.call(any(Prompt.class))).thenReturn(response("沿负梯度方向更新。[1]"));
+        var result=chat.chat(new RagChatRequest(List.of(),"如何更新？",null,10,5));
+        assertEquals(1,result.citations().size());
+        verify(knowledge,atLeastOnce()).requireCourseRead(10);
+        verify(knowledge,never()).searchForOwner(anyList(),anyString(),anyInt(),anyInt());
+        var session=chat.listSessions().stream().filter(row->row.get("id").equals(result.sessionId())).findFirst().orElseThrow();
+        assertEquals(10,session.get("courseId"));assertEquals(5,session.get("lessonId"));
+        assertTrue(((List<?>)session.get("knowledgeBaseIds")).isEmpty());
+        assertThrows(BusinessException.class,()->chat.chat(new RagChatRequest(List.of(),"再问一次",result.sessionId(),10,6)));
+        var created=chat.createCourseSession(10,6,"课时快问");
+        assertEquals(6,created.get("lessonId"));
+    }
+
     @Test void longFormulaSurvivesTheAnswerContextBudgetIntact() {
         String formula="$$\\begin{aligned}"+"x_i &= a_i + b_i \\\\ ".repeat(100)+"\\end{aligned}$$";
         var hit=new RagSearchHit("math", "doc",base,"公式.pdf","参数定义\n"+formula+"\n变量说明",3,1,1,"[1]");
@@ -109,12 +125,6 @@ class NativeRagChatServiceTest {
         assertEquals("NO_EVIDENCE", result.status());
         assertTrue(result.citations().isEmpty());
         verifyNoInteractions(model);
-    }
-
-    @Test void legacyKnowledgeRequestAcceptsAnEmptyOptionalSelection() {
-        when(model.call(any(Prompt.class))).thenReturn(response("参数更新。[1]"));
-        var result=chat.chat(new RagChatRequest(List.of(base),"梯度下降",null,null,null,""));
-        assertEquals("ANSWERED",result.status());
     }
 
     @Test void failedRetrievalDoesNotBecomeAnUngroundedAnswer() {

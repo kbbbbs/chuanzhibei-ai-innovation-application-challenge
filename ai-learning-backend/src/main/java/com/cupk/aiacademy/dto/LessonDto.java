@@ -14,7 +14,7 @@ public class LessonDto {
     @Positive
     private Integer chapterId;
 
-    @NotBlank
+    @NotBlank(message = "课时名称不能为空")
     @Size(max = 100)
     private String title;
 

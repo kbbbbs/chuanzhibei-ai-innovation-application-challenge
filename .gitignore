@@ -18,6 +18,14 @@ dist/
 dist-ssr/
 test-results/
 playwright-report/
+# Local Playwright run outputs (screenshots, traces, reports).
+/ai-learning-frontend/*-results/
+/ai-learning-frontend/.codex-*/
+/ai-learning-frontend/route-matrix-report.json
+
+# Python
+__pycache__/
+*.pyc
 
 # Local settings
 .env
@@ -27,6 +35,7 @@ playwright-report/
 .codex_tmp/
 **/data/native-rag/
 **/data/contest-demo/
+**/data/installation/
 ai-learning-backend/uploads/
 /uploads/
 .omx/
@@ -60,3 +69,10 @@ Thumbs.db
 # Keep raw browser traces and isolated test databases local; publish sanitized reports.
 /docs/competition/development/agent-records/**/trace.zip
 /docs/competition/development/agent-records/**/isolated-data/
+
+# Office conversion profiles are machine-local caches.
+**/lo_profile*/
+
+# Showcase site: build cache and judge credentials fetched from the demo server.
+ai-learning-site/.vitepress/cache/
+ai-learning-site/.vitepress/demo-accounts.local.json

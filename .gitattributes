@@ -1,2 +1,17 @@
+# Text files are stored with LF; checkout follows each platform unless pinned below.
+* text=auto
+
+# Run inside Linux shells and containers: LF on every platform.
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf
+deploy/nginx/*.conf text eol=lf
+compose*.yaml text eol=lf
+# Copied verbatim onto the Linux demo server (systemd units, env template, nginx, scripts).
+deploy/demo/** text eol=lf
+
+# Windows PowerShell scripts.
+*.ps1 text eol=crlf
+
 # Evidence manifests hash the exact archived bytes. Preserve these on every OS.
 docs/competition/** -text

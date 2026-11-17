@@ -1,21 +1,24 @@
 <template>
-  <div ref="chartRef" class="class-average-chart" v-loading="!hasData"></div>
+  <div class="class-average-chart">
+    <div v-show="hasData" ref="chartRef" class="chart-canvas" :style="{ height }" role="img" aria-label="我的成绩与班级平均对比图"></div>
+    <p v-if="!hasData" class="chart-empty">暂无对比数据</p>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import * as echarts from 'echarts'
+import { computed, ref } from 'vue'
+import { useEchart } from '@/composables/useEchart'
 
 const props = defineProps({
   data: { type: Array, default: () => [] },
-  height: { type: String, default: '300px' }
+  height: { type: String, default: '300px' },
+  unit: { type: String, default: '分' }
 })
 
 const chartRef = ref(null)
-let chartInstance = null
-const hasData = ref(false)
+const hasData = computed(() => props.data.length > 0)
 
-function buildOption() {
+function buildOption(palette) {
   const names = props.data.map(d => d.name)
   const myScores = props.data.map(d => d.myScore)
   const avgScores = props.data.map(d => d.avgScore)
@@ -25,7 +28,7 @@ function buildOption() {
       formatter: function(params) {
         let html = `<b>${params[0].name}</b><br/>`
         params.forEach(p => {
-          html += `${p.marker} ${p.seriesName}: <b>${p.value}</b> 分<br/>`
+          html += `${p.marker} ${p.seriesName}: <b>${p.value}</b> ${props.unit}<br/>`
         })
         return html
       }
@@ -39,59 +42,54 @@ function buildOption() {
     xAxis: {
       type: 'category',
       data: names,
-      axisLabel: { rotate: 30, fontSize: 10, width: 60, overflow: 'truncate' },
-      axisLine: { lineStyle: { color: '#ccc' } }
+      axisLabel: { rotate: 30, fontSize: 10, width: 60, overflow: 'truncate', color: palette.subtle },
+      axisLine: { lineStyle: { color: palette.line } }
     },
     yAxis: {
       type: 'value',
       max: 100,
-      axisLabel: { fontSize: 11 },
-      splitLine: { lineStyle: { color: '#f0f0f0' } }
+      axisLabel: { fontSize: 11, color: palette.subtle },
+      splitLine: { lineStyle: { color: palette.split } }
     },
     series: [
       {
         name: '我的成绩',
         type: 'bar',
-        data: myScores.map(v => ({ value: v, itemStyle: { color: '#409EFF', borderRadius: [6, 6, 0, 0] } })),
+        itemStyle: { color: palette.accent, borderRadius: [6, 6, 0, 0] },
+        data: myScores,
         barWidth: '35%',
         barGap: '20%'
       },
       {
         name: '班级平均',
         type: 'bar',
-        data: avgScores.map(v => ({ value: v, itemStyle: { color: '#c0c4cc', borderRadius: [6, 6, 0, 0] } })),
+        itemStyle: { color: palette.neutral, borderRadius: [6, 6, 0, 0] },
+        data: avgScores,
         barWidth: '35%'
       }
     ]
   }
 }
 
-function initChart() {
-  if (!chartRef.value) return
-  if (chartInstance) chartInstance.dispose()
-  chartInstance = echarts.init(chartRef.value)
-  if (props.data.length) {
-    chartInstance.setOption(buildOption())
-    hasData.value = true
-  }
-}
-
-function resizeChart() {
-  chartInstance?.resize()
-}
-
-onMounted(() => {
-  chartRef.value.style.height = props.height
-  initChart()
-  window.addEventListener('resize', resizeChart)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', resizeChart)
-  chartInstance?.dispose()
-})
-watch(() => props.data, () => nextTick(() => initChart()), { deep: true })
+useEchart(chartRef, palette => (hasData.value ? buildOption(palette) : null), () => props.data)
 </script>
 
 <style scoped>
-.class-average-chart { width: 100%; min-height: 200px; }
+.class-average-chart {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart-canvas {
+  width: 100%;
+  min-height: 200px;
+}
+
+.chart-empty {
+  margin: 0;
+  padding: var(--space-8) var(--space-4);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
+  text-align: center;
+}
 </style>

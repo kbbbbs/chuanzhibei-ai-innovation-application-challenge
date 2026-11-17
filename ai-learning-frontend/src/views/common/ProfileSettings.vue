@@ -1,23 +1,30 @@
 <template>
-  <main class="profile-page" v-loading="loading">
-    <header class="profile-header">
-      <div>
-        <p class="eyebrow">ACCOUNT</p>
-        <h1>个人设置</h1>
-      </div>
-      <el-button :icon="Refresh" :loading="loading" @click="loadProfile">重新加载</el-button>
-    </header>
+  <div class="profile-page workspace-page" v-loading="loading">
+    <PageHeader eyebrow="账户" title="个人设置" description="维护个人资料和登录密码。密码只在保存时发送，不会显示或保留在页面上。">
+      <template #actions>
+        <el-button v-if="!loadFailed" :icon="Refresh" :loading="loading" :disabled="saving" @click="handleReload">重新加载</el-button>
+      </template>
+    </PageHeader>
+
+    <ErrorNotice
+      v-if="loadFailed"
+      :title="profileReady ? '个人资料未刷新' : '个人资料未加载'"
+      :message="profileReady ? '下方是上次读取的资料和你未保存的修改，没有被清除。' : '为避免用空白内容覆盖原资料，保存和修改密码已暂停。'"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="handleReload"
+    />
 
     <div class="profile-layout">
       <aside class="profile-summary">
         <el-avatar :size="112" :src="avatarPreview" class="profile-avatar">
           {{ avatarText }}
         </el-avatar>
-        <h2>{{ form.nickname || form.username }}</h2>
-        <p>@{{ form.username }}</p>
-        <el-tag :type="roleTagType" effect="light">{{ roleName }}</el-tag>
+        <h2>{{ form.nickname || form.username || userStore.username }}</h2>
+        <p>@{{ form.username || userStore.username }}</p>
+        <StatusBadge :label="roleName" tone="accent" />
 
-        <dl class="profile-meta">
+        <dl v-if="profileReady" class="profile-meta">
           <div>
             <dt>邮箱</dt>
             <dd>{{ form.email || '未填写' }}</dd>
@@ -34,13 +41,14 @@
           ref="formRef"
           :model="form"
           :rules="rules"
+          :disabled="formLocked"
           label-position="top"
           status-icon
+          @submit.prevent
         >
           <section class="form-section">
             <div class="section-heading">
               <h2>基本信息</h2>
-              <span>资料</span>
             </div>
             <div class="form-grid">
               <el-form-item label="用户名">
@@ -64,7 +72,7 @@
           <section class="form-section password-section">
             <div class="section-heading">
               <h2>修改密码</h2>
-              <span>安全</span>
+              <span>不修改时留空</span>
             </div>
             <div class="form-grid password-grid">
               <el-form-item label="当前密码" prop="currentPassword">
@@ -92,9 +100,9 @@
         <h2>注销账号</h2>
         <p>账号将停止登录，课程、作业和学习记录会继续保留。</p>
       </div>
-      <el-button type="danger" plain :icon="Delete" @click="deactivateAccount">注销账号</el-button>
+      <el-button type="danger" plain :icon="Delete" :disabled="!profileReady" @click="deactivateAccount">注销账号</el-button>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup>
@@ -103,14 +111,26 @@ import { useRouter } from 'vue-router'
 import { Check, Delete, Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserStore } from '@/store/user'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { requireSuccess } from '@/utils/apiHelpers'
+import { resolveResourceUrl } from '@/utils/backendUrl'
 import request from '@/utils/request'
+
+const EDITABLE_FIELDS = ['nickname', 'email', 'phone', 'avatar']
 
 const router = useRouter()
 const userStore = useUserStore()
 const formRef = ref(null)
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad()
 const saving = ref(false)
 const originalProfile = ref(null)
+// A save sends every field, so nothing may be written until the real profile has been read.
+const profileReady = ref(false)
+const formLocked = computed(() => !profileReady.value || loading.value)
+const savedFields = ref({})
 
 const form = reactive({
   username: '',
@@ -129,14 +149,12 @@ const roleName = computed(() => ({
   student: '学习者',
 })[userStore.roleCode] || '用户')
 
-const roleTagType = computed(() => ({
-  admin: 'danger',
-  teacher: 'warning',
-  student: 'success',
-})[userStore.roleCode] || 'info')
-
 const avatarText = computed(() => (form.nickname || form.username || 'U').charAt(0).toUpperCase())
-const avatarPreview = computed(() => form.avatar?.trim() || '')
+const avatarPreview = computed(() => resolveResourceUrl(form.avatar))
+const isDirty = computed(() => profileReady.value && (
+  Boolean(form.currentPassword || form.newPassword || form.confirmPassword)
+  || EDITABLE_FIELDS.some(field => form[field] !== savedFields.value[field])
+))
 
 const validateCurrentPassword = (_rule, value, callback) => {
   if (form.newPassword && !value) {
@@ -183,26 +201,42 @@ function assignProfile(profile) {
   form.currentPassword = ''
   form.newPassword = ''
   form.confirmPassword = ''
+  savedFields.value = Object.fromEntries(EDITABLE_FIELDS.map(field => [field, form[field]]))
 }
 
-async function loadProfile() {
-  loading.value = true
-  try {
-    const res = await request.get('/users/me')
-    if (res.code === '200') {
-      originalProfile.value = { ...res.data }
-      assignProfile(res.data)
-      userStore.updateProfile(res.data)
-      await nextTick()
-      formRef.value?.clearValidate()
+function loadProfile() {
+  return guarded(async (isCurrent) => {
+    const res = requireSuccess(await request.get('/users/me'))
+    if (!isCurrent()) return
+    if (!res.data || typeof res.data !== 'object' || Array.isArray(res.data)) {
+      throw new Error('个人资料无效')
     }
-  } catch {
-  } finally {
-    loading.value = false
+    originalProfile.value = { ...res.data }
+    assignProfile(res.data)
+    userStore.updateProfile(res.data)
+    profileReady.value = true
+    await nextTick()
+    formRef.value?.clearValidate()
+  })
+}
+
+async function handleReload() {
+  if (isDirty.value) {
+    try {
+      await ElMessageBox.confirm('重新加载会放弃未保存的修改，确定继续吗？', '重新加载', {
+        confirmButtonText: '重新加载',
+        cancelButtonText: '继续编辑',
+        type: 'warning',
+      })
+    } catch {
+      return
+    }
   }
+  await loadProfile()
 }
 
 async function saveProfile() {
+  if (formLocked.value) return
   try {
     await formRef.value.validate()
   } catch {
@@ -269,57 +303,34 @@ onMounted(loadProfile)
 <style scoped>
 .profile-page {
   width: min(1120px, 100%);
-  margin: 0 auto;
-}
-
-.profile-header {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 24px;
-  margin-bottom: 24px;
-}
-
-.profile-header h1 {
-  margin: 4px 0 0;
-  font-size: 2rem;
-  line-height: 1.2;
-  letter-spacing: 0;
-}
-
-.eyebrow {
-  margin: 0;
-  color: var(--primary-color);
-  font-size: 0.75rem;
-  font-weight: 800;
 }
 
 .profile-layout {
   display: grid;
   grid-template-columns: 280px minmax(0, 1fr);
-  gap: 20px;
+  gap: var(--space-5);
   align-items: start;
 }
 
 .profile-summary,
 .profile-form-panel,
 .danger-zone {
-  background: var(--bg-elevated);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  box-shadow: var(--card-shadow);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .profile-summary {
-  padding: 32px 24px;
+  padding: var(--space-8) var(--space-6);
   text-align: center;
 }
 
 .profile-avatar {
-  background: var(--primary-color);
-  color: white;
+  color: #fff;
+  background: var(--accent-solid);
   font-size: 2rem;
-  font-weight: 800;
+  font-weight: 650;
 }
 
 .profile-summary h2 {
@@ -418,14 +429,13 @@ onMounted(loadProfile)
   align-items: center;
   justify-content: space-between;
   gap: 24px;
-  margin-top: 20px;
-  padding: 22px 28px;
-  border-color: #FECACA;
+  padding: var(--space-5) var(--space-6);
+  border-color: var(--critical-line);
   box-shadow: none;
 }
 
 .danger-zone h2 {
-  color: #B91C1C;
+  color: var(--critical);
 }
 
 .danger-zone p {
@@ -452,6 +462,10 @@ onMounted(loadProfile)
     margin: 0;
   }
 
+  .profile-summary :deep(.status-badge) {
+    justify-self: start;
+  }
+
   .profile-avatar {
     grid-row: 1 / 3;
   }
@@ -466,7 +480,6 @@ onMounted(loadProfile)
 }
 
 @media (max-width: 680px) {
-  .profile-header,
   .danger-zone {
     align-items: stretch;
     flex-direction: column;
@@ -482,9 +495,8 @@ onMounted(loadProfile)
     grid-template-columns: auto 1fr;
   }
 
-  .profile-summary :deep(.el-tag) {
+  .profile-summary :deep(.status-badge) {
     grid-column: 2;
-    justify-self: start;
   }
 
   .form-section,

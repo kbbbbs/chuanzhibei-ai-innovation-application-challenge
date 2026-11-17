@@ -377,7 +377,7 @@ public class RecommendationService {
                 }
             });
         }
-        query.orderByDesc("citation_count").orderByDesc("year").last("LIMIT 20");
+        query.orderByDesc("citation_count").orderByDesc("`year`").last("LIMIT 20");
         List<Paper> papers = paperMapper.selectList(query);
         String firstKeyword = keywords.isEmpty() ? "" : keywords.get(0);
 

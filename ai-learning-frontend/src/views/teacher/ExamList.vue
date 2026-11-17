@@ -1,18 +1,19 @@
 <template>
-  <div class="exam-list">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-            <span>{{ assessmentLabel }}管理</span>
-          <div class="header-actions">
-            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
-            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
-            <el-button type="primary" @click="handleCreate">发布{{ assessmentLabel }}</el-button>
-          </div>
-        </div>
+  <div class="exam-list workspace-page">
+    <PageHeader
+      eyebrow="作业与考试"
+      :title="`${assessmentLabel}管理`"
+      :description="isHomework ? '向教学班发布作业，设置开放与截止时间，并进入批改。' : '向教学班发布考试，到达开始时间后自动开始；结束后批改并提交成绩。'"
+    >
+      <template #actions>
+        <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+        <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
+        <el-button type="primary" @click="handleCreate">发布{{ assessmentLabel }}</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+    <section class="filter-panel" :aria-label="`筛选${assessmentLabel}`">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item :label="`${assessmentLabel}名称`">
           <el-input v-model="searchForm.keyword" :placeholder="`请输入${assessmentLabel}名称`" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -26,21 +27,32 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="exams" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      :title="`${assessmentLabel}列表未加载`"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadExams"
+    />
+
+    <section v-else class="table-panel" :aria-label="`${assessmentLabel}列表`">
+      <el-table :data="exams" stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
-        <el-table-column label="开始时间" width="180">
+        <el-table-column prop="title" :label="`${assessmentLabel}名称`" min-width="200" />
+        <el-table-column :label="isHomework ? '开放时间' : '开始时间'" width="180">
           <template #default="{ row }">
             {{ row.startTime ? new Date(row.startTime).toLocaleString() : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="结束时间" width="180">
+        <el-table-column :label="isHomework ? '截止时间' : '结束时间'" width="180">
           <template #default="{ row }">
             {{ row.endTime ? new Date(row.endTime).toLocaleString() : '-' }}
           </template>
         </el-table-column>
-        <el-table-column label="状态" width="100">
+        <el-table-column label="状态" width="110">
           <template #default="{ row }">
             <el-tag v-if="row.status === 3" type="success">成绩已提交</el-tag>
             <el-tag v-else-if="isExamEnded(row)" type="info">已结束</el-tag>
@@ -48,14 +60,16 @@
             <el-tag v-else type="warning">未开始</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="280" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 280" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="handleGrading(row)">批改</el-button>
-            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-if="row.status === 1 && isExamStarted(row) && !isExamEnded(row)" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
-            <el-button v-if="!isHomework && isExamEnded(row)" size="small" type="primary" @click="handleSubmitResults(row)">提交</el-button>
-            <el-button v-if="!isHomework && row.status === 3" size="small" type="primary" @click="handleResultDetails(row)">详情</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <RowActions :label="row.title || `${assessmentLabel} ${row.id}`">
+              <el-button size="small" @click="handleGrading(row)">批改</el-button>
+              <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button v-if="row.status === 1 && isExamStarted(row) && !isExamEnded(row)" size="small" type="danger" @click="handleEnd(row)">结束</el-button>
+              <el-button v-if="!isHomework && isExamEnded(row)" size="small" type="primary" @click="handleSubmitResults(row)">提交</el-button>
+              <el-button v-if="!isHomework && row.status === 3" size="small" type="primary" @click="handleResultDetails(row)">详情</el-button>
+              <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            </RowActions>
           </template>
         </el-table-column>
         <template #empty>
@@ -71,9 +85,8 @@
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadExams"
         @size-change="handleSizeChange"
-        class="pagination-bar"
       />
-    </el-card>
+    </section>
 
     <!-- Form Dialog -->
     <el-dialog v-model="dialogVisible" :title="form.id ? `编辑${assessmentLabel}` : `发布${assessmentLabel}`" width="760px">
@@ -88,12 +101,13 @@
           </div>
 
           <div class="wizard-content">
+            <p class="wizard-mobile-step">第 {{ examStep + 1 }} / 3 步</p>
             <template v-if="examStep === 0">
               <el-form-item :label="`${assessmentLabel}名称`" prop="title">
                 <el-input v-model="form.title" />
               </el-form-item>
               <el-form-item :label="isHomework ? '作业题卷' : '试卷'" prop="paperId">
-                <el-select v-model="form.paperId" placeholder="请选择试卷">
+                <el-select v-model="form.paperId" :placeholder="isHomework ? '请选择作业题卷' : '请选择试卷'">
                   <el-option v-for="paper in papers" :key="paper.id" :label="paper.title" :value="paper.id" />
                 </el-select>
               </el-form-item>
@@ -173,9 +187,14 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import { exportImportData } from '@/api/imports'
 import { getTeachingClasses } from '@/api/teachingClass'
-import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
+import { currentUserId, formatLocalDateTime, getRecords, getTotal, normalizeStatus, paginateRecords, requireSuccess, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
@@ -183,8 +202,12 @@ const route = useRoute()
 const userStore = useUserStore()
 const { confirmDelete } = useConfirm()
 const formRef = ref(null)
+const narrow = useNarrowScreen()
 
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  exams.value = []
+  pagination.total = 0
+})
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
 const exporting = ref(false)
@@ -305,32 +328,20 @@ const handleReset = () => {
   loadExams()
 }
 
-const loadExams = async () => {
-  loading.value = true
-  try {
-    const params = scopedTeacherParams(userStore)
-    if (searchForm.keyword && searchForm.keyword.trim()) {
-      params.keyword = searchForm.keyword.trim()
-    }
-    if (searchForm.classId) {
-      params.classId = searchForm.classId
-    }
-    const res = await request.get(assessmentApi.value, { params })
-    if (res.code === '200' && res.data) {
-      const records = getRecords(res.data).map(mapExamForDisplay)
-      exams.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
-      pagination.total = getTotal(records)
-    } else {
-      exams.value = []
-      pagination.total = 0
-    }
-  } catch (e) {
-    exams.value = []
-    pagination.total = 0
-  } finally {
-    loading.value = false
+const loadExams = () => guarded(async (isCurrent) => {
+  const params = scopedTeacherParams(userStore)
+  if (searchForm.keyword && searchForm.keyword.trim()) {
+    params.keyword = searchForm.keyword.trim()
   }
-}
+  if (searchForm.classId) {
+    params.classId = searchForm.classId
+  }
+  const res = requireSuccess(await request.get(assessmentApi.value, { params }))
+  if (!isCurrent()) return
+  const records = getRecords(res.data).map(mapExamForDisplay)
+  exams.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
+  pagination.total = getTotal(records)
+})
 
 const loadPapers = async () => {
   try {
@@ -639,7 +650,10 @@ onMounted(() => {
 
 watch(
   () => route.name,
-  () => {
+  (name) => {
+    // The instance also sees navigation away from both lists; that must load nothing.
+    if (!['ExamList', 'HomeworkList'].includes(name)) return
+    exams.value = []
     pagination.pageNum = 1
     loadPapers()
     loadExams()
@@ -652,36 +666,16 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.pagination-bar {
-  margin-top: 20px;
-  justify-content: center;
-}
-
-.search-form {
-  margin-bottom: 16px;
-}
-
 .wizard-dialog {
   display: flex;
-  gap: 24px;
+  gap: var(--space-6);
   min-height: 300px;
 }
 
 .wizard-steps {
-  width: 170px;
-  padding: 8px 8px 8px 0;
-  border-right: 1px solid #ebeef5;
+  flex: 0 0 170px;
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  border-right: 1px solid var(--line-subtle);
 }
 
 .wizard-content {
@@ -689,16 +683,40 @@ onUnmounted(() => {
   min-width: 0;
 }
 
+.wizard-mobile-step {
+  display: none;
+  margin: 0 0 var(--space-3);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
+}
+
 .field-hint {
-  margin-left: 12px;
-  color: #909399;
-  font-size: 13px;
+  margin: 0 0 0 var(--space-3);
+  font-size: var(--text-sm);
 }
 
 .notice-option {
   display: flex;
   flex-direction: column;
-  color: #909399;
+  color: var(--text-subtle);
   line-height: 1.5;
+}
+
+@media (max-width: 720px) {
+  .wizard-dialog {
+    min-height: 0;
+  }
+
+  .wizard-steps {
+    display: none;
+  }
+
+  .wizard-mobile-step {
+    display: block;
+  }
+
+  .field-hint {
+    margin: var(--space-1) 0 0;
+  }
 }
 </style>

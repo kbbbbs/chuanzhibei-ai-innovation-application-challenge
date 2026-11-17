@@ -33,7 +33,7 @@ test('real document upload, retrieval, stream citations, history and shared acce
   const errors = []
   page.on('pageerror',error=>errors.push(error.message))
   const externalRequests = []
-  page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/api/weknora')) externalRequests.push(new URL(r.url()).pathname)})
+  page.on('request',r=>{if(new URL(r.url()).pathname.startsWith('/backend/api/weknora')) externalRequests.push(new URL(r.url()).pathname)})
   let kbId,docId,sessionId,studentContext
   const evidence = {kind:'real-service-integration',syntheticTeachingContent:true,requestMocks:false,modelMocks:false,checks:{}}
   try {
@@ -43,13 +43,13 @@ test('real document upload, retrieval, stream citations, history and shared acce
     const name = `联测示例-二分查找-${Date.now()}`
     await dialog.locator('input').fill(name)
     await dialog.locator('textarea').fill('用于验证资料、引用与共享权限的合成教学资料')
-    const createResponse = page.waitForResponse(r=>new URL(r.url()).pathname==='/api/rag/knowledge-bases'&&r.request().method()==='POST')
+    const createResponse = page.waitForResponse(r=>new URL(r.url()).pathname==='/backend/api/rag/knowledge-bases'&&r.request().method()==='POST')
     await dialog.getByRole('button',{name:'保存',exact:true}).click()
     const created = await (await createResponse).json()
     expect(String(created.code)).toBe('200'); kbId=created.data.id
     await expect(page.locator('.workspace-heading')).toContainText(name)
     await expect(page.getByText('此知识库为私有：只有你可以访问。共享前请检查资料中的个人信息。')).toBeVisible()
-    const uploadResponse = page.waitForResponse(r=>new URL(r.url()).pathname===`/api/rag/knowledge-bases/${kbId}/documents`&&r.request().method()==='POST')
+    const uploadResponse = page.waitForResponse(r=>new URL(r.url()).pathname===`/backend/api/rag/knowledge-bases/${kbId}/documents`&&r.request().method()==='POST')
     await page.locator('input[type=file]').setInputFiles({name:'binary-search.md',mimeType:'text/markdown',buffer:Buffer.from(teachingText,'utf8')})
     const uploaded = await (await uploadResponse).json()
     expect(String(uploaded.code)).toBe('200'); docId=uploaded.data.id
@@ -58,7 +58,7 @@ test('real document upload, retrieval, stream citations, history and shared acce
 
     await page.getByRole('tab',{name:'检索与验证'}).click()
     await page.getByPlaceholder('输入关键词或问题，查看实际命中的原文').fill('二分查找')
-    const searchResponse = page.waitForResponse(r=>new URL(r.url()).pathname==='/api/rag/search')
+    const searchResponse = page.waitForResponse(r=>new URL(r.url()).pathname==='/backend/api/rag/search')
     await page.getByRole('button',{name:'检索',exact:true}).click()
     const searched = await (await searchResponse).json()
     expect(String(searched.code)).toBe('200')

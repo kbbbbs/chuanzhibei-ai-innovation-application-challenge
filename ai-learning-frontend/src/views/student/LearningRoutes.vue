@@ -1,43 +1,47 @@
 <template>
-  <div class="learning-routes" v-loading="loading">
-    <section class="routes-hero">
-      <div>
-        <p class="eyebrow">Amazing Teaching / Learning atlas</p>
-        <h1>学习路线地图集</h1>
-        <p>
-          每门课都有独立地图、战争迷雾、阶段目标和继续学习入口，帮助你沿着清晰路线逐步点亮能力节点。
-        </p>
-      </div>
-      <div class="hero-stats">
-        <div>
-          <strong>{{ routes.length }}</strong>
-          <span>已加入课程</span>
-        </div>
-        <div>
-          <strong>{{ totalUnlocked }}</strong>
-          <span>已解锁节点</span>
-        </div>
-        <div>
-          <strong>{{ totalDone }}</strong>
-          <span>已完成节点</span>
-        </div>
-      </div>
-    </section>
-
-    <el-empty
-      v-if="!loading && !routes.length"
-      description="你还没有加入教学班。加入班级后，课程路线会在这里形成地图。"
+  <div class="learning-routes workspace-page" v-loading="loading">
+    <PageHeader
+      eyebrow="学习"
+      title="学习路线"
+      description="每门课都有独立地图、战争迷雾、阶段目标和继续学习入口，沿着清晰路线逐步点亮能力节点。"
     />
 
-    <section v-else class="atlas-grid">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="学习路线未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadRoutes"
+    />
+    <ErrorNotice
+      v-if="skippedCount"
+      title="部分课程路线未加载"
+      :message="`有 ${skippedCount} 门课程读取失败，下方路线不完整，路线概览已隐藏。`"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadRoutes"
+    />
+
+    <section v-if="!loadFailed && !skippedCount" class="metric-grid" aria-label="路线概览">
+      <div class="metric-tile"><span>已加入课程</span><strong>{{ routes.length }}</strong></div>
+      <div class="metric-tile"><span>已解锁节点</span><strong>{{ totalUnlocked }}</strong></div>
+      <div class="metric-tile"><span>已完成节点</span><strong>{{ totalDone }}</strong></div>
+    </section>
+
+    <div v-if="!loading && !routes.length && !loadFailed && !skippedCount" class="empty-panel">
+      <AppEmpty description="你还没有加入教学班。加入班级后，课程路线会在这里形成地图。" />
+    </div>
+
+    <section v-else-if="routes.length" class="atlas-grid" aria-label="课程路线">
       <article v-for="item in routes" :key="`${item.classId}-${item.courseId}`" class="route-card">
         <div class="route-card-head">
-          <div>
-            <el-tag effect="dark">{{ item.domain || '精品课程' }}</el-tag>
+          <div class="route-title">
+            <StatusBadge :label="item.domain || '精品课程'" tone="accent" />
             <h2>{{ item.courseName }}</h2>
             <p>{{ item.tagline || item.courseDescription || '按章节解锁课本、实验、练习和项目。' }}</p>
           </div>
-          <el-progress type="dashboard" :percentage="item.progressPercent" :width="112" />
+          <el-progress type="dashboard" :percentage="item.progressPercent" :width="92" />
         </div>
 
         <div class="class-strip">
@@ -53,22 +57,23 @@
             type="button"
             class="mini-node"
             :class="{ locked: !node.unlocked, done: node.progress >= 100, current: node.id === item.currentNode?.id }"
+            :aria-disabled="!node.unlocked"
             @click="openNode(item, node)"
           >
-            <span>{{ node.progress >= 100 ? '✓' : node.unlocked ? '▶' : '雾' }}</span>
+            <span class="node-mark">{{ node.progress >= 100 ? '✓' : node.unlocked ? '▶' : '雾' }}</span>
             <strong>{{ node.unlocked ? node.title : '未知区域' }}</strong>
             <small>{{ node.chapterTitle }}</small>
           </button>
           <div v-if="item.path.length > 10" class="more-node">+{{ item.path.length - 10 }} 节</div>
         </div>
 
-        <div class="outcomes" v-if="item.outcomes.length">
+        <div v-if="item.outcomes.length" class="outcomes">
           <span v-for="outcome in item.outcomes.slice(0, 4)" :key="outcome">{{ outcome }}</span>
         </div>
 
         <div class="route-actions">
-          <el-button type="primary" size="large" @click="openMap(item)">打开完整学习地图</el-button>
-          <el-button size="large" @click="continueLearn(item)">进入当前课时</el-button>
+          <el-button type="primary" @click="openMap(item)">打开完整学习地图</el-button>
+          <el-button @click="continueLearn(item)">进入当前课时</el-button>
         </div>
       </article>
     </section>
@@ -80,83 +85,77 @@ import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
-import { getRecords } from '@/utils/apiHelpers'
+import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { getRecords, requireSuccess } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
-const loading = ref(false)
 const routes = ref([])
+const skippedCount = ref(0)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  routes.value = []
+  skippedCount.value = 0
+})
 
 const totalUnlocked = computed(() => routes.value.reduce((sum, item) => sum + item.path.filter(node => node.unlocked).length, 0))
 const totalDone = computed(() => routes.value.reduce((sum, item) => sum + item.path.filter(node => Number(node.progress) >= 100).length, 0))
 
-const loadRoutes = async () => {
-  loading.value = true
-  try {
-    const membershipsRes = await request.get(`/class-students/student/${userStore.userId}`)
-    const memberships = membershipsRes.code === '200' ? getRecords(membershipsRes.data).filter(isActiveMembership) : []
-    const rows = []
-    for (const membership of memberships) {
-      const teachingClass = await loadTeachingClass(membership.classId)
-      if (!teachingClass?.courseId) continue
-      const [course, experience] = await Promise.all([
-        loadCourse(teachingClass.courseId),
-        loadExperience(teachingClass.courseId, membership.classId),
-      ])
-      if (!course?.id || !course?.title) continue
-      const path = experience.path || []
-      const done = path.filter(node => Number(node.progress) >= 100).length
-      rows.push({
-        classId: membership.classId,
-        courseId: teachingClass.courseId,
-        className: teachingClass.className || `教学班 ${membership.classId}`,
-        semester: teachingClass.semester || '',
-        courseName: course.title || experience.overview?.title || '未命名课程',
-        courseDescription: course.description || '',
-        domain: experience.overview?.domain || '',
-        tagline: experience.overview?.tagline || '',
-        outcomes: experience.overview?.outcomes || [],
-        path,
-        currentNode: findCurrentNode(path),
-        progressPercent: path.length ? Math.round((done / path.length) * 100) : 0,
-      })
-    }
-    routes.value = rows
-  } finally {
-    loading.value = false
-  }
-}
-
-const loadTeachingClass = async (classId) => {
-  try {
-    const res = await request.get(`/teaching-classes/${classId}`, { silentError: true })
-    return res.code === '200' ? res.data : null
-  } catch {
-    return null
-  }
-}
-
-const loadCourse = async (courseId) => {
-  try {
-    const res = await request.get(`/courses/${courseId}`, { silentError: true })
-    return res.code === '200' ? res.data || {} : {}
-  } catch {
-    return {}
-  }
-}
-
-const loadExperience = async (courseId, classId) => {
-  try {
-    const res = await request.get(`/courses/${courseId}/experience`, {
-      params: { classId },
+const loadRouteRow = async (membership) => {
+  const classRes = requireSuccess(await request.get(`/teaching-classes/${membership.classId}`, { silentError: true }))
+  const teachingClass = classRes.data
+  if (!teachingClass?.courseId) return null
+  const [courseRes, experienceRes] = await Promise.all([
+    request.get(`/courses/${teachingClass.courseId}`, { silentError: true }),
+    request.get(`/courses/${teachingClass.courseId}/experience`, {
+      params: { classId: membership.classId },
       silentError: true,
-    })
-    return res.code === '200' ? res.data || { overview: {}, path: [] } : { overview: {}, path: [] }
-  } catch {
-    return { overview: {}, path: [] }
+    }),
+  ])
+  const course = requireSuccess(courseRes).data
+  const experience = requireSuccess(experienceRes).data || { overview: {}, path: [] }
+  if (!course?.id || !course?.title) return null
+  const path = experience.path || []
+  const done = path.filter(node => Number(node.progress) >= 100).length
+  return {
+    classId: membership.classId,
+    courseId: teachingClass.courseId,
+    className: teachingClass.className || `教学班 ${membership.classId}`,
+    semester: teachingClass.semester || '',
+    courseName: course.title || experience.overview?.title || '未命名课程',
+    courseDescription: course.description || '',
+    domain: experience.overview?.domain || '',
+    tagline: experience.overview?.tagline || '',
+    outcomes: experience.overview?.outcomes || [],
+    path,
+    currentNode: findCurrentNode(path),
+    progressPercent: path.length ? Math.round((done / path.length) * 100) : 0,
   }
 }
+
+const loadRoutes = () => guarded(async (isCurrent) => {
+  const membershipsRes = requireSuccess(await request.get(`/class-students/student/${userStore.userId}`))
+  if (!isCurrent()) return
+  const memberships = getRecords(membershipsRes.data).filter(isActiveMembership)
+  const rows = []
+  let skipped = 0
+  for (const membership of memberships) {
+    try {
+      const row = await loadRouteRow(membership)
+      if (row) rows.push(row)
+    } catch {
+      // A course that fails must not read as zero progress, nor hide the other routes.
+      skipped += 1
+    }
+    if (!isCurrent()) return
+  }
+  routes.value = rows
+  skippedCount.value = skipped
+})
 
 const isActiveMembership = (item) => Number(item.status ?? 1) === 1
 
@@ -203,245 +202,176 @@ onMounted(loadRoutes)
 </script>
 
 <style scoped>
-.learning-routes {
-  display: grid;
-  gap: 22px;
-}
-
-.routes-hero {
-  min-height: 240px;
-  padding: 34px;
-  border-radius: 34px;
-  color: #fff;
-  background:
-    radial-gradient(circle at 16% 20%, rgba(99, 232, 255, .45), transparent 26%),
-    radial-gradient(circle at 82% 18%, rgba(250, 204, 21, .34), transparent 24%),
-    linear-gradient(135deg, #102033, #234e8d 52%, #6b3fa0);
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 26px;
-  box-shadow: 0 20px 48px rgba(15, 23, 42, .22);
-}
-
-.eyebrow {
-  margin: 0 0 10px;
-  letter-spacing: .18em;
-  text-transform: uppercase;
-  font-size: 12px;
-  opacity: .76;
-}
-
-.routes-hero h1 {
-  margin: 0;
-  font-size: clamp(34px, 5vw, 64px);
-  letter-spacing: -.04em;
-}
-
-.routes-hero p {
-  max-width: 760px;
-  margin: 12px 0 0;
-  line-height: 1.85;
-  opacity: .9;
-}
-
-.hero-stats {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(92px, 1fr));
-  gap: 10px;
-  min-width: 330px;
-}
-
-.hero-stats div {
-  padding: 16px;
-  border: 1px solid rgba(255, 255, 255, .22);
-  border-radius: 20px;
-  background: rgba(255, 255, 255, .1);
-  backdrop-filter: blur(10px);
-  display: grid;
-  gap: 4px;
-}
-
-.hero-stats strong {
-  font-size: 30px;
-}
-
-.hero-stats span {
-  font-size: 12px;
-  opacity: .76;
-}
-
 .atlas-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 420px), 1fr));
+  gap: var(--space-4);
 }
 
 .route-card {
-  padding: 22px;
-  border-radius: 28px;
-  border: 1px solid #dbeafe;
-  background: linear-gradient(135deg, #fff, #f8fbff);
-  box-shadow: 0 16px 34px rgba(15, 23, 42, .08);
   display: grid;
-  gap: 16px;
+  gap: var(--space-4);
+  min-width: 0;
+  padding: var(--space-5);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .route-card-head {
   display: flex;
   justify-content: space-between;
-  gap: 16px;
   align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.route-title {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-2);
+  min-width: 0;
 }
 
 .route-card h2 {
-  margin: 12px 0 8px;
-  font-size: 26px;
-  color: #172033;
+  margin: 0;
+  font-size: var(--text-xl);
+  overflow-wrap: anywhere;
 }
 
 .route-card p {
   margin: 0;
-  color: #475569;
-  line-height: 1.75;
+  color: var(--text-subtle);
+  line-height: 1.7;
 }
 
 .class-strip,
 .route-actions,
 .outcomes {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
   align-items: center;
+  gap: var(--space-2);
 }
 
-.class-strip {
-  color: #64748b;
-  font-size: 13px;
+.route-actions :deep(.el-button + .el-button) {
+  margin-left: 0;
 }
 
 .class-strip span {
-  padding: 7px 10px;
-  border-radius: 999px;
-  background: #f1f5f9;
+  padding: 2px var(--space-2);
+  color: var(--text-body);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
 }
 
 .mini-map {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 10px;
+  gap: var(--space-2);
 }
 
 .mini-node {
-  min-height: 118px;
-  padding: 12px;
-  border: 1px solid #bfdbfe;
-  border-radius: 18px;
-  background: #eff6ff;
-  color: #172033;
-  cursor: pointer;
   display: grid;
-  gap: 8px;
+  align-content: start;
+  gap: var(--space-1);
+  min-height: 112px;
+  padding: var(--space-3);
+  color: var(--text-strong);
   text-align: left;
-  transition: transform .18s ease, box-shadow .18s ease;
+  background: var(--surface-accent);
+  border: 1px solid var(--line-accent);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color .15s var(--ease-standard), background-color .15s var(--ease-standard);
 }
 
 .mini-node:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 12px 24px rgba(37, 99, 235, .13);
+  background: var(--surface-accent-strong);
 }
 
-.mini-node span {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  background: #2563eb;
-  color: #fff;
+.node-mark {
   display: grid;
   place-items: center;
-  font-weight: 900;
+  width: 24px;
+  height: 24px;
+  color: #fff;
+  background: var(--accent-solid);
+  border-radius: 50%;
+  font-size: var(--text-xs);
+  font-weight: 650;
 }
 
 .mini-node strong {
+  font-size: var(--text-sm);
+  font-weight: 600;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .mini-node small {
-  color: #64748b;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
   line-height: 1.4;
+  overflow-wrap: anywhere;
 }
 
 .mini-node.done {
-  border-color: #22c55e;
-  background: #f0fdf4;
+  background: var(--positive-surface);
+  border-color: var(--positive-line);
 }
 
-.mini-node.done span {
-  background: #16a34a;
+.mini-node.done:hover {
+  background: var(--positive-surface);
+}
+
+.mini-node.done .node-mark {
+  color: var(--surface-base);
+  background: var(--positive);
 }
 
 .mini-node.current {
-  outline: 3px solid rgba(245, 158, 11, .28);
+  box-shadow: 0 0 0 2px var(--line-accent);
 }
 
 .mini-node.locked {
-  color: #e2e8f0;
-  background: radial-gradient(circle at 26% 24%, #64748b, #0f172a);
-  border-color: #334155;
+  color: var(--text-subtle);
+  background: var(--surface-sunken);
+  border-color: var(--line-subtle);
+  border-style: dashed;
+  cursor: not-allowed;
 }
 
-.mini-node.locked span {
-  background: #475569;
-}
-
-.mini-node.locked small {
-  color: #cbd5e1;
+.mini-node.locked .node-mark {
+  color: var(--surface-base);
+  background: var(--text-subtle);
 }
 
 .more-node {
-  min-height: 118px;
-  border-radius: 18px;
-  border: 1px dashed #93c5fd;
-  color: #2563eb;
-  background: #f8fbff;
   display: grid;
   place-items: center;
-  font-weight: 800;
+  min-height: 112px;
+  color: var(--accent);
+  background: var(--surface-canvas);
+  border: 1px dashed var(--line-accent);
+  border-radius: var(--radius-md);
+  font-weight: 650;
 }
 
 .outcomes span {
-  padding: 8px 10px;
-  border-radius: 12px;
-  background: #eef2ff;
-  color: #3730a3;
-  font-size: 13px;
-}
-
-@media (max-width: 900px) {
-  .routes-hero {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .hero-stats {
-    min-width: 0;
-    width: 100%;
-  }
+  padding: 2px var(--space-2);
+  color: var(--text-body);
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-xs);
+  line-height: 1.6;
 }
 
 @media (max-width: 560px) {
-  .routes-hero,
-  .route-card {
-    border-radius: 22px;
-    padding: 18px;
-  }
-
-  .hero-stats {
-    grid-template-columns: 1fr;
-  }
-
-  .atlas-grid {
-    grid-template-columns: 1fr;
+  .route-card-head {
+    flex-direction: column;
   }
 }
 </style>

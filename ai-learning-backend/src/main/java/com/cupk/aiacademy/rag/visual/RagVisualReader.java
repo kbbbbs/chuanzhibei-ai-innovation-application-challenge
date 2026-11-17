@@ -40,6 +40,10 @@ public class RagVisualReader {
     }
 
     public Reading read(List<RagSearchHit> hits,int actorId,boolean attachImages) {
+        return read(hits, actorId, attachImages, null);
+    }
+
+    public Reading read(List<RagSearchHit> hits, int actorId, boolean attachImages, Integer courseId) {
         var evidence=new StringBuilder();var media=new ArrayList<Media>();
         var seen=new LinkedHashSet<String>();var warnings=new LinkedHashSet<String>();
         int processed=0,bytesUsed=0;boolean observed=false,visibleTextRead=false;
@@ -48,8 +52,8 @@ public class RagVisualReader {
             if(visual==null || visual.id()==null || !seen.add(visual.id()))continue;
             if(processed>=MAX_IMAGES){warnings.add("本次最多读取2张相关图片，其余图片请打开出处核验。");continue;}
             processed++;
-            requireAssociation(hit,visual.id(),actorId);
-            byte[] image=visuals.imageForActor(visual.id(),actorId);
+            requireAssociation(hit,visual.id(),actorId,courseId);
+            byte[] image=image(visual.id(),actorId,courseId);
             checkCancelled();
             if(image==null || image.length==0){warnings.add("部分相关图片没有可读取内容，请查看原页。");continue;}
             if(image.length>MAX_TOTAL_BYTES-bytesUsed){warnings.add("相关图片超过本次读取容量，部分图片尚未读取。");continue;}
@@ -59,8 +63,8 @@ public class RagVisualReader {
             if(title.length()>200)title=title.substring(0,200);
             if(attachImages) {
                 // Fetch after the initial read as well: replacement/revocation must stop the transfer.
-                visuals.imageForActor(visual.id(),actorId);
-                requireAssociation(hit,visual.id(),actorId);checkCancelled();
+                image(visual.id(),actorId,courseId);
+                requireAssociation(hit,visual.id(),actorId,courseId);checkCancelled();
                 media.add(new Media(MimeTypeUtils.IMAGE_PNG,new ByteArrayResource(image)));
                 evidence.append(label).append(" 附图").append(media.size()).append("：").append(title).append('\n');
                 continue;
@@ -74,7 +78,7 @@ public class RagVisualReader {
                     if(first!=null && first.errorCode()==null && digitizedTable(first.rawText())) {
                         // Parse-the-figure may estimate data from curves. These are not source table cells.
                         // Re-read visible text under the same image deadline instead of publishing estimates.
-                        checkCancelled();requireAssociation(hit,visual.id(),actorId);
+                        checkCancelled();requireAssociation(hit,visual.id(),actorId,courseId);
                         return new Observation(ocr.recognizeDetailed(image,"image/png"),true);
                     }
                     return new Observation(first,false);
@@ -84,8 +88,8 @@ public class RagVisualReader {
                 var observation=pending.get(timeoutMillis,TimeUnit.MILLISECONDS);
                 var recognition=observation.recognition();
                 // Preserve authorization failures; never convert them into apparently usable observations.
-                visuals.imageForActor(visual.id(),actorId);
-                requireAssociation(hit,visual.id(),actorId);checkCancelled();
+                image(visual.id(),actorId,courseId);
+                requireAssociation(hit,visual.id(),actorId,courseId);checkCancelled();
                 if(observation.visibleOnly())warnings.add("已拦截图形解析生成的数值表；本次未恢复曲线定量数据，请对照原图。");
                 if(recognition==null || recognition.errorCode()!=null) {
                     warnings.add("部分图片未完整读取，请对照原图核验，不能据此补写图意。");continue;
@@ -113,8 +117,12 @@ public class RagVisualReader {
         checkCancelled();
         return new Reading(evidence.toString(),media,warnings.isEmpty()?null:String.join(" ",warnings));
     }
-    private void requireAssociation(RagSearchHit hit,String id,int actor) {
-        if(visuals.forHit(hit,actor).stream().noneMatch(allowed->id.equals(allowed.id())))
+    private byte[] image(String id, int actor, Integer course) {
+        return course == null ? visuals.imageForActor(id, actor) : visuals.imageForActor(id, actor, course);
+    }
+    private void requireAssociation(RagSearchHit hit,String id,int actor,Integer course) {
+        var allowedFigures = course == null ? visuals.forHit(hit,actor) : visuals.forHit(hit,actor,course);
+        if(allowedFigures.stream().noneMatch(allowed->id.equals(allowed.id())))
             throw new RagAccessException("403","图像与当前来源片段不匹配或资料版本已改变");
     }
     private void checkCancelled(){if(Thread.currentThread().isInterrupted())throw new BusinessException("图像读取已取消");}

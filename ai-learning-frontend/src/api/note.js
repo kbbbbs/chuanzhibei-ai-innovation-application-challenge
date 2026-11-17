@@ -4,8 +4,8 @@ export const getLessonNote = (lessonId) => {
   return request.get(`/lessons/${lessonId}/note`)
 }
 
-export const saveLessonNote = (lessonId, data) => {
-  return request.put(`/lessons/${lessonId}/note`, data)
+export const saveLessonNote = (lessonId, data, config = {}) => {
+  return request.put(`/lessons/${lessonId}/note`, data, config)
 }
 
 export const downloadLessonNote = (lessonId) => {

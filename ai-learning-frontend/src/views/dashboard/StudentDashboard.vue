@@ -1,6 +1,6 @@
 <template>
-  <main class="role-dashboard student-dashboard" v-loading="loading">
-    <section class="dashboard-hero student-hero">
+  <div class="role-dashboard student-dashboard" v-loading="loading">
+    <section class="dashboard-hero">
       <div class="hero-copy">
         <p class="eyebrow">{{ today }}</p>
         <h1>学生学习控制台</h1>
@@ -111,7 +111,7 @@
             <div><p class="section-kicker">学习成果</p><h2>成绩概览</h2></div>
             <el-button link type="primary" @click="go('/my-grades')">详情</el-button>
           </div>
-          <div class="primary-metric"><strong>{{ averageScoreText }}</strong><span>已评分考试平均分</span></div>
+          <div class="primary-metric"><strong>{{ averagePercentText }}</strong><span>已评分考试平均得分率</span></div>
           <p class="muted">已提交考试 {{ countText(completedExamCount) }} 场，待教师批改 {{ countText(gradingCount) }} 场。</p>
         </section>
 
@@ -128,14 +128,14 @@
           <el-button class="wide-button" @click="go('/my-work-study')">查看我的申请</el-button>
         </section>
 
-        <section class="panel compact-panel research-panel" @click="go('/paper-search')">
+        <button type="button" class="panel compact-panel research-panel" @click="go('/paper-search')">
           <span class="inline-icon"><el-icon><Search /></el-icon></span>
-          <div><h2>论文检索</h2><p>检索研究资料与原文链接</p></div>
+          <span><strong>论文检索</strong><small>检索研究资料与原文链接</small></span>
           <el-icon><ArrowRight /></el-icon>
-        </section>
+        </button>
       </aside>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup>
@@ -156,6 +156,7 @@ import {
 } from '@element-plus/icons-vue'
 import request from '@/utils/request'
 import { getRecords, normalizeStatus } from '@/utils/apiHelpers'
+import { formatPercent, meanPercent, scorePercent, submissionFullScore } from '@/utils/scoreMetrics'
 import { useUserStore } from '@/store/user'
 import { openAgentAssistant } from '@/utils/agentAssistant'
 import { countText, exactTotal, formatDateTime, safeResponse, todayText } from './dashboardUtils'
@@ -187,15 +188,14 @@ const completedExamCount = computed(() => completedExams.value === null ? null :
 const gradingCount = computed(() => completedExams.value === null
   ? null
   : completedExams.value.filter(item => item.status === 1 || item.status === 3).length)
-const averageScoreText = computed(() => {
+// Exams can have different full scores, so only their share of the real full score is averaged.
+const averagePercentText = computed(() => {
   if (completedExams.value === null) return '—'
-  const scores = completedExams.value
-    .filter(item => item.status === 2)
-    .filter(item => item.totalScore !== null && item.totalScore !== undefined && item.totalScore !== '')
-    .map(item => Number(item.totalScore))
-    .filter(Number.isFinite)
-  if (!scores.length) return '—'
-  return Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length)
+  const percents = completedExams.value
+    .filter(item => item.status === 2 && !item.cheated)
+    .map(item => scorePercent(item.totalScore, submissionFullScore(item)))
+    .filter(percent => percent !== null)
+  return formatPercent(meanPercent(percents))
 })
 
 const stats = computed(() => [

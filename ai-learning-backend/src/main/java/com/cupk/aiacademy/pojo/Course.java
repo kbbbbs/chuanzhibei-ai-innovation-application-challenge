@@ -41,6 +41,12 @@ public class Course {
     private BigDecimal rating;
     private Integer status;
 
+    private String setupStage;
+    private String contentMode;
+    private Long preparationId;
+    private Long workflowVersion;
+    private LocalDateTime setupCompletedAt;
+
     @TableField("created_at")
     private LocalDateTime createdAt;
 

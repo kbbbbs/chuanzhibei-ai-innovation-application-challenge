@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap;
 public class InMemoryAgentPendingActionStore implements AgentPendingActionStore {
     private static final Duration DEFAULT_TTL = Duration.ofMinutes(10);
 
+    private final Map<String, AgentActionExecutionResult> results = new ConcurrentHashMap<>();
+
     private final Map<String, AgentPendingAction> actions = new ConcurrentHashMap<>();
 
     @Override
@@ -38,6 +40,17 @@ public class InMemoryAgentPendingActionStore implements AgentPendingActionStore 
         }
         return Optional.ofNullable(actions.get(actionId.trim()));
     }
+
+    @Override
+    public Optional<AgentActionExecutionResult> lockAndReadResult(String actionId, Integer ownerId) {
+        AgentPendingAction action = actions.get(actionId);
+        if (action != null && !java.util.Objects.equals(action.createdBy(), ownerId))
+            throw new com.cupk.aiacademy.common.BusinessException("不能确认其他用户创建的操作");
+        return Optional.ofNullable(results.get(actionId));
+    }
+
+    @Override
+    public void completed(String actionId, AgentActionExecutionResult result) { results.put(actionId, result); }
 
     @Override
     public void remove(String actionId) {

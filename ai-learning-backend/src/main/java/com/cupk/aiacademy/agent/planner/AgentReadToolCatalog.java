@@ -69,6 +69,12 @@ public class AgentReadToolCatalog {
 
     private AgentReadToolSpec specFor(String name, String description) {
         return switch (name) {
+            case "learning_analysis_report" -> new AgentReadToolSpec(name, description,
+                    List.of(integer("courseId", "课程ID", false, "明确提供课程ID时填写", 1, Integer.MAX_VALUE),
+                            text("courseTitle", "课程名称", false, "课程准确名称，课程ID与名称至少提供一项"),
+                            integer("targetWords", "报告目标字数", false, "300至5000字，默认1000字", 300, 5000),
+                            text("templateId", "模板ID", false, "使用已上传模板的ID，默认default")),
+                    List.of(List.of("courseId", "courseTitle")));
             case "course_category_search" -> new AgentReadToolSpec(name, description,
                     List.of(
                             text("name", "分类名称", false, "按名称筛选；列出全部分类时不填写"),
@@ -163,6 +169,7 @@ public class AgentReadToolCatalog {
 
     private static Map<String, String> descriptions() {
         Map<String, String> values = new LinkedHashMap<>();
+        values.put("learning_analysis_report", "生成指定课程全部教学班的学情分析报告，汇总课程、教学班、作业与考试，支持指定字数和Word模板");
         values.put("course_search", "查询课程名称、教师、难度、简介和可见课程列表");
         values.put("course_category_search", "查询课程分类；query 使用分类名称，列出全部分类时使用星号 *");
         values.put("course_by_category_search", "查询某个课程分类下的课程；query 只填写分类名称");

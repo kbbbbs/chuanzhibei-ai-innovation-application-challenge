@@ -11,8 +11,8 @@ public class RagVisualController {
     private final RagVisualService service;
     private final RagAuthorizationService auth;
     public RagVisualController(RagVisualService service,RagAuthorizationService auth){this.service=service;this.auth=auth;}
-    @GetMapping("/{id}/image") public ResponseEntity<byte[]> image(@PathVariable String id){
-        byte[] image=service.imageForActor(id,auth.currentActor().userId());
+    @GetMapping("/{id}/image") public ResponseEntity<byte[]> image(@PathVariable String id, @RequestParam(required=false) Integer courseId){
+        byte[] image=service.imageForActor(id,auth.currentActor().userId(),courseId);
         return ResponseEntity.ok().contentType(MediaType.IMAGE_PNG).header(HttpHeaders.CACHE_CONTROL,"private, no-store")
                 .header("X-Content-Type-Options","nosniff").body(image);
     }

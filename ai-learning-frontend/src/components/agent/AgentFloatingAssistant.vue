@@ -2,12 +2,12 @@
   <Teleport to="body">
     <transition name="agent-panel">
       <section
-        v-if="userStore.isLoggedIn && panelOpen"
+        v-if="userStore.isLoggedIn && panelOpen && !hideLauncher"
         ref="panelRef"
         class="agent-floating-panel"
         :class="{ 'is-dragging': dragState.kind === 'panel' }"
         :style="panelStyle"
-        aria-label="Agent 侧边助手"
+        aria-label="智能助手"
       >
         <header class="floating-panel-header" title="拖动窗口" @pointerdown="startPanelDrag">
           <div class="floating-panel-title">
@@ -15,7 +15,7 @@
               <el-icon><Cpu /></el-icon>
             </span>
             <div>
-              <strong>Agent 助手</strong>
+              <strong>智能助手</strong>
               <span>{{ permissionLabel }}</span>
             </div>
           </div>
@@ -23,7 +23,7 @@
             text
             circle
             data-agent-no-drag
-            aria-label="关闭 Agent 助手"
+            aria-label="关闭智能助手"
             @pointerdown.stop
             @click="closePanel"
           >
@@ -38,6 +38,7 @@
             :draft-prompt="draftPrompt"
             :draft-version="draftVersion"
             @context-consumed="clearSelectedContext"
+            @expand="closePanel"
           />
         </div>
       </section>
@@ -45,7 +46,7 @@
 
     <el-tooltip
       v-if="userStore.isLoggedIn && !panelOpen && !hideLauncher"
-      content="打开 Agent 助手"
+      content="打开智能助手"
       placement="left"
     >
       <button
@@ -54,25 +55,25 @@
         :class="{ 'is-dragging': dragState.kind === 'launcher' }"
         :style="launcherStyle"
         type="button"
-        aria-label="打开 Agent 助手，拖动可调整位置"
+        aria-label="打开智能助手，拖动可调整位置"
         @pointerdown="startLauncherDrag"
         @click="handleLauncherClick"
       >
         <el-icon><Cpu /></el-icon>
-        <span>Agent</span>
+        <span>助手</span>
         <i v-if="selectedContext" class="context-dot"></i>
       </button>
     </el-tooltip>
 
     <button
-      v-if="selectionAction.visible && userStore.isLoggedIn"
+      v-if="selectionAction.visible && userStore.isLoggedIn && !hideLauncher"
       class="selection-agent-action"
       type="button"
       :style="selectionActionStyle"
       @click="openFromSelection"
     >
       <el-icon><ChatDotRound /></el-icon>
-      <span>用 Agent 提问</span>
+      <span>向助手提问</span>
     </button>
   </Teleport>
 </template>
@@ -118,11 +119,11 @@ const ANCHOR_GAP = 10
 const DEFAULT_LAUNCHER_WIDTH = 104
 const DEFAULT_LAUNCHER_HEIGHT = 48
 
-const hideLauncher = computed(() => Boolean(route.meta?.hideChrome) || route.name === 'AgentChat')
+const hideLauncher = computed(() => Boolean(route.meta?.hideChrome) || ['AgentChat', 'KnowledgeBase'].includes(route.name) || (route.name === 'CourseDetail' && route.query.tab === 'chat'))
 const permissionLabel = computed(() => {
-  if (userStore.isAdmin) return '管理员 · 全部权限'
-  if (userStore.isTeacher) return '教师 · 教学协作权限'
-  return '学生 · 仅对话权限'
+  if (userStore.isAdmin) return '管理查询与操作'
+  if (userStore.isTeacher) return '课程问答与教学操作'
+  return '课程学习与个人查询'
 })
 const selectionActionStyle = computed(() => ({
   left: `${selectionAction.left}px`,
@@ -253,8 +254,8 @@ function launcherSize() {
 function estimatedPanelSize() {
   const viewport = viewportSize()
   return {
-    width: Math.min(Math.max(viewport.width * 0.34, 400), 480, viewport.width - VIEWPORT_GAP * 2),
-    height: Math.min(Math.max(viewport.height * 0.54, 420), 560, viewport.height - VIEWPORT_GAP * 2),
+    width: Math.min(Math.max(viewport.width * 0.46, 600), 720, viewport.width - VIEWPORT_GAP * 2),
+    height: Math.min(viewport.width <= 600 ? 640 : 760, viewport.height - VIEWPORT_GAP * 2),
   }
 }
 
@@ -443,17 +444,17 @@ onBeforeUnmount(() => {
 .agent-floating-panel {
   position: fixed;
   z-index: 2100;
-  width: clamp(400px, 34vw, 480px);
-  height: clamp(420px, 54vh, 560px);
+  width: clamp(600px, 46vw, 720px);
+  height: min(760px, calc(100vh - 24px));
   max-width: calc(100vw - 24px);
   max-height: calc(100vh - 24px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid rgba(148, 163, 184, .32);
-  border-radius: 20px;
-  background: #fff;
-  box-shadow: 0 28px 80px rgba(15, 23, 42, .24), 0 8px 24px rgba(37, 99, 235, .12);
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-xl);
+  background: var(--surface-base);
+  box-shadow: var(--shadow-3);
 }
 
 .floating-panel-header {
@@ -464,7 +465,7 @@ onBeforeUnmount(() => {
   justify-content: space-between;
   gap: 12px;
   color: #fff;
-  background: linear-gradient(135deg, #312e81, #2563eb 58%, #0891b2);
+  background: var(--accent-solid);
   cursor: grab;
   touch-action: none;
   user-select: none;
@@ -499,8 +500,8 @@ onBeforeUnmount(() => {
 }
 
 .floating-panel-title span {
-  color: rgba(255, 255, 255, .76);
-  font-size: 11px;
+  color: rgba(255, 255, 255, .86);
+  font-size: var(--text-xs);
 }
 
 .assistant-mark {
@@ -535,9 +536,9 @@ onBeforeUnmount(() => {
   border: 0;
   border-radius: 24px;
   color: #fff;
-  background: linear-gradient(135deg, #4338ca, #2563eb 62%, #0891b2);
-  box-shadow: 0 14px 30px rgba(37, 99, 235, .32);
-  font-weight: 700;
+  background: var(--accent-solid);
+  box-shadow: var(--shadow-3);
+  font-weight: 650;
   cursor: pointer;
   touch-action: none;
   user-select: none;
@@ -545,8 +546,8 @@ onBeforeUnmount(() => {
 }
 
 .agent-floating-launcher:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 36px rgba(37, 99, 235, .38);
+  background: var(--accent-solid-hover);
+  transform: translateY(-1px);
 }
 
 .agent-floating-launcher.is-dragging {
@@ -575,13 +576,13 @@ onBeforeUnmount(() => {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  border: 1px solid #bfdbfe;
+  border: 1px solid var(--line-accent);
   border-radius: 18px;
-  color: #1d4ed8;
-  background: #fff;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, .2);
-  font-size: 13px;
-  font-weight: 700;
+  color: var(--accent);
+  background: var(--surface-raised);
+  box-shadow: var(--shadow-3);
+  font-size: var(--text-sm);
+  font-weight: 650;
   cursor: pointer;
 }
 
@@ -596,10 +597,10 @@ onBeforeUnmount(() => {
   transform: translateX(28px) scale(.985);
 }
 
-@media (max-width: 900px) {
+@media (max-width: 600px) {
   .agent-floating-panel {
-    width: min(400px, calc(100vw - 24px));
-    height: min(520px, calc(100vh - 24px));
+    width: calc(100vw - 24px);
+    height: min(640px, calc(100vh - 24px));
     border-radius: 16px;
   }
 

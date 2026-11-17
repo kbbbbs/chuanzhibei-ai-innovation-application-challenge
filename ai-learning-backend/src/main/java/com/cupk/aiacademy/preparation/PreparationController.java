@@ -30,8 +30,8 @@ public class PreparationController {
     }
 
     @GetMapping
-    public Result list() {
-        return Result.success(preparationService.list());
+    public Result list(@RequestParam(required = false) Integer courseId) {
+        return Result.success(preparationService.list(courseId));
     }
 
     @GetMapping("/{id}")
@@ -64,8 +64,13 @@ public class PreparationController {
     }
 
     @PostMapping("/{id}/generate-lessons")
-    public Result generateLessons(@PathVariable Long id) {
-        return Result.success(preparationService.startLessons(id), "课时内容生成任务已启动");
+    public Result generateLessons(@PathVariable Long id, @RequestParam(defaultValue = "all") String mode) {
+        return Result.success(preparationService.startLessons(id, mode), "课时内容生成任务已启动");
+    }
+
+    @PostMapping("/{id}/lessons/{lessonKey}/regenerate")
+    public Result regenerateLesson(@PathVariable Long id, @PathVariable String lessonKey) {
+        return Result.success(preparationService.regenerateLesson(id, lessonKey), "课时重写任务已启动");
     }
 
     @PutMapping("/{id}/lessons")
@@ -74,8 +79,23 @@ public class PreparationController {
     }
 
     @PostMapping("/{id}/generate-questions")
-    public Result generateQuestions(@PathVariable Long id) {
-        return Result.success(preparationService.startQuestions(id), "题目生成任务已启动");
+    public Result generateQuestions(@PathVariable Long id, @RequestParam(defaultValue = "all") String mode) {
+        return Result.success(preparationService.startQuestions(id, mode), "题目生成任务已启动");
+    }
+
+    @PostMapping("/{id}/questions/{chapterKey}/regenerate")
+    public Result regenerateQuestions(@PathVariable Long id, @PathVariable String chapterKey) {
+        return Result.success(preparationService.regenerateQuestions(id, chapterKey), "章节题目重写任务已启动");
+    }
+
+    @PostMapping("/{id}/generate-all")
+    public Result generateAll(@PathVariable Long id, @RequestParam(defaultValue = "false") boolean restart) {
+        return Result.success(preparationService.startAll(id, restart), "完整草稿生成任务已启动");
+    }
+
+    @PostMapping("/{id}/ready")
+    public Result markReady(@PathVariable Long id) {
+        return Result.success(preparationService.markReady(id), "备课内容已检查，可以发布");
     }
 
     @PutMapping("/{id}/questions")

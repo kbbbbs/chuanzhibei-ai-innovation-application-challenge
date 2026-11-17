@@ -52,63 +52,6 @@ class K02IngestionServiceTest {
     String value(Map<String,Object> row,String key){return row.get(key).toString();}
     Map<String,Object> doc(String id){return db.queryForMap("SELECT * FROM native_rag_document WHERE id=?",id);}
 
-    @Test void manualReviewCreatesRevisionAndRebuildsSearchWithoutCallingOcr() throws Exception {
-        var uploaded=data(service.submit(base,pdf(true),"review.pdf"));
-        String id=value(uploaded,"documentId");service.runNext("initial");
-        var original=jobs.pages(id,1,1).getFirst();
-        String oldIndex=value(doc(id),"active_index_version");
-        clearInvocations(ocr);
-        data(service.review(id,1,1,1,"Teacher corrected gradient descent."));
-        assertEquals(oldIndex,doc(id).get("active_index_version"));
-        assertEquals("409",service.review(id,1,1,1,"Concurrent edit").getCode());
-        service.runNext("review");
-        var reviewed=jobs.pages(id,1,2).getFirst();
-        assertFalse(reviewed.needsReview());assertEquals("MANUAL",reviewed.method());
-        assertEquals(original.ocrRawText(),reviewed.ocrRawText());
-        assertTrue(reviewed.locationJson().contains("reviewedBy"));
-        assertEquals(original,jobs.pages(id,1,1).getFirst());
-        assertNotEquals(oldIndex,doc(id).get("active_index_version"));
-        assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM native_rag_chunk WHERE index_version=? AND content LIKE '%Teacher corrected%'",Integer.class,doc(id).get("active_index_version")));
-        verify(ocr,never()).recognize(any());
-        assertEquals("409",service.review(id,1,1,1,"Stale edit").getCode());
-        login(2);assertEquals("403",service.review(id,1,1,2,"Unauthorized").getCode());
-    }
-
-    @Test void confirmationAndCorrectionValidatePageAndFormulaBeforeEnqueue() throws Exception {
-        var uploaded=data(service.submit(base,"Source text.".getBytes(StandardCharsets.UTF_8),"review.md"));
-        String id=value(uploaded,"documentId");service.runNext("initial");
-        assertEquals("400",service.review(id,1,1,1," ").getCode());
-        assertEquals("400",service.review(id,1,1,1,"Broken $$x").getCode());
-        assertEquals("404",service.review(id,9,1,1,"Missing page").getCode());
-        data(service.review(id,1,1,1,"Source text."));service.runNext("confirm");
-        assertFalse(jobs.pages(id,1,2).getFirst().needsReview());
-    }
-
-    @Test void manualCorrectionRepairsFailedPageAndPreservesOtherPages() throws Exception {
-        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException("OCR_NOT_CONFIGURED"));
-        var uploaded=data(service.submit(base,pdf(false),"partial-review.pdf"));
-        String id=value(uploaded,"documentId");service.runNext("initial");
-        var original=jobs.pages(id,1,1);
-        assertEquals("FAILED",original.get(1).state());
-        data(service.review(id,2,1,1,"Corrected scanned page."));service.runNext("repair");
-        var reviewed=jobs.pages(id,1,2);
-        assertEquals(original.get(0),reviewed.get(0));assertEquals(original.get(2),reviewed.get(2));
-        assertEquals("READY",doc(id).get("processing_state"));assertFalse(reviewed.get(1).needsReview());
-        assertEquals("TEXT_READY",reviewed.get(1).state());
-        verify(ocr,times(1)).recognize(any());
-    }
-
-    @Test void confirmingAnotherPagePreservesUnrepairedFailures() throws Exception {
-        when(ocr.recognize(any())).thenThrow(new ModelConfigurationException("OCR_NOT_CONFIGURED"));
-        var uploaded=data(service.submit(base,pdf(false),"partial-confirm.pdf"));
-        String id=value(uploaded,"documentId");service.runNext("initial");
-        var first=jobs.pages(id,1,1).getFirst();
-        data(service.review(id,1,1,1,first.chosenText()));service.runNext("confirm");
-        assertEquals("PARTIAL",doc(id).get("processing_state"));
-        assertEquals("FAILED",jobs.pages(id,1,2).get(1).state());
-        verify(ocr,times(1)).recognize(any());
-    }
-
     @Test void mathFontWithoutReadableOperatorsStillRequestsDocumentRecognition() throws Exception {
         byte[] input;
         try(var pdf=new PDDocument();var bytes=new ByteArrayOutputStream()) {
@@ -154,21 +97,35 @@ class K02IngestionServiceTest {
         assertFalse(metadata.path("blocks").get(0).has("bbox"));
         var response=(java.util.List<?>)service.pages(id,1).getData();
         var page=(Map<?,?>)response.getFirst();assertEquals(1,((java.util.List<?>)page.get("formulas")).size());
-        assertEquals(true,page.get("needsReview"));assertEquals("TEXT",page.get("formulaSource"));
+        assertEquals(false,page.get("needsReview"));assertEquals("TEXT",page.get("formulaSource"));
         data(service.retry(id,List.of(1),false));service.runNext("formula-retry");
         new RagSchemaMigrator(db).migrate();
         assertEquals(stored,db.queryForObject("SELECT formula_json FROM native_rag_page WHERE document_id=? AND parse_revision=1",String.class,id));
         assertEquals(2,db.queryForObject("SELECT COUNT(*) FROM native_rag_page WHERE document_id=?",Integer.class,id));
     }
 
-    @Test void invalidFormulaRemainsReviewableButIsExcludedFromRetrieval() throws Exception {
-        String broken="Loss $$\\frac{a}{b";
+    @Test void invalidFormulaKeepsThePageSearchableAndFlagsOnlyTheFormula() throws Exception {
+        String broken="Loss surface notes $$\\frac{a}{b";
         when(ocr.recognize(any())).thenReturn(new OcrResult(broken,broken,null,"ocr-fixture",1,true));
         var uploaded=data(service.submit(base,pdf(true),"formula-scan.pdf"));String id=value(uploaded,"documentId");
         service.runNext("formula-worker");var page=jobs.pages(id,1,1).getFirst();
-        assertEquals("FAILED",page.state());assertEquals("FORMULA_UNCLOSED",page.errorCode());
-        assertEquals(broken,page.ocrRawText());assertEquals(broken,page.ocrText());assertEquals("",page.chosenText());
-        assertNull(page.ocrFingerprint());assertNull(doc(id).get("active_index_version"));
+        assertEquals("OCR_READY",page.state());assertNull(page.errorCode());assertTrue(page.needsReview());
+        assertEquals(broken,page.ocrRawText());assertTrue(page.chosenText().contains("Loss surface notes"));
+        assertTrue(page.formulaJson().contains("FORMULA_UNCLOSED"));
+        assertEquals("READY",doc(id).get("processing_state"));assertNotNull(doc(id).get("active_index_version"));
+        assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM native_rag_chunk WHERE document_id=? AND content LIKE '%Loss surface notes%'",Integer.class,id));
+    }
+
+    @Test void recognizedMathWithoutStructureStaysSearchableWithALocalWarning() throws Exception {
+        String plain="Linear model y = wx + b predicts the label.";
+        when(ocr.recognize(any())).thenReturn(new OcrResult(plain,plain,null,"ocr-fixture",1,true));
+        var uploaded=data(service.submit(base,pdf(true),"plain-math.pdf"));String id=value(uploaded,"documentId");
+        service.runNext("plain-math-worker");var page=jobs.pages(id,1,1).getFirst();
+        assertEquals("OCR_READY",page.state());assertNull(page.errorCode());assertTrue(page.needsReview());
+        assertTrue(page.formulaJson().contains("FORMULA_STRUCTURE_MISSING"));
+        assertEquals("READY",doc(id).get("processing_state"));
+        var listed=(Map<?,?>)((List<?>)service.pages(id,1).getData()).getFirst();
+        assertEquals(List.of("FORMULA_STRUCTURE_MISSING"),listed.get("formulaIssues"));
     }
 
     @Test void uploadReturnsQueuedJobAndTextPositionsBeforeBackgroundProcessing() {
@@ -191,6 +148,8 @@ class K02IngestionServiceTest {
         assertEquals("TEXT_READY",pages.get(0).state());assertEquals("OCR_READY",pages.get(1).state());assertEquals("BLANK",pages.get(2).state());
         assertNull(pages.get(1).confidence());assertTrue(pages.get(1).ocrRawText().contains("<|ref|>"));
         assertFalse(pages.get(1).chosenText().contains("<|ref|>"));
+        // A clean OCR result is usable as-is; review is reserved for located problems.
+        assertTrue(pages.stream().noneMatch(IngestionJobRepository.Page::needsReview));
         assertEquals("READY",doc(document).get("processing_state"));
         assertEquals(0,db.queryForObject("SELECT COUNT(*) FROM native_rag_chunk WHERE page_number=3",Integer.class));
         verify(ocr,times(1)).recognize(argThat(request->request.pageNumber()==2));
@@ -270,6 +229,46 @@ class K02IngestionServiceTest {
         assertEquals(0,db.queryForObject("SELECT COUNT(*) FROM native_rag_chunk WHERE index_version=? AND page_number=3",Integer.class,active));
     }
 
+    @SuppressWarnings("unchecked") List<Map<String,Object>> edits(String document){
+        var result=service.pageEdits(document,null);assertEquals("200",result.getCode(),result.getMsg());return (List<Map<String,Object>>)result.getData();
+    }
+    String editState(String document,int page){
+        return edits(document).stream().filter(edit->Integer.valueOf(page).equals(edit.get("pageNo"))).findFirst().orElseThrow().get("state").toString();
+    }
+
+    @Test void pageEditsSaveWithoutReindexingAndOneUpdateAppliesThemTogether() throws Exception {
+        var uploaded=data(service.submit(base,pdf(false),"edited.pdf"));String document=value(uploaded,"documentId");
+        service.runNext("initial");String firstIndex=doc(document).get("active_index_version").toString();
+        String firstJob=doc(document).get("processing_job_id").toString();
+        assertEquals("200",service.savePageEdits(document,null,List.of(new RagIngestionService.PageEdit(1,"Edited native page about momentum."),
+                new RagIngestionService.PageEdit(2,"Edited scan page about zebra gradients."))).getCode());
+        assertEquals(firstIndex,doc(document).get("active_index_version"));assertEquals(firstJob,doc(document).get("processing_job_id"));
+        assertEquals("SAVED",editState(document,1));assertEquals("SAVED",editState(document,2));
+
+        var applied=data(service.applyPageEdits(document));
+        // Editing stays open while the update runs; later edits wait for the next update.
+        assertEquals("200",service.savePageEdits(document,null,List.of(new RagIngestionService.PageEdit(1,"Second thought on momentum."))).getCode());
+        service.runNext("apply");
+        assertEquals("COMPLETED",jobs.get(value(applied,"jobId")).stage());verify(ocr,times(1)).recognize(any());
+        assertNotEquals(firstIndex,doc(document).get("active_index_version"));assertEquals("READY",doc(document).get("processing_state"));
+        assertEquals(1,db.queryForObject("SELECT COUNT(*) FROM native_rag_chunk WHERE index_version=? AND content LIKE '%zebra%'",Integer.class,doc(document).get("active_index_version")));
+        assertEquals("MANUAL",jobs.pages(document,1,2).get(1).method());
+        assertEquals("ACTIVE",editState(document,2));assertEquals("SAVED",editState(document,1));
+        assertEquals(3,db.queryForObject("SELECT COUNT(*) FROM native_rag_page_edit WHERE document_id=?",Integer.class,document));
+
+        data(service.applyPageEdits(document));service.runNext("apply-again");
+        assertEquals("ACTIVE",editState(document,1));
+        assertEquals("409",service.applyPageEdits(document).getCode());
+    }
+
+    @Test void pageEditsRejectBlankTextUnknownPagesAndOtherUsers() throws Exception {
+        var uploaded=data(service.submit(base,pdf(false),"guarded.pdf"));String document=value(uploaded,"documentId");service.runNext("initial");
+        assertEquals("400",service.savePageEdits(document,null,List.of(new RagIngestionService.PageEdit(1,"  "))).getCode());
+        assertEquals("400",service.savePageEdits(document,null,List.of(new RagIngestionService.PageEdit(9,"text"))).getCode());
+        login(2);assertEquals("403",service.savePageEdits(document,null,List.of(new RagIngestionService.PageEdit(1,"text"))).getCode());
+        assertEquals("403",service.pageEdits(document,null).getCode());
+    }
+
     @Test void selectedRetryWithoutACompletePriorCheckpointRequiresFullReparse() throws Exception {
         var uploaded=data(service.submit(base,pdf(false),"cancelled-before-parsing.pdf"));String document=value(uploaded,"documentId");
         String cancelled=value(uploaded,"jobId");assertEquals("200",service.cancel(cancelled).getCode());
@@ -342,6 +341,34 @@ class K02IngestionServiceTest {
             assertEquals("CANCELLED",jobs.get(value(uploaded,"jobId")).stage());
             assertNull(doc(value(uploaded,"documentId")).get("active_index_version"));
         } finally {executor.shutdownNow();assertTrue(executor.awaitTermination(5,java.util.concurrent.TimeUnit.SECONDS));}
+    }
+
+    @Test void studentsReadOnlyTheExactAuthorizedOriginalPageWithoutDownloadPermission() throws Exception {
+        var uploaded=data(service.submit(base,pdf(false),"course-source.pdf"));
+        String id=value(uploaded,"documentId");
+        db.update("INSERT INTO native_rag_course_grant(id,owner_id,course_id,document_id,document_version,read_excerpt,download_allowed) VALUES(?,1,10,?,1,TRUE,FALSE)",UUID.randomUUID().toString(),id);
+        when(permissions.canReadCourseMaterials(any(),eq(10))).thenReturn(true);
+        login(2);
+        var method=RagIngestionService.class.getMethod("coursePreview",Integer.class,String.class,int.class,int.class);
+        byte[] image=(byte[])method.invoke(service,10,id,1,1);
+        assertTrue(image.length>100);assertEquals((byte)0x89,image[0]);
+        var wrongVersion=assertThrows(java.lang.reflect.InvocationTargetException.class,()->method.invoke(service,10,id,1,2));
+        assertEquals("403",((RagAccessException)wrongVersion.getCause()).code());
+        db.update("UPDATE native_rag_course_grant SET revoked_at=CURRENT_TIMESTAMP");
+        var revoked=assertThrows(java.lang.reflect.InvocationTargetException.class,()->method.invoke(service,10,id,1,1));
+        assertEquals("403",((RagAccessException)revoked.getCause()).code());
+    }
+
+    @Test void membershipRevokedWhileRenderingCannotReturnTheOriginalPage() throws Exception {
+        var uploaded=data(service.submit(base,pdf(false),"course-source.pdf"));
+        String id=value(uploaded,"documentId");
+        db.update("INSERT INTO native_rag_course_grant(id,owner_id,course_id,document_id,document_version,read_excerpt,download_allowed) VALUES(?,1,10,?,1,TRUE,FALSE)",UUID.randomUUID().toString(),id);
+        when(permissions.canReadCourseMaterials(any(),eq(10))).thenReturn(true,false);
+        login(2);
+        var method=RagIngestionService.class.getMethod("coursePreview",Integer.class,String.class,int.class,int.class);
+        var revoked=assertThrows(java.lang.reflect.InvocationTargetException.class,()->method.invoke(service,10,id,1,1));
+        assertEquals("403",((RagAccessException)revoked.getCause()).code());
+        verify(permissions,times(2)).canReadCourseMaterials(any(),eq(10));
     }
 
     static byte[] pdf(boolean scanOnly) throws Exception {

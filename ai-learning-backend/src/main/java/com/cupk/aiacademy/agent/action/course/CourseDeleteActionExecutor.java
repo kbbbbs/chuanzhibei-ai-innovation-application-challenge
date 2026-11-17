@@ -18,6 +18,8 @@ import java.util.Map;
 
 @Component
 public class CourseDeleteActionExecutor implements AgentActionExecutor {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.controller.CourseController courseMaintenance;
     private static final String ACTION_CODE = "course.delete";
 
     private final CourseMapper courseMapper;
@@ -60,10 +62,8 @@ public class CourseDeleteActionExecutor implements AgentActionExecutor {
             throw new BusinessException("只能删除当前登录教师负责的课程");
         }
 
-        int row = courseMapper.deleteById(course.getId());
-        if (row <= 0) {
-            throw new BusinessException("删除课程失败");
-        }
+        var deleted = courseMaintenance.delete(course.getId());
+        if (!"200".equals(deleted.getCode())) throw new BusinessException(deleted.getMsg());
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("courseId", course.getId());

@@ -1,5 +1,5 @@
 <template>
-  <div @mouseup="captureSelection" class="course-learn" :class="{ 'sidebar-collapsed': isLessonSidebarCollapsed }" v-loading="loading">
+  <div class="course-learn" :class="{ 'sidebar-collapsed': isLessonSidebarCollapsed }" v-loading="loading">
     <div v-if="isLessonSidebarCollapsed" class="floating-sidebar-toggle">
       <el-tooltip content="展开课程目录" placement="right">
         <el-button
@@ -10,7 +10,15 @@
         />
       </el-tooltip>
     </div>
-    <el-button v-if="pendingSelection" class="selection-action" type="primary" size="small" @mousedown.prevent @click="explainSelection">解释这段</el-button>
+    <ErrorNotice
+      v-if="loadFailed"
+      class="learn-load-error"
+      title="课程内容未完整加载"
+      message="课程、章节或学习进度读取失败，下方内容和解锁状态可能不准确。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadPage"
+    />
     <el-row :gutter="20" class="study-layout">
       <!-- Chapter & Lesson List -->
       <el-col
@@ -40,14 +48,16 @@
                 <strong>{{ chapter.title }}</strong>
               </template>
 
-              <div v-for="lesson in chapter.lessons" :key="lesson.id"
-                   :class="['lesson-item', { active: currentLesson?.id === lesson.id, locked: isLessonLocked(lesson.id) }]"
-                   :aria-disabled="isLessonLocked(lesson.id)"
-                   @click="selectLesson(lesson)">
+              <button v-for="lesson in chapter.lessons" :key="lesson.id"
+                      type="button"
+                      :class="['lesson-item', { active: currentLesson?.id === lesson.id, locked: isLessonLocked(lesson.id) }]"
+                      :aria-current="currentLesson?.id === lesson.id ? 'true' : undefined"
+                      :aria-disabled="isLessonLocked(lesson.id)"
+                      @click="selectLesson(lesson)">
                 <span>{{ isLessonLocked(lesson.id) ? '战争迷雾 · ' : '' }}{{ lesson.title }}</span>
-                <el-icon v-if="isLessonLocked(lesson.id)" color="#94a3b8"><Lock /></el-icon>
-                <el-icon v-if="isLessonCompleted(lesson.id)" color="#67c23a"><Check /></el-icon>
-              </div>
+                <el-icon v-if="isLessonLocked(lesson.id)" class="lesson-state lesson-state--locked" aria-hidden="true"><Lock /></el-icon>
+                <el-icon v-if="isLessonCompleted(lesson.id)" class="lesson-state lesson-state--done" aria-label="已完成"><Check /></el-icon>
+              </button>
             </el-collapse-item>
           </el-collapse>
         </el-card>
@@ -59,9 +69,10 @@
           <el-card class="lesson-main-card" :data-agent-course-title="course.title || ''">
             <template #header>
               <div class="lesson-header">
-                <span>{{ currentLesson.title }}</span>
+                <h1>{{ currentLesson.title }}</h1>
                 <div class="lesson-header-actions">
                   <el-button size="small" @click="openLearningMap">查看学习地图</el-button>
+                  <el-button size="small" @click="router.push({ path: `/courses/${courseId}`, query: { tab: 'graph' } })">知识图谱</el-button>
                   <el-button v-if="!isLessonCompleted(currentLesson.id)" type="primary" size="small" @click="markComplete">
                     标记完成
                   </el-button>
@@ -113,11 +124,12 @@
             </div>
 
             <div v-else class="lesson-content">
-              <div class="resource-link">
+              <div v-if="currentLesson.resourceUrl" class="resource-link">
                 <el-link :href="resolveResourceUrl(currentLesson.resourceUrl)" target="_blank" type="primary">
                   下载资料
                 </el-link>
               </div>
+              <el-empty v-else description="该课时暂无学习内容" />
             </div>
 
             <div class="lesson-actions">
@@ -134,13 +146,14 @@
           />
         </template>
 
-        <el-empty v-else description="请选择课时开始学习" />
+        <el-empty v-else-if="!loadFailed" description="请选择课时开始学习" />
       </el-col>
 
       <el-col v-if="currentLesson" :span="7" class="study-tools-col">
         <el-tabs v-model="activeToolTab" class="tool-tabs">
           <el-tab-pane label="笔记" name="notes">
             <MarkdownNotePanel
+              :course-id="courseId"
               :key="`note-${currentLesson.id}`"
               :lesson-id="currentLesson.id"
               :lesson-title="currentLesson.title"
@@ -154,9 +167,11 @@
             <LessonQuickChat
               :key="`chat-${currentLesson.id}`"
               :course-id="courseId"
-              :lesson-id="Number(currentLesson.id)"
-              :course-title="course.title"
-              v-model:selected-text="selectedQuote"
+              :lesson-id="currentLesson.id"
+              :lesson-title="currentLesson.title"
+              :note-content="noteContent"
+              :video-summary-md="playback?.summaryMd || ''"
+              :current-video-time="currentVideoTime"
             />
           </el-tab-pane>
         </el-tabs>
@@ -166,7 +181,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue'
+import { ref, computed, watch, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Check, Expand, Fold, Lock } from '@element-plus/icons-vue'
@@ -176,10 +191,13 @@ import LessonQuickChat from '@/components/ai/LessonQuickChat.vue'
 import MarkdownNotePanel from '@/components/notes/MarkdownNotePanel.vue'
 import PlyrVideoPlayer from '@/components/player/PlyrVideoPlayer.vue'
 import LessonPageRenderer from '@/components/learning/LessonPageRenderer.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
 import { getLessonPlayback } from '@/api/videoResource'
 import { getCourseById } from '@/utils/course'
-import { currentUserId, formatLocalDateTime, getRecords } from '@/utils/apiHelpers'
+import { currentUserId, formatLocalDateTime, getRecords, requireSuccess } from '@/utils/apiHelpers'
+import { resolveResourceUrl } from '@/utils/backendUrl'
 import request from '@/utils/request'
+import { assistantPageContext } from '@/composables/useAssistant'
 
 const route = useRoute()
 const router = useRouter()
@@ -188,6 +206,8 @@ const userStore = useUserStore()
 const courseId = computed(() => Number(route.params.courseId))
 const classId = computed(() => Number(route.query.classId))
 const loading = ref(false)
+const loadFailed = ref(false)
+let pageRun = 0
 const playbackLoading = ref(false)
 const isLessonSidebarCollapsed = ref(localStorage.getItem('courseLessonSidebarCollapsed') === 'true')
 
@@ -195,6 +215,13 @@ const course = ref({})
 const chapters = ref([])
 const activeChapters = ref(null)
 const currentLesson = ref(null)
+watch(() => [courseId.value, currentLesson.value?.id, currentLesson.value?.title, course.value?.title], () => {
+  assistantPageContext.courseId = courseId.value
+  assistantPageContext.lessonId = currentLesson.value?.id || null
+  assistantPageContext.courseTitle = course.value?.title || ''
+  assistantPageContext.lessonTitle = currentLesson.value?.title || ''
+}, { immediate: true })
+onBeforeUnmount(() => { Object.assign(assistantPageContext, { courseId: null, lessonId: null, courseTitle: '', lessonTitle: '' }) })
 const playback = ref(null)
 const currentVideoTime = ref(0)
 const noteContent = ref('')
@@ -202,31 +229,8 @@ const completedLessons = ref(new Set())
 const progressByLessonId = ref(new Map())
 const playerRenderVersion = ref(0)
 const activeToolTab = ref('notes')
-const pendingSelection = ref('')
-const selectedQuote = ref('')
-function captureSelection(event) {
-  if (event.target.closest('.selection-action, .quick-chat-card')) return
-  const noteInput = event.target.closest('.note-card textarea, .note-card input')
-  if (noteInput && typeof noteInput.selectionStart === 'number') {
-    pendingSelection.value = noteInput.value.slice(noteInput.selectionStart, noteInput.selectionEnd).trim().slice(0, 1500)
-    return
-  }
-  const selected = window.getSelection()
-  const anchor = selected?.anchorNode?.nodeType === Node.ELEMENT_NODE ? selected.anchorNode : selected?.anchorNode?.parentElement
-  const focus = selected?.focusNode?.nodeType === Node.ELEMENT_NODE ? selected.focusNode : selected?.focusNode?.parentElement
-  const insideLesson = anchor?.closest('.lesson-main-card, .note-card') && focus?.closest('.lesson-main-card, .note-card')
-  pendingSelection.value = insideLesson ? selected.toString().trim().slice(0, 1500) : ''
-}
-function explainSelection() {
-  selectedQuote.value = pendingSelection.value
-  pendingSelection.value = ''
-  activeToolTab.value = 'chat'
-}
-watch(() => currentLesson.value?.id, () => { pendingSelection.value = ''; selectedQuote.value = '' })
 const experience = ref({ overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] })
 let playbackRequestSeq = 0
-
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
 
 const allLessons = computed(() => {
   return chapters.value.flatMap(ch => ch.lessons || [])
@@ -340,42 +344,48 @@ const playbackStatusText = computed(() => {
   return labels[playbackStatus.value] || '暂无可播放地址'
 })
 
-const loadCourse = async () => {
-  try {
-    const res = await getCourseById(courseId.value)
-    if (res.code === '200') {
-      course.value = res.data
-    }
-  } catch {}
+// Lesson locks and completion come from these reads, so a failed one is reported, never assumed.
+const markLoadFailed = (run) => {
+  if (run === pageRun) loadFailed.value = true
 }
 
-const loadChapters = async () => {
+const loadCourse = async (run) => {
   try {
-    const res = await request.get(`/courses/${courseId.value}/chapters`)
-    if (res.code === '200') {
-      chapters.value = res.data
-      for (const chapter of chapters.value) {
-        try {
-          const lessonsRes = await request.get(`/chapters/${chapter.id}/lessons`)
-          if (lessonsRes.code === '200') {
-            chapter.lessons = lessonsRes.data
-          }
-        } catch {
-          chapter.lessons = []
-        }
-      }
-
-      const defaultLesson = findInitialLesson()
-      if (defaultLesson) {
-        const chapter = chapters.value.find(ch => (ch.lessons || []).some(lesson => lesson.id === defaultLesson.id))
-        activeChapters.value = chapter?.id || chapters.value[0].id
-        await selectLesson(defaultLesson)
-      }
-    }
-  } catch {}
+    const res = requireSuccess(await getCourseById(courseId.value))
+    if (run === pageRun) course.value = res.data
+  } catch {
+    markLoadFailed(run)
+  }
 }
 
-const loadProgress = async () => {
+const loadChapters = async (run) => {
+  try {
+    const res = requireSuccess(await request.get(`/courses/${courseId.value}/chapters`))
+    if (run !== pageRun) return
+    chapters.value = res.data
+    for (const chapter of chapters.value) {
+      try {
+        const lessonsRes = requireSuccess(await request.get(`/chapters/${chapter.id}/lessons`))
+        chapter.lessons = lessonsRes.data
+      } catch {
+        chapter.lessons = []
+        markLoadFailed(run)
+      }
+      if (run !== pageRun) return
+    }
+
+    const defaultLesson = findInitialLesson()
+    if (defaultLesson) {
+      const chapter = chapters.value.find(ch => (ch.lessons || []).some(lesson => lesson.id === defaultLesson.id))
+      activeChapters.value = chapter?.id || chapters.value[0].id
+      await selectLesson(defaultLesson)
+    }
+  } catch {
+    markLoadFailed(run)
+  }
+}
+
+const loadProgress = async (run) => {
   if (!Number.isFinite(classId.value) || classId.value <= 0) {
     completedLessons.value = new Set()
     progressByLessonId.value = new Map()
@@ -383,41 +393,41 @@ const loadProgress = async () => {
   }
 
   try {
-    const res = await request.get('/learning-progress', {
+    const res = requireSuccess(await request.get('/learning-progress', {
       params: {
         studentId: currentUserId(userStore),
         classId: classId.value,
         pageSize: 200
       }
-    })
-    if (res.code === '200') {
-      const records = getRecords(res.data)
-      progressByLessonId.value = new Map(records.map(p => [Number(p.lessonId), p]))
-      completedLessons.value = new Set(
-        records
-          .filter(p => Number(p.progress) >= 100)
-          .map(p => Number(p.lessonId))
-      )
-    }
-  } catch {}
+    }))
+    if (run !== pageRun) return
+    const records = getRecords(res.data)
+    progressByLessonId.value = new Map(records.map(p => [Number(p.lessonId), p]))
+    completedLessons.value = new Set(
+      records
+        .filter(p => Number(p.progress) >= 100)
+        .map(p => Number(p.lessonId))
+    )
+  } catch {
+    markLoadFailed(run)
+  }
 }
 
-const loadExperience = async () => {
+const loadExperience = async (run) => {
   try {
-    const res = await request.get(`/courses/${courseId.value}/experience`, { params: { classId: classId.value } })
-    if (res.code === '200') {
-      const data = res.data || {}
-      experience.value = {
-        overview: {},
-        textbook: [],
-        experiments: [],
-        challenges: [],
-        codeLabs: data.codeLabs?.length ? data.codeLabs : (data.codeLab ? [data.codeLab] : []),
-        ...data
-      }
+    const res = requireSuccess(await request.get(`/courses/${courseId.value}/experience`, { params: { classId: classId.value } }))
+    if (run !== pageRun) return
+    const data = res.data || {}
+    experience.value = {
+      overview: {},
+      textbook: [],
+      experiments: [],
+      challenges: [],
+      codeLabs: data.codeLabs?.length ? data.codeLabs : (data.codeLab ? [data.codeLab] : []),
+      ...data
     }
   } catch {
-    experience.value = { overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] }
+    markLoadFailed(run)
   }
 }
 
@@ -518,8 +528,8 @@ const markComplete = async () => {
       progressByLessonId.value = nextProgress
       completedLessons.value = new Set([...completedLessons.value, lessonId])
       ElMessage.success('已标记完成')
-      await loadProgress()
-      await loadExperience()
+      await loadProgress(pageRun)
+      await loadExperience(pageRun)
       nextLesson()
     }
   } catch {}
@@ -546,6 +556,8 @@ const handleVideoTimeUpdate = (seconds) => {
 }
 
 const loadPage = async () => {
+  const run = ++pageRun
+  loadFailed.value = false
   course.value = {}
   chapters.value = []
   activeChapters.value = null
@@ -558,12 +570,14 @@ const loadPage = async () => {
   progressByLessonId.value = new Map()
   activeToolTab.value = 'notes'
   experience.value = { overview: {}, textbook: [], experiments: [], challenges: [], codeLabs: [] }
+  // The instance also sees navigation away from this route; that must load nothing.
+  if (!route.params.courseId) return
   loading.value = true
   try {
-    await Promise.all([loadCourse(), loadProgress(), loadExperience()])
-    await loadChapters()
+    await Promise.all([loadCourse(run), loadProgress(run), loadExperience(run)])
+    if (run === pageRun) await loadChapters(run)
   } finally {
-    loading.value = false
+    if (run === pageRun) loading.value = false
   }
 }
 
@@ -586,17 +600,6 @@ const findInitialLesson = () => {
 
 const isVideoLesson = (lesson) => {
   return ['video_url', 'video_file', 'video_link'].includes(lesson?.resourceType)
-}
-
-const resolveResourceUrl = (url) => {
-  if (!url) return ''
-  if (/^(https?:)?\/\//i.test(url) || /^(data|blob):/i.test(url)) {
-    return url
-  }
-  if (url.startsWith('/')) {
-    return `${apiBaseUrl}${url}`
-  }
-  return url
 }
 
 const isDirectMediaUrl = (url) => {
@@ -627,9 +630,12 @@ watch(
 </script>
 
 <style scoped>
-.selection-action { position:fixed; right:32px; bottom:110px; z-index:100; box-shadow:0 4px 20px #0002; }
 .course-learn {
   position: relative;
+}
+
+.learn-load-error {
+  margin-bottom: var(--space-4);
 }
 
 .study-layout {
@@ -651,8 +657,11 @@ watch(
   grid-template-columns: minmax(0, 1fr) minmax(320px, 360px);
 }
 
-.lesson-sidebar-card {
-  height: 100%;
+.lesson-sidebar-col {
+  position: sticky;
+  top: var(--space-4);
+  max-height: calc(100vh - 96px);
+  overflow-y: auto;
 }
 
 .lesson-main-col,
@@ -711,10 +720,15 @@ watch(
   align-items: center;
   gap: 12px;
   flex-wrap: wrap;
+  color: var(--text-strong);
+  font-weight: 600;
 }
 
-.lesson-header > span {
+.lesson-header h1 {
   min-width: 0;
+  margin: 0;
+  font-size: var(--text-lg);
+  line-height: 1.4;
   overflow-wrap: anywhere;
 }
 
@@ -726,36 +740,54 @@ watch(
 }
 
 .lesson-item {
-  padding: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  color: var(--text-body);
+  background: transparent;
+  border: 0;
   cursor: pointer;
-  border-radius: 4px;
-  margin-bottom: 5px;
+  border-radius: var(--radius-md);
+  margin-bottom: 4px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 8px;
+  font-size: var(--text-sm);
+  line-height: 1.5;
+  text-align: left;
+  transition: background-color .12s var(--ease-standard), color .12s var(--ease-standard);
 }
 
 .lesson-item:hover {
-  background: #f5f5f5;
+  background: var(--surface-hover);
 }
 
 .lesson-item.active {
-  background: #e6f7ff;
-  color: #1890ff;
+  background: var(--surface-accent);
+  color: var(--accent);
+  font-weight: 600;
 }
 
 .lesson-item.locked {
   cursor: not-allowed;
-  color: #94a3b8;
-  background:
-    radial-gradient(circle at 20% 20%, rgba(148, 163, 184, .28), transparent 34%),
-    linear-gradient(135deg, #f8fafc, #eef2f7);
+  color: var(--text-subtle);
+  background: var(--surface-sunken);
 }
 
 .lesson-item.locked:hover {
-  background:
-    radial-gradient(circle at 20% 20%, rgba(148, 163, 184, .34), transparent 34%),
-    linear-gradient(135deg, #f8fafc, #eef2f7);
+  background: var(--surface-sunken);
+}
+
+.lesson-state {
+  flex: 0 0 auto;
+}
+
+.lesson-state--locked {
+  color: var(--text-subtle);
+}
+
+.lesson-state--done {
+  color: var(--positive);
 }
 
 .lesson-content {
@@ -780,12 +812,10 @@ watch(
 
 .external-video-card {
   min-height: 220px;
-  padding: 24px;
-  border-radius: 18px;
-  border: 1px solid #dbeafe;
-  background:
-    radial-gradient(circle at 12% 20%, rgba(37, 99, 235, .18), transparent 26%),
-    linear-gradient(135deg, #eff6ff, #fff);
+  padding: var(--space-6);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--line-accent);
+  background: var(--surface-accent);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -794,24 +824,17 @@ watch(
 
 .external-video-card h3 {
   margin: 0 0 8px;
-  color: #172033;
 }
 
 .external-video-card p {
   margin: 0;
-  color: #475569;
+  color: var(--text-body);
   line-height: 1.8;
 }
 
 .lesson-content :deep(.plyr) {
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   overflow: hidden;
-}
-
-.empty-media {
-  padding: 50px;
-  text-align: center;
-  color: #999;
 }
 
 .resource-link {
@@ -823,6 +846,8 @@ watch(
   margin-top: 20px;
   display: flex;
   justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 @media (max-width: 1350px) {
@@ -846,6 +871,11 @@ watch(
 @media (max-width: 900px) {
   .study-layout {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .lesson-sidebar-col {
+    position: static;
+    max-height: 320px;
   }
 
   .study-tools-col {

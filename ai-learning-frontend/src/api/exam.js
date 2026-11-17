@@ -125,6 +125,16 @@ export const extractQuestions = (formData) => {
   })
 }
 
+// Background generation tasks: the draft is stored on the server and survives closing the page.
+const GEN_TASKS = '/api/questions/generation-tasks'
+export const startQuestionGenerationTask = (data) => request.post(GEN_TASKS, data)
+export const listQuestionGenerationTasks = (knowledgeBaseId) => request.get(GEN_TASKS, { params: { knowledgeBaseId }, silentError: true })
+export const getQuestionGenerationTask = (id, config = {}) => request.get(`${GEN_TASKS}/${id}`, config)
+export const updateQuestionGenerationDrafts = (id, questions, config = {}) => request.put(`${GEN_TASKS}/${id}/questions`, questions, config)
+export const resumeQuestionGenerationTask = (id) => request.post(`${GEN_TASKS}/${id}/resume`)
+export const saveQuestionGenerationTask = (id) => request.post(`${GEN_TASKS}/${id}/save`)
+export const discardQuestionGenerationTask = (id) => request.post(`${GEN_TASKS}/${id}/discard`)
+
 export const generateQuestionsFromKnowledgeBase = (data) => {
   return request.post('/api/questions/generate-from-kb', data, { timeout: 210000 })
 }

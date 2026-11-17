@@ -275,9 +275,6 @@ public class VideoResourceService {
     private boolean canAccessLesson(Lesson lesson) {
         AuthUtils.LoginUser user = permissionService.currentUser();
         Course course = getCourseByLesson(lesson);
-        if (permissionService.isAdmin(user)) {
-            return true;
-        }
         if (permissionService.isTeacher(user) && Objects.equals(course.getTeacherId(), user.getUserId())) {
             return true;
         }

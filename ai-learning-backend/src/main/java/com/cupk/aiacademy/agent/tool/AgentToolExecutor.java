@@ -16,6 +16,10 @@ import java.util.Optional;
 
 @Service
 public class AgentToolExecutor {
+    private static final java.util.Set<String> COURSE_SCOPED_READ_TOOLS = java.util.Set.of(
+            "course_search", "course_category_search", "course_by_category_search", "chapter_search",
+            "lesson_search", "course_structure_search", "course_resource_search", "teaching_class_search",
+            "homework_search", "learning_progress", "learning_plan", "course_stats", "learning_analysis_report");
     private final Map<String, AgentTool> toolsByName;
 
     public AgentToolExecutor(List<AgentTool> tools) {
@@ -68,15 +72,34 @@ public class AgentToolExecutor {
         if (tool == null || tool.declaredOperationType() != com.cupk.aiacademy.agent.tool.api.AgentToolOperationType.READ) {
             return Optional.empty();
         }
+        if (com.cupk.aiacademy.agent.tool.support.AgentToolScope.courseId() != null
+                && !COURSE_SCOPED_READ_TOOLS.contains(tool.name())) {
+            return Optional.of(AgentToolResult.read(tool.name(), "此查询需要在通用对话中发起，当前对话固定在本课程。", Map.of()));
+        }
         Map<String, Object> safeArguments = arguments == null ? Map.of() : new LinkedHashMap<>(arguments);
         String query = textArgument(safeArguments, "query");
         int maxItems = intArgument(safeArguments, "maxItems", 10);
-        AgentToolResult result = tool.execute(new AgentToolContext(
+        AgentToolResult result = executeObserved(tool, new AgentToolContext(
                 query,
                 Math.max(1, Math.min(50, maxItems)),
                 safeArguments
         ));
         return result == null ? Optional.empty() : Optional.of(result.withToolName(tool.name()));
+    }
+
+    private AgentToolResult executeObserved(AgentTool tool, AgentToolContext context) {
+        com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit("TOOL_VALIDATING", tool.name());
+        com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit("TOOL_RUNNING", tool.name());
+        try {
+            var result = tool.execute(context);
+            com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit(
+                    result != null && result.success() ? "TOOL_SUCCEEDED" : "TOOL_FAILED", tool.name(),
+                    result != null && result.success() ? com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.summary(result.data()) : null);
+            return result;
+        } catch (RuntimeException failure) {
+            com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit("TOOL_FAILED", tool.name());
+            throw failure;
+        }
     }
 
     private String textArgument(Map<String, Object> arguments, String name) {
@@ -100,7 +123,10 @@ public class AgentToolExecutor {
         List<AgentToolResult> results = new ArrayList<>();
         AgentToolContext toolContext = new AgentToolContext(query, maxItems);
         for (AgentTool tool : tools) {
-            AgentToolResult result = tool.execute(toolContext);
+            if (com.cupk.aiacademy.agent.tool.support.AgentToolScope.courseId() != null
+                    && tool.declaredOperationType() == com.cupk.aiacademy.agent.tool.api.AgentToolOperationType.READ
+                    && !COURSE_SCOPED_READ_TOOLS.contains(tool.name())) continue;
+            AgentToolResult result = executeObserved(tool, toolContext);
             if (result != null) {
                 results.add(result.withToolName(tool.name()));
             }

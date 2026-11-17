@@ -65,10 +65,10 @@ onBeforeUnmount(release)
 </script>
 
 <style scoped>
-.visual-evidence { border-top: 1px solid #e2e8f0; margin-top: 20px; padding-top: 4px; }.visual-evidence h4 { margin: 12px 0 8px; }
-.visual-note,.visual-warning { font-size: 12px; line-height: 1.7; }.visual-note { color: #64748b; }.visual-warning { color: #a16207; }
-.visual-card { margin: 12px 0; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 0; }
-figcaption { font-size: 13px; line-height: 1.7; overflow-wrap: anywhere; }.visual-caption { margin: 4px 0; white-space: pre-wrap; }
+.visual-evidence { border-top: 1px solid var(--line-subtle); margin-top: 20px; padding-top: 4px; }.visual-evidence h4 { margin: 12px 0 8px; }
+.visual-note,.visual-warning { font-size: var(--text-xs); line-height: 1.7; }.visual-note { color: var(--text-subtle); }.visual-warning { color: var(--caution); }
+.visual-card { margin: 12px 0; padding: 12px; background: var(--surface-canvas); border: 1px solid var(--line-subtle); border-radius: var(--radius-md); min-width: 0; }
+figcaption { font-size: var(--text-sm); line-height: 1.7; overflow-wrap: anywhere; }.visual-caption { margin: 4px 0; white-space: pre-wrap; }
 .visual-card img { display: block; max-width: 100%; max-height: 520px; margin: 10px auto; object-fit: contain; background: white; }
-details { margin-top: 10px; }summary { color: #475569; cursor: pointer; font-size: 12px; }pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: 13px; line-height: 1.7; }
+details { margin-top: 10px; }summary { color: var(--text-body); cursor: pointer; font-size: var(--text-xs); }pre { white-space: pre-wrap; overflow-wrap: anywhere; font: inherit; font-size: var(--text-sm); line-height: 1.7; }
 </style>

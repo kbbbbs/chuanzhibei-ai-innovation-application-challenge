@@ -20,6 +20,8 @@ import java.util.Map;
 
 @Component
 public class ClassStudentRemoveActionExecutor implements AgentActionExecutor {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.controller.ClassStudentController classMaintenance;
     private static final String ACTION_CODE = "class.student.remove";
 
     private final ClassStudentMapper classStudentMapper;
@@ -64,7 +66,9 @@ public class ClassStudentRemoveActionExecutor implements AgentActionExecutor {
         TeachingClass teachingClass = requireManagedClass(classStudent.getClassId(), user);
 
         Map<String, Object> oldValues = snapshot(classStudent, teachingClass);
-        int row = classStudentMapper.deleteById(classStudent.getId());
+        var saved = classMaintenance.delete(classStudent.getId());
+        if (!"200".equals(saved.getCode())) throw new BusinessException(saved.getMsg());
+        int row = 1;
         if (row <= 0) {
             throw new BusinessException("移除班级学生失败");
         }
@@ -117,8 +121,8 @@ public class ClassStudentRemoveActionExecutor implements AgentActionExecutor {
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以移除班级学生");
+        if (user == null || !isAdmin(user)) {
+            throw new BusinessException("只有管理员可以移除班级学生");
         }
     }
 

@@ -34,10 +34,20 @@ public class GlobalExceptionHandler {
         return badRequest("请求参数错误", request);
     }
 
+    /** A message written on the constraint already names the field in words; built-in templates do not. */
+    private static boolean customMessage(org.springframework.validation.FieldError error) {
+        try {
+            var violation = error.unwrap(jakarta.validation.ConstraintViolation.class);
+            return violation.getMessageTemplate() != null && !violation.getMessageTemplate().startsWith("{");
+        } catch (IllegalArgumentException notAViolation) {
+            return false;
+        }
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<Object> handleValidation(MethodArgumentNotValidException e, HttpServletRequest request) {
         String message = e.getBindingResult().getFieldErrors().stream()
-                .map(error -> error.getField() + " " + error.getDefaultMessage())
+                .map(error -> customMessage(error) ? error.getDefaultMessage() : error.getField() + " " + error.getDefaultMessage())
                 .collect(Collectors.joining(", "));
         return badRequest(message.isEmpty() ? "请求参数错误" : message, request);
     }

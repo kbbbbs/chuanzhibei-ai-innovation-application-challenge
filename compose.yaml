@@ -1,0 +1,43 @@
+name: eduloop
+
+services:
+  web:
+    build:
+      context: .
+      dockerfile: ai-learning-frontend/Dockerfile
+    ports:
+      - "${WEB_BIND_ADDRESS:-127.0.0.1}:${WEB_PORT:-18080}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+    networks:
+      - application
+
+  backend:
+    build:
+      context: .
+      dockerfile: ai-learning-backend/Dockerfile
+    environment:
+      AI_INSTALLATION_DIR: /app/config/private
+      UPLOAD_DIR: /app/data/uploads
+      RAG_STORAGE_PATH: /app/data/rag
+      INSTALLATION_MODEL_HTTP_ALLOWLIST: "${INSTALLATION_MODEL_HTTP_ALLOWLIST:-}"
+      AI_INSTALLATION_TRUSTED_ORIGINS: "${AI_INSTALLATION_TRUSTED_ORIGINS:-http://localhost:18080,http://127.0.0.1:18080}"
+    volumes:
+      - private-config:/app/config/private
+      - uploads:/app/data/uploads
+      - rag:/app/data/rag
+    restart: unless-stopped
+    stop_grace_period: 45s
+    networks:
+      - application
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  application:
+
+volumes:
+  private-config:
+  uploads:
+  rag:

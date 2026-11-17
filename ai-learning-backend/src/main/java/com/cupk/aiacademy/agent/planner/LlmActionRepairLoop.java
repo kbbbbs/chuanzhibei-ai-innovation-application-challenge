@@ -74,6 +74,7 @@ public class LlmActionRepairLoop {
             attempts = attempt + 1;
             try {
                 long startedNanos = System.nanoTime();
+                com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit("MODEL_REQUEST", null);
                 decision = callModel(prompt);
                 log.info("Agent planner stage completed: stage=write_parameters, model={}, attempt={}, promptChars={}, elapsedMs={}",
                         properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));

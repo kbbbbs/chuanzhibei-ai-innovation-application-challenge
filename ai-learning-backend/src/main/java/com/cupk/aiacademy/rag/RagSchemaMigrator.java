@@ -19,6 +19,12 @@ public class RagSchemaMigrator {
     public RagSchemaMigrator(JdbcTemplate jdbc) { this.jdbc=jdbc; }
 
     public void migrate() {
+        // Keep the migration connection open across metadata and DDL, including file-backed H2.
+        var connectionScope = new TransactionTemplate(new DataSourceTransactionManager(jdbc.getDataSource()));
+        connectionScope.executeWithoutResult(status -> migrateSchema());
+    }
+
+    private void migrateSchema() {
         applyResource("V001__rag_foundation.sql");
         var transaction=new TransactionTemplate(new DataSourceTransactionManager(jdbc.getDataSource()));
         transaction.executeWithoutResult(status->{
@@ -41,13 +47,25 @@ public class RagSchemaMigrator {
         applyResource("V005__rag_parser_revision.sql");
         if(jdbc.queryForObject("SELECT COUNT(*) FROM native_rag_schema_migration WHERE version='K03_005'",Integer.class)==0)
             jdbc.update("INSERT INTO native_rag_schema_migration(version) VALUES('K03_005')");
-        applyResource("V006__chapter_graph.sql");
-        if(jdbc.queryForObject("SELECT COUNT(*) FROM native_rag_schema_migration WHERE version='K09_006'",Integer.class)==0)
-            jdbc.update("INSERT INTO native_rag_schema_migration(version) VALUES('K09_006')");
+        applyResource("V006__rag_page_edits.sql");
+        if(jdbc.queryForObject("SELECT COUNT(*) FROM native_rag_schema_migration WHERE version='EDIT_006'",Integer.class)==0)
+            jdbc.update("INSERT INTO native_rag_schema_migration(version) VALUES('EDIT_006')");
+        applyResource("V007__course_document_identity.sql");
+        migrateDocumentIdentity();
     }
 
-    public void migrateChatSessions() {
-        applyResource("V007__course_rag_chat.sql");
+    private void migrateDocumentIdentity() {
+        boolean mysql = Boolean.TRUE.equals(jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Boolean>) connection ->
+                "MySQL".equalsIgnoreCase(connection.getMetaData().getDatabaseProductName())));
+        if (mysql) {
+            var old = jdbc.queryForList("SHOW INDEX FROM native_rag_document WHERE Key_name='native_rag_document_hash'");
+            if (!old.isEmpty()) jdbc.execute("ALTER TABLE native_rag_document DROP INDEX native_rag_document_hash");
+            var replacement = jdbc.queryForList("SHOW INDEX FROM native_rag_document WHERE Key_name='native_rag_document_identity'");
+            if (replacement.isEmpty()) jdbc.execute("ALTER TABLE native_rag_document ADD CONSTRAINT native_rag_document_identity UNIQUE(kb_id,sha256,migration_identity)");
+        } else {
+            jdbc.execute("ALTER TABLE native_rag_document DROP CONSTRAINT IF EXISTS native_rag_document_hash");
+            jdbc.execute("CREATE UNIQUE INDEX IF NOT EXISTS native_rag_document_identity ON native_rag_document(kb_id,sha256,migration_identity)");
+        }
     }
 
     private void applyResource(String name) {
@@ -65,7 +83,7 @@ public class RagSchemaMigrator {
     }
 
     private boolean hasColumn(String table,String column) {
-        try(var connection=jdbc.getDataSource().getConnection()) {
+        return Boolean.TRUE.equals(jdbc.execute((org.springframework.jdbc.core.ConnectionCallback<Boolean>) connection -> {
             var metadata=connection.getMetaData();
             String escape=metadata.getSearchStringEscape();
             String tablePattern=metadata.storesUpperCaseIdentifiers()?table.toUpperCase(java.util.Locale.ROOT):table;
@@ -75,7 +93,7 @@ public class RagSchemaMigrator {
                 while(rows.next()) if(table.equalsIgnoreCase(rows.getString("TABLE_NAME")) && column.equalsIgnoreCase(rows.getString("COLUMN_NAME"))) return true;
             }
             return false;
-        } catch(SQLException ignored) { throw new IllegalStateException("Native RAG migration metadata unavailable"); }
+        }));
     }
 
     private void backfill(Map<String,Object> document) {

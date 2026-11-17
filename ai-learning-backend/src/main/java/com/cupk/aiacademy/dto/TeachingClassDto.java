@@ -30,6 +30,17 @@ public class TeachingClassDto {
     @Min(0)
     private Integer status;
 
+    public static TeachingClassDto fromEntity(TeachingClass teachingClass) {
+        TeachingClassDto dto = new TeachingClassDto();
+        dto.setCourseId(teachingClass.getCourseId());
+        dto.setTeacherId(teachingClass.getTeacherId());
+        dto.setClassName(teachingClass.getClassName());
+        dto.setSemester(teachingClass.getSemester());
+        dto.setDescription(teachingClass.getDescription());
+        dto.setStatus(teachingClass.getStatus());
+        return dto;
+    }
+
     public TeachingClass toEntity() {
         TeachingClass teachingClass = new TeachingClass();
         teachingClass.setCourseId(courseId);

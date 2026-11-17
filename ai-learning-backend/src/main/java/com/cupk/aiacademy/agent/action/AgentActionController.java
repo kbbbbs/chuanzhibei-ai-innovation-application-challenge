@@ -40,7 +40,7 @@ public class AgentActionController {
         return Result.success(pendingActionQueryService.getCurrentUserPending(actionId));
     }
 
-    @PostMapping("/api/agent/actions/confirm")
+    @PostMapping({"/api/agent/actions/confirm", "/api/assistant/actions/confirm"})
     public Result confirm(@Valid @RequestBody AgentActionConfirmRequest request,
                           HttpServletRequest servletRequest) {
         Result forbidden = requireOperationRole();

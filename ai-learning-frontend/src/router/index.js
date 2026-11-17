@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useUserStore } from '@/store/user'
 import { ElMessage } from 'element-plus'
+import { getSetupStatus } from '@/api/configuration'
 
 export const layoutChildren = [
   // Login gateway shown at the site root
@@ -35,6 +36,12 @@ export const layoutChildren = [
     meta: { title: '课程管理', icon: 'Reading', roles: ['admin', 'teacher'], requiresAuth: true }
   },
   {
+    path: 'courses/drafts',
+    name: 'CourseDrafts',
+    component: () => import('../views/teacher/CourseList.vue'),
+    meta: { title: '草稿箱', hidden: true, roles: ['teacher'], requiresAuth: true }
+  },
+  {
     path: 'courses/create',
     name: 'CourseCreate',
     component: () => import('../views/teacher/CourseForm.vue'),
@@ -44,7 +51,7 @@ export const layoutChildren = [
     path: 'courses/:id',
     name: 'CourseDetail',
     component: () => import('../views/teacher/CourseDetail.vue'),
-    meta: { title: '课程详情', hidden: true, roles: ['admin', 'teacher', 'student'], requiresAuth: true }
+    meta: { title: '课程详情', hidden: true, roles: ['teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'teaching-classes',
@@ -115,22 +122,19 @@ export const layoutChildren = [
   {
     path: 'resource-gen',
     name: 'IntelligentResourceGen',
-    component: () => import('../views/teacher/IntelligentResourceGen.vue'),
-    meta: { title: '智能资源生成', icon: 'Lightning', roles: ['admin', 'teacher'], requiresAuth: true }
+    component: () => import('../views/teacher/PreparationCourseEntry.vue'),
+    meta: { title: '课程智能备课', hidden: true, icon: 'Lightning', roles: ['admin', 'teacher'], requiresAuth: true }
   },
   {
     path: 'teacher-knowledge-base',
     name: 'TeacherKnowledgeBase',
-    component: () => import('../views/teacher/TeacherKnowledgeBase.vue'),
-    meta: { title: '知识库管理', icon: 'Collection', roles: ['admin', 'teacher'], requiresAuth: true }
+    component: () => import('../views/teacher/LegacyKnowledgeAssignment.vue'),
+    meta: { title: '资料归属整理', hidden: true, icon: 'Collection', roles: ['admin', 'teacher'], requiresAuth: true }
   },
   {
     path: 'agent-chat',
     name: 'AgentChat',
-    redirect: to => ({
-      path: '/console',
-      query: { ...to.query, openAgent: '1' }
-    }),
+    redirect: to => ({ path: '/knowledge-base', query: to.query }),
     meta: { title: 'Agent 助手', icon: 'Cpu', roles: ['admin', 'teacher', 'student'], requiresAuth: true, hidden: true, fullWidth: true }
   },
   {
@@ -211,19 +215,13 @@ export const layoutChildren = [
     path: 'paper-search',
     name: 'PaperSearch',
     component: () => import('../views/student/PaperSearch.vue'),
-    meta: { title: '论文查询', icon: 'Search', roles: ['admin', 'teacher', 'student'] }
+    meta: { title: '论文查询', icon: 'Search', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'knowledge-base',
     name: 'KnowledgeBase',
     component: () => import('../views/student/KnowledgeBase.vue'),
     meta: { title: '智能学伴', icon: 'Reading', roles: ['admin', 'teacher', 'student'], requiresAuth: true }
-  },
-  {
-    path: 'chapter-knowledge-graph',
-    name: 'ChapterKnowledgeGraph',
-    component: () => import('../views/student/ChapterKnowledgeGraph.vue'),
-    meta: { title: '章节知识图谱', icon: 'Share', fullWidth: true, roles: ['admin', 'teacher', 'student'], requiresAuth: true }
   },
   {
     path: 'knowledge-graph',
@@ -245,6 +243,18 @@ export const layoutChildren = [
   },
 
   // Admin routes
+  {
+    path: 'settings/assistants',
+    name: 'AssistantSettings',
+    component: () => import('../views/admin/AssistantSettings.vue'),
+    meta: { title: '助手设置', icon: 'Cpu', roles: ['admin'], requiresAuth: true }
+  },
+  {
+    path: 'settings/models',
+    name: 'ModelSettings',
+    component: () => import('../views/admin/ModelSettings.vue'),
+    meta: { title: '模型设置', icon: 'Cpu', roles: ['admin'], requiresAuth: true }
+  },
   {
     path: 'users',
     name: 'UserManage',
@@ -290,13 +300,6 @@ export const layoutChildren = [
 ]
 
 const routes = [
-  // Local-only preview of the curated chapter; never bypasses the production route's login boundary.
-  ...(import.meta.env.DEV ? [{
-    path: '/chapter-knowledge-graph-preview',
-    name: 'ChapterKnowledgeGraphPreview',
-    component: () => import('../views/student/ChapterKnowledgeGraphDemo.vue'),
-    meta: { title: '章节图谱预览', noAuth: true, chapterGraphPreview: true }
-  }] : []),
   {
     path: '/login',
     name: 'Login',
@@ -308,6 +311,18 @@ const routes = [
     name: 'Register',
     component: () => import('../views/Register.vue'),
     meta: { noAuth: true }
+  },
+  {
+    path: '/setup',
+    name: 'Setup',
+    component: () => import('../views/setup/SetupWizard.vue'),
+    meta: { title: '安装 EduLoop', noAuth: true }
+  },
+  {
+    path: '/setup/recovery',
+    name: 'SetupRecovery',
+    component: () => import('../views/setup/SetupWizard.vue'),
+    meta: { title: '恢复配置', noAuth: true }
   },
   {
     path: '/',
@@ -323,7 +338,7 @@ const routes = [
 ]
 
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
 
@@ -345,6 +360,10 @@ router.beforeEach((to, from, next) => {
     return next({ path: '/login', query: { redirect: to.fullPath } })
   }
 
+  if (userStore.isAdmin && (['CourseDetail', 'CourseDrafts', 'CourseLearn', 'LearningMap'].includes(to.name) || (to.name === 'CourseCreate' && !(Number(to.query.id) > 0)))) {
+    return next({ name: 'CourseList' })
+  }
+
   // Check role permission
   if (requiresAuth && !canAccess(to, userStore)) {
     ElMessage.error('无权限访问此页面')
@@ -352,6 +371,31 @@ router.beforeEach((to, from, next) => {
   }
 
   next()
+})
+
+// Pages that follow lifecycle state themselves and must not be redirected away from it.
+const LIFECYCLE_AWARE_ROUTES = new Set(['Setup', 'SetupRecovery', 'ModelSettings'])
+const LIFECYCLE_PENDING_STATES = new Set(['UNINITIALIZED', 'CONFIGURING', 'PENDING_RESTART', 'RECOVERY_REQUIRED'])
+let lifecycleChecked = false
+
+// Setup state is backend-owned. An unreachable status endpoint never blocks normal pages:
+// the backend still enforces every route, and the check runs once per page load.
+async function redirectWhenLifecycleRequires() {
+  try {
+    const status = await getSetupStatus({ timeout: 5000 })
+    if (!LIFECYCLE_PENDING_STATES.has(status?.state)) return
+    if (LIFECYCLE_AWARE_ROUTES.has(router.currentRoute.value.name)) return
+    await router.replace({ name: status.state === 'RECOVERY_REQUIRED' ? 'SetupRecovery' : 'Setup' })
+  } catch {
+    // Keep the requested page.
+  }
+}
+
+router.afterEach(to => {
+  document.title = to.meta?.title ? `${to.meta.title} · EduLoop 智教云环` : 'EduLoop 智教云环'
+  if (lifecycleChecked) return
+  lifecycleChecked = true
+  void redirectWhenLifecycleRequires()
 })
 
 export default router

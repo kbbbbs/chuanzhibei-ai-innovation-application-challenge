@@ -1,0 +1,25 @@
+{
+  "preparedAt": "2026-11-17T11:08:30.122192+00:00",
+  "sourceProject": "ai-learning-github-latest",
+  "sourceBranch": "codex/course-workflow",
+  "sourceHead": "22c3a640f4d2f34ad207506ed0922ea476fb0b5b",
+  "includesWorkingTreeChanges": true,
+  "sourceCopySnapshotAt": "2026-11-17T10:58:24.612051+00:00",
+  "configurationAddendumAt": "2026-11-17T11:03:26.613433+00:00",
+  "sourceFileCount": 1034,
+  "sourceRawManifestSha256": "30ed9837aea88805ff8c5f75018cc09dae43a34361e6460f1dfaba4eaaeef279",
+  "replacesOldWorkingCopyForCurrentReview": true,
+  "runtime": {
+    "frontend": "http://127.0.0.1:24679",
+    "backend": "http://127.0.0.1:8082"
+  },
+  "verificationScope": "71 class/publication-related tests and real latest UI verification using one short synthetic document. Historical 20-question retrieval measurements retain their original source version.",
+  "frozenBackendPackage": "PASS",
+  "frozenFrontendBuild": "PASS",
+  "frozenRelatedTests": {
+    "tests": 71,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  }
+}

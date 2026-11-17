@@ -1,66 +1,56 @@
 <template>
-  <div class="recommendation-page">
-    <section class="page-header">
-      <div>
-        <h2>纯打分推荐</h2>
-        <p class="subtitle">{{ summaryText }}</p>
-      </div>
-      <div class="header-actions">
-        <el-tag effect="plain" type="success">规则分</el-tag>
+  <div class="recommendation-page workspace-page">
+    <PageHeader eyebrow="AI 学伴" title="智能推荐" :description="summaryText">
+      <template #actions>
+        <StatusBadge label="规则打分，非模型生成" tone="positive" />
         <el-button type="primary" :loading="loading" @click="loadRecommendations">
           <el-icon class="el-icon--left"><Refresh /></el-icon>
           刷新
         </el-button>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
-    <section class="filter-bar">
-      <el-radio-group v-model="recommendType" @change="loadRecommendations">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="推荐未加载"
+      message="推荐服务暂时不可用，请稍后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadRecommendations"
+    />
+
+    <section class="filter-panel filter-row" aria-label="筛选推荐">
+      <el-radio-group v-model="recommendType" aria-label="推荐类型" @change="loadRecommendations">
         <el-radio-button label="all">全部</el-radio-button>
         <el-radio-button label="course">课程</el-radio-button>
         <el-radio-button label="lesson">课时</el-radio-button>
         <el-radio-button label="exercise">练习</el-radio-button>
         <el-radio-button label="paper">论文</el-radio-button>
       </el-radio-group>
-      <div class="profile-tags">
+      <div v-if="profileTags.length" class="profile-tags" aria-label="学习画像">
         <el-tag v-for="tag in profileTags" :key="tag" effect="plain">{{ tag }}</el-tag>
       </div>
     </section>
 
-    <section class="score-overview">
-      <div class="score-panel primary-score">
-        <span class="panel-label">平均推荐分</span>
-        <strong>{{ scoreStats.average }}</strong>
-        <small>{{ scoreStats.total }} 项候选</small>
-      </div>
-      <div class="score-panel">
-        <span class="panel-label">最高推荐</span>
-        <strong>{{ scoreStats.topScore }}</strong>
-        <small>{{ scoreStats.topTitle }}</small>
-      </div>
-      <div class="score-panel">
-        <span class="panel-label">高优先级</span>
-        <strong>{{ scoreStats.highCount }}</strong>
-        <small>80 分及以上</small>
-      </div>
-      <div class="score-panel">
-        <span class="panel-label">排序方式</span>
-        <strong>分数</strong>
-        <small>高分优先</small>
-      </div>
+    <section class="metric-grid" aria-label="推荐概览">
+      <div class="metric-tile"><span>平均推荐分</span><strong>{{ scoreStats.average }}</strong><small>{{ scoreStats.total }} 项候选</small></div>
+      <div class="metric-tile"><span>最高推荐</span><strong>{{ scoreStats.topScore }}</strong><small class="tile-truncate">{{ scoreStats.topTitle }}</small></div>
+      <div class="metric-tile"><span>高优先级</span><strong>{{ scoreStats.highCount }}</strong><small>80 分及以上</small></div>
+      <div class="metric-tile"><span>排序方式</span><strong>分数</strong><small>高分优先</small></div>
     </section>
 
-    <section class="metric-row">
+    <section class="metric-row" aria-label="按类型查看">
       <button
         v-for="metric in metrics"
         :key="metric.type"
         type="button"
         class="metric-card"
         :class="{ active: recommendType === metric.type }"
+        :aria-pressed="recommendType === metric.type"
         @click="selectType(metric.type)"
       >
         <span class="metric-icon" :class="metric.tone">
-          <el-icon><component :is="metric.icon" /></el-icon>
+          <el-icon aria-hidden="true"><component :is="metric.icon" /></el-icon>
         </span>
         <span>
           <strong>{{ metric.count }}</strong>
@@ -70,22 +60,24 @@
     </section>
 
     <div v-loading="loading" class="recommendation-content">
-      <el-empty v-if="!loading && items.length === 0" description="暂无推荐结果" />
+      <div v-if="!loading && items.length === 0 && !loadFailed" class="empty-panel">
+        <AppEmpty description="暂无推荐结果" />
+      </div>
 
-      <section v-for="section in visibleSections" :key="section.type" class="rec-section">
-        <div class="section-header">
+      <section v-for="section in visibleSections" :key="section.type" class="rec-section" :aria-label="section.title">
+        <div class="section-head">
           <div>
-            <h3>{{ section.title }}</h3>
+            <h2>{{ section.title }}</h2>
             <p>{{ section.description }}</p>
           </div>
-          <el-tag effect="plain">{{ section.items.length }} 项</el-tag>
+          <StatusBadge :label="`${section.items.length} 项`" />
         </div>
 
         <div class="rec-grid">
           <article v-for="item in section.items" :key="item.id" class="rec-card">
             <div class="rec-card-top">
               <span class="item-icon" :class="section.tone">
-                <el-icon><component :is="section.icon" /></el-icon>
+                <el-icon aria-hidden="true"><component :is="section.icon" /></el-icon>
               </span>
               <div class="score-stack">
                 <div class="score-pill" :class="scoreLevel(item.score).className">{{ formatScore(item.score) }}</div>
@@ -94,8 +86,7 @@
             </div>
 
             <div class="rec-copy">
-              <el-tag size="small" effect="plain">{{ section.title }}</el-tag>
-              <h4>{{ item.title }}</h4>
+              <h3>{{ item.title }}</h3>
               <p class="subtitle-line">{{ item.subtitle || fallbackSubtitle(section.type) }}</p>
               <p class="description">{{ item.description || item.reason }}</p>
             </div>
@@ -143,13 +134,21 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
 import { Collection, Document, Edit, Reading, Refresh } from '@element-plus/icons-vue'
+import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
 import { getMyRecommendations } from '@/api/recommendation'
+import { requireSuccess } from '@/utils/apiHelpers'
 
 const router = useRouter()
 const recommendType = ref('all')
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  items.value = []
+  counts.value = {}
+})
 const items = ref([])
 const counts = ref({})
 const summary = ref('')
@@ -190,7 +189,7 @@ const metrics = computed(() => [
   { type: 'paper', label: '论文', count: counts.value.paper || 0, icon: Document, tone: 'tone-cyan' }
 ])
 
-const summaryText = computed(() => summary.value || '正在根据你的课程、进度和成绩生成推荐。')
+const summaryText = computed(() => summary.value || '根据你的课程、进度和成绩，按规则分排序生成推荐。')
 
 const scoreStats = computed(() => {
   const list = items.value
@@ -233,29 +232,19 @@ const visibleSections = computed(() => {
     .filter(section => section.items.length > 0)
 })
 
-async function loadRecommendations() {
-  loading.value = true
-  try {
-    const res = await getMyRecommendations({
+function loadRecommendations() {
+  return guarded(async (isCurrent) => {
+    const res = requireSuccess(await getMyRecommendations({
       type: recommendType.value,
       limit: 24
-    })
-    if (res.code === '200' && res.data) {
-      items.value = Array.isArray(res.data.items) ? res.data.items : []
-      counts.value = res.data.counts || {}
-      summary.value = res.data.summary || ''
-      profileTags.value = Array.isArray(res.data.profileTags) ? res.data.profileTags : []
-    } else {
-      items.value = []
-      counts.value = {}
-    }
-  } catch {
-    items.value = []
-    counts.value = {}
-    ElMessage.error('推荐加载失败')
-  } finally {
-    loading.value = false
-  }
+    }))
+    if (!isCurrent()) return
+    const data = res.data || {}
+    items.value = Array.isArray(data.items) ? data.items : []
+    counts.value = data.counts || {}
+    summary.value = data.summary || ''
+    profileTags.value = Array.isArray(data.profileTags) ? data.profileTags : []
+  })
 }
 
 function selectType(type) {
@@ -317,391 +306,242 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.recommendation-page {
-  max-width: 1180px;
-  margin: 0 auto;
-}
-
-.page-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 20px;
-  margin-bottom: 20px;
-}
-
-.page-header h2 {
-  margin: 0 0 8px;
-  font-size: 1.75rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  letter-spacing: 0;
-}
-
-.subtitle {
-  margin: 0;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex: 0 0 auto;
-}
-
-.filter-bar {
+.filter-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 16px;
-  padding: 14px 16px;
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  box-shadow: var(--card-shadow);
-  margin-bottom: 16px;
-}
-
-.score-overview {
-  display: grid;
-  grid-template-columns: 1.25fr 1.5fr 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.score-panel {
-  min-height: 92px;
-  padding: 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: white;
-  box-shadow: var(--card-shadow);
-}
-
-.primary-score {
-  border-color: rgba(37, 99, 235, 0.28);
-  background: linear-gradient(180deg, #FFFFFF 0%, #EFF6FF 100%);
-}
-
-.panel-label {
-  display: block;
-  color: var(--text-secondary);
-  font-size: 0.82rem;
-  margin-bottom: 8px;
-}
-
-.score-panel strong {
-  display: block;
-  color: var(--text-primary);
-  font-size: 1.7rem;
-  line-height: 1;
-}
-
-.score-panel small {
-  display: block;
-  margin-top: 8px;
-  color: var(--text-secondary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .profile-tags {
   display: flex;
   flex-wrap: wrap;
-  justify-content: flex-end;
-  gap: 8px;
+  gap: var(--space-2);
+}
+
+.tile-truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .metric-row {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: var(--space-3);
 }
 
 .metric-card {
-  min-height: 78px;
-  border: 1px solid var(--border-color);
-  background: white;
-  border-radius: 8px;
-  padding: 14px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-3);
+  color: inherit;
   text-align: left;
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
   cursor: pointer;
-  box-shadow: var(--card-shadow);
-  transition: border-color 0.2s ease, transform 0.2s ease;
+  transition: border-color .15s var(--ease-standard), background-color .15s var(--ease-standard);
 }
 
-.metric-card:hover,
+.metric-card:hover {
+  background: var(--surface-hover);
+}
+
 .metric-card.active {
-  border-color: var(--primary-color);
-  transform: translateY(-2px);
+  background: var(--surface-accent);
+  border-color: var(--line-accent);
 }
 
 .metric-icon,
 .item-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
+  flex: 0 0 auto;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--radius-md);
 }
 
 .metric-card strong {
   display: block;
-  font-size: 1.35rem;
-  color: var(--text-primary);
-  line-height: 1;
+  color: var(--text-strong);
+  font-size: var(--text-xl);
+  font-weight: 650;
+  line-height: 1.2;
 }
 
 .metric-card small {
   display: block;
-  margin-top: 6px;
-  color: var(--text-secondary);
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
 }
 
 .recommendation-content {
-  min-height: 360px;
-}
-
-.rec-section {
-  margin-bottom: 28px;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-
-.section-header h3 {
-  margin: 0 0 4px;
-  font-size: 1.15rem;
-  color: var(--text-primary);
-  letter-spacing: 0;
-}
-
-.section-header p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.92rem;
+  display: grid;
+  gap: var(--space-6);
+  min-height: 240px;
 }
 
 .rec-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr));
+  gap: var(--space-3);
 }
 
 .rec-card {
-  min-height: 306px;
   display: flex;
   flex-direction: column;
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 16px;
-  box-shadow: var(--card-shadow);
+  gap: var(--space-3);
+  min-width: 0;
+  padding: var(--space-4);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .rec-card-top {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 14px;
-}
-
-.score-pill {
-  min-width: 52px;
-  text-align: center;
-  padding: 4px 8px;
-  border-radius: 999px;
-  background: #F8FAFC;
-  color: var(--text-secondary);
-  font-size: 0.8rem;
-  font-weight: 600;
 }
 
 .score-stack {
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 4px;
+  gap: 2px;
 }
 
 .score-stack small {
-  color: var(--text-secondary);
-  font-size: 0.74rem;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
 }
 
-.score-strong {
-  background: #ECFDF5;
-  color: #047857;
+.score-pill {
+  min-width: 52px;
+  padding: 2px var(--space-2);
+  color: var(--neutral);
+  text-align: center;
+  background: var(--neutral-surface);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
+  font-weight: 650;
 }
 
-.score-good {
-  background: #EFF6FF;
-  color: #1D4ED8;
-}
+.score-strong { color: var(--positive); background: var(--positive-surface); }
+.score-good { color: var(--accent); background: var(--surface-accent); }
+.score-normal { color: var(--caution); background: var(--caution-surface); }
+.score-low { color: var(--neutral); background: var(--neutral-surface); }
 
-.score-normal {
-  background: #FFFBEB;
-  color: #B45309;
-}
-
-.score-low {
-  background: #F1F5F9;
-  color: #64748B;
-}
-
-.rec-copy h4 {
-  min-height: 48px;
-  margin: 10px 0 6px;
-  color: var(--text-primary);
-  font-size: 1rem;
+.rec-copy h3 {
+  margin: 0 0 var(--space-1);
+  font-size: var(--text-lg);
   line-height: 1.45;
-  letter-spacing: 0;
+  overflow-wrap: anywhere;
 }
 
 .subtitle-line {
-  margin: 0 0 8px;
-  color: var(--text-secondary);
-  font-size: 0.86rem;
+  margin: 0 0 var(--space-1);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
 }
 
 .description {
-  min-height: 42px;
   margin: 0;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  line-height: 1.55;
+  color: var(--text-body);
+  font-size: var(--text-sm);
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .score-bar {
   height: 6px;
-  margin-top: 14px;
   overflow: hidden;
-  border-radius: 999px;
-  background: #E2E8F0;
+  background: var(--surface-sunken);
+  border-radius: var(--radius-pill);
 }
 
 .score-bar span {
   display: block;
   height: 100%;
+  background: var(--accent);
   border-radius: inherit;
-  background: linear-gradient(90deg, #2563EB 0%, #059669 100%);
 }
 
 .reason-box {
-  margin-top: 14px;
-  padding: 10px 12px;
-  border-radius: 8px;
-  background: #F8FAFC;
-  color: var(--text-primary);
-  font-size: 0.88rem;
+  padding: var(--space-2) var(--space-3);
+  color: var(--text-body);
+  background: var(--surface-canvas);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
   line-height: 1.55;
 }
 
 .reason-box span {
   display: block;
-  margin-bottom: 4px;
-  color: var(--text-secondary);
-  font-size: 0.78rem;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
 }
 
 .reason-box p {
-  margin: 0;
+  margin: 2px 0 0;
+  overflow-wrap: anywhere;
 }
 
-.factor-list {
+.factor-list,
+.meta-row {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
+  gap: var(--space-1);
 }
 
 .factor-chip {
-  padding: 5px 8px;
-  border: 1px solid #E2E8F0;
-  border-radius: 999px;
-  color: var(--text-secondary);
-  font-size: 0.78rem;
-  line-height: 1;
-  background: white;
+  padding: 2px var(--space-2);
+  color: var(--text-subtle);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
 }
 
 .factor-chip b {
-  margin-right: 4px;
-  color: var(--text-primary);
+  margin-right: var(--space-1);
+  color: var(--text-strong);
   font-weight: 600;
 }
 
-.meta-row {
-  min-height: 24px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-top: 12px;
-}
-
 .meta-row span {
-  padding: 3px 8px;
-  border-radius: 999px;
-  background: #F1F5F9;
-  color: var(--text-secondary);
-  font-size: 0.78rem;
+  padding: 2px var(--space-2);
+  color: var(--text-subtle);
+  background: var(--surface-sunken);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-xs);
 }
 
 .card-actions {
   margin-top: auto;
-  padding-top: 16px;
 }
 
-.tone-blue { background: #EFF6FF; color: #2563EB; }
-.tone-green { background: #ECFDF5; color: #059669; }
-.tone-amber { background: #FFFBEB; color: #D97706; }
-.tone-cyan { background: #ECFEFF; color: #0891B2; }
-.tone-slate { background: #F1F5F9; color: #475569; }
+.tone-blue { color: var(--accent); background: var(--surface-accent); }
+.tone-green { color: var(--positive); background: var(--positive-surface); }
+.tone-amber { color: var(--caution); background: var(--caution-surface); }
+.tone-cyan { color: var(--accent); background: var(--surface-accent-strong); }
+.tone-slate { color: var(--neutral); background: var(--neutral-surface); }
 
 @media (max-width: 960px) {
-  .page-header,
-  .filter-bar {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .profile-tags {
-    justify-content: flex-start;
-  }
-
   .metric-row {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .score-overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(3, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 560px) {
-  .metric-row,
-  .score-overview,
-  .rec-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
+  .metric-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 </style>

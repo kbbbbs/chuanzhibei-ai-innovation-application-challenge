@@ -21,7 +21,7 @@
         <el-slider v-model="learningRate" :min="0.01" :max="1.2" :step="0.01" />
         <svg viewBox="0 0 420 180" class="curve-svg" role="img" aria-label="梯度下降曲线实验">
           <polyline :points="curvePoints" fill="none" stroke="#94a3b8" stroke-width="2" />
-          <polyline :points="descentPoints" fill="none" stroke="#2563eb" stroke-width="3" />
+          <polyline :points="descentPoints" fill="none" stroke="var(--accent)" stroke-width="3" />
           <circle v-for="p in descentDots" :key="p" :cx="p.split(',')[0]" :cy="p.split(',')[1]" r="4" fill="#f59e0b" />
         </svg>
       </div>
@@ -278,45 +278,45 @@ function mazeOrder(mode) {
 
 <style scoped>
 .card-header, .lab-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.experiment-block { border: 1px solid #e2e8f0; border-radius: 16px; padding: 14px; margin-bottom: 14px; background: #fff; }
+.experiment-block { border: 1px solid var(--line-subtle); border-radius: 16px; padding: 14px; margin-bottom: 14px; background: var(--surface-base); }
 .experiment-block h3 { margin: 0 0 8px; }
-.experiment-block p { color: #64748b; line-height: 1.7; }
-.curve-svg { width: 100%; height: 190px; border-radius: 14px; background: #f8fafc; }
-.class-board { position: relative; height: 170px; border-radius: 16px; background: linear-gradient(90deg, rgba(248,113,113,.16), rgba(96,165,250,.16)); overflow: hidden; border: 1px solid #e2e8f0; }
+.experiment-block p { color: var(--text-subtle); line-height: 1.7; }
+.curve-svg { width: 100%; height: 190px; border-radius: 14px; background: var(--surface-canvas); }
+.class-board { position: relative; height: 170px; border-radius: 16px; background: linear-gradient(90deg, rgba(248,113,113,.16), rgba(96,165,250,.16)); overflow: hidden; border: 1px solid var(--line-subtle); }
 .point { position: absolute; width: 16px; height: 16px; margin: -8px 0 0 -8px; border-radius: 50%; border: 2px solid #fff; box-shadow: 0 2px 8px rgba(15,23,42,.25); }
 .point.red { background: #ef4444; }
-.point.blue { background: #2563eb; }
-.boundary-line { position: absolute; top: 0; bottom: 0; width: 3px; background: #0f172a; }
+.point.blue { background: var(--accent); }
+.boundary-line { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--text-strong); }
 .counter-lab { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .counter-lab strong { font-size: 28px; min-width: 44px; text-align: center; }
 .pipeline-lab { display: grid; gap: 14px; }
-.pipeline-lab label { display: grid; gap: 8px; color: #475569; font-weight: 700; }
+.pipeline-lab label { display: grid; gap: 8px; color: var(--text-body); font-weight: 700; }
 .pipeline-steps { display: grid; grid-template-columns: 1fr auto 1fr auto 1fr auto 1fr; gap: 8px; align-items: stretch; }
-.pipeline-step { display: grid; gap: 6px; padding: 12px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; }
-.pipeline-step span { color: #64748b; font-size: 12px; }
-.pipeline-step strong { color: #172033; word-break: break-word; }
-.pipeline-step.accent { background: #ecfdf5; border-color: #bbf7d0; }
-.pipeline-arrow { display: grid; place-items: center; color: #2563eb; font-weight: 900; }
+.pipeline-step { display: grid; gap: 6px; padding: 12px; border-radius: 14px; background: var(--surface-canvas); border: 1px solid var(--line-subtle); }
+.pipeline-step span { color: var(--text-subtle); font-size: 12px; }
+.pipeline-step strong { color: var(--text-strong); word-break: break-word; }
+.pipeline-step.accent { background: var(--positive-surface); border-color: var(--positive-line); }
+.pipeline-arrow { display: grid; place-items: center; color: var(--accent); font-weight: 900; }
 .table-pair { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.mini-table, .join-result { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: #f8fafc; border: 1px solid #e2e8f0; }
-.mini-table strong, .join-result strong { color: #172033; }
-.mini-table span, .join-row { padding: 8px; border-radius: 10px; background: #fff; color: #475569; }
-.join-result { margin-top: 10px; background: #eff6ff; border-color: #dbeafe; }
+.mini-table, .join-result { display: grid; gap: 8px; padding: 12px; border-radius: 14px; background: var(--surface-canvas); border: 1px solid var(--line-subtle); }
+.mini-table strong, .join-result strong { color: var(--text-strong); }
+.mini-table span, .join-row { padding: 8px; border-radius: 10px; background: var(--surface-base); color: var(--text-body); }
+.join-result { margin-top: 10px; background: var(--surface-accent); border-color: var(--line-accent); }
 .structure-lab { display: grid; gap: 12px; }
 .structure-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-.structure-track { display: flex; gap: 10px; min-height: 70px; align-items: center; padding: 12px; border-radius: 16px; background: linear-gradient(90deg, #eff6ff, #fff7ed); border: 1px solid #dbeafe; overflow-x: auto; }
-.structure-cell { min-width: 48px; height: 48px; border-radius: 14px; display: grid; place-items: center; background: #2563eb; color: white; font-weight: 900; box-shadow: 0 8px 18px rgba(37,99,235,.2); }
+.structure-track { display: flex; gap: 10px; min-height: 70px; align-items: center; padding: 12px; border-radius: var(--radius-lg); background: var(--surface-accent); border: 1px solid var(--line-accent); overflow-x: auto; }
+.structure-cell { min-width: 48px; height: 48px; border-radius: var(--radius-md); display: grid; place-items: center; background: var(--accent-solid); color: #fff; font-weight: 700; }
 .maze-lab { display: grid; gap: 12px; }
 .maze-grid { display: grid; grid-template-columns: repeat(5, 42px); gap: 6px; }
-.maze-cell { width: 42px; height: 42px; display: grid; place-items: center; border-radius: 10px; background: #f1f5f9; color: #475569; font-size: 12px; font-weight: 800; }
-.maze-cell.wall { background: #0f172a; color: transparent; }
-.maze-cell.visited { background: #bfdbfe; color: #1e3a8a; }
-.maze-cell.start { background: #22c55e; color: #fff; }
-.maze-cell.goal { background: #f59e0b; color: #fff; }
+.maze-cell { width: 42px; height: 42px; display: grid; place-items: center; border-radius: var(--radius-md); background: var(--surface-sunken); color: var(--text-body); font-size: 12px; font-weight: 700; }
+.maze-cell.wall { background: var(--text-strong); color: transparent; }
+.maze-cell.visited { background: var(--surface-accent-strong); color: var(--accent); }
+.maze-cell.start { background: #0d7350; color: #fff; }
+.maze-cell.goal { background: #8a5300; color: #fff; }
 .card-lab { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
-.pair-card, .challenge-card { border: 1px solid #dbeafe; background: #eff6ff; border-radius: 12px; padding: 12px; line-height: 1.6; }
+.pair-card, .challenge-card { border: 1px solid var(--line-accent); background: var(--surface-accent); border-radius: 12px; padding: 12px; line-height: 1.6; }
 .challenge-list { display: grid; gap: 10px; }
-.challenge-card p { margin: 8px 0; color: #475569; }
+.challenge-card p { margin: 8px 0; color: var(--text-body); }
 @media (max-width: 860px) {
   .pipeline-steps, .table-pair { grid-template-columns: 1fr; }
   .pipeline-arrow { transform: rotate(90deg); }

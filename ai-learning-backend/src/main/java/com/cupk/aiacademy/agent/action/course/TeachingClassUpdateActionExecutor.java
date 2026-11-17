@@ -4,6 +4,9 @@ import com.cupk.aiacademy.agent.action.AgentActionExecutionContext;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionResult;
 import com.cupk.aiacademy.agent.action.AgentActionExecutor;
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.controller.TeachingClassController;
+import com.cupk.aiacademy.dto.TeachingClassDto;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
@@ -18,6 +21,8 @@ import java.util.Map;
 
 @Component
 public class TeachingClassUpdateActionExecutor implements AgentActionExecutor {
+    private final TeachingClassController classMaintenance;
+
     private static final String ACTION_CODE = "teaching.class.update";
 
     private final TeachingClassMapper teachingClassMapper;
@@ -26,7 +31,8 @@ public class TeachingClassUpdateActionExecutor implements AgentActionExecutor {
 
     public TeachingClassUpdateActionExecutor(TeachingClassMapper teachingClassMapper,
                                              CourseMapper courseMapper,
-                                             UserMapper userMapper) {
+                                             UserMapper userMapper, TeachingClassController classMaintenance) {
+        this.classMaintenance = classMaintenance;
         this.teachingClassMapper = teachingClassMapper;
         this.courseMapper = courseMapper;
         this.userMapper = userMapper;
@@ -45,7 +51,7 @@ public class TeachingClassUpdateActionExecutor implements AgentActionExecutor {
     @Override
     public AgentActionExecutionResult execute(AgentActionExecutionContext context) {
         AuthUtils.LoginUser user = context.user();
-        requireTeacherOrAdmin(user);
+        requireAdmin(user);
 
         Map<String, Object> parameters = context.parameters();
         Integer classId = requiredInteger(parameters, "classId", "class_id", "teachingClassId", "id");
@@ -59,16 +65,17 @@ public class TeachingClassUpdateActionExecutor implements AgentActionExecutor {
         }
 
         Map<String, Object> oldValues = snapshot(teachingClass);
+        TeachingClass edited = new TeachingClass();
+        org.springframework.beans.BeanUtils.copyProperties(teachingClass, edited);
+        teachingClass = edited;
         boolean changed = applyUpdates(teachingClass, parameters, user);
         if (!changed) {
             throw new BusinessException("至少需要提供一个可修改的教学班字段");
         }
 
         teachingClass.setUpdateTime(LocalDateTime.now());
-        int row = teachingClassMapper.updateById(teachingClass);
-        if (row <= 0) {
-            throw new BusinessException("修改教学班失败");
-        }
+        Result saved = classMaintenance.update(classId, TeachingClassDto.fromEntity(teachingClass));
+        if (!"200".equals(saved.getCode())) throw new BusinessException(saved.getMsg());
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("classId", teachingClass.getId());
@@ -143,9 +150,9 @@ public class TeachingClassUpdateActionExecutor implements AgentActionExecutor {
         return values;
     }
 
-    private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以修改教学班");
+    private void requireAdmin(AuthUtils.LoginUser user) {
+        if (!isAdmin(user)) {
+            throw new BusinessException("只有管理员可以修改教学班");
         }
     }
 

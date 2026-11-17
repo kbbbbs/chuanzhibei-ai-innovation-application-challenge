@@ -24,6 +24,8 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
                     .addPathPatterns("/**")
                     .excludePathPatterns(
                             "/operation-logs/**",
+                            "/api/setup/**",
+                            "/api/admin/settings/**",
                             "/uploads/**",
                             "/media/**",
                             "/api/weknora/local-file/**",

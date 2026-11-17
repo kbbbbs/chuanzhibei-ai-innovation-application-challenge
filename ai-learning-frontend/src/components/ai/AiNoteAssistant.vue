@@ -1,272 +1,174 @@
 <template>
-  <div class="ai-note-assistant">
-    <div class="assistant-toolbar">
-      <div class="assistant-title">
-        <el-icon><Cpu /></el-icon>
-        <span>AI 笔记助手</span>
-      </div>
-      <div class="assistant-controls">
-        <el-select
-          v-model="selectedKbId"
-          size="small"
-          class="kb-select"
-          placeholder="知识库"
-          :disabled="!canUseAssistant"
-          @change="handleKbChange"
-        >
-          <el-option v-for="kb in knowledgeBases" :key="kb.id" :label="kb.name" :value="kb.id" />
-        </el-select>
-        <el-button size="small" :icon="RefreshRight" title="新对话" :disabled="!selectedKbId" @click="handleNewSession" />
-      </div>
+  <section class="ai-note-assistant">
+    <strong>笔记助手</strong>
+    <div class="note-ai-actions">
+      <el-button
+        v-for="task in tasks"
+        :key="task.type"
+        size="small"
+        :disabled="!state.ready || Boolean(state.requestId)"
+        @click="run(task)"
+        >{{ task.label }}</el-button
+      >
+      <el-button
+        v-if="state.requestId"
+        size="small"
+        @click="assistant.cancel(state)"
+        >停止生成</el-button
+      >
     </div>
-
-    <div class="quick-actions">
-      <el-button v-if="loading" size="small" @click="cancel">停止生成</el-button>
-      <el-button size="small" :icon="Document" :disabled="!canSend" :loading="loading && activeTask === 'summarize_note'" @click="runTask('summarize_note')">
-        总结
-      </el-button>
-      <el-button size="small" :icon="Search" :disabled="!canSend" :loading="loading && activeTask === 'explain_selection'" @click="runTask('explain_selection')">
-        解释
-      </el-button>
-      <el-button v-if="hasVideo" size="small" :icon="Tickets" :disabled="!canSend" :loading="loading && activeTask === 'outline_from_video'" @click="runTask('outline_from_video')">
-        提纲
-      </el-button>
-      <el-button size="small" :icon="EditPen" :disabled="!canSend" :loading="loading && activeTask === 'quiz_from_note'" @click="runTask('quiz_from_note')">
-        练习题
-      </el-button>
+    <p v-if="state.generating" role="status">
+      正在处理，可切换到课时快问查看进度
+    </p>
+    <el-alert
+      v-if="state.error"
+      :title="state.error"
+      type="error"
+      :closable="false"
+      ><el-button v-if="state.canRetry" @click="assistant.retry(state)"
+        >重试</el-button
+      ></el-alert
+    >
+    <div v-if="result" class="note-ai-result">
+      <template v-if="result.sections?.length">
+        <section v-for="(section, index) in result.sections" :key="index">
+          <strong>{{ assistantSectionLabel(section.type) }}</strong>
+          <div v-html="renderMarkdown(section.content || '')" />
+        </section>
+      </template>
+      <div v-else v-html="renderMarkdown(result.content || '')" />
+      <RagCitations :course-id="courseId" :citations="result.citations || []" />
+      <el-button
+        size="small"
+        :disabled="appendedId === result.id"
+        @click="append"
+        >{{
+          appendedId === result.id ? '已追加到笔记' : '追加到笔记'
+        }}</el-button
+      >
     </div>
-
-    <p v-if="loading">{{ progress || '正在处理资料…' }}</p>
-    <el-alert v-if="error && !loading" :title="String(error)" type="error" :closable="false" />
-    <p v-if="lastMessage?.status === 'cancelled'">已停止生成，回答未完成。</p>
-    <div v-if="lastAnswer" class="assistant-result">
-      <div class="result-content" v-html="renderMarkdown(lastAnswer)"></div>
-      <RagCitations :citations="lastMessage?.citations || []" />
-      <RagAnswerStatus :status="lastMessage?.status" :warning="lastMessage?.warning" />
-      <div class="result-actions">
-        <el-button size="small" :icon="Plus" @click="appendResult">追加到笔记</el-button>
-      </div>
-    </div>
-  </div>
+  </section>
 </template>
-
 <script setup>
-import { computed, onMounted, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { Cpu, Document, EditPen, Plus, RefreshRight, Search, Tickets } from '@element-plus/icons-vue'
-import { useUserStore } from '@/store/user'
-import { useNativeRag } from '@/composables/useNativeRag'
+import { computed, ref, watch } from 'vue'
+import { useAssistant, assistantSectionLabel } from '@/composables/useAssistant'
 import RagCitations from '@/components/knowledge/RagCitations.vue'
-import RagAnswerStatus from '@/components/knowledge/RagAnswerStatus.vue'
 import { renderMarkdown } from '@/utils/markdown'
-import { buildLessonAiPrompt } from '@/utils/lessonAiPrompt'
-
 const props = defineProps({
-  lessonTitle: {
-    type: String,
-    default: ''
-  },
-  noteContent: {
-    type: String,
-    default: ''
-  },
-  videoSummaryMd: {
-    type: String,
-    default: ''
-  },
-  currentVideoTime: {
-    type: Number,
-    default: 0
-  },
-  hasVideo: {
-    type: Boolean,
-    default: false
-  }
+  courseId: Number,
+  lessonId: Number,
+  lessonTitle: String,
+  noteContent: String,
+  videoSummaryMd: String,
+  currentVideoTime: Number,
+  hasVideo: Boolean,
 })
-
 const emit = defineEmits(['append-result'])
-
-const userStore = useUserStore()
-const {
-  messages,
-  loading,
-  knowledgeBases,
-  currentSessionId,
-  loadKnowledgeBases,
-  createNewSession,
-  progress,
-  error,
-  cancel,
-  sendMessage
-} = useNativeRag()
-
-const selectedKbId = ref('')
-const lastAnswer = ref('')
-const activeTask = ref('')
-const lastMessage = computed(() => [...messages.value].reverse().find(message => message.role === 'assistant'))
-
-const canUseAssistant = computed(() => userStore.isLoggedIn)
-const canSend = computed(() => canUseAssistant.value && Boolean(selectedKbId.value) && !loading.value)
-
-onMounted(async () => {
-  if (!canUseAssistant.value) return
-  const list = await loadKnowledgeBases()
-  if (list.length > 0) {
-    selectedKbId.value = list[0].id
-    await createNewSession(selectedKbId.value, '课时笔记 AI')
-  }
-})
-
-const handleKbChange = async (kbId) => {
-  lastAnswer.value = ''
-  await createNewSession(kbId, '课时笔记 AI')
-}
-
-const handleNewSession = async () => {
-  if (!selectedKbId.value) return
-  lastAnswer.value = ''
-  await createNewSession(selectedKbId.value, '课时笔记 AI')
-}
-
-const runTask = async (task) => {
-  if (!canUseAssistant.value) {
-    ElMessage.warning('请先登录后使用 AI')
-    return
-  }
-  if (!selectedKbId.value) {
-    ElMessage.warning('请选择知识库')
-    return
-  }
-
-  activeTask.value = task
-  lastAnswer.value = ''
-  const selectedText = readSelectedText()
-  const prompt = buildLessonAiPrompt({
-    task,
-    lessonTitle: props.lessonTitle,
-    noteContent: props.noteContent,
-    videoSummaryMd: props.videoSummaryMd,
-    selectedText,
-    currentVideoTime: props.currentVideoTime
-  })
-
-  try {
-    if (!currentSessionId.value) {
-      await createNewSession(selectedKbId.value, '课时笔记 AI')
+const assistant = useAssistant(),
+  requested = ref(false),
+  appendedId = ref(null),
+  taskMessageIndex = ref(0)
+const scope = computed(() => ({
+  courseId: props.courseId,
+  lessonId: props.lessonId,
+}))
+const state = computed(() => assistant.stateFor(scope.value))
+const tasks = computed(() => [
+  {
+    type: 'summarize_note',
+    label: '总结',
+    prompt: '请总结当前笔记，整理要点。',
+  },
+  {
+    type: 'explain_selection',
+    label: '解释',
+    prompt: '请解释选中的内容，未选中文字时解释笔记中的主要概念。',
+  },
+  ...(props.hasVideo
+    ? [
+        {
+          type: 'outline_from_video',
+          label: '提纲',
+          prompt: '请结合当前课时和提供的笔记整理学习提纲。',
+        },
+      ]
+    : []),
+  {
+    type: 'quiz_from_note',
+    label: '练习题',
+    prompt: '请根据当前笔记和课时生成练习题，并附答案和解析。',
+  },
+])
+const result = computed(() =>
+  requested.value && !state.value.generating
+    ? state.value.messages
+        .slice(taskMessageIndex.value)
+        .filter((item) => item.role === 'assistant' && item.content)
+        .at(-1)
+    : null,
+)
+watch(
+  () => [props.courseId, props.lessonId],
+  async () => {
+    requested.value = false
+    try {
+      await assistant.open(scope.value)
+    } catch {
+      /* visible state error */
     }
-    lastAnswer.value = await sendMessage('knowledge', prompt, taskLabel(task))
-  } catch (e) {
-    // useNativeRag 已提示
-  } finally {
-    activeTask.value = ''
+  },
+  { immediate: true },
+)
+async function run(task) {
+  requested.value = true
+  appendedId.value = null
+  taskMessageIndex.value = state.value.messages.length
+  try {
+    await assistant.send(scope.value, task.prompt, task.type, {
+      noteContent: props.noteContent || '',
+      selectedText: window.getSelection?.().toString()?.trim() || '',
+      currentVideoTime: props.currentVideoTime || 0,
+    })
+  } catch {
+    /* shared error and retry */
   }
 }
-
-const appendResult = () => {
-  if (!lastAnswer.value) return
-  emit('append-result', lastAnswer.value)
-  ElMessage.success('已追加到笔记')
-}
-
-const readSelectedText = () => {
-  const text = window.getSelection?.().toString()?.trim()
-  return text || ''
-}
-
-const taskLabel = (task) => {
-  const labels = {
-    summarize_note: '总结当前笔记',
-    explain_selection: '解释选中内容',
-    outline_from_video: '生成学习提纲',
-    quiz_from_note: '生成练习题'
+function append() {
+  if (result.value && appendedId.value !== result.value.id) {
+    const text = result.value.sections?.length
+      ? result.value.sections
+          .map(
+            (section) =>
+              `### ${assistantSectionLabel(section.type)}\n\n${section.content}`,
+          )
+          .join('\n\n')
+      : result.value.content
+    emit('append-result', text)
+    appendedId.value = result.value.id
   }
-  return labels[task] || 'AI 笔记任务'
 }
 </script>
-
 <style scoped>
 .ai-note-assistant {
-  border: 1px solid #ebeef5;
-  border-radius: 6px;
-  padding: 10px;
-  margin-bottom: 10px;
-  background: #fafcff;
+  padding: 12px;
+  margin-bottom: 12px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
 }
-
-.assistant-toolbar,
-.assistant-title,
-.assistant-controls,
-.quick-actions,
-.result-actions {
+.note-ai-actions {
   display: flex;
-  align-items: center;
-}
-
-.assistant-toolbar {
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.assistant-title {
-  gap: 6px;
-  color: #303133;
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.assistant-controls {
-  gap: 6px;
-  min-width: 0;
-  max-width: 100%;
-}
-
-.kb-select {
-  width: 130px;
-  flex: 0 1 130px;
-  min-width: 0;
-}
-
-.quick-actions {
   flex-wrap: wrap;
   gap: 6px;
   margin-top: 10px;
 }
-
-.quick-actions :deep(.el-button + .el-button) {
+.note-ai-actions .el-button {
   margin-left: 0;
 }
-
-.assistant-result {
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #ebeef5;
+.note-ai-result {
+  margin-top: 12px;
+  overflow-wrap: anywhere;
 }
-
-.result-content {
-  max-height: 220px;
+:deep(pre) {
   overflow: auto;
-  color: #303133;
-  line-height: 1.6;
-  font-size: 13px;
-}
-
-.result-actions {
-  justify-content: flex-end;
-  margin-top: 8px;
-}
-
-:deep(.result-content p) {
-  margin: 0 0 6px;
-}
-
-:deep(.result-content p:last-child) {
-  margin-bottom: 0;
-}
-
-:deep(.result-content ul),
-:deep(.result-content ol) {
-  padding-left: 18px;
-  margin: 4px 0;
 }
 </style>

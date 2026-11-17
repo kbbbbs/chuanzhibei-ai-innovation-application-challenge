@@ -83,12 +83,24 @@ public class RagVisualService {
 
     /** Actual chunk row supplies version/page/ranges. A serialized client hit cannot choose another source. */
     public List<RagVisual> forHit(RagSearchHit hit,int actorId) {
-        var rows=db.queryForList("SELECT c.* FROM native_rag_chunk c JOIN native_rag_document d ON c.document_id=d.id WHERE c.id=? AND c.index_version=d.active_index_version",checked(hit.chunkId()));
+        return forHit(hit, actorId, null);
+    }
+
+    public List<RagVisual> forHit(RagSearchHit hit, int actorId, Integer courseId) {
+        String query = courseId == null
+                ? "SELECT c.* FROM native_rag_chunk c JOIN native_rag_document d ON c.document_id=d.id WHERE c.id=? AND c.index_version=d.active_index_version"
+                : "SELECT c.* FROM native_rag_chunk c JOIN native_rag_document_version v ON c.document_id=v.document_id AND c.document_version=v.document_version WHERE c.id=? AND c.index_version=v.active_index_version";
+        var rows=db.queryForList(query,checked(hit.chunkId()));
         if(rows.isEmpty())throw new RagAccessException("404","图像来源片段不存在或版本已改变");
-        var row=rows.getFirst();String doc=row.get("document_id").toString();authorize(doc,actorId);
-        if(!doc.equals(hit.documentId()))throw new RagAccessException("403","图像来源不匹配");
-        if(!(row.get("page_number") instanceof Number page))return List.of();
+        var row=rows.getFirst();String doc=row.get("document_id").toString();
         int version=((Number)row.get("document_version")).intValue(),revision=((Number)row.get("parse_revision")).intValue();
+        authorizeSource(doc, version, actorId, courseId);
+        if(!doc.equals(hit.documentId()))throw new RagAccessException("403","图像来源不匹配");
+        if ((hit.documentVersion()!=null && hit.documentVersion()!=version)
+                || (hit.parseRevision()!=null && hit.parseRevision()!=revision)
+                || (hit.indexVersion()!=null && !hit.indexVersion().equals(row.get("index_version"))))
+            throw new RagAccessException("409", "图像来源版本已改变，请重新提问");
+        if(!(row.get("page_number") instanceof Number page))return List.of();
         var visuals=db.queryForList("SELECT metadata_json,anchor_start,anchor_end FROM native_rag_visual WHERE document_id=? AND document_version=? AND parse_revision=? AND page_no=? ORDER BY ordinal_number",doc,version,revision,page.intValue());
         var matched=new ArrayList<RagVisual>();
         for(var visual:visuals) {
@@ -97,17 +109,33 @@ public class RagVisualService {
                     && (a.intValue()>=end.intValue() || b.intValue()<=start.intValue()))continue;
             matched.add(read(visual.get("metadata_json").toString()));
         }
-        authorize(doc,actorId);return List.copyOf(matched);
+        authorizeSource(doc,version,actorId,courseId);return List.copyOf(matched);
     }
 
     public byte[] imageForActor(String id,int actorId) {
-        var rows=db.queryForList("SELECT document_id,image_sha256,byte_size FROM native_rag_visual WHERE id=?",checked(id));
+        return imageForActor(id, actorId, null);
+    }
+
+    public byte[] imageForActor(String id, int actorId, Integer courseId) {
+        var rows=db.queryForList("SELECT document_id,document_version,parse_revision,image_sha256,byte_size FROM native_rag_visual WHERE id=?",checked(id));
         if(rows.isEmpty())throw new RagAccessException("404","图像不存在");
-        var row=rows.getFirst();String doc=row.get("document_id").toString();authorize(doc,actorId);
+        var row=rows.getFirst();String doc=row.get("document_id").toString();
+        int version=((Number)row.get("document_version")).intValue();
+        Runnable allowed = () -> {
+            authorizeSource(doc, version, actorId, courseId);
+            if (courseId != null && db.queryForObject("SELECT COUNT(*) FROM native_rag_document_version v JOIN native_rag_index_version i ON i.id=v.active_index_version AND i.document_id=v.document_id WHERE v.document_id=? AND v.document_version=? AND i.parse_revision=?",
+                    Integer.class, doc, version, row.get("parse_revision")) == 0)
+                throw new RagAccessException("409", "资料图片版本已更新，请重新提问");
+        };
+        allowed.run();
         byte[] data=db.queryForObject("SELECT image_png FROM native_rag_visual WHERE id=?",byte[].class,id);
         if(data==null || data.length!=((Number)row.get("byte_size")).intValue() || data.length>1024*1024 || !sha(data).equals(row.get("image_sha256")))
             throw new RagAccessException("409","图像校验失败，请重新解析来源");
-        authorize(doc,actorId);return data;
+        allowed.run();return data;
+    }
+    private void authorizeSource(String document, int version, int actor, Integer course) {
+        if (course == null) authorize(document, actor);
+        else auth.requireCourseDocumentRead(auth.actorForUser(actor), course, document, version, false);
     }
     private List<RagVisual> list(String doc,int version,int revision,int page){return db.queryForList("SELECT metadata_json FROM native_rag_visual WHERE document_id=? AND document_version=? AND parse_revision=? AND page_no=? ORDER BY ordinal_number",String.class,doc,version,revision,page).stream().map(this::read).toList();}
     private boolean exists(String doc,int v,int r,int p){return db.queryForObject("SELECT COUNT(*) FROM native_rag_visual_page WHERE document_id=? AND document_version=? AND parse_revision=? AND page_no=?",Integer.class,doc,v,r,p)>0;}

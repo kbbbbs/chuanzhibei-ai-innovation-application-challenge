@@ -1,19 +1,16 @@
 <template>
-  <div class="work-study-manage">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>勤工俭学岗位管理</span>
-          <div class="header-actions">
-            <el-badge :value="pendingPagination.total" :hidden="pendingPagination.total === 0">
-              <el-button type="warning" @click="openAuditDrawer">申请审核</el-button>
-            </el-badge>
-            <el-button type="primary" @click="handleCreate">新增岗位</el-button>
-          </div>
-        </div>
+  <div class="work-study-manage workspace-page">
+    <PageHeader eyebrow="勤工俭学" title="勤工俭学岗位管理" description="发布校内岗位，审核学生申请。审核拒绝时必须填写原因。">
+      <template #actions>
+        <el-badge :value="pendingPagination.total" :hidden="pendingPagination.total === 0">
+          <el-button @click="openAuditDrawer">申请审核</el-button>
+        </el-badge>
+        <el-button type="primary" @click="handleCreate">新增岗位</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm">
+    <section class="filter-panel" aria-label="筛选岗位">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item label="岗位名称">
           <el-input v-model="searchForm.jobName" placeholder="请输入岗位名称" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -28,14 +25,25 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="list" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="岗位列表未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadData"
+    />
+
+    <section v-else class="table-panel" aria-label="岗位列表">
+      <el-table :data="list" stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="jobName" label="岗位名称" />
-        <el-table-column prop="jobDesc" label="岗位描述" show-overflow-tooltip />
-        <el-table-column prop="workLocation" label="工作地点" />
-        <el-table-column prop="workHours" label="工作时间" />
+        <el-table-column prop="jobName" label="岗位名称" min-width="160" />
+        <el-table-column prop="jobDesc" label="岗位描述" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="workLocation" label="工作地点" min-width="130" />
+        <el-table-column prop="workHours" label="工作时间" min-width="150" />
         <el-table-column prop="hourlyRate" label="时薪标准(元)" width="120">
           <template #default="{ row }">
             {{ row.hourlyRate }}
@@ -48,16 +56,17 @@
             <el-tag v-else type="info">已停止</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button size="small" type="danger" :loading="loading" @click="handleDelete(row)">删除</el-button>
+            <RowActions :label="row.jobName || `岗位 ${row.id}`">
+              <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button size="small" type="danger" :loading="loading" @click="handleDelete(row)">删除</el-button>
+            </RowActions>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        class="pagination"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
@@ -66,16 +75,24 @@
         @current-change="loadData"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
 
-    <el-drawer v-model="auditDrawerVisible" title="勤工俭学申请审核" size="760px">
-      <el-table :data="pendingApplications" border stripe v-loading="pendingLoading">
+    <el-drawer v-model="auditDrawerVisible" title="勤工俭学申请审核" size="min(760px, 100vw)">
+      <ErrorNotice
+        v-if="pendingFailed"
+        title="待审核申请未加载"
+        message="请确认网络后重试。"
+        retry-label="重新加载"
+        :busy="pendingLoading"
+        @retry="loadPendingApplications"
+      />
+      <el-table v-else :data="pendingApplications" stripe v-loading="pendingLoading">
         <template #empty><AppEmpty description="暂无待审核申请" /></template>
         <el-table-column prop="jobName" label="申请岗位" min-width="170" />
         <el-table-column label="申请学生" min-width="150">
           <template #default="{ row }">
-            <div>{{ row.studentName || `学生 ${row.studentId}` }}</div>
-            <small class="muted-text">ID：{{ row.studentId }}</small>
+            <span class="row-title">{{ row.studentName || `学生 ${row.studentId}` }}</span>
+            <span class="row-note">ID：{{ row.studentId }}</span>
           </template>
         </el-table-column>
         <el-table-column label="申请时间" width="180">
@@ -86,28 +103,31 @@
         <el-table-column label="状态" width="100">
           <el-tag type="warning">待审核</el-tag>
         </el-table-column>
-        <el-table-column label="操作" width="170" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 170" fixed="right">
           <template #default="{ row }">
-            <el-button
-              size="small"
-              type="success"
-              :loading="auditSubmittingId === row.id && auditSubmittingStatus === 1"
-              :disabled="auditSubmittingId === row.id && auditSubmittingStatus === 2"
-              @click="handleAudit(row, 1)"
-            >通过</el-button>
-            <el-button
-              size="small"
-              type="danger"
-              :loading="auditSubmittingId === row.id && auditSubmittingStatus === 2"
-              :disabled="auditSubmittingId === row.id && auditSubmittingStatus === 1"
-              @click="handleAudit(row, 2)"
-            >拒绝</el-button>
+            <RowActions :label="`${row.studentName || `学生 ${row.studentId}`} · ${row.jobName || '岗位申请'}`">
+              <el-button
+                size="small"
+                type="success"
+                :loading="auditSubmittingId === row.id && auditSubmittingStatus === 1"
+                :disabled="auditSubmittingId === row.id && auditSubmittingStatus === 2"
+                @click="handleAudit(row, 1)"
+              >通过</el-button>
+              <el-button
+                size="small"
+                type="danger"
+                :loading="auditSubmittingId === row.id && auditSubmittingStatus === 2"
+                :disabled="auditSubmittingId === row.id && auditSubmittingStatus === 1"
+                @click="handleAudit(row, 2)"
+              >拒绝</el-button>
+            </RowActions>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        class="pagination"
+        v-if="!pendingFailed"
+        class="drawer-pagination"
         v-model:current-page="pendingPagination.pageNum"
         v-model:page-size="pendingPagination.pageSize"
         :total="pendingPagination.total"
@@ -120,7 +140,7 @@
 
     <!-- Form Dialog -->
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑岗位' : '新增岗位'" width="550px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="岗位名称" prop="jobName">
           <el-input v-model="form.jobName" />
         </el-form-item>
@@ -159,8 +179,13 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useConfirm } from '@/composables/useConfirm'
 import { useUserStore } from '@/store/user'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { currentUserId, getRecords, getTotal } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { currentUserId, getRecords, getTotal, requireSuccess } from '@/utils/apiHelpers'
 import {
   getWorkStudies,
   createWorkStudy,
@@ -174,12 +199,19 @@ const { confirmDelete } = useConfirm()
 const userStore = useUserStore()
 
 const formRef = ref(null)
+const narrow = useNarrowScreen()
 
 const list = ref([])
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  list.value = []
+  pagination.total = 0
+})
 const auditDrawerVisible = ref(false)
 const pendingApplications = ref([])
-const pendingLoading = ref(false)
+const { loading: pendingLoading, loadFailed: pendingFailed, guarded: guardedPending } = useGuardedLoad(() => {
+  pendingApplications.value = []
+  pendingPagination.total = 0
+})
 const auditSubmittingId = ref(null)
 const auditSubmittingStatus = ref(null)
 
@@ -219,44 +251,27 @@ const rules = {
   maxRecruit: [{ required: true, message: '请设置招聘人数', trigger: 'change' }]
 }
 
-const loadData = async () => {
+const loadData = () => guarded(async (isCurrent) => {
   const params = {
     ...searchForm,
     pageNum: pagination.pageNum,
     pageSize: pagination.pageSize
   }
-  loading.value = true
-  try {
-    const res = await getWorkStudies(params)
-    if (res.code === '200') {
-      list.value = getRecords(res.data)
-      pagination.total = getTotal(res.data)
-    }
-  } catch (err) {
-    // 全局已提示
-  } finally {
-    loading.value = false
-  }
-}
+  const res = requireSuccess(await getWorkStudies(params))
+  if (!isCurrent()) return
+  list.value = getRecords(res.data)
+  pagination.total = getTotal(res.data)
+})
 
-const loadPendingApplications = async () => {
-  pendingLoading.value = true
-  try {
-    const res = await getPendingApplications({
-      pageNum: pendingPagination.pageNum,
-      pageSize: pendingPagination.pageSize
-    })
-    if (res.code === '200') {
-      pendingApplications.value = getRecords(res.data)
-      pendingPagination.total = getTotal(res.data)
-    }
-  } catch (err) {
-    pendingApplications.value = []
-    pendingPagination.total = 0
-  } finally {
-    pendingLoading.value = false
-  }
-}
+const loadPendingApplications = () => guardedPending(async (isCurrent) => {
+  const res = requireSuccess(await getPendingApplications({
+    pageNum: pendingPagination.pageNum,
+    pageSize: pendingPagination.pageSize
+  }))
+  if (!isCurrent()) return
+  pendingApplications.value = getRecords(res.data)
+  pendingPagination.total = getTotal(res.data)
+})
 
 const openAuditDrawer = () => {
   pendingPagination.pageNum = 1
@@ -415,24 +430,8 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.muted-text {
-  color: #909399;
-}
-
-.pagination {
-  margin-top: 20px;
+.drawer-pagination {
   justify-content: center;
+  margin-top: var(--space-4);
 }
 </style>

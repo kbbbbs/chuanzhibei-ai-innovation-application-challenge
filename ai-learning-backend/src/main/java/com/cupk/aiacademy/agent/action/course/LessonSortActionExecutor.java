@@ -23,6 +23,8 @@ import java.util.Set;
 
 @Component
 public class LessonSortActionExecutor implements AgentActionExecutor {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.service.PermissionService permissionService;
     private static final String ACTION_CODE = "lesson.sort";
 
     private final LessonMapper lessonMapper;
@@ -129,7 +131,8 @@ public class LessonSortActionExecutor implements AgentActionExecutor {
         if (course == null) {
             throw new BusinessException("课程不存在");
         }
-        if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
+        if (permissionService != null) permissionService.requireCourseContentTeacher(course.getId());
+        if (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId())) {
             throw new BusinessException("只能调整当前登录教师负责课程章节下的课时排序");
         }
         return chapter;
@@ -159,8 +162,8 @@ public class LessonSortActionExecutor implements AgentActionExecutor {
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以调整课时排序");
+        if (user == null || !isTeacher(user)) {
+            throw new BusinessException("仅所属教师可以调整课时排序");
         }
     }
 

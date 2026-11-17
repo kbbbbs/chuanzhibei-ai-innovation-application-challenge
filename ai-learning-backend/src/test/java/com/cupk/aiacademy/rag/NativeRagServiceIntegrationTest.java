@@ -106,7 +106,7 @@ class NativeRagServiceIntegrationTest {
             pdf.save(out);
             Map<String,Object> doc = data(service.uploadFile(kb, out.toByteArray(), "mixed.pdf"));
             assertEquals(List.of(3), doc.get("unindexed_pages"));
-            assertTrue(doc.get("parse_warning").toString().contains("未纳入有效索引"));
+            assertTrue(doc.get("parse_warning").toString().contains("没有取得文字"));
             assertFalse(doc.get("parse_warning").toString().contains("未实现OCR"));
             assertEquals(3, ((Number)doc.get("page_count")).intValue());
             assertEquals(2, ((Number)doc.get("chunk_count")).intValue());

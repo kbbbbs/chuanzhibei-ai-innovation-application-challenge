@@ -1,15 +1,13 @@
 <template>
   <div class="app-error">
-    <el-result icon="error" :title="title" :sub-title="subTitle">
-      <template #extra>
-        <el-button type="primary" @click="emit('retry')">重试</el-button>
-      </template>
-    </el-result>
+    <ErrorNotice :title="title" :message="subTitle" retry-label="重试" @retry="emit('retry')" />
   </div>
 </template>
 
 <script setup>
-const props = defineProps({
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+
+defineProps({
   title: {
     type: String,
     default: '加载失败',
@@ -25,6 +23,6 @@ const emit = defineEmits(['retry'])
 
 <style scoped>
 .app-error {
-  padding: 40px 0;
+  padding: var(--space-6) 0;
 }
 </style>

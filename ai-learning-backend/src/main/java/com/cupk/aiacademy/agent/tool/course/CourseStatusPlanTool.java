@@ -30,8 +30,12 @@ public class CourseStatusPlanTool implements AgentTool {
             List.of(
                     new AgentActionParameterSpec("courseId", "课程ID", false, "优先使用课程ID定位课程",
                             AgentActionParameterType.INTEGER, List.of(), List.of("课程编号", "id"), List.of("101")),
-                    new AgentActionParameterSpec("status", "目标状态", true, "只能是 0、1 或 2；0 表示下架/停用，1 表示上架/启用，2 表示草稿",
+                    new AgentActionParameterSpec("status", "目标状态", true, "0 下架，1 发布，2 未发布。发布要求课程已完成创建，并明确教学班及课程当前版本",
                             AgentActionParameterType.INTEGER, List.of("0", "1", "2"), List.of("状态", "课程状态"), List.of("0")),
+                    new AgentActionParameterSpec("classIds", "发布教学班编号", false, "发布时必填，由课程发布候选返回，教学班须属于当前课程",
+                            AgentActionParameterType.ARRAY, List.of(), List.of(), List.of()),
+                    new AgentActionParameterSpec("workflowVersion", "课程当前版本", false, "发布时必填，使用发布候选返回的版本",
+                            AgentActionParameterType.INTEGER, List.of(), List.of(), List.of()),
                     new AgentActionParameterSpec("title", "课程名称", false, "没有 courseId 时用于唯一定位",
                             AgentActionParameterType.STRING, List.of(), List.of("课程标题", "课程名", "课名", "名称", "名字"), List.of("Java 入门")),
                     new AgentActionParameterSpec("teacher", "教师展示名", false, "没有 courseId 时用于唯一定位"),

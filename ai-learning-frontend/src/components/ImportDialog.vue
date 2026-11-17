@@ -7,12 +7,14 @@
     @closed="resetDialog"
   >
     <div class="import-dialog">
-      <el-steps :active="currentStep" simple finish-status="success">
-        <el-step title="下载模板" />
-        <el-step :title="type === 'papers' ? '填写试卷与题目' : '填写题目'" />
-        <el-step title="上传预览" />
-        <el-step title="确认导入" />
-      </el-steps>
+      <div class="import-steps">
+        <el-steps :active="currentStep" simple finish-status="success">
+          <el-step title="下载模板" />
+          <el-step :title="type === 'papers' ? '填写试卷与题目' : '填写题目'" />
+          <el-step title="上传预览" />
+          <el-step title="确认导入" />
+        </el-steps>
+      </div>
 
       <el-alert :title="guide.title" type="info" :closable="false">
         <template #default>
@@ -22,7 +24,7 @@
         </template>
       </el-alert>
 
-      <el-form v-if="type === 'papers'" :model="paperForm" label-width="88px" class="paper-form">
+      <el-form v-if="type === 'papers'" :model="paperForm" label-position="top" class="paper-form">
         <el-form-item label="所属课程" required>
           <el-select v-model="paperForm.courseId" placeholder="请选择课程" clearable>
             <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
@@ -65,7 +67,7 @@
         :closable="false"
       />
 
-      <el-table v-if="previewData" :data="previewData.items" border stripe max-height="360">
+      <el-table v-if="previewData" :data="previewData.items" stripe max-height="360">
         <el-table-column prop="rowNumber" label="行号" width="72" />
         <el-table-column label="状态" width="92">
           <template #default="{ row }">
@@ -261,11 +263,20 @@ const resetDialog = () => {
 .import-dialog {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.import-steps {
+  overflow-x: auto;
+}
+
+.import-steps :deep(.el-steps) {
+  min-width: 560px;
 }
 
 .guide-list {
-  margin: 6px 0 0;
+  margin: var(--space-1) 0 0;
   padding-left: 18px;
   line-height: 1.8;
 }
@@ -281,12 +292,12 @@ const resetDialog = () => {
 }
 
 .field-suffix {
-  margin-left: 8px;
-  color: var(--el-text-color-secondary);
+  margin-left: var(--space-2);
+  color: var(--text-subtle);
 }
 
 .upload-text {
-  color: var(--el-text-color-regular);
+  color: var(--text-body);
   line-height: 24px;
 }
 

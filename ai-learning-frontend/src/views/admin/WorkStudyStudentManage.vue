@@ -1,19 +1,16 @@
 <template>
-  <div class="work-study-student-manage">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>劳务费名单管理</span>
-          <div>
-            <el-button type="success" @click="handleImport">导入名单</el-button>
-            <el-button type="warning" :loading="loading" @click="handleExport('xlsx')">导出Excel</el-button>
-            <el-button :loading="loading" @click="handleExport('csv')">导出CSV</el-button>
-            <el-button type="primary" @click="handleCreate">新增记录</el-button>
-          </div>
-        </div>
+  <div class="work-study-student-manage workspace-page">
+    <PageHeader eyebrow="勤工俭学" title="劳务费名单管理" description="按岗位和月份维护工作时长与时薪。导出内容跟随当前筛选条件。">
+      <template #actions>
+        <el-button @click="handleImport">导入名单</el-button>
+        <el-button :loading="loading" @click="handleExport('xlsx')">导出Excel</el-button>
+        <el-button :loading="loading" @click="handleExport('csv')">导出CSV</el-button>
+        <el-button type="primary" @click="handleCreate">新增记录</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm">
+    <section class="filter-panel" aria-label="筛选劳务费记录">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item label="岗位">
           <el-select v-model="searchForm.workStudyId" placeholder="请选择岗位" clearable>
             <el-option
@@ -38,13 +35,24 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="list" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="劳务费记录未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadData"
+    />
+
+    <section v-else class="table-panel" aria-label="劳务费记录">
+      <el-table :data="list" stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="jobName" label="岗位名称" />
+        <el-table-column prop="jobName" label="岗位名称" min-width="160" />
         <el-table-column prop="studentId" label="学生编号" width="100" />
-        <el-table-column prop="studentName" label="学生姓名" />
+        <el-table-column prop="studentName" label="学生姓名" min-width="120" />
         <el-table-column prop="workMonth" label="工作月份" width="120" />
         <el-table-column prop="workHours" label="工作时长(小时)" width="130" />
         <el-table-column prop="hourlyRate" label="时薪(元)" width="100" />
@@ -59,16 +67,17 @@
             <el-tag v-else type="info">停用</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button size="small" type="danger" :loading="loading" @click="handleDelete(row)">删除</el-button>
+            <RowActions :label="`${row.studentName || `学生 ${row.studentId}`} · ${row.workMonth || row.jobName || row.id}`">
+              <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button size="small" type="danger" :loading="loading" @click="handleDelete(row)">删除</el-button>
+            </RowActions>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        class="pagination"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
@@ -77,11 +86,11 @@
         @current-change="loadData"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
 
     <!-- Form Dialog -->
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑记录' : '新增记录'" width="500px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="120px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="岗位" prop="workStudyId">
           <el-select v-model="form.workStudyId" placeholder="请选择岗位" @change="onWorkStudyChange">
             <el-option
@@ -119,7 +128,7 @@
 
     <!-- Import Dialog -->
     <el-dialog v-model="importDialogVisible" title="导入劳务费名单" width="500px">
-      <el-form label-width="120px">
+      <el-form label-position="top">
         <el-form-item label="选择岗位" prop="importWorkStudyId">
           <el-select v-model="importWorkStudyId" placeholder="请选择岗位">
             <el-option
@@ -158,8 +167,13 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useConfirm } from '@/composables/useConfirm'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, getTotal } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { getRecords, getTotal, requireSuccess } from '@/utils/apiHelpers'
 import {
   getWorkStudyStudents,
   createWorkStudyStudent,
@@ -174,9 +188,13 @@ const { confirmDelete } = useConfirm()
 
 const formRef = ref(null)
 const uploadRef = ref(null)
+const narrow = useNarrowScreen()
 
 const list = ref([])
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  list.value = []
+  pagination.total = 0
+})
 const workStudyOptions = ref([])
 
 const searchForm = reactive({
@@ -226,25 +244,17 @@ const loadWorkStudyOptions = async () => {
   }
 }
 
-const loadData = async () => {
+const loadData = () => guarded(async (isCurrent) => {
   const params = {
     ...searchForm,
     pageNum: pagination.pageNum,
     pageSize: pagination.pageSize
   }
-  loading.value = true
-  try {
-    const res = await getWorkStudyStudents(params)
-    if (res.code === '200') {
-      list.value = getRecords(res.data)
-      pagination.total = getTotal(res.data)
-    }
-  } catch (err) {
-    // 全局已提示
-  } finally {
-    loading.value = false
-  }
-}
+  const res = requireSuccess(await getWorkStudyStudents(params))
+  if (!isCurrent()) return
+  list.value = getRecords(res.data)
+  pagination.total = getTotal(res.data)
+})
 
 const handleSizeChange = () => {
   pagination.pageNum = 1
@@ -407,16 +417,3 @@ onMounted(() => {
   loadData()
 })
 </script>
-
-<style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pagination {
-  margin-top: 20px;
-  justify-content: center;
-}
-</style>

@@ -26,6 +26,9 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
     private final CourseCategoryMapper categoryMapper;
     private final UserMapper userMapper;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.cupk.aiacademy.rag.CourseKnowledgeService courseKnowledge;
+
     public CourseCreateActionExecutor(CourseMapper courseMapper,
                                       CourseCategoryMapper categoryMapper,
                                       UserMapper userMapper) {
@@ -45,9 +48,10 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public AgentActionExecutionResult execute(AgentActionExecutionContext context) {
         AuthUtils.LoginUser user = context.user();
-        requireTeacherOrAdmin(user);
+        if (!isTeacher(user)) throw new BusinessException("仅教师可新建课程");
 
         Map<String, Object> parameters = context.parameters();
         String title = requiredString(parameters, "title", 100);
@@ -65,10 +69,7 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
         }
 
         Integer status = optionalInteger(parameters, "status");
-        if (status == null) {
-            status = 1;
-        }
-        requireValidStatus(status);
+        status = 2;
 
         LocalDateTime now = LocalDateTime.now();
         Course course = new Course();
@@ -84,6 +85,8 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
         course.setViewCount(nonNegativeOrDefault(parameters, 0, "viewCount", "view_count"));
         course.setRating(optionalRating(parameters, "rating"));
         course.setStatus(status);
+        course.setSetupStage("MATERIALS");
+        course.setWorkflowVersion(0L);
         course.setCreatedAt(now);
         course.setUpdatedAt(now);
 
@@ -91,6 +94,7 @@ public class CourseCreateActionExecutor implements AgentActionExecutor {
         if (row <= 0) {
             throw new BusinessException("创建课程失败");
         }
+        if (courseKnowledge != null) courseKnowledge.creationResult(course.getId());
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("courseId", course.getId());

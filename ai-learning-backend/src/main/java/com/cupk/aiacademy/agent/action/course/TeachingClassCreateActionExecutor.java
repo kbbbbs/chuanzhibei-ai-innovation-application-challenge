@@ -4,9 +4,11 @@ import com.cupk.aiacademy.agent.action.AgentActionExecutionContext;
 import com.cupk.aiacademy.agent.action.AgentActionExecutionResult;
 import com.cupk.aiacademy.agent.action.AgentActionExecutor;
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.controller.TeachingClassController;
+import com.cupk.aiacademy.dto.TeachingClassDto;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.CourseMapper;
-import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.mapper.UserMapper;
 import com.cupk.aiacademy.pojo.Course;
 import com.cupk.aiacademy.pojo.TeachingClass;
@@ -18,16 +20,16 @@ import java.util.Map;
 
 @Component
 public class TeachingClassCreateActionExecutor implements AgentActionExecutor {
+    private final TeachingClassController classMaintenance;
+
     private static final String ACTION_CODE = "teaching.class.create";
 
-    private final TeachingClassMapper teachingClassMapper;
     private final CourseMapper courseMapper;
     private final UserMapper userMapper;
 
-    public TeachingClassCreateActionExecutor(TeachingClassMapper teachingClassMapper,
-                                             CourseMapper courseMapper,
-                                             UserMapper userMapper) {
-        this.teachingClassMapper = teachingClassMapper;
+    public TeachingClassCreateActionExecutor(CourseMapper courseMapper,
+                                             UserMapper userMapper, TeachingClassController classMaintenance) {
+        this.classMaintenance = classMaintenance;
         this.courseMapper = courseMapper;
         this.userMapper = userMapper;
     }
@@ -45,7 +47,7 @@ public class TeachingClassCreateActionExecutor implements AgentActionExecutor {
     @Override
     public AgentActionExecutionResult execute(AgentActionExecutionContext context) {
         AuthUtils.LoginUser user = context.user();
-        requireTeacherOrAdmin(user);
+        requireAdmin(user);
 
         Map<String, Object> parameters = context.parameters();
         Integer courseId = requiredInteger(parameters, "courseId", "course_id");
@@ -85,10 +87,9 @@ public class TeachingClassCreateActionExecutor implements AgentActionExecutor {
         teachingClass.setCreateTime(now);
         teachingClass.setUpdateTime(now);
 
-        int row = teachingClassMapper.insert(teachingClass);
-        if (row <= 0) {
-            throw new BusinessException("创建教学班失败");
-        }
+        Result saved = classMaintenance.add(TeachingClassDto.fromEntity(teachingClass));
+        if (!"200".equals(saved.getCode())) throw new BusinessException(saved.getMsg());
+        teachingClass = (TeachingClass) saved.getData();
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("classId", teachingClass.getId());
@@ -107,9 +108,9 @@ public class TeachingClassCreateActionExecutor implements AgentActionExecutor {
         );
     }
 
-    private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以创建教学班");
+    private void requireAdmin(AuthUtils.LoginUser user) {
+        if (!isAdmin(user)) {
+            throw new BusinessException("只有管理员可以创建教学班");
         }
     }
 

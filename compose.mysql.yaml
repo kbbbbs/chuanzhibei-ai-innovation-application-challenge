@@ -1,0 +1,41 @@
+services:
+  backend:
+    environment:
+      AI_MANAGED_DB_HOST: db
+      AI_MANAGED_DB_PORT: "3306"
+      AI_MANAGED_DB_NAME: ai_academy
+      AI_MANAGED_DB_USERNAME: ai_academy
+      AI_MANAGED_DB_PASSWORD_FILE: /run/secrets/managed-db-password
+    secrets:
+      - managed-db-password
+
+  db:
+    image: mysql:8.4.7@sha256:0426ec38c7a10aa45ba383887df7878f74ee70e2fd589c7b69207f3577901903
+    environment:
+      MYSQL_DATABASE: ai_academy
+      MYSQL_USER: ai_academy
+      MYSQL_PASSWORD_FILE: /run/secrets/managed-db-password
+      MYSQL_ROOT_PASSWORD_FILE: /run/secrets/mysql-root-password
+    secrets:
+      - managed-db-password
+      - mysql-root-password
+    volumes:
+      - mysql:/var/lib/mysql
+    restart: unless-stopped
+    networks:
+      - application
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "--silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+secrets:
+  managed-db-password:
+    file: ./deploy/secrets/managed-db-password
+  mysql-root-password:
+    file: ./deploy/secrets/mysql-root-password
+
+volumes:
+  mysql:

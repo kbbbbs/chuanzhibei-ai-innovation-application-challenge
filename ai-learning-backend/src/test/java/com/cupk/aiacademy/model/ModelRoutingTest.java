@@ -59,13 +59,14 @@ class ModelRoutingTest {
         assertTrue(requests.get(1).contains("qwen-planner"));
     }
 
-    @Test void streamWorksAgainstCompatibleProtocolAndBlocksGptOverrideWithoutRequest() {
+    @Test void callAndStreamSupportGptOverride() {
         assertFalse(client.stream(new Prompt("stream")).collectList().block(Duration.ofSeconds(5)).isEmpty());
-        int previous=requests.size();
-        var prompt=new Prompt("blocked", OpenAiChatOptions.builder().model("gpt-4o").build());
-        assertThrows(ModelConfigurationException.class,()->client.call(prompt));
-        assertThrows(ModelConfigurationException.class,()->client.stream(prompt).blockLast(Duration.ofSeconds(5)));
-        assertEquals(previous,requests.size());
+        var prompt=new Prompt("test", OpenAiChatOptions.builder().model("gpt-4o").build());
+        assertNotNull(client.call(prompt));
+        assertFalse(client.stream(prompt).collectList().block(Duration.ofSeconds(5)).isEmpty());
+        assertEquals(3,requests.size());
+        assertTrue(requests.get(1).contains("gpt-4o"));
+        assertTrue(requests.get(2).contains("gpt-4o"));
     }
 
     @Test void unavailablePlanningDoesNotFallBackToGeneration() {
@@ -85,11 +86,23 @@ class ModelRoutingTest {
         finally { diagnosticClient.shutdown(); }
     }
 
-    @Test void publicInternalMethodsCannotBypassModelPolicy() {
+    @Test void publicInternalMethodsSupportGptOverride() {
         var guarded=new RuntimeModelConfiguration().generationChatModel(settings);
-        var prompt=new Prompt("blocked",OpenAiChatOptions.builder().model("gpt-4o").build());
-        assertThrows(ModelConfigurationException.class,()->guarded.internalCall(prompt,null));
-        assertThrows(ModelConfigurationException.class,()->guarded.internalStream(prompt,null).blockLast(Duration.ofSeconds(3)));
+        var prompt=new Prompt("test",OpenAiChatOptions.builder().model("gpt-4o").build());
+        assertNotNull(guarded.internalCall(prompt,null));
+        assertFalse(guarded.internalStream(prompt,null).collectList().block(Duration.ofSeconds(3)).isEmpty());
+        assertEquals(2,requests.size());
+        assertTrue(requests.stream().allMatch(request -> request.contains("gpt-4o")));
+    }
+
+    @Test void invalidEndpointIsRejectedByAllChatEntryPointsWithoutRequest() {
+        settings.getGeneration().setBaseUrl("http://untrusted.example.test");
+        var guarded=new RuntimeModelConfiguration().generationChatModel(settings);
+        var prompt=new Prompt("test");
+        assertEquals("MODEL_ENDPOINT_INVALID",assertThrows(ModelConfigurationException.class,()->guarded.call(prompt)).code());
+        assertEquals("MODEL_ENDPOINT_INVALID",assertThrows(ModelConfigurationException.class,()->guarded.stream(prompt).blockLast(Duration.ofSeconds(3))).code());
+        assertEquals("MODEL_ENDPOINT_INVALID",assertThrows(ModelConfigurationException.class,()->guarded.internalCall(prompt,null)).code());
+        assertEquals("MODEL_ENDPOINT_INVALID",assertThrows(ModelConfigurationException.class,()->guarded.internalStream(prompt,null).blockLast(Duration.ofSeconds(3))).code());
         assertTrue(requests.isEmpty());
     }
 

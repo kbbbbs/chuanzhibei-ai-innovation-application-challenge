@@ -76,6 +76,9 @@ public class CourseResourceService {
         query.eq("category_id", categoryId);
         AuthUtils.LoginUser loginUser = UserContext.get();
         if (authUtils.isStudent(loginUser)) {
+            List<Integer> ids = permissionService.studentCourseIds(loginUser.getUserId());
+            if (ids.isEmpty()) return page;
+            query.in("id", ids);
             query.eq("status", 1);
         } else if (status != null) {
             query.eq("status", status);
@@ -94,7 +97,7 @@ public class CourseResourceService {
             if (courseIds.isEmpty()) {
                 return page;
             }
-            query.in("id", courseIds).eq("status", 1);
+            query.in("id", courseIds);
         } else if (authUtils.isTeacher(loginUser)) {
             query.eq("teacher_id", loginUser.getUserId());
         } else if (!authUtils.isAdmin(loginUser)) {
@@ -110,7 +113,7 @@ public class CourseResourceService {
         Page<TeachingClass> page = new Page<>(fixPageNum(pageNum), fixPageSize(pageSize, 10));
         QueryWrapper<TeachingClass> query = new QueryWrapper<>();
         if (authUtils.isStudent(loginUser)) {
-            List<Integer> classIds = permissionService.studentClassIds(loginUser.getUserId());
+            List<Integer> classIds = permissionService.studentLearningClassIds(loginUser.getUserId());
             if (classIds.isEmpty()) {
                 return page;
             }
@@ -224,9 +227,6 @@ public class CourseResourceService {
             if (!teachingClass.getCourseId().equals(course.getId())) {
                 throw new BusinessException("教学班不属于该课程");
             }
-            requireStudentInClass(classId, loginUser.getUserId());
-        } else if (!permissionService.studentCourseIds(loginUser.getUserId()).contains(course.getId())) {
-            throw new BusinessException("学生未加入该课程教学班");
         }
 
         List<Integer> lessonIds = findCourseLessonIds(course.getId());
@@ -271,7 +271,7 @@ public class CourseResourceService {
         if (!teachingClass.getCourseId().equals(chapter.getCourseId())) {
             throw new BusinessException("课时不属于该教学班课程");
         }
-        requireStudentInClass(classId, loginUser.getUserId());
+        permissionService.requireStudentLearningClass(classId, chapter.getCourseId(), loginUser.getUserId());
 
         QueryWrapper<LearningProgress> query = new QueryWrapper<>();
         query.eq("class_id", classId)
@@ -350,12 +350,6 @@ public class CourseResourceService {
     private void requireCourseTeacher(Course course, AuthUtils.LoginUser loginUser) {
         if (!loginUser.getUserId().equals(course.getTeacherId())) {
             throw new BusinessException("无权访问该课程资源");
-        }
-    }
-
-    private void requireStudentInClass(Integer classId, Integer studentId) {
-        if (!permissionService.isStudentInClass(classId, studentId)) {
-            throw new BusinessException("学生未加入该教学班");
         }
     }
 

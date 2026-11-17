@@ -28,7 +28,8 @@ export function pageNumbers(values) {
 }
 export function processingError(code) {
   if (!code) return ''
-  if (String(code).startsWith('FORMULA_')) return '公式结构缺失、不完整或超过处理上限，该页未纳入本次检索索引。请对照原页并强制识别；重试仍失败时需人工核验。'
+  if (String(code) === 'FORMULA_STRUCTURE_MISSING') return '这里疑似有公式，但没有识别出公式结构。正文仍可检索，必要时可修改本页文字。'
+  if (String(code).startsWith('FORMULA_')) return '公式结构缺失、不完整或超过处理上限。已保留识别原文，本页正文仍可检索。'
   switch (String(code)) {
     case 'VISUAL_IMAGE_UNAVAILABLE': return '原页图片未能保存，该位置未纳入检索。请对照原件重新解析。'
     case 'OCR_OUTPUT_TRUNCATED': return '识别结果被截断，该页未纳入本次检索索引。请核对原页后重试。'

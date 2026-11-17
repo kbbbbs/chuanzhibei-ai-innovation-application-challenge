@@ -42,6 +42,10 @@ public class LearningExperienceService {
 
     public LearningExperienceDTO courseExperience(Integer courseId, Integer classId) {
         var user = permissionService.currentUser();
+        permissionService.requireCourseContentRead(courseId);
+        if (permissionService.isStudent(user) && classId != null) {
+            permissionService.requireStudentLearningClass(classId, courseId, user.getUserId());
+        }
         Course course = courseMapper.selectById(courseId);
         LearningContentRepository.LearningProfile profile = contentRepository.profileFor(course);
         Map<Integer, LearningProgress> progress = progressByLesson(classId, user.getUserId());

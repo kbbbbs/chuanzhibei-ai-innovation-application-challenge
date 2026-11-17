@@ -19,6 +19,8 @@ public final class PreparationModels {
     public static class Config {
         @NotBlank
         private String title;
+        private Integer targetCourseId;
+        private Boolean useCourseInfoOnly = false;
         @NotNull
         private Integer categoryId;
         private String description;
@@ -39,6 +41,10 @@ public final class PreparationModels {
         @Valid
         private QuestionConfig questionConfig = new QuestionConfig();
         private List<String> knowledgeBaseIds = new ArrayList<>();
+        /** Chapter questions are an optional deliverable; without them publishing creates only course content. */
+        private Boolean includeQuestions = true;
+        /** CONTINUOUS generates the whole draft in one run; STEP stops for review after each stage. */
+        private String generationMode = "CONTINUOUS";
     }
 
     @Data
@@ -75,6 +81,12 @@ public final class PreparationModels {
         private Integer durationMinutes;
         private Integer sortOrder;
         private String contentMd;
+        /** GENERATED, FAILED or null (not generated yet). */
+        private String status;
+        private String errorMessage;
+        /** Set by the server when a saved draft differs from what was stored; regeneration keeps such lessons. */
+        private Boolean edited;
+        private String previousContentMd;
     }
 
     @Data
@@ -83,6 +95,10 @@ public final class PreparationModels {
         private String chapterTitle;
         @Valid
         private List<QuestionRequestDTO> questions = new ArrayList<>();
+        private String status;
+        private String errorMessage;
+        private Boolean edited;
+        private List<QuestionRequestDTO> previousQuestions;
     }
 
     @Data
@@ -92,6 +108,9 @@ public final class PreparationModels {
         private String parseStatus;
         private Integer parseProgress;
         private String errorMessage;
+        /** USABLE, PARTIAL (some pages without text), PROCESSING (no index yet) or FAILED. */
+        private String availability;
+        private List<Integer> missingPages = new ArrayList<>();
     }
 
     @Data

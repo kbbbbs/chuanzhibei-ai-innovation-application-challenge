@@ -1,7 +1,7 @@
 import request from '@/utils/request'
 
-export const submitVideoUrl = (lessonId, url) => {
-  return request.post('/video-resources/url', { lessonId, url })
+export const submitVideoUrl = (lessonId, url, config = {}) => {
+  return request.post('/video-resources/url', { lessonId, url }, config)
 }
 
 export const getVideoResource = (id) => {

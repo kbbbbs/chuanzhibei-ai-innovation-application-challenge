@@ -1,5 +1,6 @@
 import request from '@/utils/request'
-import { useUserStore } from '@/store/user'
+import { streamEventResponse } from '@/utils/eventStream'
+import { backendUrl } from '@/utils/backendUrl'
 
 const BASE = '/api/rag'
 const checked = async (promise) => {
@@ -8,6 +9,10 @@ const checked = async (promise) => {
   return result
 }
 export const listKnowledgeBases = (params = {}) => checked(request.get(`${BASE}/knowledge-bases`, { params }))
+export const getKnowledgeBase = id => checked(request.get(`${BASE}/knowledge-bases/${id}`))
+export const getCourseKnowledgeBase = courseId => checked(request.get(`${BASE}/courses/${courseId}/knowledge-base`))
+export const getCourseDocumentAccess = courseId => checked(request.get(`${BASE}/courses/${courseId}/document-access`))
+export const updateCourseDocumentAccess = (courseId, data) => checked(request.put(`${BASE}/courses/${courseId}/document-access`, data))
 export const createKnowledgeBase = (data) => checked(request.post(`${BASE}/knowledge-bases`, data))
 export const updateKnowledgeBase = (id, data) => checked(request.put(`${BASE}/knowledge-bases/${id}`, data))
 export const deleteKnowledgeBase = (id) => checked(request.delete(`${BASE}/knowledge-bases/${id}`))
@@ -22,10 +27,19 @@ export const reindexDocument = (id) => checked(request.post(`${BASE}/documents/$
 export const getDocumentPages = (id, version, config = {}) => checked(request.get(`${BASE}/documents/${id}/pages`, {
   params: { version }, silentError: true, ...config
 }))
-export const reviewDocumentPage = (id, page, data) => checked(request.post(`${BASE}/documents/${id}/pages/${page}/review`, data))
+export const getPageEdits = (id, version, config = {}) => checked(request.get(`${BASE}/documents/${id}/page-edits`, {
+  params: { version }, silentError: true, ...config
+}))
+// Saving stores the text only; applyPageEdits is the separate, optional step that refreshes retrieval.
+export const savePageEdits = (id, version, edits) => checked(request.post(`${BASE}/documents/${id}/page-edits`, { version, edits }, { silentError: true }))
+export const applyPageEdits = (id) => checked(request.post(`${BASE}/documents/${id}/page-edits/apply`))
 export const getDocumentPagePreview = async (id, page, version, config = {}) => {
-  const blob = await request.get(`${BASE}/documents/${id}/pages/${page}/preview`, {
-    params: { version }, responseType: 'blob', silentError: true, ...config
+  const { courseId, ...requestConfig } = config
+  const path = courseId
+    ? `${BASE}/courses/${courseId}/documents/${id}/versions/${version}/pages/${page}/preview`
+    : `${BASE}/documents/${id}/pages/${page}/preview`
+  const blob = await request.get(path, {
+    params: courseId ? undefined : { version }, responseType: 'blob', silentError: true, ...requestConfig
   })
   if (!(blob instanceof Blob)) throw new Error('无法读取原页预览')
   if (blob.type.includes('json')) {
@@ -39,8 +53,10 @@ export const getDocumentPagePreview = async (id, page, version, config = {}) => 
 export const getVisualImage = async (id, config = {}) => {
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(id || ''))) throw new Error('图片标识无效')
   let blob
+  const { courseId, ...requestConfig } = config
   try {
-    blob = await request.get(`${BASE}/visuals/${id}/image`, { ...config, responseType: 'blob', silentError: true })
+    blob = await request.get(`${BASE}/visuals/${id}/image`, { ...requestConfig,
+      params: { ...requestConfig.params, ...(courseId ? { courseId } : {}) }, responseType: 'blob', silentError: true })
   } catch (problem) {
     let message = problem?.response?.data?.msg || problem?.message || '无法读取资料图片'
     const body = problem?.response?.data
@@ -61,6 +77,8 @@ export const getVisualImage = async (id, config = {}) => {
 }
 export const deleteDocument = (id) => checked(request.delete(`${BASE}/documents/${id}`))
 export const getDocumentChunks = (id) => checked(request.get(`${BASE}/documents/${id}/chunks`))
+export const getCourseChunk = (courseId, id, config = {}) => checked(request.get(`${BASE}/courses/${courseId}/chunks/${id}`, config))
+export const downloadCourseDocument = (courseId, id, version) => request.get(`${BASE}/courses/${courseId}/documents/${id}/versions/${version}/download`, { responseType: 'blob' })
 export const getChunk = (id, config = {}) => checked(request.get(`${BASE}/chunks/${id}`, config))
 export const downloadDocument = (id) => request.get(`${BASE}/documents/${id}/download`, { responseType: 'blob' })
 export const uploadDocument = (id, file, config = {}) => {
@@ -69,85 +87,21 @@ export const uploadDocument = (id, file, config = {}) => {
   return checked(request.post(`${BASE}/knowledge-bases/${id}/documents`, body, { timeout: 180000, ...config }))
 }
 export const search = (data, config = {}) => checked(request.post(`${BASE}/search`, {
+  courseId: data.courseId,
   knowledgeBaseIds: data.knowledgeBaseIds || data.kbIds || [],
   query: data.query,
   topK: data.topK || data.limit || 8
 }, { silentError:true, ...config }))
 export const chat = (data, config = {}) => checked(request.post(`${BASE}/chat`, data, { timeout: 120000, ...config }))
 export const createSession = (data) => checked(request.post(`${BASE}/sessions`, data))
+// Materials the course owner granted to this course; course members may ask about them.
+export const listCourseMaterials = (courseId) => checked(request.get(`${BASE}/courses/${courseId}/materials`, { silentError: true }))
 export const listSessions = () => checked(request.get(`${BASE}/sessions`))
 export const getSessionMessages = (id) => checked(request.get(`${BASE}/sessions/${id}/messages`))
 export const deleteSession = (id) => checked(request.delete(`${BASE}/sessions/${id}`))
 
-// POST SSE: handle frame boundaries, CRLF, split UTF-8, and multiple data lines.
 export function streamChat(data, callbacks = {}) {
-  const controller = new AbortController()
-  const token = useUserStore().token
-  const endpoint = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'}${BASE}/chat/stream`
-  const finished = (async () => {
-    let complete = false
-    try {
-      const response = await fetch(endpoint, {
-        method: 'POST', signal: controller.signal,
-        headers: { 'Content-Type': 'application/json', Accept: 'text/event-stream', ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-        body: JSON.stringify(data)
-      })
-      if (!response.ok) {
-        const payload = await response.json().catch(() => ({}))
-        throw new Error(payload.msg || payload.message || (response.status === 401 ? '登录已过期，请重新登录' : `问答请求失败（${response.status}）`))
-      }
-      if (!response.headers.get('content-type')?.includes('text/event-stream')) {
-        const result = await response.json().catch(() => null)
-        throw new Error(result?.msg || result?.message || '问答服务未返回流式响应')
-      }
-      const reader = response.body?.getReader()
-      if (!reader) throw new Error('无法读取问答响应')
-      const decoder = new TextDecoder()
-      let buffer = ''
-      const processFrame = (frame) => {
-        const lines = frame.split('\n')
-        const event = lines.find(line => line.startsWith('event:'))?.slice(6).trim() || 'message'
-        const raw = lines.filter(line => line.startsWith('data:')).map(line => line.slice(5).trimStart()).join('\n')
-        if (!raw || raw === '[DONE]') return
-        let payload
-        try { payload = JSON.parse(raw) } catch { throw new Error('问答响应格式异常，请重试') }
-        if (event === 'error') throw new Error(payload.message || payload.error || '问答生成失败')
-        if (event === 'progress') callbacks.onProgress?.(payload)
-        else if (event === 'delta') callbacks.onDelta?.(payload)
-        else if (event === 'complete') {
-          complete = true
-          callbacks.onComplete?.(payload)
-        }
-      }
-      while (true) {
-        const { done, value } = await reader.read()
-        buffer += done ? decoder.decode() : decoder.decode(value, { stream: true })
-        // Concatenate first: CR and LF may be split between network reads.
-        buffer = buffer.replace(/\r\n/g, '\n')
-        let end
-        while ((end = buffer.indexOf('\n\n')) >= 0) {
-          processFrame(buffer.slice(0, end))
-          buffer = buffer.slice(end + 2)
-          if (complete) break
-        }
-        if (complete) {
-          await reader.cancel().catch(() => {})
-          callbacks.onDone?.()
-          return
-        }
-        if (done) {
-          if (buffer.trim()) processFrame(buffer)
-          break
-        }
-      }
-      if (!complete) throw new Error('连接中断，回答尚未完成，请重试')
-      callbacks.onDone?.()
-    } catch (error) {
-      if (controller.signal.aborted) callbacks.onCancel?.()
-      else callbacks.onError?.(error)
-    }
-  })()
-  return { abort: () => controller.abort(), finished }
+  return streamEventResponse(backendUrl(`${BASE}/chat/stream`), data, callbacks)
 }
 
 export function unwrapRag(result) { return result?.data ?? result }
@@ -155,8 +109,3 @@ export function ragList(result) {
   const data = unwrapRag(result)
   return Array.isArray(data) ? data : data?.data || data?.items || data?.records || []
 }
-
-export const getCourseDocuments = (courseId, config = {}) => checked(request.get(`${BASE}/courses/${courseId}/documents`, config))
-export const getCourseDocument = (courseId, documentId, version, config = {}) => checked(request.get(`${BASE}/courses/${courseId}/documents/${documentId}/versions/${version}`, config))
-export const grantCourseDocument = (documentId, data) => checked(request.post(`${BASE}/documents/${documentId}/grants`, data))
-export const revokeCourseDocument = (documentId, courseId, version) => checked(request.delete(`${BASE}/documents/${documentId}/grants/${courseId}/versions/${version}`))

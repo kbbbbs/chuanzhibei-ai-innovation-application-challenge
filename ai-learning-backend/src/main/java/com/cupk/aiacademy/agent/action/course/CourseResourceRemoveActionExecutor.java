@@ -25,6 +25,8 @@ import java.util.Set;
 
 @Component
 public class CourseResourceRemoveActionExecutor implements AgentActionExecutor {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.service.PermissionService permissionService;
     private static final String ACTION_CODE = "course.resource.remove";
     private static final Set<String> DEFAULT_FIELDS = Set.of("resourceType", "resourceUrl", "videoUrl", "content");
 
@@ -162,7 +164,8 @@ public class CourseResourceRemoveActionExecutor implements AgentActionExecutor {
         if (course == null) {
             throw new BusinessException("课程不存在");
         }
-        if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
+        if (permissionService != null) permissionService.requireCourseContentTeacher(course.getId());
+        if (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId())) {
             throw new BusinessException("只能移除当前登录教师负责课程下的课时资源");
         }
         return chapter;
@@ -186,8 +189,8 @@ public class CourseResourceRemoveActionExecutor implements AgentActionExecutor {
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以移除课程资源");
+        if (user == null || !isTeacher(user)) {
+            throw new BusinessException("仅所属教师可以移除课程资源");
         }
     }
 

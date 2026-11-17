@@ -1,57 +1,43 @@
 <template>
-  <div class="exam-result">
-    <el-card v-loading="loading">
-      <template #header>
-        <div class="card-header">
-          <span>{{ assessmentLabel }}结果</span>
-          <el-button @click="$router.back()">返回</el-button>
-        </div>
+  <div class="exam-result workspace-page workspace-page--narrow" v-loading="loading">
+    <PageHeader class="card-header" eyebrow="学习" :title="`${assessmentLabel}结果`">
+      <template #actions>
+        <el-button @click="$router.back()">返回</el-button>
       </template>
+    </PageHeader>
 
-      <div v-if="submission.id">
-        <el-result v-if="submission.cheated" icon="error" :title="`本次${assessmentLabel}被判定为作弊`" :sub-title="`切屏 ${submission.screenSwitchCount || 0} 次，成绩记为 -1`">
-          <template #extra>
-            <el-descriptions :column="2" border>
-              <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
-              <el-descriptions-item label="提交时间">
-                {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
-              </el-descriptions-item>
-            </el-descriptions>
-          </template>
-        </el-result>
+    <ErrorNotice
+      v-if="loadFailed"
+      :title="`${assessmentLabel}结果未加载`"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadSubmission"
+    />
 
-        <el-result v-else-if="submission.status === 2" icon="success" :title="`总分：${submission.totalScore}`" :sub-title="`客观题：${submission.objectiveScore} | 主观题：${submission.subjectiveScore}`">
-        <template #extra>
-          <el-descriptions :column="2" border>
-            <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
-            <el-descriptions-item label="提交时间">
-              {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
-            </el-descriptions-item>
-          </el-descriptions>
-        </template>
-      </el-result>
+    <template v-if="submission.id">
+      <section class="result-summary content-panel" :class="`result-summary--${resultState.tone}`" :aria-label="`${assessmentLabel}成绩`">
+        <div class="summary-score">
+          <StatusBadge :label="resultState.label" :tone="resultState.tone" />
+          <p class="score-headline">{{ resultState.headline }}</p>
+          <p class="score-detail">{{ resultState.detail }}</p>
+        </div>
+        <el-descriptions :column="descriptionColumns" border>
+          <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
+          <el-descriptions-item label="提交时间">
+            {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="!submission.cheated && submission.status !== 2" label="客观题得分">{{ submission.objectiveScore || 0 }}</el-descriptions-item>
+        </el-descriptions>
+      </section>
 
-      <el-result v-else icon="info" title="批改中" sub-title="老师正在批改主观题，请稍后查看">
-        <template #extra>
-          <el-descriptions :column="2" border>
-            <el-descriptions-item :label="`${assessmentLabel}名称`">{{ exam.title }}</el-descriptions-item>
-            <el-descriptions-item label="提交时间">
-              {{ submission.submitTime ? new Date(submission.submitTime).toLocaleString() : '-' }}
-            </el-descriptions-item>
-            <el-descriptions-item label="客观题得分">{{ submission.objectiveScore || 0 }}</el-descriptions-item>
-          </el-descriptions>
-        </template>
-      </el-result>
-
-      <el-divider />
-
-      <div v-if="submission.answers && submission.answers.length > 0">
-        <h3>答题详情</h3>
-        <div v-for="(answer, idx) in submission.answers" :key="idx" class="answer-block">
+      <section v-if="submission.answers && submission.answers.length > 0" class="answer-section" aria-labelledby="answer-detail-heading">
+        <h2 id="answer-detail-heading">答题详情</h2>
+        <article v-for="(answer, idx) in submission.answers" :key="idx" class="answer-block">
           <div class="answer-title">
-            <span class="question-number">{{ idx + 1 }}.</span>
-            <span>{{ answer.questionText }}</span>
-            <span class="question-score">({{ answer.score }}分)</span>
+            <span class="question-number">{{ idx + 1 }}</span>
+            <div class="question-text" v-html="renderMarkdown(answer.questionText)"></div>
+            <span class="question-score">{{ answer.score }} 分</span>
           </div>
 
           <div class="answer-content">
@@ -65,11 +51,12 @@
             </div>
             <div v-if="answer.comment"><strong>批注：</strong>{{ answer.comment }}</div>
           </div>
-        </div>
-      </div>
-      </div>
-      <AppEmpty v-else :description="`暂无${assessmentLabel}结果`" />
-    </el-card>
+        </article>
+      </section>
+    </template>
+    <div v-else-if="!loading && !loadFailed" class="empty-panel">
+      <AppEmpty :description="`暂无${assessmentLabel}结果`" />
+    </div>
   </div>
 </template>
 
@@ -78,7 +65,13 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import request from '@/utils/request'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { enumName, normalizeStatus } from '@/utils/apiHelpers'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { useNarrowScreen } from '@/composables/useNarrowScreen'
+import { enumName, normalizeStatus, requireSuccess } from '@/utils/apiHelpers'
+import { renderMarkdown } from '@/utils/markdown'
 
 const route = useRoute()
 const submissionId = computed(() => Number(route.params.submissionId))
@@ -86,7 +79,7 @@ const isHomework = computed(() => route.query.assessmentType === 'HOMEWORK')
 const assessmentLabel = computed(() => isHomework.value ? '作业' : '考试')
 const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad()
 const submission = ref({
   id: null,
   status: 0,
@@ -96,6 +89,27 @@ const submission = ref({
   answers: [],
 })
 const exam = ref({ title: '' })
+
+const narrow = useNarrowScreen()
+const descriptionColumns = computed(() => (narrow.value ? 1 : 2))
+const resultState = computed(() => {
+  const value = submission.value
+  if (value.cheated) {
+    return {
+      label: '作弊', tone: 'critical',
+      headline: `本次${assessmentLabel.value}被判定为作弊`,
+      detail: `切屏 ${value.screenSwitchCount || 0} 次，成绩记为 -1`,
+    }
+  }
+  if (value.status === 2) {
+    return {
+      label: '已批改', tone: 'positive',
+      headline: `总分：${value.totalScore}`,
+      detail: `客观题：${value.objectiveScore} | 主观题：${value.subjectiveScore}`,
+    }
+  }
+  return { label: '批改中', tone: 'caution', headline: '批改中', detail: '老师正在批改主观题，请稍后查看' }
+})
 
 const TYPE_TO_FRONTEND = {
   SINGLE_CHOICE: 'single_choice',
@@ -151,24 +165,16 @@ const formatCorrectAnswer = (answer) => {
   return answer.referenceAnswer || '-'
 }
 
-const loadSubmission = async () => {
-  loading.value = true
-  try {
-    const res = await request.get(`${submissionApi.value}/${submissionId.value}/student`)
-    if (res.code === '200') {
-      submission.value = mapSubmission(res.data)
+const loadSubmission = () => guarded(async (isCurrent) => {
+  const res = requireSuccess(await request.get(`${submissionApi.value}/${submissionId.value}/student`))
+  if (!isCurrent()) return
+  submission.value = mapSubmission(res.data)
 
-      exam.value = {
-        title: submission.value.homeworkName || submission.value.examName ||
-          `${isHomework.value ? '作业' : '考试'}${submission.value.homeworkId ?? submission.value.examId}`
-      }
-    }
-  } catch (e) {
-    // 全局异常已由 request.js 提示
-  } finally {
-    loading.value = false
+  exam.value = {
+    title: submission.value.homeworkName || submission.value.examName ||
+      `${isHomework.value ? '作业' : '考试'}${submission.value.homeworkId ?? submission.value.examId}`
   }
-}
+})
 
 const loadPage = () => {
   submission.value = {
@@ -180,7 +186,8 @@ const loadPage = () => {
     answers: [],
   }
   exam.value = { title: '' }
-  loadSubmission()
+  // The instance also sees navigation away from this route; that must load nothing.
+  if (route.params.submissionId) loadSubmission()
 }
 
 watch(
@@ -191,52 +198,109 @@ watch(
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.result-summary {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.summary-score {
+  display: grid;
+  justify-items: start;
+  gap: var(--space-1);
+}
+
+.score-headline {
+  margin: var(--space-1) 0 0;
+  color: var(--text-strong);
+  font-size: var(--text-3xl);
+  font-weight: 650;
+  line-height: 1.25;
+}
+
+.result-summary--critical .score-headline {
+  color: var(--critical);
+}
+
+.score-detail {
+  margin: 0;
+  color: var(--text-subtle);
+}
+
+.answer-section {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.answer-section h2 {
+  margin: 0;
+  font-size: var(--text-lg);
 }
 
 .answer-block {
-  padding: 15px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-bottom: 15px;
-  background: #fafafa;
+  padding: var(--space-4);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .answer-title {
-  font-size: 16px;
-  font-weight: 500;
-  margin-bottom: 10px;
   display: flex;
-  align-items: baseline;
-  gap: 5px;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  color: var(--text-strong);
 }
 
 .question-number {
-  font-weight: bold;
-  color: #409eff;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+  background: var(--surface-accent);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.question-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.question-text :deep(p) {
+  margin: 0;
 }
 
 .question-score {
-  margin-left: auto;
-  color: #999;
-  font-size: 14px;
+  flex: 0 0 auto;
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
 }
 
 .answer-content {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  font-size: 14px;
+  gap: var(--space-2);
+  color: var(--text-body);
+  font-size: var(--text-md);
+  overflow-wrap: anywhere;
+}
+
+.answer-content strong {
+  color: var(--text-strong);
+  font-weight: 600;
 }
 
 .score-success {
-  color: #67c23a;
+  color: var(--positive);
 }
 
 .score-error {
-  color: #f56c6c;
+  color: var(--critical);
 }
 </style>

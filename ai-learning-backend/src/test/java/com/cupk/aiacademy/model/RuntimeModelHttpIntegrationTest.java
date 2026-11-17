@@ -135,7 +135,7 @@ class RuntimeModelHttpIntegrationTest {
 
     @Test void explicitVersionGrantAndIndependentDownloadPermissionWorkThroughRealHttp() throws Exception {
         jdbc.update("MERGE INTO t_course(id,teacher_id,title,status) KEY(id) VALUES(9010,?,'Synthetic course',1)",TEACHER_ID);
-        jdbc.update("MERGE INTO t_teaching_class(id,course_id,teacher_id,status) KEY(id) VALUES(9010,9010,?,1)",TEACHER_ID);
+        jdbc.update("MERGE INTO t_teaching_class(id,course_id,teacher_id,status,course_open) KEY(id) VALUES(9010,9010,?,1,TRUE)",TEACHER_ID);
         jdbc.update("MERGE INTO t_class_student(id,class_id,student_id,status) KEY(id) VALUES(9010,9010,?,1)",STUDENT_ID);
         String document=privateDocument();
         String route="/api/rag/courses/9010/documents/"+document+"/versions/1";

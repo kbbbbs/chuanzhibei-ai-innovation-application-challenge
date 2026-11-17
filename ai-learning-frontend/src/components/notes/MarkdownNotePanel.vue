@@ -3,16 +3,19 @@
     <template #header>
       <div class="note-header">
         <span>学习笔记</span>
+        <span class="autosave-status" :class="`is-${autosave.state.value}`" data-testid="note-save-status" aria-live="polite">{{ autosave.label.value }}</span>
         <div class="note-actions">
           <el-button v-if="hasVideo" size="small" :icon="Timer" title="插入时间点" @click="insertTimePoint" />
           <el-button size="small" :icon="Download" title="下载笔记" @click="handleDownload" />
-          <el-button size="small" type="primary" :loading="saving" @click="handleSave">保存</el-button>
+          <el-button size="small" type="primary" :loading="autosave.state.value === 'saving'" @click="handleSave">{{ autosave.state.value === 'error' ? '重试保存' : '立即保存' }}</el-button>
         </div>
       </div>
     </template>
 
     <el-input v-model="title" class="note-title" />
     <AiNoteAssistant
+      :course-id="courseId"
+      :lesson-id="lessonId"
       :lesson-title="lessonTitle"
       :note-content="content"
       :video-summary-md="videoSummaryMd"
@@ -24,6 +27,7 @@
       v-model="content"
       language="zh-CN"
       class="note-editor"
+      :theme="resolvedTheme"
       :preview="false"
       :html-preview="false"
       :toolbars-exclude="noteEditorToolbarsExclude"
@@ -32,15 +36,18 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { nextTick, ref, watch } from 'vue'
 import { Download, Timer } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import AiNoteAssistant from '@/components/ai/AiNoteAssistant.vue'
-import { downloadLessonNote, getLessonNote, saveLessonNote } from '@/api/note'
+import { getLessonNote, saveLessonNote } from '@/api/note'
+import { useTheme } from '@/composables/useTheme'
+import { useAutosave } from '@/composables/useAutosave'
 
 const props = defineProps({
+  courseId: Number,
   lessonId: {
     type: Number,
     required: true
@@ -65,15 +72,31 @@ const props = defineProps({
 
 const emit = defineEmits(['update:content'])
 
+const { resolvedTheme } = useTheme()
+
 const loading = ref(false)
-const saving = ref(false)
 const title = ref('')
 const content = ref('')
 const noteEditorToolbarsExclude = ['previewOnly', 'htmlPreview', 'catalog', 'github']
 let loadSeq = 0
+let ready = false
+
+const autosave = useAutosave({
+  key: () => `eduloop:note:${props.lessonId}`,
+  snapshot: () => ({ title: title.value, contentMd: content.value }),
+  save: async () => {
+    const res = await saveLessonNote(props.lessonId, {
+      title: title.value,
+      contentMd: content.value,
+      lastVideoTime: Math.floor(props.currentVideoTime || 0)
+    }, { silent: true })
+    return res?.code === '200'
+  }
+})
 
 const loadNote = async () => {
   const requestId = ++loadSeq
+  ready = false
   loading.value = true
   try {
     const res = await getLessonNote(props.lessonId)
@@ -83,35 +106,33 @@ const loadNote = async () => {
       content.value = res.data?.contentMd || ''
     }
   } catch (e) {
-    // 全局已提示
+    // 全局已提示；本机暂存的内容仍会恢复
   } finally {
     if (requestId === loadSeq) {
+      // An unsent local copy is newer than the server note: restore it and send it.
+      const local = autosave.readLocal()
+      const restored = local && (local.contentMd !== content.value || local.title !== title.value)
+      if (restored) {
+        title.value = local.title || title.value
+        content.value = local.contentMd ?? content.value
+      }
+      await nextTick()
+      ready = true
+      if (restored) autosave.touch()
       loading.value = false
     }
   }
 }
 
 const handleSave = async () => {
-  saving.value = true
-  try {
-    const res = await saveLessonNote(props.lessonId, {
-      title: title.value,
-      contentMd: content.value,
-      lastVideoTime: Math.floor(props.currentVideoTime || 0)
-    })
-    if (res.code === '200') {
-      ElMessage.success('笔记已保存')
-    }
-  } catch (e) {
-    // 全局已提示
-  } finally {
-    saving.value = false
-  }
+  autosave.touch()
+  if (await autosave.flush()) ElMessage.success('笔记已保存')
 }
 
+// The file is built from the editor, so it always matches what is on screen, saved or not.
 const handleDownload = async () => {
   try {
-    const blob = await downloadLessonNote(props.lessonId)
+    const blob = new Blob([content.value || ''], { type: 'text/markdown;charset=utf-8' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
@@ -156,6 +177,10 @@ watch(
 watch(content, (value) => {
   emit('update:content', value)
 })
+
+watch([title, content], () => {
+  if (ready) autosave.touch()
+})
 </script>
 
 <style scoped>
@@ -182,6 +207,18 @@ watch(content, (value) => {
 
 .note-header > span {
   white-space: nowrap;
+}
+
+.note-header > .autosave-status {
+  margin-right: auto;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+  white-space: normal;
+}
+
+.autosave-status.is-offline,
+.autosave-status.is-error {
+  color: var(--caution);
 }
 
 .note-actions {

@@ -1,5 +1,10 @@
-param([switch]$UseMySql, [switch]$SkipBuild, [string]$JavaRuntimeHome = $env:JAVA_HOME)
+param([switch]$UseMySql, [switch]$SkipBuild, [switch]$Setup,
+    [switch]$InstallationCode, [switch]$RecoveryCode,
+    [string]$JavaRuntimeHome = $env:JAVA_HOME)
 $ErrorActionPreference = 'Stop'
+if (($Setup -and $UseMySql) -or ($InstallationCode -and $RecoveryCode)) {
+    throw 'Choose one startup mode and one host code command.'
+}
 $projectRoot = (Resolve-Path (Join-Path $PSScriptRoot '../..')).Path
 # A running desktop may predate newly saved User environment variables.
 # Preserve explicit process settings; import only the model role variables that are missing.
@@ -22,7 +27,7 @@ if (Test-Path -LiteralPath $privateSettings) {
         }
     }
 }
-if (-not $env:JWT_SECRET) {
+if (-not $env:JWT_SECRET -and -not ($Setup -or $InstallationCode -or $RecoveryCode)) {
     if ($UseMySql) { throw 'Set a private JWT_SECRET (at least 32 bytes) before using the MySQL profile.' }
     $env:JWT_SECRET = 'local-contest-demo-only-change-before-sharing-2026'
 }
@@ -59,11 +64,17 @@ try {
         & mvn '-DskipTests' package
         if ($LASTEXITCODE -ne 0) { throw 'Backend build failed.' }
     }
-    $jar = Join-Path $backendRoot 'target/Final_exam_question_bank-0.0.1-SNAPSHOT.jar'
+    $jar = Join-Path $backendRoot 'target/ai-learning-backend-0.0.1-SNAPSHOT.jar'
     if (-not (Test-Path -LiteralPath $jar)) { throw 'Build the backend first.' }
-    $arguments = @('-jar', $jar, '--server.address=127.0.0.1')
-    if (-not $UseMySql) { $arguments += '--spring.profiles.active=contest-demo' }
-    Write-Host 'Backend: http://127.0.0.1:8080. Start the frontend in another terminal: npm run dev.'
+    $arguments = @('-jar', $jar)
+    if ($InstallationCode) { $arguments += '--installation-code' }
+    elseif ($RecoveryCode) { $arguments += '--recovery-code' }
+    else {
+        $arguments += '--server.address=127.0.0.1'
+        if ($Setup) { $arguments += '--installation-setup' }
+        if (-not ($UseMySql -or $Setup)) { $arguments += '--spring.profiles.active=contest-demo' }
+        Write-Host 'Backend: http://127.0.0.1:8080. Start the frontend in another terminal: npm run dev.'
+    }
     & $javaExecutable @arguments
     if ($LASTEXITCODE -ne 0) { throw 'Backend exited with an error; inspect the startup diagnostics.' }
 } finally { Pop-Location }

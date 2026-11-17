@@ -31,7 +31,7 @@ public class Paper implements Serializable {
     @TableField("abstract_text")
     private String abstractText;
 
-    @TableField("year")
+    @TableField("`year`")
     private Integer year;
 
     @TableField("url")

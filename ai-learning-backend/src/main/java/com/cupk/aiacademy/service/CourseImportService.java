@@ -105,8 +105,40 @@ public class CourseImportService {
 
         courseMapper.insert(course);
 
-        // one file = one chapter
-        int chapterSort = 1;
+        return appendGroups(course, fileGroups, warnings, resourceUrls, 1);
+    }
+
+    public record StoredCourseDocument(Path path, String filename, String resourceUrl) { }
+
+    @Transactional
+    public Map<String, Object> appendStoredDocuments(Course course, List<StoredCourseDocument> documents) {
+        List<FileGroup> groups = new ArrayList<>();
+        List<String> urls = new ArrayList<>();
+        for (StoredCourseDocument document : documents) {
+            String extension = getExtension(document.filename());
+            String type = "pdf".equals(extension) ? "pdf" : "ppt";
+            try (InputStream input = Files.newInputStream(document.path())) {
+                List<SlideData> parsed = switch (extension) {
+                    case "pdf" -> parsePdf(input);
+                    case "pptx" -> parsePptx(input);
+                    case "ppt" -> parsePpt(input);
+                    default -> throw new IllegalArgumentException("请选择 PDF 或 PPT 课件");
+                };
+                if (parsed.isEmpty()) throw new IllegalArgumentException("资料中没有可组织的页面");
+                groups.add(new FileGroup(fileNameToChapterTitle(document.filename()), document.resourceUrl(), type, parsed));
+                urls.add(document.resourceUrl());
+            } catch (IOException | InvalidFormatException error) {
+                throw new IllegalArgumentException("课件解析失败，请检查文件后重试", error);
+            }
+        }
+        int nextOrder = chapterMapper.selectList(new com.baomidou.mybatisplus.core.conditions.query.QueryWrapper<Chapter>()
+                .eq("course_id", course.getId())).stream().map(Chapter::getSortOrder).filter(java.util.Objects::nonNull).max(Integer::compareTo).orElse(0) + 1;
+        return appendGroups(course, groups, new ArrayList<>(), urls, nextOrder);
+    }
+
+    private Map<String, Object> appendGroups(Course course, List<FileGroup> fileGroups, List<String> warnings, List<String> resourceUrls, int chapterSort) {
+        LocalDateTime now = LocalDateTime.now();
+        // Each source remains a separate chapter in the existing course.
         int lessonCount = 0;
 
         for (FileGroup fg : fileGroups) {

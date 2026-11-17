@@ -140,17 +140,7 @@ public class StudyNoteService {
     }
 
     private void requireLessonAccess(Course course) {
-        AuthUtils.LoginUser user = permissionService.currentUser();
-        if (permissionService.isAdmin(user)) {
-            return;
-        }
-        if (permissionService.isTeacher(user) && Objects.equals(course.getTeacherId(), user.getUserId())) {
-            return;
-        }
-        if (permissionService.isStudent(user) && permissionService.studentCourseIds(user.getUserId()).contains(course.getId())) {
-            return;
-        }
-        throw new ForbiddenException("无权访问该课时笔记");
+        permissionService.requireCourseContentRead(course.getId());
     }
 
     private String fixTitle(String title, String lessonTitle) {

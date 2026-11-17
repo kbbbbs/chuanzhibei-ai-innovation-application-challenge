@@ -47,6 +47,9 @@ public class TeachingClassController {
     @Autowired
     private PermissionService permissionService;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbc;
+
     @GetMapping("/teaching-classes")
     public Result pages(@RequestParam(required = false) Integer courseId,
                         @RequestParam(required = false) Integer teacherId,
@@ -62,7 +65,7 @@ public class TeachingClassController {
         if (authUtils.isTeacher(loginUser)) {
             queryWrapper.eq("teacher_id", loginUser.getUserId());
         } else if (authUtils.isStudent(loginUser)) {
-            java.util.List<Integer> classIds = permissionService.studentClassIds(loginUser.getUserId());
+            java.util.List<Integer> classIds = permissionService.studentLearningClassIds(loginUser.getUserId());
             if (classIds.isEmpty()) {
                 return Result.success(page);
             }
@@ -99,8 +102,8 @@ public class TeachingClassController {
         AuthUtils.LoginUser user = permissionService.currentUser();
         if (authUtils.isTeacher(user) || authUtils.isAdmin(user)) {
             permissionService.requireClassTeacher(teachingClass);
-        } else if (!permissionService.isStudentInClass(id, user.getUserId())) {
-            return Result.error("403", "无权限查看该教学班");
+        } else {
+            permissionService.requireStudentLearningClass(id, teachingClass.getCourseId(), user.getUserId());
         }
         return Result.success(teachingClass);
     }
@@ -117,9 +120,12 @@ public class TeachingClassController {
     }
 
     @PostMapping("/teaching-classes")
+    @org.springframework.transaction.annotation.Transactional
     public Result add(@Valid @RequestBody TeachingClassDto request) {
-        permissionService.requireTeacherOrAdmin();
+        permissionService.requireAdmin();
         TeachingClass teachingClass = request.toEntity();
+        lockCourse(teachingClass.getCourseId());
+        teachingClass.setCourseOpen(false);
         applyTeachingClassTeacher(teachingClass, null);
         Result checkResult = checkTeachingClass(teachingClass);
         if (checkResult != null) {
@@ -127,17 +133,30 @@ public class TeachingClassController {
         }
         stampTeachingClassForCreate(teachingClass);
         int row = classMapper.insert(teachingClass);
-        return row > 0 ? Result.success() : Result.error();
+        if (row > 0) bumpCourse(teachingClass.getCourseId());
+        return row > 0 ? Result.success(teachingClass) : Result.error();
     }
 
     @PutMapping("/teaching-classes/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public Result update(@PathVariable Integer id, @Valid @RequestBody TeachingClassDto request) {
+        permissionService.requireAdmin();
         TeachingClass oldClass = classMapper.selectById(id);
         if (oldClass == null) {
             return Result.error("404", "教学班不存在");
         }
-        permissionService.requireClassTeacher(oldClass);
         TeachingClass teachingClass = request.toEntity();
+        Integer previousCourseId = oldClass.getCourseId();
+        java.util.stream.Stream.of(oldClass.getCourseId(), teachingClass.getCourseId()).filter(java.util.Objects::nonNull).distinct().sorted().forEach(this::lockCourse);
+        oldClass = classMapper.selectForUpdate(id);
+        if (oldClass == null || !java.util.Objects.equals(previousCourseId, oldClass.getCourseId())) {
+            return Result.error("409", "教学班归属已更新，请刷新后重试");
+        }
+        if (!java.util.Objects.equals(oldClass.getCourseId(), teachingClass.getCourseId()) && hasBusinessHistory(id)) {
+            return Result.error("409", "该教学班已有学习或考核记录，请新建教学班承接其他课程");
+        }
+        teachingClass.setCourseOpen(java.util.Objects.equals(oldClass.getCourseId(), teachingClass.getCourseId())
+                && Boolean.TRUE.equals(oldClass.getCourseOpen()));
         applyTeachingClassTeacher(teachingClass, oldClass);
         Result checkResult = checkTeachingClass(teachingClass);
         if (checkResult != null) {
@@ -145,17 +164,31 @@ public class TeachingClassController {
         }
         stampTeachingClassForUpdate(teachingClass, id);
         int row = classMapper.updateById(teachingClass);
+        if (row > 0) {
+            bumpCourse(oldClass.getCourseId());
+            if (!java.util.Objects.equals(oldClass.getCourseId(), teachingClass.getCourseId())) bumpCourse(teachingClass.getCourseId());
+        }
         return row > 0 ? Result.success() : Result.error();
     }
 
     @DeleteMapping("/teaching-classes/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public Result delete(@PathVariable Integer id) {
+        permissionService.requireAdmin();
         TeachingClass teachingClass = classMapper.selectById(id);
         if (teachingClass == null) {
             return Result.error("404", "教学班不存在");
         }
-        permissionService.requireClassTeacher(teachingClass);
+        boolean courseExists = !jdbc.queryForList("SELECT id FROM t_course WHERE id=? FOR UPDATE",
+                Integer.class, teachingClass.getCourseId()).isEmpty();
+        TeachingClass current = classMapper.selectForUpdate(id);
+        if (current == null || !java.util.Objects.equals(teachingClass.getCourseId(), current.getCourseId())) {
+            return Result.error("409", "教学班归属已更新，请刷新后重试");
+        }
+        if (hasBusinessHistory(id)) return Result.error("409", "该教学班已有学习或考核记录，请停用教学班以保留历史");
+        jdbc.update("DELETE FROM t_class_student WHERE class_id=?", id);
         int row = classMapper.deleteById(id);
+        if (row > 0 && courseExists) bumpCourse(teachingClass.getCourseId());
         return row > 0 ? Result.success() : Result.error();
     }
 
@@ -165,6 +198,21 @@ public class TeachingClassController {
         } catch (Exception e) {
             return null;
         }
+    }
+
+    private void lockCourse(Integer courseId) {
+        if (courseId != null) jdbc.queryForObject("SELECT id FROM t_course WHERE id=? FOR UPDATE", Integer.class, courseId);
+    }
+
+    private void bumpCourse(Integer courseId) {
+        if (courseId != null) jdbc.update("UPDATE t_course SET workflow_version=COALESCE(workflow_version,0)+1 WHERE id=?", courseId);
+    }
+
+    private boolean hasBusinessHistory(Integer classId) {
+        for (String table : java.util.List.of("t_learning_progress", "t_learning_record", "t_grade_record", "t_exam_session", "t_homework_session", "t_homework", "t_grade_import_log")) {
+            if (jdbc.queryForObject("SELECT COUNT(*) FROM " + table + " WHERE class_id=?", Long.class, classId) > 0) return true;
+        }
+        return false;
     }
 
     private void applyTeachingClassTeacher(TeachingClass teachingClass, TeachingClass oldClass) {

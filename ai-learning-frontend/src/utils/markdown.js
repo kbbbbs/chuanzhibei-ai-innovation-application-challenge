@@ -1,4 +1,5 @@
 import { protectMath } from './math.js'
+import { resolveResourceUrl } from './backendUrl.js'
 
 export function prepareMarkdown(text) {
   if (!text) return ''
@@ -23,7 +24,7 @@ export function renderMarkdown(text, { allowRemoteImages = true } = {}) {
   // 1. images ![alt](url) — MUST process before HTML escaping
   html = html.replace(/!\[([^\]]*)\]\(([^)]+)\)/g, (_, alt, url) => {
     if (!allowRemoteImages || !/^https?:\/\//i.test(url)) return `[${escapeAttribute(alt || '插图')}]`
-    blocks.push(`<img src="${escapeAttribute(url)}" alt="${escapeAttribute(alt || '')}" style="max-width:100%">`)
+    blocks.push(`<img src="${escapeAttribute(resolveResourceUrl(url))}" alt="${escapeAttribute(alt || '')}" style="max-width:100%">`)
     return `\x00${blocks.length - 1}\x00`
   })
 

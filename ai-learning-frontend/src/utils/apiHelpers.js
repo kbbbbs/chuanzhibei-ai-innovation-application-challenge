@@ -14,6 +14,13 @@ export function getRecords(payload) {
   return []
 }
 
+// The request client resolves HTTP 200 business failures. Pages call this for reads they
+// cannot render without, so a failed dependency is never shown as an empty result.
+export function requireSuccess(response) {
+  if (response?.code !== '200') throw new Error(response?.msg || '请求失败')
+  return response
+}
+
 export function getTotal(payload, fallback = 0) {
   if (!payload) return fallback
   if (typeof payload.total === 'number') return payload.total

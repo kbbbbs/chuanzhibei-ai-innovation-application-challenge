@@ -46,7 +46,7 @@ public class AgentActionExecutionService {
     }
 
     @Transactional
-    public AgentActionExecutionResult confirm(AgentActionConfirmRequest request, String clientIp) {
+    public synchronized AgentActionExecutionResult confirm(AgentActionConfirmRequest request, String clientIp) {
         if (request == null) {
             throw new BusinessException("确认请求不能为空");
         }
@@ -59,7 +59,11 @@ public class AgentActionExecutionService {
             throw new BusinessException("请先登录后再确认执行");
         }
 
+        if (request.actionId() == null) throw new BusinessException("请先生成操作预览，再确认执行");
+        var completed = pendingActionStore.lockAndReadResult(request.actionId(), user.getUserId());
+        if (completed.isPresent()) return completed.get();
         AgentPendingAction pendingAction = resolvePendingAction(request, user);
+        pendingActionStore.validateTargets(pendingAction);
         Map<String, Object> parameters = mergeParameters(pendingAction, request.parameters());
         String actionCode = normalizeActionCode(pendingAction == null ? request.actionCode() : pendingAction.actionCode());
         if (actionCode.isEmpty()) {
@@ -72,22 +76,19 @@ public class AgentActionExecutionService {
         if (preExecutionValidator != null) {
             parameters = preExecutionValidator.validateAndNormalize(actionCode, parameters);
         }
+        pendingActionStore.validateExecutionParameters(pendingAction, parameters);
         requireHighRiskConfirmation(executor, request);
 
         AgentActionExecutionContext context = new AgentActionExecutionContext(user, parameters, clientIp);
         AgentActionExecutionResult result = executor.execute(context);
         writeAuditLog(user, executor, pendingAction == null ? request.actionId() : pendingAction.actionId(),
                 parameters, result, clientIp);
-        if (pendingAction != null) {
-            pendingActionStore.remove(pendingAction.actionId());
-        }
+        pendingActionStore.completed(pendingAction.actionId(), result);
         return result;
     }
 
     private AgentPendingAction resolvePendingAction(AgentActionConfirmRequest request, AuthUtils.LoginUser user) {
-        if (request.actionId() == null) {
-            return null;
-        }
+        if (request.actionId() == null) throw new BusinessException("请先生成操作预览");
         AgentPendingAction pendingAction = pendingActionStore.findById(request.actionId())
                 .orElseThrow(() -> new BusinessException("待确认操作不存在或已被执行"));
         if (pendingAction.isExpired(LocalDateTime.now())) {
@@ -106,14 +107,14 @@ public class AgentActionExecutionService {
     }
 
     private Map<String, Object> mergeParameters(AgentPendingAction pendingAction, Map<String, Object> requestParameters) {
-        Map<String, Object> parameters = new LinkedHashMap<>();
-        if (pendingAction != null) {
-            parameters.putAll(pendingAction.parameters());
-        }
+        Map<String,Object> reviewed = pendingAction.parameters();
         if (requestParameters != null) {
-            parameters.putAll(requestParameters);
+            for (var entry : requestParameters.entrySet()) {
+                if (!objectMapper.valueToTree(entry.getValue()).equals(objectMapper.valueToTree(reviewed.get(entry.getKey()))))
+                    throw new BusinessException("操作参数已改变，请重新预览后确认");
+            }
         }
-        return parameters;
+        return new LinkedHashMap<>(reviewed);
     }
 
     private void requireHighRiskConfirmation(AgentActionExecutor executor, AgentActionConfirmRequest request) {

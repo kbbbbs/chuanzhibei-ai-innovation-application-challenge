@@ -7,6 +7,7 @@ import com.cupk.aiacademy.dto.ChapterDto;
 import com.cupk.aiacademy.mapper.ChapterMapper;
 import com.cupk.aiacademy.mapper.CourseMapper;
 import com.cupk.aiacademy.pojo.Chapter;
+import com.cupk.aiacademy.service.PermissionService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,6 +30,9 @@ public class ChapterController {
     @Autowired
     private CourseMapper courseMapper;
 
+    @Autowired
+    private PermissionService permissionService;
+
     @GetMapping("/chapters")
     public Result pages(@RequestParam(required = false) Integer courseId,
                         @RequestParam(defaultValue = "") String title,
@@ -38,7 +42,16 @@ public class ChapterController {
         QueryWrapper<Chapter> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("status", Chapter.STATUS_NORMAL);
         if (courseId != null && courseId > 0) {
+            permissionService.requireCourseContentRead(courseId);
             queryWrapper.eq("course_id", courseId);
+        } else {
+            var user = permissionService.currentUser();
+            if (permissionService.isTeacher(user)) queryWrapper.inSql("course_id", "SELECT id FROM t_course WHERE teacher_id=" + user.getUserId());
+            else if (permissionService.isStudent(user)) {
+                var courseIds = permissionService.studentCourseIds(user.getUserId());
+                if (courseIds.isEmpty()) return Result.success(page);
+                queryWrapper.in("course_id", courseIds);
+            } else throw new com.cupk.aiacademy.common.ForbiddenException("无权访问课程内容");
         }
         if (title != null && !title.trim().isEmpty()) {
             queryWrapper.like("title", title.trim());
@@ -50,6 +63,7 @@ public class ChapterController {
 
     @GetMapping("/courses/{courseId}/chapters")
     public Result listByCourse(@PathVariable Integer courseId) {
+        permissionService.requireCourseContentRead(courseId);
         if (courseMapper.selectById(courseId) == null) {
             return Result.error("404", "课程不存在");
         }
@@ -63,12 +77,14 @@ public class ChapterController {
     @GetMapping("/chapters/{id}")
     public Result selectById(@PathVariable Integer id) {
         Chapter chapter = chapterMapper.selectById(id);
+        if (isActiveChapter(chapter)) permissionService.requireCourseContentRead(chapter.getCourseId());
         return isActiveChapter(chapter) ? Result.success(chapter) : Result.error("404", "章节不存在");
     }
 
     @PostMapping("/chapters")
     public Result add(@Valid @RequestBody ChapterDto request) {
         Chapter chapter = request.toEntity();
+        permissionService.requireCourseContentTeacher(chapter.getCourseId());
         Result checkResult = checkChapter(chapter);
         if (checkResult != null) {
             return checkResult;
@@ -76,6 +92,12 @@ public class ChapterController {
         LocalDateTime now = LocalDateTime.now();
         chapter.setTitle(chapter.getTitle().trim());
         fixSortOrder(chapter);
+        if (chapter.getSortOrder() == null) {
+            // A new chapter without a position goes after the existing ones instead of sharing position 1.
+            chapter.setSortOrder(chapterMapper.selectList(new QueryWrapper<Chapter>().eq("course_id", chapter.getCourseId())
+                    .eq("status", Chapter.STATUS_NORMAL)).stream().map(Chapter::getSortOrder)
+                    .filter(java.util.Objects::nonNull).max(Integer::compare).orElse(0) + 1);
+        }
         chapter.setStatus(Chapter.STATUS_NORMAL);
         chapter.setCreatedAt(now);
         chapter.setUpdatedAt(now);
@@ -86,9 +108,12 @@ public class ChapterController {
     @PutMapping("/chapters/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody ChapterDto request) {
         Chapter chapter = request.toEntity();
-        if (!isActiveChapter(chapterMapper.selectById(id))) {
+        Chapter existing = chapterMapper.selectById(id);
+        if (!isActiveChapter(existing)) {
             return Result.error("404", "章节不存在");
         }
+        permissionService.requireCourseContentTeacher(existing.getCourseId());
+        permissionService.requireCourseContentTeacher(chapter.getCourseId());
         Result checkResult = checkChapter(chapter);
         if (checkResult != null) {
             return checkResult;
@@ -103,9 +128,11 @@ public class ChapterController {
 
     @DeleteMapping("/chapters/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (!isActiveChapter(chapterMapper.selectById(id))) {
+        Chapter existing = chapterMapper.selectById(id);
+        if (!isActiveChapter(existing)) {
             return Result.error("404", "章节不存在");
         }
+        permissionService.requireCourseContentTeacher(existing.getCourseId());
         Chapter chapter = new Chapter();
         chapter.setId(id);
         chapter.setStatus(Chapter.STATUS_DELETED);

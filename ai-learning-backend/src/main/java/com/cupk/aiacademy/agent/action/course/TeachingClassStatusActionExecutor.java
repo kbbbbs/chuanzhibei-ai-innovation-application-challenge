@@ -6,6 +6,9 @@ import com.cupk.aiacademy.agent.action.AgentActionExecutor;
 import com.cupk.aiacademy.agent.action.AgentActionRiskLevel;
 import com.cupk.aiacademy.agent.tool.course.TeachingClassStatusPlanTool;
 import com.cupk.aiacademy.common.AuthUtils;
+import com.cupk.aiacademy.common.Result;
+import com.cupk.aiacademy.controller.TeachingClassController;
+import com.cupk.aiacademy.dto.TeachingClassDto;
 import com.cupk.aiacademy.common.BusinessException;
 import com.cupk.aiacademy.mapper.TeachingClassMapper;
 import com.cupk.aiacademy.pojo.TeachingClass;
@@ -17,11 +20,14 @@ import java.util.Map;
 
 @Component
 public class TeachingClassStatusActionExecutor implements AgentActionExecutor {
+    private final TeachingClassController classMaintenance;
+
     private static final String ACTION_CODE = "teaching.class.status";
 
     private final TeachingClassMapper teachingClassMapper;
 
-    public TeachingClassStatusActionExecutor(TeachingClassMapper teachingClassMapper) {
+    public TeachingClassStatusActionExecutor(TeachingClassMapper teachingClassMapper, TeachingClassController classMaintenance) {
+        this.classMaintenance = classMaintenance;
         this.teachingClassMapper = teachingClassMapper;
     }
 
@@ -48,7 +54,7 @@ public class TeachingClassStatusActionExecutor implements AgentActionExecutor {
     @Override
     public AgentActionExecutionResult execute(AgentActionExecutionContext context) {
         AuthUtils.LoginUser user = context.user();
-        requireTeacherOrAdmin(user);
+        requireAdmin(user);
 
         Map<String, Object> parameters = context.parameters();
         Integer classId = requiredInteger(parameters, "classId", "class_id", "teachingClassId", "id");
@@ -67,10 +73,8 @@ public class TeachingClassStatusActionExecutor implements AgentActionExecutor {
         Integer oldStatus = teachingClass.getStatus();
         teachingClass.setStatus(status);
         teachingClass.setUpdateTime(LocalDateTime.now());
-        int row = teachingClassMapper.updateById(teachingClass);
-        if (row <= 0) {
-            throw new BusinessException("变更教学班状态失败");
-        }
+        Result saved = classMaintenance.update(classId, TeachingClassDto.fromEntity(teachingClass));
+        if (!"200".equals(saved.getCode())) throw new BusinessException(saved.getMsg());
 
         Map<String, Object> data = new LinkedHashMap<>();
         data.put("classId", teachingClass.getId());
@@ -90,9 +94,9 @@ public class TeachingClassStatusActionExecutor implements AgentActionExecutor {
         );
     }
 
-    private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以变更教学班状态");
+    private void requireAdmin(AuthUtils.LoginUser user) {
+        if (!isAdmin(user)) {
+            throw new BusinessException("只有管理员可以变更教学班状态");
         }
     }
 

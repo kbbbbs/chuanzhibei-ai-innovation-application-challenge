@@ -29,17 +29,15 @@ class RuntimeModelPolicyTest {
 
     @ParameterizedTest
     @ValueSource(strings={"gpt-4o", " GPT-5 ", "openai/gpt-4.1", "o1", "o3-mini", "o4-mini", "chatgpt-latest", "text-embedding-3-small"})
-    void rejectsGptAndOpenAiModelsIncludingRequestOverrides(String model) {
+    void allowsGptAndOpenAiModelsIncludingRequestOverrides(String model) {
         var endpoint = endpoint("https://models.example.test", "qwen-test");
-        assertEquals("MODEL_BLOCKED", assertThrows(ModelConfigurationException.class,
-                () -> RuntimeModelPolicy.requireReady(endpoint, model)).code());
+        assertDoesNotThrow(() -> RuntimeModelPolicy.requireReady(endpoint, model));
     }
 
     @ParameterizedTest
     @ValueSource(strings={"https://api.openai.com", "https://api.openai.com/v1", "https://models.openai.com", "https://api.openai.com./v1"})
-    void rejectsOfficialOpenAiEndpointRegardlessOfModelAlias(String url) {
-        assertEquals("MODEL_BLOCKED", assertThrows(ModelConfigurationException.class,
-                () -> RuntimeModelPolicy.requireReady(endpoint(url, "custom-alias"), null)).code());
+    void allowsOfficialOpenAiEndpoint(String url) {
+        assertDoesNotThrow(() -> RuntimeModelPolicy.requireReady(endpoint(url, "custom-alias"), null));
     }
 
     @ParameterizedTest
@@ -57,5 +55,15 @@ class RuntimeModelPolicyTest {
         var disabled = endpoint("https://models.example.test", "qwen-test");
         disabled.setEnabled(false);
         assertEquals("MODEL_DISABLED", RuntimeModelPolicy.status(disabled));
+    }
+
+    @Test void httpAllowlistDoesNotRelaxUrlValidation() {
+        var allowlist = "ollama";
+        assertDoesNotThrow(() -> RuntimeModelPolicy.requireAllowedEndpoint("http://ollama:11434/v1", allowlist));
+        for (String url : java.util.List.of("http://other:11434/v1", "http://user:pass@ollama:11434/v1",
+                "http://ollama:11434/v1?secret=key", "http://ollama:11434/v1#fragment")) {
+            assertThrows(ModelConfigurationException.class,
+                    () -> RuntimeModelPolicy.requireAllowedEndpoint(url, allowlist));
+        }
     }
 }

@@ -25,6 +25,8 @@ public class AgentPendingActionQueryService {
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {
     };
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private AgentActionSafetyService safety;
     private final AgentPendingActionMapper pendingActionMapper;
     private final ObjectMapper objectMapper;
     private final Map<String, AgentActionExecutor> executorsByActionCode;
@@ -46,6 +48,7 @@ public class AgentPendingActionQueryService {
                 .orderByDesc("created_at")
                 .last("LIMIT " + clampLimit(limit));
         return pendingActionMapper.selectList(query).stream()
+                .filter(entity -> safety == null || !safety.isCompleted(entity.getActionId()))
                 .map(entity -> toResponse(entity, false))
                 .collect(Collectors.toList());
     }
@@ -63,6 +66,7 @@ public class AgentPendingActionQueryService {
         if (entity.getCreatedBy() != null && !entity.getCreatedBy().equals(userId)) {
             throw new BusinessException("无权限查看该待确认操作");
         }
+        if (safety != null && safety.isCompleted(entity.getActionId())) throw new BusinessException("该操作已执行");
         AgentPendingAction action = toDomain(entity);
         if (action.isExpired(LocalDateTime.now())) {
             throw new BusinessException("待确认操作已过期，请重新发起");

@@ -77,6 +77,7 @@ public class AgentChatService {
             + "\"grade_record_search\","
             + "\"learning_progress\","
             + "\"learning_plan\","
+            + "\"learning_analysis_report\","
             + "\"paper_local_search\","
             + "\"teacher_application_search\","
             + "\"import_log_search\","
@@ -135,6 +136,9 @@ public class AgentChatService {
     /**
      * 外部依赖：模型调用、配置、数据库 Mapper、JSON 处理、知识库检索和工具调用。
      */
+    @Autowired(required = false)
+    private com.cupk.aiacademy.analysis.LearningAnalysisReportService learningReports;
+
     private final ChatModelClient chatModelClient;
     private final AgentChatProperties chatProperties;
     private final AgentDefinitionMapper agentDefinitionMapper;
@@ -362,6 +366,7 @@ public class AgentChatService {
 
         Optional<AgentDirectActionReply> directReply = Optional.empty();
         String selectedToolContext = "";
+        com.cupk.aiacademy.agent.tool.api.AgentToolResult reportResult = null;
         try {
             if (canUseAgentTools()) {
                 if (activeDraft != null && isClarificationCancellation(content)) {
@@ -372,6 +377,7 @@ public class AgentChatService {
                 if (directReply.isEmpty() && unifiedAgentPlanner != null) {
                     AgentPlanningOutcome outcome = unifiedAgentPlanner.plan(agent, content);
                     directReply = Optional.ofNullable(outcome.getDirectReply());
+                    reportResult = outcome.getReadToolResult();
                     selectedToolContext = outcome.getToolContext() == null ? "" : outcome.getToolContext();
                 } else if (directReply.isEmpty() && unifiedAgentPlanner == null) {
                     directReply = schemaDrivenAgentPlanner == null
@@ -397,6 +403,21 @@ public class AgentChatService {
             AgentMessage userMessage = setMessage(sessionId, "user", content);
             ensureSessionTitle(session, content);
             throw recordModelFailure(sessionId, userMessage.getId(), e);
+        }
+
+        if (reportResult != null && "learning_analysis_report".equals(reportResult.toolName()) && learningReports != null) {
+            var report = learningReports.createFromTool(reportResult, UUID.randomUUID().toString(), agent.getId());
+            AgentMessage userMessage = setMessage(sessionId, "user", content);
+            ensureSessionTitle(session, content);
+            AgentMessage answer = setMessage(sessionId, "assistant", "学情报告任务已创建，正在生成。\n\n[查看报告](/grade-analysis?reportId=" + report.id() + ")");
+            answer.setToolName("learning_analysis_report");
+            answer.setToolResult(report.id());
+            messageMapper.updateById(answer);
+            touchSession(sessionId);
+            var response = toChatResponse(sessionId, userMessage.getId(), answer);
+            response.setReportId(report.id());
+            response.setReportStatus(report.status());
+            return response;
         }
 
         if (directReply.isPresent()) {
@@ -460,6 +481,52 @@ public class AgentChatService {
         touchSession(sessionId);
 
         return toChatResponse(sessionId, userMessage.getId(), assistantMessage);
+    }
+
+    /** Shared tool step used by the unified assistant without a second chat/model pipeline. */
+    public record AssistantToolStep(AgentDirectActionReply reply, String context,
+                                    com.cupk.aiacademy.agent.tool.api.AgentToolResult reportResult) {
+        public AssistantToolStep(AgentDirectActionReply reply, String context) { this(reply, context, null); }
+    }
+
+    public com.cupk.aiacademy.analysis.LearningAnalysisReportService.Report createAssistantLearningReport(
+            Integer sessionId, com.cupk.aiacademy.agent.tool.api.AgentToolResult result, String requestId) {
+        var session = ensureSession(sessionId);
+        if (learningReports == null) throw new BusinessException("学情分析服务不可用");
+        String key = "assistant-" + UUID.nameUUIDFromBytes((sessionId + ":" + requestId).getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        return learningReports.createFromTool(result, key, session.getAgentId());
+    }
+
+    public Integer assistantAgentId() {
+        String role = UserContext.getCurrentRoleCode();
+        String code = "teacher".equals(role) ? "teacher_assistant" : "admin".equals(role) ? "admin_assistant" : DEFAULT_AGENT_CODE;
+        var selected = agentDefinitionMapper.selectOne(new QueryWrapper<AgentDefinition>().eq("code", code).eq("status", ACTIVE_STATUS));
+        return ensureAgentDefinition(selected == null ? DEFAULT_AGENT_ID : selected.getId()).getId();
+    }
+
+    public Prompt assistantPrompt(Integer sessionId, List<org.springframework.ai.chat.messages.Message> messages) {
+        var session = ensureSession(sessionId);
+        return promptAssembler.buildAssistantPrompt(ensureAgentDefinition(session.getAgentId()), messages);
+    }
+
+    public AssistantToolStep planAssistantTools(Integer sessionId, String content) {
+        AgentSession session = ensureSession(sessionId);
+        AgentDefinition agent = ensureAgentDefinition(session.getAgentId());
+        // Course evidence is selected by the session scope, independently of Agent bindings.
+        agent.setKnowledgeBaseIds("[]");
+        var history = loadMessages(sessionId);
+        if (!history.isEmpty() && "user".equals(history.getLast().getRole()))
+            history = history.subList(0, history.size() - 1);
+        var draft = readActiveClarificationDraft(history);
+        if (draft != null && isClarificationCancellation(content))
+            return new AssistantToolStep(new AgentDirectActionReply("已取消本次操作。", null), "");
+        if (draft != null && schemaDrivenAgentPlanner != null) {
+            var continuation = schemaDrivenAgentPlanner.tryContinue(agent, draft, content);
+            if (continuation.isPresent()) return new AssistantToolStep(continuation.get(), "");
+        }
+        if (unifiedAgentPlanner == null) return new AssistantToolStep(null, "");
+        var outcome = unifiedAgentPlanner.plan(agent, content);
+        return new AssistantToolStep(outcome.getDirectReply(), outcome.getToolContext(), outcome.getReadToolResult());
     }
 
     private String guardUnsupportedOperationClaim(String content) {
@@ -662,11 +729,18 @@ public class AgentChatService {
     }
 
     private void applyDefaultAgentTools(AgentDefinition agent) {
-        if (agent == null || !isDefaultAgent(agent)) {
+        if (agent == null || !(isDefaultAgent(agent)
+                || Set.of("teacher_assistant", "admin_assistant").contains(agent.getCode() == null ? "" : agent.getCode()))) {
             return;
         }
         if (isBlank(agent.getEnabledTools())) {
             agent.setEnabledTools(DEFAULT_AGENT_ENABLED_TOOLS);
+        } else {
+            List<String> enabled = new ArrayList<>(new AgentConfigurationParser(objectMapper).parseEnabledTools(agent.getEnabledTools()));
+            if (!enabled.contains("learning_analysis_report")) {
+                enabled.add("learning_analysis_report");
+                agent.setEnabledTools(objectMapper.valueToTree(enabled).toString());
+            }
         }
     }
 
@@ -822,6 +896,7 @@ public class AgentChatService {
         response.setId(message.getId());
         response.setSessionId(message.getSessionId());
         response.setRole(message.getRole());
+        if ("learning_analysis_report".equals(message.getToolName())) response.setReportId(message.getToolResult());
         response.setContent(isPendingActionMessage(message) && pendingAction == null
                 ? "动作已结束"
                 : message.getContent());

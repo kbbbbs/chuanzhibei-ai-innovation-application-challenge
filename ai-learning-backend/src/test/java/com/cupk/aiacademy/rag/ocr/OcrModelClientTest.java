@@ -138,9 +138,16 @@ class OcrModelClientTest {
     }
 
     @Test
-    void modelPolicyCannotBeBypassed() {
+    void gptModelUsesCompatibleProtocol() {
         settings.getOcr().setModel("gpt-4o");
-        assertEquals("MODEL_BLOCKED", assertThrows(ModelConfigurationException.class,
+        assertEquals("recognized text", client().recognize(IMAGE, "image/png"));
+        assertEquals("gpt-4o", requests.getFirst().body().path("model").asText());
+    }
+
+    @Test
+    void invalidEndpointDoesNotSendARequest() {
+        settings.getOcr().setBaseUrl("http://untrusted.example.test");
+        assertEquals("MODEL_ENDPOINT_INVALID", assertThrows(ModelConfigurationException.class,
                 () -> client().recognize(IMAGE, "image/png")).code());
         assertTrue(requests.isEmpty());
     }

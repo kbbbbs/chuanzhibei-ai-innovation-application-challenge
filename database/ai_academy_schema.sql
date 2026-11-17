@@ -345,7 +345,7 @@ CREATE TABLE `t_course` (
 DROP TABLE IF EXISTS `t_home_course_recommendation`;
 CREATE TABLE `t_home_course_recommendation` (
   `id` int NOT NULL AUTO_INCREMENT,
-  `course_id` int NOT NULL COMMENT '推荐课程ID',
+  `course_id` int DEFAULT NULL COMMENT '推荐课程ID',
   `reason` varchar(255) DEFAULT NULL COMMENT '首页推荐理由',
   `sort_order` int NOT NULL DEFAULT '1' COMMENT '首页展示顺序，越小越靠前',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '0停用，1启用',
@@ -977,7 +977,7 @@ DROP TABLE IF EXISTS `t_teaching_class`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `t_teaching_class` (
   `id` int NOT NULL AUTO_INCREMENT COMMENT '教学班编号',
-  `course_id` int DEFAULT NULL COMMENT '课程编号，待关联时为空',
+  `course_id` int NOT NULL COMMENT '课程编号',
   `teacher_id` int NOT NULL COMMENT '教师编号',
   `class_name` varchar(100) NOT NULL COMMENT '教学班名称',
   `semester` varchar(50) DEFAULT NULL COMMENT '学期',

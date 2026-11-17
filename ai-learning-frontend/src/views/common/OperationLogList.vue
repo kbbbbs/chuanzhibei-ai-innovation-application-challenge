@@ -1,17 +1,13 @@
 <template>
-  <div class="operation-log-page">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <div>
-            <h2>{{ pageTitle }}</h2>
-            <p>{{ pageSubtitle }}</p>
-          </div>
-          <el-button :icon="Refresh" :loading="loading" @click="loadLogs">刷新</el-button>
-        </div>
+  <div class="operation-log-page workspace-page">
+    <PageHeader :eyebrow="userStore.isAdmin ? '系统配置' : '通知与记录'" :title="pageTitle" :description="pageSubtitle">
+      <template #actions>
+        <el-button :icon="Refresh" :loading="loading" @click="loadLogs">刷新</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm" class="filter-form">
+    <section class="filter-panel" aria-label="筛选日志">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item :label="userStore.isAdmin ? '用户ID' : '学生ID'">
           <el-input
             v-model="searchForm.userId"
@@ -68,8 +64,19 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="logs" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="日志未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadLogs"
+    />
+
+    <section v-else class="table-panel" aria-label="日志列表">
+      <el-table :data="logs" stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="createTime" label="时间" min-width="170">
           <template #default="{ row }">{{ formatDisplayTime(row.createTime) }}</template>
@@ -113,7 +120,6 @@
       </el-table>
 
       <el-pagination
-        class="pagination"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
@@ -122,9 +128,9 @@
         @current-change="loadLogs"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
 
-    <el-drawer v-model="detailVisible" title="日志详情" size="520px">
+    <el-drawer v-model="detailVisible" title="日志详情" size="min(520px, 100vw)">
       <template v-if="currentLog">
         <el-descriptions :column="1" border>
           <el-descriptions-item label="时间">{{ formatDisplayTime(currentLog.createTime) }}</el-descriptions-item>
@@ -163,14 +169,20 @@ import { Refresh, Search } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { getOperationLogs } from '@/api/operationLog'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { formatLocalDateTime, getRecords, getTotal } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { formatLocalDateTime, getRecords, getTotal, requireSuccess } from '@/utils/apiHelpers'
 
 const userStore = useUserStore()
 
 const methodOptions = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']
 
 const logs = ref([])
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  logs.value = []
+  pagination.total = 0
+})
 const detailVisible = ref(false)
 const currentLog = ref(null)
 const timeRange = ref([])
@@ -229,20 +241,12 @@ const cleanParams = () => {
   return params
 }
 
-const loadLogs = async () => {
-  loading.value = true
-  try {
-    const res = await getOperationLogs(cleanParams())
-    if (res.code === '200') {
-      logs.value = getRecords(res.data).map(normalizeLog)
-      pagination.total = getTotal(res.data)
-    }
-  } catch (e) {
-    // 全局已提示
-  } finally {
-    loading.value = false
-  }
-}
+const loadLogs = () => guarded(async (isCurrent) => {
+  const res = requireSuccess(await getOperationLogs(cleanParams()))
+  if (!isCurrent()) return
+  logs.value = getRecords(res.data).map(normalizeLog)
+  pagination.total = getTotal(res.data)
+})
 
 const handleSearch = () => {
   pagination.pageNum = 1
@@ -322,44 +326,20 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-}
-
-.card-header h2 {
-  margin: 0;
-  font-size: 20px;
-  line-height: 1.3;
-  color: var(--text-primary);
-}
-
-.card-header p {
-  margin: 4px 0 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-.filter-form {
-  margin-bottom: 14px;
-}
-
-.short-input {
+.filter-panel :deep(.el-form--inline .short-input) {
   width: 120px;
 }
 
-.medium-input {
+.filter-panel :deep(.el-form--inline .medium-input) {
   width: 180px;
 }
 
-.url-input {
+.filter-panel :deep(.el-form--inline .url-input) {
   width: 220px;
 }
 
-.time-range {
-  width: 360px;
+.filter-panel :deep(.el-form--inline .time-range) {
+  width: min(360px, 100%);
 }
 
 .user-cell {
@@ -375,55 +355,44 @@ onMounted(() => {
 }
 
 .duration-ok {
-  color: #15803d;
+  color: var(--positive);
 }
 
 .duration-warn {
-  color: #b45309;
+  color: var(--caution);
 }
 
 .duration-slow {
-  color: #b91c1c;
+  color: var(--critical);
   font-weight: 600;
 }
 
-.pagination {
-  margin-top: 20px;
-  justify-content: center;
-}
-
 .detail-section {
-  margin-top: 20px;
+  margin-top: var(--space-5);
 }
 
 .detail-section h3 {
-  margin: 0 0 10px;
-  font-size: 15px;
-  color: var(--text-primary);
+  margin: 0 0 var(--space-2);
+  font-size: var(--text-md);
 }
 
 pre {
   margin: 0;
-  padding: 12px;
   min-height: 120px;
+  padding: var(--space-3);
   overflow: auto;
-  border-radius: var(--radius-sm);
-  background: #111827;
-  color: #e5e7eb;
-  font-size: 12px;
+  color: var(--text-on-code);
+  background: var(--surface-code);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
   line-height: 1.55;
 }
 
-@media (max-width: 900px) {
-  .card-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .short-input,
-  .medium-input,
-  .url-input,
-  .time-range {
+@media (max-width: 640px) {
+  .filter-panel :deep(.el-form--inline .short-input),
+  .filter-panel :deep(.el-form--inline .medium-input),
+  .filter-panel :deep(.el-form--inline .url-input),
+  .filter-panel :deep(.el-form--inline .time-range) {
     width: 100%;
   }
 }

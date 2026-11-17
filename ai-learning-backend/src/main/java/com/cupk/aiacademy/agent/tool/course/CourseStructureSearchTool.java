@@ -47,6 +47,8 @@ public class CourseStructureSearchTool implements AgentTool {
 
     @Override
     public AgentToolResult execute(AgentToolContext context) {
+        if (support.isAdmin(com.cupk.aiacademy.common.UserContext.get()))
+            return AgentToolResult.read(name(), "管理员可维护课程基本信息，教学内容由所属教师维护。", Map.of("count", 0));
         String courseTitle = context.stringArgument("courseTitle");
         QueryWrapper<Course> courseQuery = new QueryWrapper<>();
         if (!support.applyCourseVisibility(courseQuery)) {

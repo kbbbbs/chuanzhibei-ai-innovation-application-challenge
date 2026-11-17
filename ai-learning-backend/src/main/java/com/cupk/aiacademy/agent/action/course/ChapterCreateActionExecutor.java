@@ -18,6 +18,8 @@ import java.util.Map;
 
 @Component
 public class ChapterCreateActionExecutor implements AgentActionExecutor {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.service.PermissionService permissionService;
     private static final String ACTION_CODE = "chapter.create";
 
     private final ChapterMapper chapterMapper;
@@ -85,7 +87,8 @@ public class ChapterCreateActionExecutor implements AgentActionExecutor {
 
     private Course resolveManagedCourse(Map<String, Object> parameters, AuthUtils.LoginUser user) {
         Course course = resolveCourse(parameters);
-        if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
+        if (permissionService != null) permissionService.requireCourseContentTeacher(course.getId());
+        if (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId())) {
             throw new BusinessException("只能在当前登录教师负责的课程下创建章节");
         }
         return course;
@@ -111,8 +114,8 @@ public class ChapterCreateActionExecutor implements AgentActionExecutor {
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以创建章节");
+        if (user == null || !isTeacher(user)) {
+            throw new BusinessException("仅所属教师可以创建章节");
         }
     }
 

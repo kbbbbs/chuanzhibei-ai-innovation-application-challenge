@@ -76,12 +76,33 @@ public class PermissionService {
         if (course == null) return false;
         if ("teacher".equals(active.getRoleCode())) return Objects.equals(course.getTeacherId(), active.getUserId());
         if (!"student".equals(active.getRoleCode()) || !Integer.valueOf(1).equals(course.getStatus())) return false;
-        List<Integer> classIds = studentClassIds(active.getUserId());
-        if (classIds.isEmpty()) return false;
-        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds).eq("course_id", courseId).eq("status", 1);
-        return classMapper.selectList(query).stream().anyMatch(teachingClass ->
-                Objects.equals(teachingClass.getCourseId(), courseId) && Integer.valueOf(1).equals(teachingClass.getStatus()));
+        return studentCourseIds(active.getUserId()).contains(courseId);
+    }
+
+    public void requireCourseContentRead(Integer courseId) {
+        AuthUtils.LoginUser user = currentUser();
+        Course course = getCourse(courseId);
+        if (authUtils.isTeacher(user) && Objects.equals(course.getTeacherId(), user.getUserId())) return;
+        if (authUtils.isStudent(user) && studentCourseIds(user.getUserId()).contains(courseId)) return;
+        throw new ForbiddenException("无权访问该课程内容");
+    }
+
+    public void requireCourseContentTeacher(Integer courseId) {
+        AuthUtils.LoginUser user = currentUser();
+        if (authUtils.isTeacher(user) && Objects.equals(getCourse(courseId).getTeacherId(), user.getUserId())) return;
+        throw new ForbiddenException("仅所属教师可维护课程内容");
+    }
+
+    public void requireStudentLearningClass(Integer classId, Integer courseId, Integer studentId) {
+        TeachingClass teachingClass = getTeachingClass(classId);
+        Course course = getCourse(courseId);
+        if (!Objects.equals(teachingClass.getCourseId(), courseId)
+                || !Integer.valueOf(1).equals(course.getStatus())
+                || !Integer.valueOf(1).equals(teachingClass.getStatus())
+                || !Boolean.TRUE.equals(teachingClass.getCourseOpen())
+                || !isStudentInClass(classId, studentId)) {
+            throw new ForbiddenException("该教学班尚未向你开放课程");
+        }
     }
 
     public boolean isAdmin() {
@@ -261,42 +282,33 @@ public class PermissionService {
     public List<Integer> studentClassIds(Integer studentId) {
         QueryWrapper<ClassStudent> query = new QueryWrapper<>();
         query.eq("student_id", studentId).eq("status", 1).orderByDesc("id");
-        List<Integer> joined = classStudentMapper.selectList(query).stream()
+        return classStudentMapper.selectList(query).stream()
                 .map(ClassStudent::getClassId)
                 .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
-        if (joined.isEmpty()) return List.of();
-        QueryWrapper<TeachingClass> active = new QueryWrapper<>();
-        active.in("id", joined).eq("status", 1);
-        return classMapper.selectList(active).stream()
-                .filter(teachingClass -> Integer.valueOf(1).equals(teachingClass.getStatus()))
-                .map(TeachingClass::getId)
                 .distinct()
                 .toList();
     }
 
     public List<Integer> studentCourseIds(Integer studentId) {
+        return studentLearningClasses(studentId).stream().map(TeachingClass::getCourseId).distinct().toList();
+    }
+
+    public List<Integer> studentLearningClassIds(Integer studentId) {
+        return studentLearningClasses(studentId).stream().map(TeachingClass::getId).toList();
+    }
+
+    private List<TeachingClass> studentLearningClasses(Integer studentId) {
         List<Integer> classIds = studentClassIds(studentId);
-        if (classIds.isEmpty()) {
-            return List.of();
-        }
+        if (classIds.isEmpty()) return List.of();
         QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds).eq("status", 1);
-        List<Integer> joinedCourses = classMapper.selectList(query).stream()
-                .filter(teachingClass -> Integer.valueOf(1).equals(teachingClass.getStatus()))
-                .map(TeachingClass::getCourseId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
-        if (joinedCourses.isEmpty()) return List.of();
-        QueryWrapper<Course> published = new QueryWrapper<>();
-        published.in("id", joinedCourses).eq("status", 1);
-        return courseMapper.selectList(published).stream()
-                .filter(course -> Integer.valueOf(1).equals(course.getStatus()))
-                .map(Course::getId)
-                .distinct()
-                .toList();
+        query.in("id", classIds).eq("status", 1).eq("course_open", true);
+        return classMapper.selectList(query).stream()
+                .filter(item -> classIds.contains(item.getId()) && Integer.valueOf(1).equals(item.getStatus())
+                        && Boolean.TRUE.equals(item.getCourseOpen()) && item.getCourseId() != null)
+                .filter(item -> {
+                    Course course = courseMapper.selectById(item.getCourseId());
+                    return course != null && Integer.valueOf(1).equals(course.getStatus());
+                }).toList();
     }
 
     public List<Integer> teacherClassIds(Integer teacherId) {

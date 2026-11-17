@@ -33,11 +33,15 @@ public class AgentDefinitionController {
     @GetMapping
     public Result listDefinitions(@RequestParam(required = false) String keyword,
                                   @RequestParam(required = false) Integer status) {
+        Result forbidden = requireAdmin();
+        if (forbidden != null) return forbidden;
         return Result.success(agentDefinitionService.listDefinitions(keyword, status));
     }
 
     @GetMapping("/{agentId}")
     public Result getDefinition(@PathVariable Integer agentId) {
+        Result forbidden = requireAdmin();
+        if (forbidden != null) return forbidden;
         return Result.success(agentDefinitionService.getDefinition(agentId));
     }
 

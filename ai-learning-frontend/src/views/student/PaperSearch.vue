@@ -1,27 +1,26 @@
 <template>
-  <div class="paper-search">
-    <el-card>
-      <template #header>
-        <div class="header-row">
-          <span>论文查询</span>
-          <el-button text @click="advancedVisible = !advancedVisible">
-            {{ advancedVisible ? '收起高级筛选' : '展开高级筛选' }}
-          </el-button>
-        </div>
+  <div class="paper-search workspace-page">
+    <PageHeader eyebrow="AI 学伴" title="论文查询" description="检索本地库和公开论文源，收藏、记录阅读状态，并写下个人笔记。">
+      <template #actions>
+        <el-button @click="advancedVisible = !advancedVisible">
+          {{ advancedVisible ? '收起高级筛选' : '展开高级筛选' }}
+        </el-button>
       </template>
+    </PageHeader>
 
+    <section class="filter-panel" aria-label="检索条件">
       <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item label="关键词">
           <el-input
             v-model="searchForm.keyword"
+            class="keyword-input"
             placeholder="输入论文标题或关键词"
             clearable
-            style="width: 360px"
             @keyup.enter="handleSearch"
           />
         </el-form-item>
         <el-form-item label="来源">
-          <el-select v-model="searchForm.source" style="width: 160px" @change="resetPage">
+          <el-select v-model="searchForm.source" @change="resetPage">
             <el-option label="本地数据库" value="local" />
             <el-option label="arXiv" value="arxiv" />
             <el-option label="OpenAlex" value="openalex" />
@@ -29,7 +28,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="排序">
-          <el-select v-model="searchForm.sortBy" style="width: 150px" @change="resetPage">
+          <el-select v-model="searchForm.sortBy" @change="resetPage">
             <el-option label="相关优先" value="relevance" />
             <el-option label="最新优先" value="latest" />
             <el-option label="引用优先" value="citations" />
@@ -45,12 +44,12 @@
         </el-form-item>
       </el-form>
 
-      <el-form v-show="advancedVisible" :inline="true" :model="searchForm" class="advanced-form">
+      <el-form v-show="advancedVisible" :inline="true" :model="searchForm" class="advanced-form" @submit.prevent>
         <el-form-item label="作者">
-          <el-input v-model="searchForm.author" placeholder="作者名" style="width: 180px" @change="resetPage" />
+          <el-input v-model="searchForm.author" placeholder="作者名" @change="resetPage" />
         </el-form-item>
         <el-form-item label="期刊/会议">
-          <el-input v-model="searchForm.venue" placeholder="来源名称" style="width: 180px" @change="resetPage" />
+          <el-input v-model="searchForm.venue" placeholder="来源名称" @change="resetPage" />
         </el-form-item>
         <el-form-item label="年份范围">
           <div class="year-range">
@@ -66,50 +65,48 @@
           <el-checkbox v-model="searchForm.openAccessOnly" @change="resetPage">仅看可读全文</el-checkbox>
         </el-form-item>
       </el-form>
-    </el-card>
+    </section>
 
-    <el-card style="margin-top:16px" v-if="showRecommendations">
-      <template #header>
-        <div class="card-header">
-          <span>📖 为你推荐</span>
-          <div class="recommend-actions">
-            <el-button size="small" :loading="recLoading" @click="loadRecommend">刷新</el-button>
-            <el-button size="small" @click="showRecommendations = false">隐藏</el-button>
-          </div>
+    <section v-if="showRecommendations" class="content-panel" aria-labelledby="paper-recommend-heading">
+      <div class="section-head">
+        <h2 id="paper-recommend-heading">为你推荐</h2>
+        <div class="toolbar">
+          <el-button size="small" :loading="recLoading" @click="loadRecommend">刷新</el-button>
+          <el-button size="small" @click="showRecommendations = false">隐藏</el-button>
         </div>
-      </template>
-      <div v-loading="recLoading">
+      </div>
+      <div v-loading="recLoading" class="rec-list">
         <div v-if="recPapers.length === 0 && !recLoading" class="recommend-empty">暂无推荐</div>
-        <div v-for="p in recPapers" :key="p.paperId" class="rec-item" @click="handleDetail(p)">
-          <div class="rec-title-row">
+        <button v-for="p in recPapers" :key="p.paperId" type="button" class="rec-item" @click="handleDetail(p)">
+          <span class="rec-title-row">
             <span class="rec-title">{{ p.title }}</span>
-            <div class="rec-tags">
+            <span class="rec-tags">
               <el-tag size="small" type="success" effect="plain">{{ p.citationCount || 0 }} 引用</el-tag>
               <el-tag size="small" effect="plain">{{ sourceLabel(p.source) }}</el-tag>
-            </div>
-          </div>
-          <div class="rec-meta">
+            </span>
+          </span>
+          <span class="rec-meta">
             {{ p.authors?.map(a => a.name).slice(0, 3).join(', ') || '未知' }}
             <template v-if="p.year"> · {{ p.year }}</template>
             <template v-if="p.venue"> · {{ p.venue }}</template>
-          </div>
-          <div class="rec-abstract" v-if="p.abstractText">{{ p.abstractText.slice(0, 200) }}…</div>
-        </div>
+          </span>
+          <span v-if="p.abstractText" class="rec-abstract">{{ p.abstractText.slice(0, 200) }}…</span>
+        </button>
       </div>
-    </el-card>
+    </section>
 
-    <el-card style="margin-top: 16px" v-loading="loading">
-      <div v-if="searchError && !loading" class="search-error" role="alert">
-        <strong>论文检索失败</strong>
-        <p>{{ searchError }}</p>
-        <el-button type="primary" @click="handleSearch">重新搜索</el-button>
-        <p class="search-error-hint">也可以在上方更换论文来源或关键词后搜索。</p>
-      </div>
+    <section class="table-panel" v-loading="loading" aria-label="检索结果">
+      <ErrorNotice v-if="searchError && !loading" class="search-error" title="论文检索失败" :message="searchError">
+        <template #actions>
+          <el-button type="primary" size="small" @click="handleSearch">重新搜索</el-button>
+        </template>
+      </ErrorNotice>
+      <p v-if="searchError && !loading" class="search-error-hint">也可以在上方更换论文来源或关键词后搜索。</p>
       <div v-else-if="hasSearched && total === 0 && !loading" class="search-empty">
         <template v-if="searchForm.source !== 'local' && isChinese(searchForm.keyword)">
           「{{ searchForm.keyword }}」是中文关键词，{{ sourceLabel(searchForm.source) }} 为英文论文库，中文检索结果有限。
           <el-button type="primary" link @click="switchToLocal">切换到本地数据库</el-button>
-          <span style="margin:0 8px;color:#c0c4cc">|</span>
+          <span class="empty-divider" aria-hidden="true">|</span>
           或尝试英文关键词，如 Machine Learning / Deep Learning / Neural Network
         </template>
         <template v-else-if="searchForm.source !== 'local'">
@@ -120,7 +117,7 @@
         </template>
       </div>
 
-      <el-table :data="papers" border stripe v-if="!hasSearched || total > 0">
+      <el-table :data="papers" stripe v-if="!hasSearched || total > 0">
         <template #empty>
           <AppEmpty v-if="!loading && !hasSearched" description="请输入关键词搜索论文" />
         </template>
@@ -144,9 +141,9 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="300" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 300" fixed="right">
           <template #default="{ row }">
-            <div class="action-btns">
+            <RowActions :label="row.title || '论文'">
               <el-button size="small" type="primary" @click="handleDetail(row)">详情</el-button>
               <el-button v-if="row.openAccessPdf?.url || row.url" size="small" @click="openPdf(row)">原文</el-button>
               <el-button size="small" text @click="toggleFavorite(row)">
@@ -155,7 +152,7 @@
               <el-button size="small" text @click="toggleReadStatus(row)">
                 {{ readStatusLabel(row.paperId) }}
               </el-button>
-            </div>
+            </RowActions>
           </template>
         </el-table-column>
       </el-table>
@@ -169,9 +166,8 @@
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="handleSearch"
         @size-change="handleSizeChange"
-        class="pagination-bar"
       />
-    </el-card>
+    </section>
 
     <el-dialog v-model="detailVisible" title="论文详情" width="860px">
       <template v-if="detail">
@@ -192,6 +188,7 @@
             inline-prompt
             active-text="已收藏"
             inactive-text="收藏"
+            aria-label="收藏论文"
             @change="updateDetailFavorite"
           />
           <el-segmented
@@ -236,6 +233,7 @@
             v-model="detailMark.noteMd"
             language="zh-CN"
             class="note-editor"
+            :theme="resolvedTheme"
             :preview="false"
             :html-preview="false"
             :toolbars-exclude="['previewOnly', 'htmlPreview', 'catalog', 'github']"
@@ -257,7 +255,13 @@ import { ElMessage } from 'element-plus'
 import { MdEditor } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { useUserStore } from '@/store/user'
+import { resolveResourceUrl } from '@/utils/backendUrl'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
+import { useTheme } from '@/composables/useTheme'
 import {
   deletePaperMark,
   getPaperDetail,
@@ -271,6 +275,8 @@ import {
 
 const userStore = useUserStore()
 const route = useRoute()
+const narrow = useNarrowScreen()
+const { resolvedTheme } = useTheme()
 const advancedVisible = ref(false)
 const DEFAULT_SEARCH_SOURCE = 'arxiv'
 
@@ -442,7 +448,7 @@ function switchToLocal() {
 }
 
 function windowOpen(url) {
-  if (url) window.open(url, '_blank')
+  if (url) window.open(resolveResourceUrl(url), '_blank')
 }
 
 function openPdf(row) {
@@ -647,26 +653,19 @@ onMounted(() => {
 
 <style scoped>
 .search-error {
-  padding: 20px;
-  border: 1px solid var(--el-color-danger-light-7);
-  border-radius: 8px;
-  background: var(--el-color-danger-light-9);
-  color: var(--el-text-color-primary);
-  overflow-wrap: anywhere;
+  margin: var(--space-4) var(--space-4) 0;
 }
 
-.search-error p {
-  margin: 12px 0;
-  line-height: 1.6;
+.search-error-hint {
+  margin: var(--space-2) var(--space-4) var(--space-4);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
 }
 
-.search-error .search-error-hint {
-  margin-bottom: 0;
-  color: var(--el-text-color-regular);
+.filter-panel :deep(.el-form--inline .keyword-input) {
+  width: min(360px, 100%);
 }
 
-.header-row,
-.card-header,
 .rec-title-row,
 .detail-top,
 .detail-actions,
@@ -675,40 +674,53 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
+  flex-wrap: wrap;
+  gap: var(--space-3);
 }
 
 .advanced-form {
-  margin-top: 8px;
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--line-subtle);
 }
 
 .year-range,
 .rec-tags,
-.detail-tags,
-.action-btns {
+.detail-tags {
   display: flex;
   align-items: center;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
 }
 
-.pagination-bar {
-  margin-top: 20px;
-  justify-content: center;
+.year-range :deep(.el-input-number) {
+  width: 120px;
 }
 
 .recommend-empty {
-  color: #909399;
+  padding: var(--space-5);
+  color: var(--text-subtle);
   text-align: center;
-  padding: 20px;
+}
+
+.rec-list {
+  display: grid;
+  min-height: 48px;
 }
 
 .rec-item {
-  padding: 12px 0;
-  border-bottom: 1px solid #f0f0f0;
+  display: grid;
+  gap: var(--space-1);
+  width: 100%;
+  padding: var(--space-3);
+  color: inherit;
+  text-align: left;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px solid var(--line-subtle);
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  transition: background .15s;
+  transition: background-color .12s var(--ease-standard);
 }
 
 .rec-item:last-child {
@@ -716,26 +728,22 @@ onMounted(() => {
 }
 
 .rec-item:hover {
-  background: #fbf9f5;
-  margin: 0 -8px;
-  padding: 12px 8px;
-  border-radius: 4px;
+  background: var(--surface-hover);
 }
 
 .rec-title {
-  font-weight: 500;
-  font-size: 14px;
-  color: #303133;
+  min-width: 0;
+  color: var(--text-strong);
+  font-size: var(--text-md);
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .rec-meta,
 .rec-abstract {
-  font-size: 12px;
-  color: #909399;
-}
-
-.rec-meta {
-  margin-bottom: 4px;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
 }
 
 .rec-abstract,
@@ -743,37 +751,49 @@ onMounted(() => {
   line-height: 1.7;
 }
 
+.detail-abstract {
+  margin: 0;
+  color: var(--text-body);
+}
+
 .search-empty {
-  text-align: center;
-  padding: 32px 20px;
-  color: #909399;
-  font-size: 14px;
+  padding: var(--space-8) var(--space-5);
+  color: var(--text-subtle);
+  font-size: var(--text-md);
   line-height: 1.8;
+  text-align: center;
+}
+
+.empty-divider {
+  margin: 0 var(--space-2);
+  color: var(--line-strong);
 }
 
 .detail-title {
-  margin: 0 0 10px;
+  margin: 0 0 var(--space-2);
+  overflow-wrap: anywhere;
 }
 
 .detail-block {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 12px;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .detail-label {
-  font-size: 13px;
-  color: #909399;
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
 }
 
 .detail-value {
-  color: #303133;
+  color: var(--text-strong);
   line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 .detail-inline {
-  margin-left: 16px;
+  margin-left: var(--space-4);
 }
 
 .note-editor {
@@ -782,11 +802,11 @@ onMounted(() => {
 
 .note-actions-row {
   justify-content: flex-end;
-  margin-top: 12px;
+  margin-top: var(--space-3);
 }
 
 .source-cell {
   justify-content: flex-start;
-  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-2);
 }
 </style>

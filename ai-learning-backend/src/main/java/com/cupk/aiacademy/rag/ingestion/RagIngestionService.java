@@ -117,43 +117,82 @@ public class RagIngestionService {
         });
     });}
 
-    public Result review(String id,int unit,int targetVersion,int expectedRevision,String correctedText){return result(()->{
+    public record PageEdit(Integer pageNo,String text) { }
+
+    /** Saving never starts processing, so several pages can be edited while an earlier update is still running. */
+    public Result savePageEdits(String id,Integer targetVersion,List<PageEdit> edits){return result(()->{
+        RagActor actor=auth.currentActor();var document=ownedDocument(id);int version=number(document,"document_version");
+        if(targetVersion!=null && targetVersion!=version)throw failure("409","资料已更换版本，请刷新后再编辑");
+        if(edits==null || edits.isEmpty() || edits.size()>200)throw failure("400","请提交1到200页修改");
+        int units=db.queryForObject("SELECT COUNT(DISTINCT page_no) FROM native_rag_page WHERE document_id=? AND document_version=? AND parse_revision=?",
+                Integer.class,id,version,number(document,"parse_revision"));
+        if(units==0)throw failure("409","资料尚未处理完成，暂不能编辑");
+        var latest=new LinkedHashMap<Integer,String>();
+        for(var edit:edits) {
+            if(edit==null || edit.pageNo()==null || edit.pageNo()<1 || edit.pageNo()>units)throw failure("400","页码不在资料范围内");
+            String text=edit.text()==null?"":edit.text().strip();
+            if(text.isEmpty())throw failure("400","页面文字不能为空");
+            if(text.length()>100_000)throw failure("400","单页文字不能超过10万字");
+            latest.put(edit.pageNo(),text);
+        }
+        latest.forEach((page,text)->db.update("INSERT INTO native_rag_page_edit(document_id,document_version,page_no,edited_text,actor_id) VALUES(?,?,?,?,?)",
+                id,version,page,text,actor.userId()));
+        return editViews(document(id));
+    });}
+    public Result pageEdits(String id,Integer targetVersion){return result(()->{
+        var document=ownedDocument(id);
+        if(targetVersion!=null && targetVersion!=number(document,"document_version"))return List.of();
+        return editViews(document);
+    });}
+    /** One selected-page revision carries every saved change; unchanged pages are copied, not recognized again. */
+    public Result applyPageEdits(String id){return result(()->{
         RagActor actor=auth.currentActor();ownedDocument(id);
         return transaction.execute(status->{
             var current=lockedDocument(id);ownedBase(text(current,"kb_id"),actor);ensureIdle(current);
-            int version=processingVersion(current),revision=latestRevision(id,version);
-            if(version!=targetVersion || revision!=expectedRevision)
-                throw failure("409","页面版本已改变，请刷新后重新核验");
-            var previous=new LinkedHashMap<Integer,IngestionJobRepository.Page>();
-            var revisions=db.queryForList("SELECT DISTINCT parse_revision FROM native_rag_page WHERE document_id=? AND document_version=? ORDER BY parse_revision DESC",Integer.class,id,version);
-            for(int historical:revisions)for(var page:jobs.pages(id,version,historical))previous.putIfAbsent(page.unitNo(),page);
-            var original=previous.get(unit);
-            if(original==null)throw failure("404","核验位置不存在");
-            var source=version(id,version);
-            try(var opened=extractor.open(originalBytes(source),text(source,"file_name"))) {
-                if(previous.size()!=opened.unitCount())
-                    throw failure("409","页面记录尚不完整，请重新解析全部后核验");
-            } catch(java.io.IOException error){throw failure("400","文件结构读取失败");}
-            if(correctedText==null || correctedText.length()>RagPageExtractor.MAX_TEXT || correctedText.isBlank() && !"BLANK".equals(original.state()))
-                throw failure("400","请填写有效文本，单页不能超过100万字");
-            var math=FormulaText.analyze(correctedText);
-            if(!math.valid())throw failure("400","公式结构不完整，请修正公式后保存");
-            Map<String,Object> location=new LinkedHashMap<>();
-            try {location.putAll(json.readValue(original.locationJson(),Map.class));}catch(Exception ignored){}
-            location.put("reviewedBy",actor.userId());location.put("reviewedAt",java.time.Instant.now().toString());
-            location.put("reviewedFromRevision",revision);
-            var metadata=new LinkedHashMap<String,Object>();metadata.put("version",FormulaText.VERSION);
-            metadata.put("source","MANUAL");metadata.put("blocks",math.blocks());metadata.put("issues",math.issues());
-            previous.put(unit,new IngestionJobRepository.Page(unit,original.rawText(),original.ocrRawText(),original.ocrText(),correctedText,
-                    "MANUAL",correctedText.isBlank()?"BLANK":"TEXT_READY",null,null,false,write(location),null,write(metadata)));
-            if(previous.values().stream().mapToLong(page->page.chosenText()==null?0:page.chosenText().length()).sum()>RagPageExtractor.MAX_TEXT)
-                throw failure("400","文档提取内容超过100万字上限");
-            String job=jobs.enqueue(actor.userId(),id,version,revision+1,nullable(current,"active_index_version"),number(current,"document_version"),List.of(),List.of(unit));
-            jobs.seedReview(job,new ArrayList<>(previous.values()));
+            int version=number(current,"document_version");var published=publishedTexts(current);
+            var pending=new ArrayList<Integer>();var rows=new ArrayList<Object>();
+            for(var edit:latestEdits(id,version))if(!Objects.equals(edit.get("edited_text"),published.get(number(edit,"page_no")))) {
+                pending.add(number(edit,"page_no"));rows.add(edit.get("id"));
+            }
+            if(pending.isEmpty())throw failure("409","没有需要更新的修改");
+            int previous=db.queryForObject("SELECT COALESCE(MAX(parse_revision),0) FROM native_rag_ingestion_job WHERE document_id=? AND document_version=?",Integer.class,id,version);
+            int revision=Math.max(previous,number(current,"parse_revision"))+1;
+            String job=jobs.enqueue(actor.userId(),id,version,revision,nullable(current,"active_index_version"),version,List.of(),pending);
+            for(Object row:rows)db.update("UPDATE native_rag_page_edit SET applied_revision=? WHERE id=?",revision,row);
             db.update("UPDATE native_rag_document SET processing_job_id=?,processing_version=?,processing_state='QUEUED' WHERE id=?",job,version,id);
             return uploadView(document(id),false);
         });
     });}
+    private List<Map<String,Object>> latestEdits(String id,int version) {
+        var latest=new LinkedHashMap<Integer,Map<String,Object>>();
+        for(var row:db.queryForList("SELECT * FROM native_rag_page_edit WHERE document_id=? AND document_version=? ORDER BY page_no,id DESC",id,version))
+            latest.putIfAbsent(number(row,"page_no"),row);
+        return List.copyOf(latest.values());
+    }
+    private Map<Integer,String> publishedTexts(Map<String,Object> document) {
+        var texts=new HashMap<Integer,String>();
+        for(var page:jobs.pages(text(document,"id"),number(document,"document_version"),number(document,"parse_revision")))
+            texts.put(page.unitNo(),page.chosenText());
+        return texts;
+    }
+    /** Every saved row, newest first per page; only the newest row of a page carries a live state. */
+    private List<Map<String,Object>> editViews(Map<String,Object> document) {
+        String id=text(document,"id");int version=number(document,"document_version");var published=publishedTexts(document);
+        Integer updating=null;String job=nullable(document,"processing_job_id");
+        if(job!=null){var running=jobs.get(job);if(!TERMINAL.contains(running.stage()))updating=running.parseRevision();}
+        var views=new ArrayList<Map<String,Object>>();Integer page=null;
+        for(var row:db.queryForList("SELECT * FROM native_rag_page_edit WHERE document_id=? AND document_version=? ORDER BY page_no,id DESC",id,version)) {
+            boolean latest=!Objects.equals(page,number(row,"page_no"));page=number(row,"page_no");
+            Integer applied=row.get("applied_revision") instanceof Number n?n.intValue():null;
+            String state=!latest?"SUPERSEDED":Objects.equals(row.get("edited_text"),published.get(page))?"ACTIVE"
+                    :updating!=null && updating.equals(applied)?"UPDATING":"SAVED";
+            var view=new LinkedHashMap<String,Object>();
+            view.put("id",row.get("id"));view.put("pageNo",page);view.put("text",row.get("edited_text"));view.put("state",state);
+            view.put("latest",latest);view.put("savedAt",row.get("created_at"));view.put("actorId",row.get("actor_id"));
+            views.add(view);
+        }
+        return views;
+    }
 
     public Result status(String jobId){return result(()->{
         var job=jobs.get(checkedId(jobId));ownedDocument(job.documentId());return jobView(job);
@@ -179,6 +218,20 @@ public class RagIngestionService {
         ownedDocument(id);return image;
     }
 
+    public byte[] coursePreview(Integer courseId, String id, int unit, int targetVersion) {
+        RagActor actor = auth.currentActor();
+        auth.requireCourseDocumentRead(actor, courseId, id, targetVersion, false);
+        var source = version(id, targetVersion);
+        byte[] image;
+        try (var opened = extractor.open(originalBytes(source), text(source, "file_name"))) {
+            image = opened.renderPng(unit);
+        } catch (java.io.IOException error) {
+            throw failure("500", "原页预览失败");
+        }
+        auth.requireCourseDocumentRead(actor, courseId, id, targetVersion, false);
+        return image;
+    }
+
     /** Used by the bounded background worker and explicit tests. No HTTP endpoint executes this method. */
     public boolean runNext(String workerId) {
         var claimed=jobs.claimNext(workerId,LEASE);if(claimed.isEmpty())return false;
@@ -193,8 +246,9 @@ public class RagIngestionService {
             try(var source=extractor.open(originalBytes(original),text(original,"file_name"))) {
                 int total=source.unitCount(),failed=0,processed=0;long characters=0;
                 advance(job,"PARSING",1,total,0,0);
+                Map<Integer,IngestionJobRepository.Page> previous=Map.of();
                 if(!job.selectedPages().isEmpty() && job.parseRevision()>1) {
-                    var previous=historicalPages(job);
+                    previous=historicalPages(job);
                     if(previous.size()!=total)throw failure("409","历史页面记录不完整，请重新解析全部");
                     for(var page:previous.values())if(!job.selectedPages().contains(page.unitNo()) && !jobs.savePage(job,page))
                         throw new Stopped();
@@ -206,6 +260,7 @@ public class RagIngestionService {
                 for(int unit=1;unit<=total;unit++) {
                     authorizeJob(job);
                     IngestionJobRepository.Page page=resumed.get(unit);
+                    if(page==null)page=manualPage(job,previous.get(unit),unit);
                     if(page==null)page=processPage(job,source,original,unit,total,processed,failed);
                     characters+=page.chosenText()==null?0:page.chosenText().length();
                     if(characters>RagPageExtractor.MAX_TEXT)throw failure("400","提取内容超过100万字上限");
@@ -252,6 +307,17 @@ public class RagIngestionService {
         for(int revision:revisions)for(var page:jobs.pages(job.documentId(),job.documentVersion(),revision))
             latest.putIfAbsent(page.unitNo(),page);
         return latest;
+    }
+
+    /** Saved page text replaces recognition only in the revision that an explicit update assigned it to. */
+    private IngestionJobRepository.Page manualPage(IngestionJobRepository.Job job,IngestionJobRepository.Page prior,int unit) {
+        if(prior==null)return null;
+        var edited=db.queryForList("SELECT edited_text FROM native_rag_page_edit WHERE document_id=? AND document_version=? AND page_no=? AND applied_revision=? ORDER BY id DESC LIMIT 1",
+                String.class,job.documentId(),job.documentVersion(),unit,job.parseRevision());
+        if(edited.isEmpty())return null;
+        Map<String,Object> location;
+        try{location=new LinkedHashMap<>(json.readValue(prior.locationJson(),Map.class));}catch(Exception unreadable){location=new LinkedHashMap<>();location.put("unitNo",unit);}
+        return page(unit,prior.rawText(),prior.ocrRawText(),prior.ocrText(),edited.getFirst(),"MANUAL","TEXT_READY",null,null,false,location,null);
     }
 
     private void stop(IngestionJobRepository.Job job) {
@@ -316,12 +382,11 @@ public class RagIngestionService {
                         recognized.confidence(),recognized.errorCode(),true,location,null);
             String normalized=normalizer.normalize(recognized.text()).text();
             if(normalized.isBlank())throw new ModelInvocationException("OCR_EMPTY_RESULT");
-            if(FormulaText.analyze(normalized).blocks().isEmpty() &&
-                    ("FORMULA_TEXT_LAYER".equals(assessment.reason()) || FormulaText.suspectMath(normalized)))
-                return page(unit,nativeText,recognized.rawText(),normalized,"","OCR","FAILED",
-                        recognized.confidence(),"FORMULA_STRUCTURE_MISSING",true,location,null);
+            // Math without LaTeX structure is still readable text; the warning stays on this page.
+            String formulaWarning=FormulaText.analyze(normalized).blocks().isEmpty() &&
+                    ("FORMULA_TEXT_LAYER".equals(assessment.reason()) || FormulaText.suspectMath(normalized))?"FORMULA_STRUCTURE_MISSING":null;
             return page(unit,nativeText,recognized.rawText(),normalized,normalizer.merge(nativeText,normalized),"OCR","OCR_READY",
-                    recognized.confidence(),null,true,location,cache);
+                    recognized.confidence(),formulaWarning,false,location,cache);
         } catch(Stopped stopped){throw stopped;}
         catch(Exception error){
             if(Thread.currentThread().isInterrupted())throw new Stopped();
@@ -394,7 +459,6 @@ public class RagIngestionService {
     }
     private Map<String,Object> pageView(IngestionJobRepository.Page page,String documentId,int version,int revision) {
         var view=new LinkedHashMap<String,Object>();view.put("pageNo",page.unitNo());view.put("pageStatus",page.state());
-        view.put("parseRevision",revision);view.put("documentVersion",version);
         view.put("rawText",page.rawText());view.put("ocrRawText",page.ocrRawText());view.put("ocrText",page.ocrText());view.put("chosenText",page.chosenText());
         view.put("method",page.method());view.put("confidence",page.confidence());view.put("errorCode",page.errorCode());view.put("needsReview",page.needsReview());
         view.put("formulaVersion",0);view.put("formulas",List.of());view.put("formulaIssues",List.of());
@@ -410,13 +474,12 @@ public class RagIngestionService {
     private IngestionJobRepository.Page page(int unit,String raw,String originalOcr,String normalized,String chosen,String method,String state,
             Double confidence,String error,boolean review,Map<String,Object> location,String fingerprint) {
         String basis=chosen!=null&&!chosen.isBlank()?chosen:normalized!=null?normalized:raw;
-        var math=FormulaText.analyze(basis);
-        if(!math.blocks().isEmpty() || FormulaText.suspectMath(basis))review=true;
-        if(!math.valid() && Set.of("TEXT_READY","OCR_READY").contains(state)) {
-            state="FAILED";error=math.issues().getFirst();chosen="";fingerprint=null;
-        }
+        var math=FormulaText.analyze(basis);var issues=new ArrayList<>(math.issues());
+        // Formula problems are local: the page text stays searchable and only the located issue asks for review.
+        if(Set.of("TEXT_READY","OCR_READY").contains(state) && error!=null && error.startsWith("FORMULA_")){issues.add(error);error=null;}
+        if(!issues.isEmpty())review=true;
         var metadata=new LinkedHashMap<String,Object>();metadata.put("version",FormulaText.VERSION);
-        metadata.put("source",normalized==null?"TEXT":"OCR");metadata.put("blocks",math.blocks());metadata.put("issues",math.issues());
+        metadata.put("source",normalized==null?"TEXT":"OCR");metadata.put("blocks",math.blocks());metadata.put("issues",issues);
         return new IngestionJobRepository.Page(unit,raw,originalOcr,normalized,chosen,method,state,confidence,error,review,write(location),fingerprint,write(metadata));
     }
     private void ensureIdle(Map<String,Object> document) {

@@ -9,6 +9,7 @@ import com.cupk.aiacademy.rag.RagSearchHit;
 
 @Data
 public class AgentMessageResponse {
+    private String reportId;
     private Integer id;
     private Integer sessionId;
     private String role;

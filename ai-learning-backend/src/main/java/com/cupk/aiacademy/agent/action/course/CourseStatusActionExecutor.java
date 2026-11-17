@@ -38,6 +38,9 @@ public class CourseStatusActionExecutor implements AgentActionExecutor {
     private final ClassStudentMapper classStudentMapper;
     private final AgentWriteEntityLocator entityLocator;
 
+    @org.springframework.beans.factory.annotation.Autowired(required = false)
+    private com.cupk.aiacademy.service.CourseLifecycleService lifecycle;
+
     public CourseStatusActionExecutor(CourseMapper courseMapper,
                                       ChapterMapper chapterMapper,
                                       LessonMapper lessonMapper,
@@ -73,6 +76,7 @@ public class CourseStatusActionExecutor implements AgentActionExecutor {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public AgentActionExecutionResult execute(AgentActionExecutionContext context) {
         AuthUtils.LoginUser user = context.user();
         requireTeacherOrAdmin(user);
@@ -82,17 +86,30 @@ public class CourseStatusActionExecutor implements AgentActionExecutor {
         requireValidStatus(status);
 
         Course course = resolveCourse(parameters);
+        course = courseMapper.selectForUpdate(course.getId());
+        if (course == null) throw new BusinessException("课程不存在");
         if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
             throw new BusinessException("只能变更当前登录教师负责课程的状态");
         }
 
         Integer oldStatus = course.getStatus();
         Map<String, Object> impactPreview = buildImpactPreview(course.getId(), oldStatus, status);
-        course.setStatus(status);
-        course.setUpdatedAt(LocalDateTime.now());
-        int row = courseMapper.updateById(course);
-        if (row <= 0) {
-            throw new BusinessException("变更课程状态失败");
+        if (status == 1) {
+            if (lifecycle == null || !(parameters.get("classIds") instanceof List<?> selected) || parameters.get("workflowVersion") == null)
+                throw new BusinessException("请在课程管理选择教学班后发布课程");
+            try {
+                List<Integer> ids = selected.stream().map(value -> Integer.valueOf(value.toString())).toList();
+                lifecycle.publish(course.getId(),new com.cupk.aiacademy.service.CourseLifecycleService.PublishRequest(ids,Long.valueOf(parameters.get("workflowVersion").toString())));
+                course.setStatus(1);
+            } catch (NumberFormatException invalid) { throw new BusinessException("教学班编号或课程版本无效"); }
+        } else {
+            course.setStatus(status);
+            course.setUpdatedAt(LocalDateTime.now());
+            course.setWorkflowVersion(course.getWorkflowVersion() == null ? 1L : course.getWorkflowVersion() + 1);
+            int row = courseMapper.updateById(course);
+            if (row <= 0) throw new BusinessException("变更课程状态失败");
+            // Students lose access together with the published state, as with the course management page.
+            if (lifecycle != null) lifecycle.closeClasses(course.getId());
         }
 
         Map<String, Object> data = new LinkedHashMap<>();

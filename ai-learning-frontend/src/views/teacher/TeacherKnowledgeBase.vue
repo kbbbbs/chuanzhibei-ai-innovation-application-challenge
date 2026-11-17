@@ -1,10 +1,11 @@
 <template>
   <div class="teacher-kb-page">
-    <div class="page-header teacher-page-header">
-      <div><h2>知识库管理</h2><p>整理教学资料，明确共享范围，查看原文出处并进行问答与出题。</p></div>
-      <router-link class="chapter-graph-entry" to="/chapter-knowledge-graph">课程知识图谱</router-link>
-    </div>
-    <NativeKnowledgeWorkspace manage @select="selectKb" @generate="openGenerateDialog" />
+    <PageHeader v-if="!embedded"
+      eyebrow="AI 备课"
+      title="知识库管理"
+      description="整理教学资料，明确共享范围，查看原文出处并进行问答与出题。"
+    />
+    <NativeKnowledgeWorkspace manage :course-id="courseId" :workspace-tab="workspaceTab" :embedded="embedded" @select="selectKb" @generate="openGenerateDialog" />
     <!-- Generate Questions from Knowledge Base Dialog -->
     <el-dialog v-model="genVisible" title="根据知识库出题" width="900px" :close-on-click-modal="false" destroy-on-close>
       <el-steps :active="genStep - 1" finish-status="success" align-center class="gen-steps">
@@ -16,11 +17,18 @@
 
       <!-- Step 1: Configure -->
       <div v-if="genStep === 1">
+        <div v-if="genTasks.length" class="gen-tasks" data-testid="gen-task-list">
+          <strong>最近的出题任务</strong>
+          <div v-for="task in genTasks" :key="task.id" class="gen-task">
+            <span>{{ formatSessionTime(String(task.createdAt || '')) }} · {{ taskStatusLabel(task) }}</span>
+            <el-button size="small" link type="primary" @click="openTask(task)">{{ task.status === 'RUNNING' ? '查看进度' : '打开' }}</el-button>
+          </div>
+        </div>
         <el-form label-width="100px">
           <el-form-item label="知识库">
             <el-tag type="info">{{ selectedKb?.name }}</el-tag>
           </el-form-item>
-          <el-form-item label="选择课程" required>
+          <el-form-item v-if="!courseId" label="选择课程" required>
             <el-select v-model="genForm.courseId" placeholder="请选择课程">
               <el-option v-for="c in courses" :key="c.id" :label="c.title" :value="c.id" />
             </el-select>
@@ -51,16 +59,22 @@
       </div>
 
       <!-- Step 2: Generating -->
-      <div v-else-if="genStep === 2" style="text-align:center;padding:60px 20px">
-        <el-icon class="is-loading" :size="48"><i class="el-icon-loading" /></el-icon>
-        <p style="margin-top:16px;color:#606266">正在基于知识库生成题目，请稍候...</p>
+      <div v-else-if="genStep === 2" class="gen-progress" role="status">
+        <el-icon class="is-loading" :size="40" aria-hidden="true"><Loading /></el-icon>
+        <p>正在基于知识库生成题目{{ currentTask ? `（已生成 ${currentTask.generated}/${currentTask.requested}）` : '' }}</p>
+        <p class="gen-hint">可以关闭窗口，生成会在后台继续；之后在「最近的出题任务」中打开即可。</p>
       </div>
 
       <!-- Step 3: Preview & Edit -->
       <div v-else-if="genStep === 3">
-        <el-alert v-if="generatedQuestions.length > 0"
-          :title="`已生成 ${generatedQuestions.length} 道题，请在下方编辑后选择保存或跳过`"
-          type="success" :closable="false" style="margin-bottom:16px" />
+        <el-alert v-if="currentTask?.status === 'INCOMPLETE'" type="warning" :closable="false" show-icon class="gen-alert"
+          :title="`已生成 ${currentTask.generated}/${currentTask.requested} 道题：${currentTask.errorMessage || '生成未完成'}`">
+          <el-button size="small" type="primary" data-testid="resume-gen-task" @click="resumeTask">继续生成剩余 {{ currentTask.requested - currentTask.generated }} 题</el-button>
+        </el-alert>
+        <el-alert v-else-if="generatedQuestions.length > 0"
+          :title="`已生成 ${generatedQuestions.length} 道题，修改会自动保存为草稿；确认后保存到题库`"
+          type="success" :closable="false" class="gen-alert" />
+        <p v-if="genDraftSave.label.value" class="gen-hint" data-testid="gen-draft-status">{{ genDraftSave.label.value }}</p>
         <el-table :data="generatedQuestions" border stripe max-height="400" v-if="generatedQuestions.length > 0">
           <el-table-column type="index" label="#" width="50" />
           <el-table-column label="题型" width="90">
@@ -68,17 +82,25 @@
               <el-tag :type="TYPE_TAG[row.type] || ''" size="small">{{ TYPE_LABEL[row.type] || row.type }}</el-tag>
             </template>
           </el-table-column>
-          <el-table-column prop="content" label="题干" show-overflow-tooltip />
+          <el-table-column label="题干" show-overflow-tooltip>
+            <template #default="{ row }">
+              <el-tag v-if="row.saved" size="small" type="success">已入库</el-tag>
+              {{ row.content }}
+              <div v-if="row.saveError" class="gen-error">未保存：{{ row.saveError }}</div>
+            </template>
+          </el-table-column>
           <el-table-column label="难度" width="80">
             <template #default="{ row }">{{ row.difficulty }}</template>
           </el-table-column>
           <el-table-column label="分值" width="70">
             <template #default="{ row }">{{ row.score }}</template>
           </el-table-column>
-          <el-table-column label="操作" width="160" fixed="right">
-            <template #default="{ $index }">
-              <el-button size="small" @click="openEditQuestion($index)">编辑</el-button>
-              <el-button size="small" type="danger" @click="generatedQuestions.splice($index,1)">删除</el-button>
+          <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 160" fixed="right">
+            <template #default="{ row, $index }">
+              <RowActions :label="row.content || `第 ${$index + 1} 题`">
+                <el-button size="small" :disabled="row.saved" @click="openEditQuestion($index)">编辑</el-button>
+                <el-button size="small" type="danger" :disabled="row.saved" @click="removeGenerated($index)">删除</el-button>
+              </RowActions>
             </template>
           </el-table-column>
         </el-table>
@@ -88,15 +110,16 @@
       <!-- Step 4: Save Result -->
       <div v-else-if="genStep === 4" style="text-align:center;padding:40px">
         <el-result :icon="genResult.fail > 0 ? 'warning' : 'success'"
-          :title="'保存完成'"
-          :sub-title="`成功 ${genResult.success} 条，失败 ${genResult.fail} 条，共 ${genResult.total} 条`" />
+          :title="genResult.fail > 0 ? '部分题目未保存' : '保存完成'"
+          :sub-title="`本次保存 ${genResult.success} 条，未保存 ${genResult.fail} 条；本任务共 ${genResult.total} 条已入库`" />
+        <el-button v-if="genResult.fail > 0" @click="genStep = 3">返回修改未保存的题目</el-button>
       </div>
 
       <template #footer>
-        <el-button @click="closeGenDialog">{{ genStep >= 4 ? '关闭' : '取消' }}</el-button>
+        <el-button @click="closeGenDialog">{{ genStep === 1 ? '取消' : '关闭' }}</el-button>
         <el-button v-if="genStep === 1" type="primary" :disabled="!canGenerate" @click="startGenerate">开始生成</el-button>
-        <el-button v-if="genStep === 3 && generatedQuestions.length > 0" type="primary" :loading="genSaving" @click="saveGenQuestions">保存到题库</el-button>
-        <el-button v-if="genStep === 3 && generatedQuestions.length > 0" @click="skipGenSave">仅本次，不入题库</el-button>
+        <el-button v-if="genStep === 3 && unsavedCount > 0" type="primary" :loading="genSaving" @click="saveGenQuestions">保存 {{ unsavedCount }} 道题到题库</el-button>
+        <el-button v-if="genStep === 3 && currentTask" @click="skipGenSave">放弃本次题目</el-button>
       </template>
     </el-dialog>
 
@@ -167,17 +190,26 @@
 import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Delete, ArrowDown, ArrowUp } from '@element-plus/icons-vue'
+import { Delete, ArrowDown, ArrowUp, Loading } from '@element-plus/icons-vue'
 import NativeKnowledgeWorkspace from '@/components/knowledge/NativeKnowledgeWorkspace.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import KnowledgeGraphPreview from '@/components/knowledge/KnowledgeGraphPreview.vue'
 import AlgorithmBilingualGraph from '@/components/knowledge/AlgorithmBilingualGraph.vue'
 import * as kbApi from '@/api/knowledgeBase'
-import { generateQuestionsFromKnowledgeBase, batchCreateQuestions } from '@/api/exam'
+import {
+  startQuestionGenerationTask, listQuestionGenerationTasks, getQuestionGenerationTask, updateQuestionGenerationDrafts,
+  resumeQuestionGenerationTask, saveQuestionGenerationTask, discardQuestionGenerationTask
+} from '@/api/exam'
+import { useAutosave } from '@/composables/useAutosave'
 import { getCourses } from '@/utils/course'
 import { currentUserId, scopedTeacherParams, getRecords } from '@/utils/apiHelpers'
 import { useUserStore } from '@/store/user'
-import { useNativeRag } from '@/composables/useNativeRag'
+import { useAssistant } from '@/composables/useAssistant'
+import { deleteAssistantSession } from '@/api/assistant'
 
+const props = defineProps({ courseId: Number, workspaceTab: String, embedded: Boolean })
 function unwrapData(data) {
   while (data && typeof data === 'object' && !Array.isArray(data) && data.data !== undefined)
     data = data.data
@@ -198,13 +230,17 @@ const historyCollapsed = ref(false)
 const chatCollapsed = ref(false)
 const filesCollapsed = ref(false)
 const router = useRouter()
+const narrow = useNarrowScreen()
 const files = ref([]); const filesLoading = ref(false)
 const uploadFile = ref(null); const uploading = ref(false)
 const graphRefreshKey = ref(0)
 const statusPollTimer = ref(null)
 
 // 历史对话
-const { sessions, loadSessions, removeSession } = useNativeRag()
+const assistant = useAssistant()
+const sessions = computed(() => assistant.workspace.sessions)
+const loadSessions = assistant.loadSessions
+async function removeSession(id) { await deleteAssistantSession(id); await loadSessions() }
 const sessionsLoading = ref(false)
 const activeSessionId = ref(null)
 
@@ -416,6 +452,71 @@ const genForm = reactive({
   instruction: ''
 })
 const generatedQuestions = ref([])
+const genTasks = ref([])
+const currentTask = ref(null)
+let genPollTimer = null, genPollRun = 0
+const unsavedCount = computed(() => generatedQuestions.value.filter(question => !question.saved).length)
+// Edits to a generated draft go to the server task, so reopening the task later shows them.
+const genDraftSave = useAutosave({
+  key: () => currentTask.value ? `eduloop:question-task:${currentTask.value.id}` : '',
+  snapshot: () => JSON.parse(JSON.stringify(generatedQuestions.value)),
+  save: async () => {
+    if (!currentTask.value) return true
+    const res = await updateQuestionGenerationDrafts(currentTask.value.id, generatedQuestions.value, { silent: true })
+    if (res?.code !== '200') return false
+    currentTask.value = { ...currentTask.value, ...res.data, questions: undefined }
+    return true
+  }
+})
+function taskStatusLabel(task) {
+  const counts = `${task.generated}/${task.requested} 题`
+  return {
+    RUNNING: `生成中 ${counts}`, READY: `已生成 ${counts}，${task.saved ? `已入库 ${task.saved} 题` : '未入库'}`,
+    INCOMPLETE: `未完成 ${counts}`, SAVED: `已全部入库（${task.saved} 题）`
+  }[task.status] || counts
+}
+function showTask(task) {
+  currentTask.value = { ...task, questions: undefined }
+  if (task.status === 'RUNNING') { genStep.value = 2; pollTask(task.id); return }
+  generatedQuestions.value = task.questions || []
+  genStep.value = 3
+}
+async function openTask(task) {
+  try {
+    const res = await getQuestionGenerationTask(task.id)
+    if (res.code === '200') showTask(res.data)
+  } catch { ElMessage.error('任务读取失败，请重试') }
+}
+function stopTaskPolling() { genPollRun += 1; clearTimeout(genPollTimer); genPollTimer = null }
+function pollTask(id) {
+  stopTaskPolling()
+  const run = genPollRun
+  const tick = async () => {
+    try {
+      const res = await getQuestionGenerationTask(id, { silent: true })
+      if (run !== genPollRun) return
+      if (res.code === '200') {
+        currentTask.value = { ...res.data, questions: undefined }
+        if (res.data.status !== 'RUNNING') {
+          generatedQuestions.value = res.data.questions || []
+          genStep.value = 3
+          if (res.data.status === 'INCOMPLETE') ElMessage.warning(res.data.errorMessage || '生成未完成，可以继续生成剩余题目')
+          return
+        }
+      }
+    } catch { /* transient: keep following */ }
+    if (run === genPollRun) genPollTimer = setTimeout(tick, 2000)
+  }
+  genPollTimer = setTimeout(tick, 1000)
+}
+async function resumeTask() {
+  try {
+    await genDraftSave.flush()
+    const res = await resumeQuestionGenerationTask(currentTask.value.id)
+    if (res.code === '200') showTask(res.data)
+  } catch { ElMessage.error('继续生成失败，请重试') }
+}
+function removeGenerated(index) { generatedQuestions.value.splice(index, 1); genDraftSave.touch() }
 const genResult = reactive({ total: 0, success: 0, fail: 0 })
 const courses = ref([])
 const editGenIndex = ref(-1)
@@ -433,16 +534,22 @@ const TYPE_TAG = {
 
 const canGenerate = computed(() => selectedKb.value?.id && genForm.courseId && genForm.count > 0 && genForm.types.length > 0)
 
-async function openGenerateDialog() {
+async function openGenerateDialog(kb) {
+  if (kb?.id) selectedKb.value = kb
   genStep.value = 1
-  genForm.courseId = null
+  genForm.courseId = props.courseId || null
   genForm.agentId = null
   genForm.count = 5
   genForm.difficulty = 'MEDIUM'
   genForm.types = ['SINGLE_CHOICE', 'TRUE_FALSE', 'SHORT_ANSWER']
   genForm.instruction = ''
   generatedQuestions.value = []
+  currentTask.value = null
+  genTasks.value = []
   genVisible.value = true
+  listQuestionGenerationTasks(selectedKb.value?.id)
+    .then(res => { if (res?.code === '200') genTasks.value = (res.data || []).filter(task => task.status !== 'SAVED').slice(0, 5) })
+    .catch(() => { genTasks.value = [] })
 
   try {
     const courseRes = await getCourses(scopedTeacherParams(userStore, { pageSize: 100 }))
@@ -453,13 +560,15 @@ async function openGenerateDialog() {
 }
 
 function closeGenDialog() {
+  stopTaskPolling()
+  genDraftSave.flush()
   genVisible.value = false
 }
 
 async function startGenerate() {
   genStep.value = 2
   try {
-    const res = await generateQuestionsFromKnowledgeBase({
+    const res = await startQuestionGenerationTask({
       knowledgeBaseId: selectedKb.value?.id,
       courseId: genForm.courseId,
       agentId: genForm.agentId,
@@ -468,21 +577,10 @@ async function startGenerate() {
       difficulty: genForm.difficulty,
       instruction: genForm.instruction
     })
-    if (res.code === '200' && res.data) {
-      generatedQuestions.value = Array.isArray(res.data) ? res.data : (res.data?.items || res.data?.list || [])
-      if (!generatedQuestions.value.length) {
-        ElMessage.warning('知识库内容不足，未生成可用题目')
-        genStep.value = 1
-        return
-      }
-      genStep.value = 3
-    } else {
-      ElMessage.error(res.msg || '生成题目失败')
-      genStep.value = 1
-    }
+    if (res.code === '200' && res.data) showTask(res.data)
+    else genStep.value = 1
   } catch (e) {
-    if (e?.code === 'ECONNABORTED') ElMessage.error('生成时间较长，请减少题目数量后重试')
-    else ElMessage.error(e?.response?.data?.message || e?.response?.data?.msg || '生成题目失败，请重试')
+    ElMessage.error(e?.response?.data?.message || e?.response?.data?.msg || '出题任务未能开始，请重试')
     genStep.value = 1
   }
 }
@@ -554,6 +652,8 @@ function saveEditGen() {
     analysis: ef.analysis,
     knowledgePoint: ef.knowledgePoint
   }
+  delete generatedQuestions.value[editGenIndex.value].saveError
+  genDraftSave.touch()
   editGenVisible.value = false
 }
 
@@ -561,13 +661,12 @@ async function saveGenQuestions() {
   if (generatedQuestions.value.length === 0) return
   genSaving.value = true
   try {
-    const res = await batchCreateQuestions(generatedQuestions.value)
+    if (!await genDraftSave.flush()) { ElMessage.error('题目修改尚未保存，请稍后重试'); return }
+    const res = await saveQuestionGenerationTask(currentTask.value.id)
     if (res.code === '200' && res.data) {
-      Object.assign(genResult, {
-        total: res.data.total,
-        success: res.data.success,
-        fail: res.data.fail
-      })
+      currentTask.value = { ...res.data, questions: undefined }
+      generatedQuestions.value = res.data.questions || []
+      Object.assign(genResult, { total: res.data.saved, success: res.data.savedNow, fail: res.data.failedNow })
       genStep.value = 4
     } else {
       ElMessage.error(res.msg || '保存失败')
@@ -580,7 +679,10 @@ async function saveGenQuestions() {
 }
 
 async function skipGenSave() {
-  try { await ElMessageBox.confirm('当前题目不会保存到题库，关闭后将丢失，是否继续？', '确认', { type: 'warning' }) } catch { return }
+  try { await ElMessageBox.confirm('未入库的题目将被放弃，这个出题任务也会从列表中移除。已入库的题目不受影响。', '放弃本次题目', { type: 'warning' }) } catch { return }
+  try { await discardQuestionGenerationTask(currentTask.value.id) } catch { ElMessage.error('放弃失败，请重试'); return }
+  genDraftSave.finish()
+  stopTaskPolling()
   genVisible.value = false
 }
 
@@ -615,27 +717,32 @@ function handleNewChat() {
 }
 
 // Knowledge workspace owns document and conversation loading.
-onBeforeUnmount(stopStatusPolling)
+onBeforeUnmount(() => { stopStatusPolling(); stopTaskPolling() })
 </script>
 
 <style scoped>
-.chapter-graph-entry { color: var(--primary-color, #2563eb); font-size: 14px; text-decoration: none; white-space: nowrap; }
+.gen-tasks { margin-bottom: var(--space-4); padding: var(--space-3); border: 1px solid var(--line-subtle); border-radius: var(--radius-md); font-size: var(--text-sm); }
+.gen-task { display: flex; justify-content: space-between; align-items: center; gap: var(--space-2); margin-top: var(--space-2); }
+.gen-hint { color: var(--text-subtle); font-size: var(--text-xs); }
+.gen-alert { margin-bottom: var(--space-3); }
+.gen-error { color: var(--critical); font-size: var(--text-xs); white-space: normal; }
 .teacher-kb-page {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  min-height: calc(100vh - 120px);
+  width: min(100%, 1320px);
+  margin: 0 auto;
 }
 
-.teacher-page-header {
-  padding: 4px 4px 0;
+.gen-progress {
+  display: grid;
+  justify-items: center;
+  gap: var(--space-4);
+  padding: var(--space-12) var(--space-5);
+  color: var(--text-subtle);
 }
 
-.teacher-page-header p {
-  margin: 8px 0 0;
-  color: var(--text-secondary);
-  font-size: 14px;
-  line-height: 1.6;
+.gen-progress p {
+  margin: 0;
 }
 
 .teacher-kb-layout {
@@ -946,12 +1053,6 @@ onBeforeUnmount(stopStatusPolling)
 }
 
 @media (max-width: 768px) {
-  .teacher-page-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
   .panel-title,
   .upload-bar {
     flex-direction: column;

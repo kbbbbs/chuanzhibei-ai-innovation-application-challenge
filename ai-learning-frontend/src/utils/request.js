@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { ElMessage } from 'element-plus'
+import { API_BASE_URL } from '@/utils/backendUrl'
 
 const request = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: API_BASE_URL,
   timeout: 30000,
 })
 
@@ -24,7 +25,7 @@ function normalizeResponse(data) {
   if (data && typeof data.success === 'boolean') {
     return {
       code: data.success ? '200' : '500',
-      msg: data.message || (data.success ? '请求成功' : '请求失败'),
+      msg: data.success ? (data.message || '请求成功') : friendlyErrorMessage(data.message),
       data: data.data,
     }
   }
@@ -32,10 +33,20 @@ function normalizeResponse(data) {
     return {
       ...data,
       code: String(data.code),
-      msg: data.msg || data.message || (String(data.code) === '200' ? '请求成功' : '请求失败'),
+      msg: String(data.code) === '200'
+        ? (data.msg || data.message || '请求成功')
+        : friendlyErrorMessage(data.msg || data.message),
     }
   }
   return data
+}
+
+function friendlyErrorMessage(message, fallback = '请求失败，请稍后重试') {
+  if (typeof message !== 'string' || !message.trim()) return fallback
+  if (/No static resource|Request failed with status code|(?:[\w$]+\.)+[\w$]*(?:Exception|Error)\b|SQL(?:SyntaxError|IntegrityConstraint)|bad SQL grammar|JDBC exception/i.test(message)) {
+    return '服务暂时不可用，请稍后重试'
+  }
+  return message
 }
 
 request.interceptors.response.use(response => {
@@ -52,13 +63,23 @@ request.interceptors.response.use(response => {
 
   if (res && res.code && res.code !== '200') {
     const silent = response.config?.silent || response.config?.silentError
-    if (!silent) ElMessage.error(res.msg || '请求失败')
+    if (!silent) ElMessage.error({ message: res.msg || '请求失败', grouping: true })
   }
   return res
 }, error => {
   const status = error.response?.status
   const responseData = normalizeResponse(error.response?.data)
-  const serverMessage = responseData?.msg || responseData?.message || error.message
+  const serverMessage = !error.response
+    ? (error.code === 'ECONNABORTED' ? '请求超时，请稍后重试' : '无法连接到服务，请确认网络后重试')
+    : status >= 500
+      ? '服务暂时不可用，请稍后重试'
+      : friendlyErrorMessage(responseData?.msg || responseData?.message, '请求失败，请稍后重试')
+  error.message = serverMessage
+  if (error.response?.data && typeof error.response.data === 'object') {
+    for (const field of ['msg', 'message']) {
+      if (field in error.response.data) error.response.data[field] = serverMessage
+    }
+  }
   if (error.config?.silentError) {
     return Promise.reject(error)
   }
@@ -71,13 +92,13 @@ request.interceptors.response.use(response => {
     localStorage.removeItem('username')
     localStorage.removeItem('nickname')
     localStorage.removeItem('roleCode')
-    window.location.href = '/login'
+    window.location.href = `${import.meta.env.BASE_URL}login`
   } else if (status === 403) {
     if (!silent) ElMessage.error('无权限访问该资源')
   } else if (status >= 500) {
-    if (!silent) ElMessage.error(serverMessage || '服务器异常，请稍后重试')
+    if (!silent) ElMessage.error({ message: serverMessage, grouping: true })
   } else {
-    if (!silent) ElMessage.error(serverMessage || '网络请求失败')
+    if (!silent) ElMessage.error({ message: serverMessage, grouping: true })
   }
   return Promise.reject(error)
 })

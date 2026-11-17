@@ -1,6 +1,5 @@
 package com.cupk.aiacademy.rag.ingestion;
 
-import com.cupk.aiacademy.rag.RagAccessException;
 import com.cupk.aiacademy.rag.ocr.OcrResultNormalizer;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
@@ -35,9 +34,11 @@ class FormulaContractTest {
         }
     }
 
-    @Test void malformedOrUnboundedFormulaMustNotBecomeSearchEvidence() {
-        assertThrows(RagAccessException.class,()->new RagTextChunker().chunks("Loss $$\\frac{a}{b",1,1));
-        assertThrows(RagAccessException.class,()->new RagTextChunker().chunks("$$"+"x+".repeat(10000)+"y$$",1,1));
+    @Test void malformedOrUnboundedFormulaIsChunkedAsPlainTextWithinTheUsualBound() {
+        var malformed=new RagTextChunker().chunks("Loss surface notes $$\\frac{a}{b",1,1);
+        assertEquals(1,malformed.size());assertTrue(malformed.getFirst().content().startsWith("Loss surface notes"));
+        var unbounded=new RagTextChunker().chunks("$$"+"x+".repeat(10000)+"y$$",1,1);
+        assertTrue(unbounded.size()>1);assertTrue(unbounded.stream().allMatch(chunk->chunk.content().length()<=900));
     }
 
     @Test void formulaOcrDoesNotAppendFlattenedNativeDuplicates() {

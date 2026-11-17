@@ -79,6 +79,24 @@ class K01DocumentLifecycleTest {
         assertEquals("403",assertThrows(RagAccessException.class,()->service.courseOriginalFile(10,document,2)).code());
     }
 
+    @Test void courseMembersSearchOnlyMaterialsGrantedToThatCourse() {
+        String base=base();
+        String granted=upload(base,"Gradient descent minimizes training loss.");
+        upload(base,"Gradient boosting builds an ensemble of trees.");
+        assertEquals("200",service.grantDocument(granted,10,1,true,false).getCode());
+        login(3);
+        var found=(RagSearchResponse)service.searchForCourse(10,"gradient",3,5).getData();
+        assertFalse(found.hits().isEmpty());
+        assertTrue(found.hits().stream().allMatch(hit->hit.documentId().equals(granted)));
+        @SuppressWarnings("unchecked") var materials=(List<Map<String,Object>>)service.courseMaterials(10).getData();
+        assertEquals(1,materials.size());assertEquals(granted,materials.getFirst().get("document_id"));
+        assertEquals(1,((Number)materials.getFirst().get("searchable")).intValue());
+        assertEquals("403",service.searchForCourse(20,"gradient",3,5).getCode());
+        login(1);service.revokeDocumentGrant(granted,10,1);
+        login(3);assertTrue(((RagSearchResponse)service.searchForCourse(10,"gradient",3,5).getData()).hits().isEmpty());
+        courseMembers.clear();assertEquals("403",service.searchForCourse(10,"gradient",3,5).getCode());
+    }
+
     @Test void onlyDocumentOwnerWithCourseMaintenanceRightsCanGrantAndBindingDoesNotGrant() {
         String base=base();String document=upload(base,"Private draft.");
         assertEquals("403",service.grantDocument(document,20,1,true,true).getCode());

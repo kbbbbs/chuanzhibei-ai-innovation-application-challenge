@@ -1,14 +1,13 @@
 <template>
-  <div class="administrative-class-manage">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>行政班管理</span>
-          <el-button type="primary" @click="handleCreate">新增行政班</el-button>
-        </div>
+  <div class="administrative-class-manage workspace-page">
+    <PageHeader eyebrow="教学运营" title="行政班管理" description="维护行政班信息和学生归属。删除行政班时，学生关系会同步删除。">
+      <template #actions>
+        <el-button type="primary" @click="handleCreate">新增行政班</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+    <section class="filter-panel" aria-label="筛选行政班">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item label="关键词">
           <el-input v-model="searchForm.keyword" placeholder="编号、名称、年级或专业" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -22,8 +21,19 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="classList" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="行政班列表未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadClasses"
+    />
+
+    <section v-else class="table-panel" aria-label="行政班列表">
+      <el-table :data="classList" stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="classCode" label="班级编号" width="130" />
@@ -41,17 +51,18 @@
             <el-tag v-else type="info">停用</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="260" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 260" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="handleStudents(row)">学生管理</el-button>
-            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button size="small" type="danger" :loading="deleteLoading" @click="handleDelete(row)">删除</el-button>
+            <RowActions :label="row.className || row.classCode || `行政班 ${row.id}`">
+              <el-button size="small" @click="handleStudents(row)">学生管理</el-button>
+              <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button size="small" type="danger" :loading="deleteLoading" @click="handleDelete(row)">删除</el-button>
+            </RowActions>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        class="pagination"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
@@ -60,10 +71,10 @@
         @current-change="loadClasses"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
 
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑行政班' : '新增行政班'" width="560px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="关联课程" prop="courseId">
           <el-select v-model="form.courseId" placeholder="请选择课程">
             <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
@@ -99,10 +110,18 @@
 
     <el-dialog v-model="studentDialogVisible" :title="currentClass ? `${currentClass.className} - 学生管理` : '学生管理'" width="760px">
       <div class="student-toolbar">
-        <el-input v-model="studentKeyword" placeholder="输入学生用户名、昵称或ID" class="student-input" @keyup.enter="handleAddStudent" />
+        <el-input v-model="studentKeyword" aria-label="学生用户名、昵称或ID" placeholder="输入学生用户名、昵称或ID" class="student-input" @keyup.enter="handleAddStudent" />
         <el-button type="primary" :loading="studentLoading" @click="handleAddStudent">添加学生</el-button>
       </div>
-      <el-table :data="classStudents" border stripe v-loading="studentLoading">
+      <ErrorNotice
+        v-if="studentsFailed"
+        title="学生名单未加载"
+        message="请确认网络后重试。"
+        retry-label="重新加载"
+        :busy="studentLoading"
+        @retry="loadStudents"
+      />
+      <el-table v-else :data="classStudents" stripe v-loading="studentLoading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="studentId" label="学生ID" width="100" />
         <el-table-column label="学生姓名" min-width="160">
@@ -135,9 +154,14 @@
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
 import { useConfirm } from '@/composables/useConfirm'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import { getCourses } from '@/utils/course'
-import { getRecords, getTotal } from '@/utils/apiHelpers'
+import { getRecords, getTotal, requireSuccess } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 import {
   getAdministrativeClasses,
@@ -151,11 +175,17 @@ import {
 
 const { confirmDelete } = useConfirm()
 const formRef = ref(null)
+const narrow = useNarrowScreen()
 
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  classList.value = []
+  pagination.total = 0
+})
+const { loading: studentLoading, loadFailed: studentsFailed, guarded: guardedStudents } = useGuardedLoad(() => {
+  classStudents.value = []
+})
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
-const studentLoading = ref(false)
 const classList = ref([])
 const courses = ref([])
 const classStudents = ref([])
@@ -208,30 +238,22 @@ const loadCourses = async () => {
   }
 }
 
-const loadClasses = async () => {
-  loading.value = true
-  try {
-    const params = {
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize
-    }
-    if (searchForm.keyword && searchForm.keyword.trim()) {
-      params.keyword = searchForm.keyword.trim()
-    }
-    if (searchForm.courseId) {
-      params.courseId = searchForm.courseId
-    }
-    const res = await getAdministrativeClasses(params)
-    if (res.code === '200') {
-      classList.value = getRecords(res.data)
-      pagination.total = getTotal(res.data)
-    }
-  } catch (e) {
-    // 全局已提示
-  } finally {
-    loading.value = false
+const loadClasses = () => guarded(async (isCurrent) => {
+  const params = {
+    pageNum: pagination.pageNum,
+    pageSize: pagination.pageSize
   }
-}
+  if (searchForm.keyword && searchForm.keyword.trim()) {
+    params.keyword = searchForm.keyword.trim()
+  }
+  if (searchForm.courseId) {
+    params.courseId = searchForm.courseId
+  }
+  const res = requireSuccess(await getAdministrativeClasses(params))
+  if (!isCurrent()) return
+  classList.value = getRecords(res.data)
+  pagination.total = getTotal(res.data)
+})
 
 const handleSearch = () => {
   pagination.pageNum = 1
@@ -328,36 +350,30 @@ const handleDelete = async (row) => {
 const handleStudents = async (row) => {
   currentClass.value = row
   studentKeyword.value = ''
+  classStudents.value = []
   studentDialogVisible.value = true
   await loadStudents()
 }
 
-const loadStudents = async () => {
+const loadStudents = () => guardedStudents(async (isCurrent) => {
   if (!currentClass.value?.id) return
-  studentLoading.value = true
-  try {
-    const res = await getAdministrativeClassStudents(currentClass.value.id)
-    if (res.code === '200') {
-      const records = getRecords(res.data)
-      classStudents.value = await Promise.all(records.map(async (item) => {
-        try {
-          const userRes = await request.get(`/users/${item.studentId}`, { silentError: true })
-          const user = userRes.code === '200' ? userRes.data : null
-          return {
-            ...item,
-            studentName: user?.nickname || user?.username || `学生${item.studentId}`
-          }
-        } catch (e) {
-          return item
-        }
-      }))
+  const res = requireSuccess(await getAdministrativeClassStudents(currentClass.value.id))
+  if (!isCurrent()) return
+  const records = getRecords(res.data)
+  const students = await Promise.all(records.map(async (item) => {
+    try {
+      const userRes = await request.get(`/users/${item.studentId}`, { silentError: true })
+      const user = userRes.code === '200' ? userRes.data : null
+      return {
+        ...item,
+        studentName: user?.nickname || user?.username || `学生${item.studentId}`
+      }
+    } catch (e) {
+      return item
     }
-  } catch (e) {
-    // 全局已提示
-  } finally {
-    studentLoading.value = false
-  }
-}
+  }))
+  if (isCurrent()) classStudents.value = students
+})
 
 const findStudent = async (keyword) => {
   const value = keyword.trim()
@@ -427,28 +443,15 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.search-form {
-  margin-bottom: 16px;
-}
-
-.pagination {
-  margin-top: 20px;
-  justify-content: center;
-}
-
 .student-toolbar {
   display: flex;
-  gap: 10px;
-  margin-bottom: 12px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-3);
 }
 
 .student-input {
-  width: 260px;
+  flex: 1 1 220px;
+  max-width: 320px;
 }
 </style>

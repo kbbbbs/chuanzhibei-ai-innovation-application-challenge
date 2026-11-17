@@ -10,6 +10,7 @@ import com.cupk.aiacademy.mapper.LessonMapper;
 import com.cupk.aiacademy.pojo.Chapter;
 import com.cupk.aiacademy.pojo.Lesson;
 import com.cupk.aiacademy.service.CourseResourceService;
+import com.cupk.aiacademy.service.PermissionService;
 import com.cupk.aiacademy.videoresource.VideoResourceService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -40,6 +41,9 @@ public class LessonController {
     private CourseResourceService courseResourceService;
 
     @Autowired
+    private PermissionService permissionService;
+
+    @Autowired
     private VideoResourceService videoResourceService;
 
     @Autowired
@@ -57,7 +61,17 @@ public class LessonController {
         QueryWrapper<Lesson> queryWrapper = new QueryWrapper<>();
         queryWrapper.inSql("chapter_id", "SELECT id FROM t_chapter WHERE status = 1");
         if (chapterId != null && chapterId > 0) {
+            requireChapterAccess(chapterId, false);
             queryWrapper.eq("chapter_id", chapterId);
+        } else {
+            var user = permissionService.currentUser();
+            if (permissionService.isTeacher(user)) queryWrapper.inSql("chapter_id", "SELECT ch.id FROM t_chapter ch JOIN t_course c ON c.id=ch.course_id WHERE c.teacher_id=" + user.getUserId());
+            else if (permissionService.isStudent(user)) {
+                var courseIds = permissionService.studentCourseIds(user.getUserId());
+                if (courseIds.isEmpty()) return Result.success(page);
+                String ids = courseIds.stream().map(String::valueOf).collect(java.util.stream.Collectors.joining(","));
+                queryWrapper.inSql("chapter_id", "SELECT id FROM t_chapter WHERE course_id IN (" + ids + ")");
+            } else throw new com.cupk.aiacademy.common.ForbiddenException("无权访问课程内容");
         }
         if (title != null && !title.trim().isEmpty()) {
             queryWrapper.like("title", title.trim());
@@ -69,6 +83,7 @@ public class LessonController {
 
     @GetMapping("/chapters/{chapterId}/lessons")
     public Result listByChapter(@PathVariable Integer chapterId) {
+        requireChapterAccess(chapterId, false);
         if (!isActiveChapter(chapterMapper.selectById(chapterId))) {
             return Result.error("404", "章节不存在");
         }
@@ -80,6 +95,7 @@ public class LessonController {
     @GetMapping("/lessons/{id}")
     public Result selectById(@PathVariable Integer id) {
         Lesson lesson = lessonMapper.selectById(id);
+        if (lesson != null) requireChapterAccess(lesson.getChapterId(), false);
         return lesson == null || !isActiveChapter(chapterMapper.selectById(lesson.getChapterId()))
                 ? Result.error("404", "课时不存在")
                 : Result.success(lesson);
@@ -106,6 +122,7 @@ public class LessonController {
     @PostMapping("/lessons")
     public Result add(@Valid @RequestBody LessonDto request) {
         Lesson lesson = request.toEntity();
+        requireChapterAccess(lesson.getChapterId(), true);
         Result checkResult = checkLesson(lesson);
         if (checkResult != null) {
             return checkResult;
@@ -114,6 +131,7 @@ public class LessonController {
         lesson.setTitle(lesson.getTitle().trim());
         normalizeMediaFields(lesson);
         fixSortOrder(lesson);
+        if (lesson.getSortOrder() == null) lesson.setSortOrder(nextLessonPosition(lesson.getChapterId()));
         lesson.setCreatedAt(now);
         lesson.setUpdatedAt(now);
         int row = lessonMapper.insert(lesson);
@@ -123,9 +141,12 @@ public class LessonController {
     @PutMapping("/lessons/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody LessonDto request) {
         Lesson lesson = request.toEntity();
-        if (lessonMapper.selectById(id) == null) {
+        Lesson existing = lessonMapper.selectById(id);
+        if (existing == null) {
             return Result.error("404", "课时不存在");
         }
+        requireChapterAccess(existing.getChapterId(), true);
+        requireChapterAccess(lesson.getChapterId(), true);
         Result checkResult = checkLesson(lesson);
         if (checkResult != null) {
             return checkResult;
@@ -136,16 +157,46 @@ public class LessonController {
         fixSortOrder(lesson);
         lesson.setUpdatedAt(LocalDateTime.now());
         int row = lessonMapper.updateById(lesson);
+        // updateById skips nulls, so a lesson that stops being a video must drop its binding explicitly;
+        // otherwise the old download status and player keep showing.
+        if (row > 0 && existing.getVideoResourceId() != null && !isVideoType(lesson.getResourceType())) {
+            lessonMapper.update(null, new com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper<Lesson>()
+                    .eq("id", id).set("video_resource_id", null).set("video_url", ""));
+        }
         return row > 0 ? Result.success(lessonMapper.selectById(id)) : Result.error();
     }
 
     @DeleteMapping("/lessons/{id}")
     public Result delete(@PathVariable Integer id) {
-        if (lessonMapper.selectById(id) == null) {
+        Lesson existing = lessonMapper.selectById(id);
+        if (existing == null) {
             return Result.error("404", "课时不存在");
         }
+        requireChapterAccess(existing.getChapterId(), true);
         int row = lessonMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
+    }
+
+    /** Types the course workspace, course import, preparation publishing and the learning page understand. */
+    private static final java.util.Set<String> RESOURCE_TYPES = java.util.Set.of("markdown", "article",
+            "interactive_json_builtin", "interactive_json_upload", "video_url", "video_link", "video_file",
+            "ppt", "pptx", "pdf", "file_link");
+    private static final java.util.Set<String> TEXT_TYPES = java.util.Set.of("markdown", "article");
+
+    private static boolean isVideoType(String type) {
+        return "video_url".equals(type) || "video_link".equals(type) || "video_file".equals(type);
+    }
+
+    private Integer nextLessonPosition(Integer chapterId) {
+        return lessonMapper.selectList(new QueryWrapper<Lesson>().eq("chapter_id", chapterId)).stream()
+                .map(Lesson::getSortOrder).filter(java.util.Objects::nonNull).max(Integer::compare).orElse(0) + 1;
+    }
+
+    private void requireChapterAccess(Integer chapterId, boolean write) {
+        Chapter chapter = chapterId == null ? null : chapterMapper.selectById(chapterId);
+        if (!isActiveChapter(chapter)) throw new com.cupk.aiacademy.common.BusinessException("章节不存在");
+        if (write) permissionService.requireCourseContentTeacher(chapter.getCourseId());
+        else permissionService.requireCourseContentRead(chapter.getCourseId());
     }
 
     private AuthUtils.LoginUser parseLoginUser(String authorization) {
@@ -165,6 +216,12 @@ public class LessonController {
         }
         if (lesson.getTitle() == null || lesson.getTitle().trim().isEmpty()) {
             return Result.error("400", "课时名称不能为空");
+        }
+        if (lesson.getResourceType() != null && !RESOURCE_TYPES.contains(lesson.getResourceType())) {
+            return Result.error("400", "不支持的课时资源类型：" + lesson.getResourceType());
+        }
+        if (TEXT_TYPES.contains(lesson.getResourceType()) && (lesson.getContent() == null || lesson.getContent().isBlank())) {
+            return Result.error("400", "请填写课时正文");
         }
         if (isInteractiveJsonType(lesson.getResourceType()) && !isValidLessonPageJson(lesson.getContent())) {
             return Result.error("400", "互动课本 JSON 需要包含 blocks 数组");

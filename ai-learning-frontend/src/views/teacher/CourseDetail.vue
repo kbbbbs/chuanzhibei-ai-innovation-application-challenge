@@ -1,19 +1,50 @@
 <template>
-  <div class="course-detail" v-loading="loading">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>课程详情：{{ course?.title }}</span>
-          <router-link :to="{ path: '/chapter-knowledge-graph', query: { courseId } }">课程知识图谱</router-link>
-          <el-button @click="$router.back()">返回</el-button>
+  <div class="course-detail workspace-page" v-loading="loading">
+    <header class="course-workspace-heading">
+      <div class="course-heading-copy">
+        <p class="course-eyebrow">{{ setupStep ? '新建课程' : '课程工作台' }}</p>
+        <div class="course-heading-title">
+          <h1>
+            <button v-if="canManageCourse && !setupStep" class="editable-course-title" title="编辑基本信息" @click="basicInfoVisible = true">
+              {{ course.title }}<el-icon aria-hidden="true"><EditPen /></el-icon>
+            </button>
+            <template v-else>{{ course?.title || '新建课程' }}</template>
+          </h1>
+          <el-tag v-if="course.id" :type="course.status === 1 ? 'success' : 'info'">{{ course.status === 1 ? '已发布' : setupStep ? '创建中' : '未发布' }}</el-tag>
         </div>
-      </template>
+        <p v-if="course.description" class="course-description">{{ course.description }}</p>
+        <p v-if="course.id && !setupStep" class="course-metadata">{{ difficultyLabel }}<span>·</span>{{ chapters.length }} 个章节<span>·</span>{{ lessonCount }} 个课时</p>
+      </div>
+      <div v-if="!setupStep" class="course-heading-actions">
+        <el-button v-if="canManageCourse && workspaceTab !== 'preparation'" @click="selectWorkspaceTab('preparation')">AI 备课</el-button>
+        <el-button @click="router.push(isStudent ? '/my-classes' : '/courses')">返回列表</el-button>
+      </div>
+    </header>
 
-      <el-descriptions :column="2" border v-if="course.id">
-        <el-descriptions-item label="课程名称">{{ course.title }}</el-descriptions-item>
-        <el-descriptions-item label="难度">{{ course.difficulty }}</el-descriptions-item>
-        <el-descriptions-item label="课程简介" :span="2">{{ course.description }}</el-descriptions-item>
-      </el-descriptions>
+    <ErrorNotice
+      v-if="contentFailed"
+      title="课程内容未完整加载"
+      message="课程或章节读取失败，下方内容可能不完整，这不代表课程没有内容。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="reloadContent"
+    />
+
+    <section v-if="course.id && isStudent" class="content-panel" aria-label="课程信息">
+      <dl class="definition-grid">
+        <div>
+          <dt>课程名称</dt>
+          <dd>{{ course.title }}</dd>
+        </div>
+        <div>
+          <dt>难度</dt>
+          <dd>{{ course.difficulty || '—' }}</dd>
+        </div>
+        <div>
+          <dt>章节</dt>
+          <dd>{{ chapters.length }} 章</dd>
+        </div>
+      </dl>
 
       <div v-if="isStudent && publicCourse" class="student-course-actions">
         <div>
@@ -29,16 +60,96 @@
           {{ joinedClassId ? '进入学习' : publicCourse.joinable ? '加入课程并开始学习' : '暂未开放教学班' }}
         </el-button>
       </div>
-    </el-card>
+    </section>
 
-    <el-card class="mt-20">
-      <template #header>
-        <div class="card-header">
-          <span>章节与课时</span>
-          <el-button v-if="canManageCourse" type="primary" size="small" @click="handleAddChapter">新增章节</el-button>
+    <CourseSetup v-if="canManageMaterials && setupStep" :key="courseId" :course-id="courseId" @updated="reloadContent" />
+    <template v-else>
+      <el-tabs v-if="canManageCourse || canViewGraph" :model-value="workspaceTab" :before-leave="selectWorkspaceTab" data-testid="course-workspace-tabs" class="course-workspace-tabs">
+        <el-tab-pane label="课程内容" name="content" />
+        <el-tab-pane v-if="canManageMaterials" label="课程资料" name="materials" />
+        <el-tab-pane v-if="canManageMaterials" label="智能问答" name="chat" />
+        <el-tab-pane v-if="canViewGraph && !canManageMaterials" label="知识图谱" name="graph" />
+      </el-tabs>
+      <section v-if="canManageMaterials && workspaceTab === 'materials'" aria-label="课程资料">
+        <el-tabs v-model="materialTab" data-testid="course-material-tabs">
+          <el-tab-pane label="资料文件" name="documents" />
+          <el-tab-pane label="检索与验证" name="search" />
+          <el-tab-pane label="知识图谱" name="graph" />
+        </el-tabs>
+        <CourseKnowledgeGraph v-if="materialTab === 'graph'" :key="courseId" :course-id="courseId" />
+        <TeacherKnowledgeBase v-else :key="`${courseId}:${materialTab}`" :course-id="courseId" :workspace-tab="materialTab" embedded />
+      </section>
+      <TeacherKnowledgeBase v-else-if="canManageMaterials && workspaceTab === 'chat'" :key="`course-chat:${courseId}`" :course-id="courseId" workspace-tab="chat" embedded />
+      <CourseKnowledgeGraph v-else-if="canViewGraph && workspaceTab === 'graph'" :key="courseId" :course-id="courseId" />
+      <IntelligentResourceGen
+        v-else-if="canManageCourse && workspaceTab === 'preparation'"
+        :key="preparationKey(route)"
+        ref="preparationRef"
+        :course-id="courseId"
+        embedded
+        @applied="reloadContent"
+      />
+    <section v-show="workspaceTab === 'content'" class="content-panel course-content-panel" aria-labelledby="chapter-heading">
+      <div class="section-head">
+        <div>
+          <h2 id="chapter-heading">章节与课时</h2>
+          <p>{{ canManageCourse ? '维护章节结构、课时资源，并查看视频下载与知识点处理状态。' : '按章节查看课时内容。' }}</p>
         </div>
-      </template>
+      </div>
 
+      <div v-if="canManageCourse" class="course-content-workspace">
+        <nav class="course-directory" aria-label="章节课时目录">
+          <p class="directory-label">课程目录</p>
+          <section v-for="(chapter, chapterIndex) in chapters" :key="chapter.id" class="directory-chapter">
+            <div class="directory-chapter-heading">
+              <strong><span aria-hidden="true">{{ chapterIndex + 1 }}. </span><span>{{ chapter.title }}</span></strong>
+              <el-dropdown trigger="click">
+                <el-button text size="small" :aria-label="`${chapter.title}章节操作`">···</el-button>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item @click="handleEditChapter(chapter)">编辑章节</el-dropdown-item>
+                    <el-dropdown-item @click="handleDeleteChapter(chapter)">删除章节</el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+            <div v-for="(lesson, lessonIndex) in chapter.lessons" :key="lesson.id" class="directory-lesson-row" :class="{ selected: selectedLesson?.id === lesson.id }">
+              <button class="directory-lesson" :aria-label="lesson.title" @click="selectDirectoryLesson(lesson)"><span>{{ chapterIndex + 1 }}.{{ lessonIndex + 1 }}</span>{{ lesson.title }}</button>
+              <el-button class="directory-delete" text size="small" :aria-label="`删除课时：${lesson.title}`" :icon="Delete" :disabled="submitLoading" @click="handleDeleteLesson(lesson)" />
+            </div>
+            <div class="chapter-actions">
+              <el-button text size="small" @click="handleAddLesson(chapter)">＋ 添加课时</el-button>
+            </div>
+          </section>
+          <el-button class="directory-add-chapter" aria-label="新增章节" text @click="handleAddChapter">＋ 新增章节</el-button>
+        </nav>
+        <article v-if="selectedLesson" class="course-lesson-preview" data-testid="course-lesson-preview" aria-label="课时内容预览" tabindex="0">
+          <div class="lesson-preview-toolbar">
+            <span>{{ resourceTypeLabel(selectedLesson.resourceType) }}</span>
+            <div v-if="!inlineEditing" class="lesson-preview-actions"><el-button @click="handleEditLesson(selectedLesson)">编辑课时</el-button></div>
+          </div>
+          <el-form v-if="inlineEditing" ref="inlineLessonFormRef" :model="lessonForm" :rules="lessonRules" label-position="top" class="inline-lesson-editor" data-testid="inline-lesson-editor" :disabled="submitLoading" @submit.prevent>
+            <el-form-item label="课时标题" prop="title"><el-input v-model="lessonForm.title" /></el-form-item>
+            <MdEditor v-model="markdownDraft" editor-id="course-inline-lesson" language="zh-CN" :theme="resolvedTheme" :preview="false" :toolbars-exclude="['github']" :read-only="submitLoading" class="inline-markdown-editor" />
+            <div class="inline-lesson-actions"><el-button :disabled="submitLoading" @click="inlineEditing = false">取消编辑</el-button><el-button type="primary" :loading="submitLoading" @click="handleSaveLesson">保存课时</el-button></div>
+          </el-form>
+          <template v-else>
+          <h2>{{ selectedLesson.title }}</h2>
+          <div v-if="selectedLesson.videoResourceId" class="lesson-resource-status">
+            <el-tag :type="videoStatusTagType(selectedLesson)" size="small">{{ videoStatusLabel(selectedLesson) }}</el-tag>
+            <el-tooltip :content="knowledgeStatusTip(selectedLesson)"><el-tag :type="knowledgeStatusTagType(selectedLesson)" size="small">{{ knowledgeStatusLabel(selectedLesson) }}</el-tag></el-tooltip>
+            <el-button v-if="canRetryVideo(selectedLesson)" size="small" :loading="retryingResourceId === selectedLesson.videoResourceId" @click="handleRetryVideo(selectedLesson)">重试</el-button>
+          </div>
+          <div v-if="selectedLessonMarkdown" class="lesson-preview-markdown" v-html="renderMarkdown(selectedLessonMarkdown)" />
+          <div v-else class="lesson-resource-summary">
+            <p>{{ selectedLesson.resourceType?.startsWith('interactive_json') ? '互动课本已保存，可在编辑课时中维护内容块。' : selectedLesson.resourceUrl ? '课时资源已关联，可在编辑课时中查看与维护。' : '该课时尚未填写正文，可继续编辑。' }}</p>
+          </div>
+          </template>
+          <div v-if="!inlineEditing" class="lesson-preview-footer"><el-button @click="selectWorkspaceTab('materials')">查看课程参考资料</el-button><el-button text type="primary" @click="selectWorkspaceTab('chat')">向课程助手提问 →</el-button></div>
+        </article>
+        <div v-else class="empty-lesson-preview"><AppEmpty :description="chapters.length ? '选择章节添加课时，开始准备教学内容' : '从左侧新增章节开始组织课程'" /></div>
+      </div>
+      <template v-else-if="!canManageCourse">
       <el-collapse v-model="activeChapters">
         <el-collapse-item v-for="chapter in chapters" :key="chapter.id" :name="chapter.id">
           <template #title>
@@ -52,8 +163,8 @@
             </div>
           </template>
 
-          <el-table :data="chapter.lessons" border size="small" v-loading="loading">
-            <el-table-column prop="title" label="课时名称" />
+          <el-table :data="chapter.lessons" size="small" v-loading="loading">
+            <el-table-column prop="title" label="课时名称" min-width="180" />
             <el-table-column label="资源类型" width="120">
               <template #default="{ row }">
                 {{ resourceTypeLabel(row.resourceType) }}
@@ -99,20 +210,26 @@
           </el-table>
         </el-collapse-item>
       </el-collapse>
-    </el-card>
+      </template>
+      <AppEmpty v-if="!canManageCourse && !chapters.length && !loading && !contentFailed" description="暂无章节" />
+    </section>
 
+    </template>
+    <el-dialog v-model="basicInfoVisible" title="编辑基本信息" width="min(680px, 94vw)" destroy-on-close :close-on-click-modal="false">
+      <CourseForm :course-id="courseId" dialog-mode @saved="basicInfoSaved" @cancel="basicInfoVisible = false" />
+    </el-dialog>
     <!-- Chapter Dialog -->
     <el-dialog v-model="chapterDialogVisible" :title="chapterForm.id ? '编辑章节' : '新增章节'" width="500px">
-      <el-form :model="chapterForm" :rules="chapterRules" ref="chapterFormRef" label-width="100px">
-        <el-form-item label="章节标题">
-          <el-input v-model="chapterForm.title" />
+      <el-form :model="chapterForm" :rules="chapterRules" ref="chapterFormRef" label-position="top">
+        <el-form-item label="章节标题" prop="title">
+          <el-input v-model="chapterForm.title" maxlength="100" />
         </el-form-item>
         <el-form-item label="章节简介">
           <el-input v-model="chapterForm.description" type="textarea" :rows="3" />
         </el-form-item>
-<!--        <el-form-item label="排序">-->
-<!--          <el-input-number v-model="chapterForm.sortOrder" :min="1" />-->
-<!--        </el-form-item>-->
+        <el-form-item label="排序">
+          <el-input-number v-model="chapterForm.sortOrder" :min="1" placeholder="留空排在最后" />
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="chapterDialogVisible = false">取消</el-button>
@@ -122,8 +239,8 @@
 
     <!-- Lesson Dialog -->
     <el-dialog v-model="lessonDialogVisible" :title="lessonForm.id ? '编辑课时' : '新增课时'" width="760px">
-      <el-form :model="lessonForm" :rules="lessonRules" ref="lessonFormRef" label-width="100px">
-        <el-form-item label="课时标题">
+      <el-form :model="lessonForm" :rules="lessonRules" ref="lessonFormRef" label-position="top">
+        <el-form-item label="课时标题" prop="title">
           <el-input v-model="lessonForm.title" />
         </el-form-item>
         <el-form-item label="资源类型">
@@ -257,11 +374,8 @@
             <el-input v-model="lessonForm.resourceUrl" placeholder="资源地址" />
           </div>
         </el-form-item>
-        <el-form-item label="时长(秒)">
-          <el-input-number v-model="lessonForm.duration" :min="0" />
-        </el-form-item>
         <el-form-item label="排序">
-          <el-input-number v-model="lessonForm.sortOrder" :min="1" />
+          <el-input-number v-model="lessonForm.sortOrder" :min="1" placeholder="留空排在最后" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -274,11 +388,24 @@
 
 <script setup>
 import { computed, onUnmounted, ref, reactive, watch } from 'vue'
-import { useRoute, useRouter } from 'vue-router'
+import { assistantPageContext } from '@/composables/useAssistant'
+import { onBeforeRouteLeave, onBeforeRouteUpdate, useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import { EditPen, Delete } from '@element-plus/icons-vue'
+import { MdEditor } from 'md-editor-v3'
+import 'md-editor-v3/lib/style.css'
+import { useTheme } from '@/composables/useTheme'
+import CourseForm from './CourseForm.vue'
+import { renderMarkdown } from '@/utils/markdown'
+import CourseSetup from '@/components/course/CourseSetup.vue'
+import IntelligentResourceGen from './IntelligentResourceGen.vue'
+import TeacherKnowledgeBase from './TeacherKnowledgeBase.vue'
+import CourseKnowledgeGraph from '@/components/knowledge/CourseKnowledgeGraph.vue'
+import { requireSuccess } from '@/utils/apiHelpers'
 import { getCourseById } from '@/utils/course'
 import {
   getVideoResource,
@@ -294,20 +421,87 @@ const router = useRouter()
 const userStore = useUserStore()
 const courseId = computed(() => Number(route.params.id))
 const { confirmDelete } = useConfirm()
-const canManageCourse = computed(() => userStore.isAdmin || userStore.isTeacher)
+const { resolvedTheme } = useTheme()
+const canManageCourse = computed(() => course.value.id && userStore.roleCode === 'teacher' && Number(course.value.teacherId) === Number(userStore.userId))
+const canManageMaterials = canManageCourse
 const isStudent = computed(() => userStore.roleCode === 'student')
+const canViewGraph = computed(() => Boolean(canManageCourse.value || isStudent.value && course.value.id))
 
 const loading = ref(false)
+const contentFailed = ref(false)
+let contentRun = 0
 const submitLoading = ref(false)
 const uploadLoading = ref(false)
 const retryingResourceId = ref(null)
 const videoResourcesLoading = ref(false)
 const course = ref({})
+watch(() => [courseId.value, course.value.title], () => { Object.assign(assistantPageContext, { courseId: courseId.value, lessonId: null, courseTitle: course.value.title || '', lessonTitle: '' }) }, { immediate: true })
+onUnmounted(() => { Object.assign(assistantPageContext, { courseId: null, lessonId: null, courseTitle: '', lessonTitle: '' }) })
+const materialTabs = ['documents', 'chat', 'search', 'graph']
+const preparationRef = ref(null)
+const workspaceTab = computed(() => {
+  const tab = route.query.tab
+  if (canManageMaterials.value && (tab === 'chat' || tab === 'materials' && route.query.material === 'chat')) return 'chat'
+  if (canManageMaterials.value && (tab === 'materials' || materialTabs.includes(tab))) return 'materials'
+  if (tab === 'preparation' && canManageCourse.value) return 'preparation'
+  if (tab === 'graph' && canViewGraph.value) return 'graph'
+  return 'content'
+})
+async function selectWorkspaceTab(tab) {
+  if (tab === workspaceTab.value) return true
+  await router.replace({ path: route.path, query: { tab } })
+  // Selection follows the URL once the router has accepted the change.
+  return false
+}
+const materialTab = computed({
+  get: () => {
+    if (materialTabs.includes(route.query.tab)) return route.query.tab
+    return materialTabs.includes(route.query.material) ? route.query.material : 'documents'
+  },
+  set: tab => router.replace({ path: route.path, query: { tab: 'materials', ...(tab !== 'documents' ? { material: tab } : {}) } }),
+})
+const preparationKey = location => `${location.params.id}:${location.query.projectId || location.query.draftId || ''}`
+async function flushWorkspacePreparation() {
+  if (!preparationRef.value || await preparationRef.value.flushDraft()) return true
+  ElMessage.warning('当前备课修改尚未保存，请完成保存后重试')
+  return false
+}
+onBeforeRouteLeave(async () => await allowInlineExit() && await flushWorkspacePreparation())
+onBeforeRouteUpdate(async to => {
+  if (!await allowInlineExit()) return false
+  if (to.query.tab === 'preparation' && preparationKey(to) === preparationKey(route)) return true
+  return flushWorkspacePreparation()
+})
+const setupStep = computed(() => {
+  if (!canManageMaterials.value) return null
+  if (course.value.setupStage) return course.value.setupStage === 'COMPLETED' ? null : course.value.setupStage.toLowerCase()
+  return ['basic', 'materials', 'content'].includes(route.query.setup) ? route.query.setup : null
+})
+
 const publicCourse = ref(null)
 const joinedClassId = ref(null)
 const joining = ref(false)
 const chapters = ref([])
 const activeChapters = ref([])
+const basicInfoVisible = ref(false)
+const selectedLessonId = ref(null)
+const lessonCount = computed(() => chapters.value.reduce((count, chapter) => count + (chapter.lessons?.length || 0), 0))
+const difficultyLabel = computed(() => ({ beginner: '入门', intermediate: '基础', advanced: '进阶' }[course.value.difficulty] || course.value.difficulty || '课程内容'))
+const selectedLesson = computed(() => {
+  const lessons = chapters.value.flatMap(chapter => chapter.lessons || [])
+  return lessons.find(lesson => lesson.id === selectedLessonId.value) || lessons[0] || null
+})
+const selectedLessonMarkdown = computed(() => {
+  const lesson = selectedLesson.value
+  if (!lesson || !['markdown', 'article'].includes(lesson.resourceType)) return ''
+  const page = parseLessonJson(lesson.content)
+  if (Array.isArray(page?.blocks)) return page.blocks.filter(block => !block.type || block.type === 'markdown').map(block => block.content || '').join('\n\n')
+  return lesson.content || ''
+})
+async function basicInfoSaved() {
+  basicInfoVisible.value = false
+  await loadCourse()
+}
 const videoResources = ref(new Map())
 let videoResourcePollTimer = null
 
@@ -325,6 +519,21 @@ const chapterRules = {
 }
 
 const lessonDialogVisible = ref(false)
+const inlineEditing = ref(false)
+const inlineLessonFormRef = ref(null)
+let inlineInitial = ''
+async function allowInlineExit() {
+  if (!inlineEditing.value) return true
+  if (submitLoading.value) return false
+  const changed = JSON.stringify([lessonForm.title, markdownDraft.value]) !== inlineInitial
+  if (changed && !await confirmDelete('课时有未保存的修改，确认放弃修改？', { confirmButtonText: '放弃修改', cancelButtonText: '继续编辑' })) return false
+  inlineEditing.value = false
+  return true
+}
+async function selectDirectoryLesson(lesson) {
+  if (selectedLesson.value?.id === lesson.id) return
+  if (await allowInlineExit()) selectedLessonId.value = lesson.id
+}
 const lessonFormRef = ref(null)
 const uploadRef = ref(null)
 const jsonUploadRef = ref(null)
@@ -392,12 +601,22 @@ const currentVideoResource = computed(() => {
 })
 
 const loadCourse = async () => {
+  const id = courseId.value
   try {
-    const res = await getCourseById(courseId.value)
-    if (res.code === '200') {
+    const res = requireSuccess(await getCourseById(id))
+    if (id === courseId.value) {
       course.value = res.data
+      if (canManageCourse.value && !setupStep.value && route.query.tab === 'settings') {
+        await router.replace({ name: 'CourseCreate', query: { id, returnTo: '/courses' } })
+      } else if (!setupStep.value && route.query.setup) {
+        const query = { ...route.query }
+        delete query.setup
+        await router.replace({ path: route.path, query })
+      }
     }
-  } catch {}
+  } catch {
+    if (id === courseId.value) contentFailed.value = true
+  }
 }
 
 const loadPublicCourseState = async () => {
@@ -451,33 +670,38 @@ const loadTemplateLibrary = async () => {
 }
 
 const loadChapters = async () => {
+  const run = ++contentRun
   loading.value = true
   try {
-    const res = await request.get(`/courses/${courseId.value}/chapters`)
-    if (res.code === '200') {
-      chapters.value = res.data
-      for (const chapter of chapters.value) {
-        try {
-          const lessonsRes = await request.get(`/chapters/${chapter.id}/lessons`, { silentError: true })
-          if (lessonsRes.code === '200') {
-            chapter.lessons = lessonsRes.data
-          } else {
-            console.warn(`Failed to load lessons for chapter ${chapter.id}: ${lessonsRes.msg}`)
-            chapter.lessons = []
-          }
-        } catch (error) {
-          console.error(`Error loading lessons for chapter ${chapter.id}:`, error)
-          chapter.lessons = []
-        }
+    const res = requireSuccess(await request.get(`/courses/${courseId.value}/chapters`))
+    if (run !== contentRun) return
+    chapters.value = res.data
+    for (const chapter of chapters.value) {
+      try {
+        const lessonsRes = requireSuccess(await request.get(`/chapters/${chapter.id}/lessons`, { silentError: true }))
+        chapter.lessons = lessonsRes.data
+      } catch {
+        // Keep the chapter, but an unread lesson list must not pass as an empty chapter.
+        chapter.lessons = []
+        contentFailed.value = true
       }
-      await loadVideoResources()
+      if (run !== contentRun) return
     }
-  } catch (error) {
-    console.error('Error loading chapters:', error)
-    ElMessage.error('加载章节失败')
+    await loadVideoResources()
+  } catch {
+    if (run !== contentRun) return
+    chapters.value = []
+    contentFailed.value = true
   } finally {
-    loading.value = false
+    if (run === contentRun) loading.value = false
   }
+}
+
+const reloadContent = async () => {
+  contentFailed.value = false
+  await loadCourse()
+  if (setupStep.value) return
+  return loadChapters()
 }
 
 const loadVideoResources = async () => {
@@ -517,23 +741,25 @@ const handleAddChapter = () => {
     courseId: courseId.value,
     title: '',
     description: '',
-    sortOrder: 1
+    sortOrder: null
   })
   chapterDialogVisible.value = true
+  chapterFormRef.value?.clearValidate?.()
 }
 
 const handleEditChapter = (chapter) => {
-  Object.assign(chapterForm, chapter)
+  const { id, courseId: chapterCourseId, title, description, sortOrder } = chapter
+  Object.assign(chapterForm, { id, courseId: chapterCourseId, title, description, sortOrder })
   chapterDialogVisible.value = true
 }
 
 const handleSaveChapter = async () => {
-  await chapterFormRef.value.validate()
+  try { await chapterFormRef.value.validate() } catch { return }
   submitLoading.value = true
   try {
     const url = chapterForm.id ? `/chapters/${chapterForm.id}` : '/chapters'
     const method = chapterForm.id ? 'put' : 'post'
-    const res = await request[method](url, chapterForm)
+    const res = await request[method](url, { ...chapterForm })
     if (res.code === '200') {
       ElMessage.success('保存成功')
       chapterDialogVisible.value = false
@@ -556,7 +782,8 @@ const handleDeleteChapter = async (chapter) => {
   } catch {}
 }
 
-const handleAddLesson = (chapter) => {
+const handleAddLesson = async (chapter) => {
+  if (!await allowInlineExit()) return
   Object.assign(lessonForm, {
     id: null,
     chapterId: chapter.id,
@@ -567,13 +794,15 @@ const handleAddLesson = (chapter) => {
     videoUrl: '',
     videoResourceId: null,
     duration: 0,
-    sortOrder: 1
+    sortOrder: null
   })
   resetLessonContentState()
   lessonDialogVisible.value = true
+  lessonFormRef.value?.clearValidate?.()
 }
 
-const handleEditLesson = (lesson) => {
+const handleEditLesson = async (lesson) => {
+  if (!await allowInlineExit()) return
   const resourceType = normalizeLessonResourceType(lesson.resourceType)
   Object.assign(lessonForm, {
     ...lesson,
@@ -582,12 +811,19 @@ const handleEditLesson = (lesson) => {
   resetLessonContentState({ keepContent: true })
   if (resourceType === 'markdown') {
     markdownDraft.value = markdownFromLesson(lesson)
+    selectedLessonId.value = lesson.id
+    inlineInitial = JSON.stringify([lessonForm.title, markdownDraft.value])
+    inlineEditing.value = true
+    lessonDialogVisible.value = false
+    return
   }
   lessonDialogVisible.value = true
 }
 
+// Requests here are silent, so each failure is reported exactly once below.
+const failureText = (error, fallback) => error?.response?.data?.msg || error?.message || fallback
 const handleSaveLesson = async () => {
-  await lessonFormRef.value.validate()
+  try { await (inlineEditing.value ? inlineLessonFormRef.value : lessonFormRef.value).validate() } catch { return }
   const validationMessage = validateLessonResource()
   if (validationMessage) {
     ElMessage.error(validationMessage)
@@ -598,26 +834,32 @@ const handleSaveLesson = async () => {
     const url = lessonForm.id ? `/lessons/${lessonForm.id}` : '/lessons'
     const method = lessonForm.id ? 'put' : 'post'
     const payload = buildLessonPayload()
-    const res = await request[method](url, payload)
-    if (res.code === '200') {
-      const savedLesson = res.data || lessonForm
-      if (lessonForm.resourceType === 'video_url') {
-        const videoRes = await submitVideoUrl(savedLesson.id, lessonForm.resourceUrl)
-        if (videoRes.code === '200' && videoRes.data) {
-          lessonForm.videoResourceId = videoRes.data.id
-          videoResources.value = new Map(videoResources.value).set(Number(videoRes.data.id), videoRes.data)
-          syncVideoResourcePolling()
-        }
-      }
-      ElMessage.success(lessonForm.resourceType === 'video_url' ? '保存成功，视频已进入下载队列，可在列表查看处理状态' : '保存成功')
-      lessonDialogVisible.value = false
-      loadChapters()
-    } else {
+    const res = await request[method](url, payload, { silent: true })
+    if (res.code !== '200') {
       ElMessage.error(res.msg || '保存失败')
+      return
     }
+    const savedLesson = res.data || lessonForm
+    // From here the lesson exists: a later retry must update it, never create a second one.
+    if (savedLesson.id) lessonForm.id = savedLesson.id
+    await loadChapters()
+    if (lessonForm.resourceType === 'video_url') {
+      try {
+        const videoRes = await submitVideoUrl(savedLesson.id, lessonForm.resourceUrl, { silent: true })
+        if (videoRes.code !== '200' || !videoRes.data) throw new Error(videoRes.msg || '视频地址未提交')
+        lessonForm.videoResourceId = videoRes.data.id
+        videoResources.value = new Map(videoResources.value).set(Number(videoRes.data.id), videoRes.data)
+        syncVideoResourcePolling()
+      } catch (error) {
+        ElMessage.warning(`课时已保存，但视频没有进入下载队列：${failureText(error, '请检查视频地址')}。修改地址后再次保存即可。`)
+        return
+      }
+    }
+    ElMessage.success(lessonForm.resourceType === 'video_url' ? '保存成功，视频已进入下载队列，可在列表查看处理状态' : '保存成功')
+    lessonDialogVisible.value = false
+    inlineEditing.value = false
   } catch (error) {
-    console.error('Save lesson error:', error)
-    ElMessage.error(error.response?.data?.msg || error.message || '保存失败')
+    ElMessage.error(failureText(error, '保存失败'))
   } finally {
     submitLoading.value = false
   }
@@ -726,19 +968,27 @@ const handleDeleteLesson = async (lesson) => {
     if (!confirmed) return
     const res = await request.delete(`/lessons/${lesson.id}`)
     if (res.code === '200') {
+      if (inlineEditing.value && lessonForm.id === lesson.id) inlineEditing.value = false
       ElMessage.success('删除成功')
       loadChapters()
     }
   } catch {}
 }
 
-const loadPage = () => {
+const loadPage = async () => {
   stopVideoResourcePolling()
+  basicInfoVisible.value = false
+  selectedLessonId.value = null
+  inlineEditing.value = false
   course.value = {}
   chapters.value = []
   activeChapters.value = []
   videoResources.value = new Map()
-  loadCourse()
+  contentFailed.value = false
+  // The instance also sees navigation away from this route; that must load nothing.
+  if (!route.params.id) return
+  await loadCourse()
+  if (setupStep.value || userStore.roleCode === 'admin') return
   loadPublicCourseState()
   loadTemplateLibrary()
   loadChapters()
@@ -747,7 +997,14 @@ const loadPage = () => {
 const buildLessonPayload = () => {
   const payload = { ...lessonForm }
   if (payload.resourceType === 'markdown') {
-    payload.content = JSON.stringify(markdownPagePayload(), null, 2)
+    const page = inlineEditing.value ? parseLessonJson(payload.content) : null
+    const firstMarkdown = page?.blocks?.find(block => !block.type || block.type === 'markdown')
+    if (firstMarkdown) {
+      firstMarkdown.content = markdownDraft.value
+      firstMarkdown.title = lessonForm.title
+      page.title = lessonForm.title
+      payload.content = JSON.stringify(page, null, 2)
+    } else payload.content = JSON.stringify(markdownPagePayload(), null, 2)
     payload.resourceUrl = ''
   } else if (isInteractiveJsonType(payload.resourceType)) {
     const parsed = parseLessonJson(payload.content)
@@ -782,6 +1039,9 @@ const validateLessonResource = () => {
   }
   if (lessonForm.resourceType === 'video_url' && !lessonForm.resourceUrl?.trim()) {
     return '请输入视频 URL'
+  }
+  if (lessonForm.resourceType === 'video_url' && !/^https?:\/\//i.test(lessonForm.resourceUrl.trim())) {
+    return '视频 URL 需以 http:// 或 https:// 开头'
   }
   if (['video_file', 'ppt', 'file_link'].includes(lessonForm.resourceType) && !lessonForm.resourceUrl?.trim()) {
     return '请上传或填写资源地址'
@@ -964,40 +1224,392 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.card-header {
+.course-detail {
+  gap: 0;
+  padding-bottom: 100px;
+}
+.course-detail > .content-panel[aria-label='课程信息'] {
+  margin-bottom: 24px;
+}
+.course-detail > .error-notice {
+  margin-bottom: 20px;
+}
+.course-workspace-heading {
   display: flex;
   justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  margin: 8px 0 28px;
+}
+.course-heading-copy {
+  min-width: 0;
+}
+.course-eyebrow {
+  margin: 0 0 8px;
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.course-heading-title {
+  display: flex;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
 }
-
-.mt-20 {
-  margin-top: 20px;
+.course-heading-title h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.4;
+  letter-spacing: -0.7px;
+  overflow-wrap: anywhere;
 }
-
+.editable-course-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0;
+  border: 0;
+  color: inherit;
+  background: transparent;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.editable-course-title .el-icon {
+  font-size: 16px;
+  color: var(--text-subtle);
+  flex-shrink: 0;
+}
+.editable-course-title:hover {
+  color: var(--accent);
+}
+.editable-course-title:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 5px;
+  border-radius: 4px;
+}
+.course-description {
+  margin: 9px 0 0;
+  color: var(--text-body);
+  font-size: 13px;
+  line-height: 1.8;
+  max-width: 75ch;
+}
+.course-metadata {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  color: var(--text-subtle);
+  font-size: 12px;
+  margin: 12px 0 0;
+}
+.course-heading-actions {
+  display: flex;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-top: 25px;
+}
+.course-heading-actions .el-button + .el-button {
+  margin-left: 0;
+}
+.course-workspace-tabs {
+  margin-bottom: 24px;
+}
+.course-workspace-tabs :deep(.el-tabs__item) {
+  font-size: 14px;
+  padding-block: 12px;
+  height: 52px;
+}
+.course-workspace-tabs :deep(.el-tabs__header) {
+  margin-bottom: 0;
+}
+[data-testid='course-material-tabs'] {
+  margin-bottom: 24px;
+}
+[data-testid='course-material-tabs'] :deep(.el-tabs__nav-wrap::after) {
+  display: none;
+}
+[data-testid='course-material-tabs'] :deep(.el-tabs__active-bar) {
+  display: none;
+}
+[data-testid='course-material-tabs'] :deep(.el-tabs__nav) {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  background: var(--surface-sunken);
+  border-radius: 12px;
+}
+[data-testid='course-material-tabs'] :deep(.el-tabs__item) {
+  min-width: 136px;
+  justify-content: center;
+  padding: 0 24px;
+  height: 44px;
+  font-size: 14px;
+  border-radius: 8px;
+}
+[data-testid='course-material-tabs'] :deep(.el-tabs__item.is-active) {
+  background: var(--surface-base);
+  box-shadow: 0 1px 5px #2030530a;
+}
+.course-content-panel {
+  padding: 0;
+  overflow: hidden;
+}
+.course-content-panel > .section-head {
+  padding: 22px 26px;
+  margin: 0;
+  border-bottom: 1px solid var(--line-default);
+}
+.course-content-panel > .section-head h2 {
+  font-size: 16px;
+}
+.course-content-panel > .section-head p {
+  font-size: 12px;
+}
+.course-content-workspace {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  height: min(760px, calc(100dvh - 340px));
+  min-height: 480px;
+  overflow: hidden;
+}
+.course-directory {
+  min-height: 0;
+  overflow: auto;
+  padding: 22px 16px;
+  background: var(--surface-canvas);
+  border-right: 1px solid var(--line-default);
+}
+.directory-label {
+  color: var(--text-subtle);
+  font-size: 12px;
+  padding: 0 10px;
+  margin: 0 0 17px;
+}
+.directory-chapter + .directory-chapter {
+  margin-top: 14px;
+}
+.directory-chapter-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 6px;
+  padding: 8px 6px 8px 10px;
+}
+.directory-chapter-heading strong {
+  font-size: 13px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.directory-chapter-heading :deep(.el-button) {
+  padding: 2px 5px;
+  min-height: 24px;
+}
+.directory-lesson-row { display: flex; align-items: center; border-radius: 7px; }
+.directory-lesson-row.selected { background: var(--surface-accent); }
+.directory-lesson-row .directory-lesson { flex: 1; min-width: 0; }
+.directory-delete { flex-shrink: 0; color: var(--text-subtle); margin-right: 3px; }
+.directory-delete:hover { color: var(--critical); }
+.directory-add-chapter { margin-top: 16px; width: 100%; justify-content: flex-start; color: var(--accent); font-size: 12px; }
+.inline-lesson-editor { min-width: 0; }
+.inline-markdown-editor { height: 520px; max-height: 70vh; }
+.inline-lesson-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+.directory-lesson {
+  display: flex;
+  gap: 8px;
+  width: 100%;
+  background: transparent;
+  color: var(--text-body);
+  border: 0;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 12px;
+  padding: 11px 12px;
+  cursor: pointer;
+  text-align: left;
+  overflow-wrap: anywhere;
+  line-height: 1.7;
+}
+.directory-lesson span {
+  flex-shrink: 0;
+  color: var(--text-subtle);
+}
+.directory-lesson:hover {
+  background: var(--surface-sunken);
+}
+.directory-lesson-row.selected .directory-lesson {
+  color: var(--accent);
+  background: var(--surface-accent);
+}
+.directory-lesson-row.selected .directory-lesson span {
+  color: var(--accent);
+}
+.course-directory .chapter-actions {
+  padding: 5px 6px;
+}
+.course-directory .chapter-actions .el-button {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.course-lesson-preview {
+  padding: 28px 36px 36px;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+.lesson-preview-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 23px;
+}
+.lesson-preview-toolbar > span {
+  font-size: 12px;
+  color: var(--text-subtle);
+}
+.lesson-preview-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.course-lesson-preview > h2 {
+  font-size: 25px;
+  margin: 0 0 23px;
+  overflow-wrap: anywhere;
+}
+.lesson-preview-markdown {
+  font-size: 14px;
+  line-height: 1.95;
+  color: var(--text-body);
+  overflow-wrap: anywhere;
+}
+.lesson-preview-markdown :deep(h2),
+.lesson-preview-markdown :deep(h3) {
+  margin: 24px 0 12px;
+  color: var(--text-strong);
+}
+.lesson-preview-markdown :deep(img) {
+  max-width: 100%;
+}
+.lesson-preview-markdown :deep(pre) {
+  white-space: pre-wrap;
+  padding: 16px;
+  background: var(--surface-sunken);
+  border-radius: 8px;
+}
+.lesson-preview-markdown :deep(table) {
+  display: block;
+  max-width: 100%;
+  overflow: auto;
+}
+.lesson-preview-footer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line-subtle);
+}
+.lesson-preview-footer .el-button + .el-button {
+  margin-left: 0;
+}
+.lesson-resource-status {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+.lesson-resource-summary {
+  color: var(--text-subtle);
+  min-height: 150px;
+  font-size: 13px;
+  line-height: 1.9;
+}
+.empty-lesson-preview {
+  display: grid;
+  place-items: center;
+}
+@media (max-width: 900px) {
+  .course-content-workspace {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+  .course-lesson-preview {
+    padding: 24px;
+  }
+}
+@media (max-width: 680px) {
+  [data-testid='course-material-tabs'] :deep(.el-tabs__nav) {
+    width: 100%;
+    gap: 4px;
+    padding: 4px;
+  }
+  [data-testid='course-material-tabs'] :deep(.el-tabs__item) {
+    flex: 1;
+    min-width: 0;
+    padding-inline: 12px;
+    font-size: 13px;
+  }
+  .course-workspace-heading {
+    flex-direction: column;
+    gap: 14px;
+  }
+  .course-heading-title h1 {
+    font-size: 23px;
+  }
+  .course-heading-actions {
+    padding-top: 0;
+    flex-wrap: wrap;
+  }
+  .course-content-workspace {
+    display: block;
+    height: auto;
+    overflow: visible;
+  }
+  .course-directory {
+    border-right: 0;
+    border-bottom: 1px solid var(--line-default);
+    max-height: 340px;
+    overflow: auto;
+  }
+  .course-content-panel > .section-head {
+    padding: 18px;
+  }
+  .course-lesson-preview {
+    padding: 22px 18px;
+    overflow: visible;
+  }
+  .lesson-preview-toolbar {
+    flex-wrap: wrap;
+  }
+  .course-lesson-preview > h2 {
+    font-size: 21px;
+  }
+}
 .student-course-actions {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  margin-top: 18px;
-  padding: 16px 18px;
-  border: 1px solid #cfe0ff;
-  border-radius: 12px;
-  background: #f4f8ff;
+  gap: var(--space-6);
+  margin-top: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line-accent);
+  border-radius: var(--radius-lg);
+  background: var(--surface-accent);
 }
 
 .student-course-actions > div {
   display: grid;
-  gap: 6px;
+  gap: 2px;
 }
 
 .student-course-actions strong {
-  color: #1f3d72;
+  color: var(--text-strong);
 }
 
 .student-course-actions span {
-  color: #6b7b93;
-  font-size: 13px;
+  color: var(--text-body);
+  font-size: var(--text-sm);
 }
 
 @media (max-width: 680px) {
@@ -1011,13 +1623,23 @@ onUnmounted(() => {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
   width: 100%;
-  padding-right: 20px;
+  min-width: 0;
+  padding-right: var(--space-4);
+  color: var(--text-strong);
+  font-weight: 600;
 }
 
 .chapter-actions {
   display: flex;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+}
+
+.chapter-actions .el-button + .el-button {
+  margin-left: 0;
 }
 
 .resource-upload {
@@ -1039,28 +1661,28 @@ onUnmounted(() => {
 }
 
 .template-option span {
-  color: #909399;
-  font-size: 12px;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
 }
 
 .template-preview {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--space-2);
   flex-wrap: wrap;
-  padding: 10px 12px;
-  border: 1px solid #dbeafe;
-  border-radius: 12px;
-  background: #f8fbff;
+  padding: var(--space-3);
+  border: 1px solid var(--line-accent);
+  border-radius: var(--radius-md);
+  background: var(--surface-accent);
 }
 
 .template-preview span {
-  color: #606266;
+  color: var(--text-body);
   line-height: 1.5;
 }
 
 .text-muted {
-  color: #909399;
+  color: var(--text-subtle);
 }
 
 .video-process-status {
@@ -1078,20 +1700,20 @@ onUnmounted(() => {
 
 .status-label {
   width: 48px;
-  color: #606266;
+  color: var(--text-body);
   font-weight: 600;
 }
 
 .status-time,
 .status-note,
 .status-extra {
-  color: #909399;
-  font-size: 12px;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
 }
 
 .status-error {
-  color: #f56c6c;
-  font-size: 12px;
+  color: var(--critical);
+  font-size: var(--text-xs);
   line-height: 1.5;
 }
 </style>

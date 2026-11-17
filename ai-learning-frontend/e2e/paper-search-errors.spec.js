@@ -8,10 +8,9 @@ async function setup(page, firstResponse) {
     localStorage.setItem('username', '测试用户')
   })
   let attempts = 0
-  await page.route('**/api/**', async route => {
+  await page.route('**/backend/**', async route => {
     const url = new URL(route.request().url())
-    if (!url.pathname.startsWith('/api/')) return route.continue()
-    if (url.pathname !== '/api/paper/search') {
+    if (url.pathname.replace(/^\/backend/, '') !== '/api/paper/search') {
       return route.fulfill({ json: { code: '200', data: [] } })
     }
     attempts++

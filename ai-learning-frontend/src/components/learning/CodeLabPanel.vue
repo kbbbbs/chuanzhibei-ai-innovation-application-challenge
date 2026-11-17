@@ -125,9 +125,9 @@ watch(() => props.lessonId, setCurrentCode)
 <style scoped>
 .card-header, .ide-actions { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
 .language-select { width: 100%; margin-bottom: 10px; }
-.lab-description, .hint { color: #64748b; line-height: 1.7; }
-.code-box :deep(textarea) { font-family: Consolas, Monaco, monospace; }
+.lab-description, .hint { color: var(--text-subtle); line-height: 1.7; }
+.code-box :deep(textarea) { font-family: var(--font-mono); }
 .ide-actions { justify-content: flex-start; margin-top: 12px; }
-.output { min-height: 120px; margin: 12px 0 0; padding: 14px; border-radius: 12px; background: #0f172a; color: #d1fae5; white-space: pre-wrap; overflow: auto; }
-.output.error { color: #fecaca; }
+.output { min-height: 120px; margin: 12px 0 0; padding: 14px; border-radius: var(--radius-md); background: var(--surface-code); color: var(--text-on-code); white-space: pre-wrap; overflow: auto; }
+.output.error { color: #ffb4ab; }
 </style>

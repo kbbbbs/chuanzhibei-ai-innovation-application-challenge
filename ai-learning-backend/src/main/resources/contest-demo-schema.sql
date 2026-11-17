@@ -155,6 +155,11 @@ CREATE TABLE IF NOT EXISTS `t_course` (
   `status` tinyint DEFAULT '1',
   `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `setup_stage` varchar(20) DEFAULT NULL,
+  `content_mode` varchar(20) DEFAULT NULL,
+  `preparation_id` bigint DEFAULT NULL,
+  `workflow_version` bigint NOT NULL DEFAULT '0',
+  `setup_completed_at` timestamp NULL,
   PRIMARY KEY (`id`)
 );
 
@@ -493,6 +498,7 @@ CREATE TABLE IF NOT EXISTS `t_teaching_class` (
   `status` tinyint DEFAULT '1',
   `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
   `update_time` datetime DEFAULT CURRENT_TIMESTAMP,
+  `course_open` boolean DEFAULT NULL,
   PRIMARY KEY (`id`)
 );
 

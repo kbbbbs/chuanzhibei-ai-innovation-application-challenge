@@ -1,5 +1,6 @@
 // Existing teaching imports use the project's native knowledge service.
 import * as rag from './rag'
+import { getCourseGraph } from './courseGraph'
 export const listKnowledgeBases = rag.listKnowledgeBases
 export const createKnowledgeBase = rag.createKnowledgeBase
 export const updateKnowledgeBase = rag.updateKnowledgeBase
@@ -13,6 +14,11 @@ export const createSession = rag.createSession
 export const listSessions = rag.listSessions
 export const deleteSession = rag.deleteSession
 export const searchKB = rag.search
-// A disabled view is explicit; no unrelated entity graph is presented as retrieved evidence.
-export const getKnowledgeGraph = async () => ({ code: '200', data: { enabled: false, nodes: [], relations: [], unsupported: true } })
+export const getKnowledgeGraph = async kbId => {
+  const base = rag.unwrapRag(await rag.getKnowledgeBase(kbId))
+  const courseId = Number(base.courseId || base.course_id)
+  if (!courseId) return { code: '200', data: { enabled: false, nodes: [], relations: [], assignmentRequired: true } }
+  const graph = await getCourseGraph(courseId)
+  return { code: '200', data: { ...graph, enabled: Boolean(graph.nodes?.length) } }
+}
 export const getWikiPage = async () => { throw new Error('当前知识库尚未提供百科页面') }

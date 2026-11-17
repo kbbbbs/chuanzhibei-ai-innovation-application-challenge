@@ -1,14 +1,17 @@
 ﻿<template>
-  <div class="notice-list">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>通知管理</span>
-          <el-button v-if="canEdit" type="primary" @click="handleCreate">发布通知</el-button>
-        </div>
+  <div class="notice-list workspace-page">
+    <PageHeader
+      :eyebrow="canEdit ? '通知与记录' : '校园事务'"
+      :title="canEdit ? '通知管理' : '通知公告'"
+      :description="canEdit ? '发布全站或教学班通知，撤回后学生不再看到。' : '查看全站和所在教学班的通知。'"
+    >
+      <template v-if="canEdit" #actions>
+        <el-button type="primary" @click="handleCreate">发布通知</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="filter" class="filter-bar" @submit.prevent>
+    <section class="filter-panel" aria-label="筛选通知">
+      <el-form :inline="true" :model="filter" @submit.prevent>
         <el-form-item label="通知标题">
           <el-input v-model="filter.title" placeholder="请输入通知标题" clearable @keyup.enter="resetAndLoad" />
         </el-form-item>
@@ -26,13 +29,24 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="noticeList" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="通知列表未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadNotices"
+    />
+
+    <section v-else class="table-panel" aria-label="通知列表">
+      <el-table :data="noticeList" stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column prop="title" label="通知标题" min-width="180" show-overflow-tooltip />
         <el-table-column prop="noticeType" label="类型" width="110">
           <template #default="{ row }">
-            {{ row.noticeType || '-' }}
+            {{ noticeTypeLabel(row.noticeType) }}
           </template>
         </el-table-column>
         <el-table-column label="教学班" width="120">
@@ -51,11 +65,13 @@
             <el-tag v-else type="info">已撤回</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" :width="canEdit ? 260 : 120" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : canEdit ? 260 : 120" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" @click="handleView(row)">查看</el-button>
-            <el-button v-if="canEdit" size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-if="canEdit" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            <RowActions :label="row.title || `通知 ${row.id}`">
+              <el-button size="small" @click="handleView(row)">查看</el-button>
+              <el-button v-if="canEdit" size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button v-if="canEdit" size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+            </RowActions>
           </template>
         </el-table-column>
         <template #empty>
@@ -71,16 +87,15 @@
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadNotices"
         @size-change="handleSizeChange"
-        class="pagination-bar"
       />
-    </el-card>
+    </section>
 
-    <el-drawer v-model="detailVisible" title="通知详情" size="480px">
+    <el-drawer v-model="detailVisible" title="通知详情" size="min(480px, 100vw)">
       <div v-loading="detailLoading" class="notice-detail">
         <el-descriptions :column="1" border>
           <el-descriptions-item label="ID">{{ detail.id }}</el-descriptions-item>
           <el-descriptions-item label="标题">{{ detail.title }}</el-descriptions-item>
-          <el-descriptions-item label="类型">{{ detail.noticeType || '-' }}</el-descriptions-item>
+          <el-descriptions-item label="类型">{{ noticeTypeLabel(detail.noticeType) }}</el-descriptions-item>
           <el-descriptions-item label="教学班">{{ detail.classId ? detail.classId : '全站' }}</el-descriptions-item>
           <el-descriptions-item label="状态">
             <el-tag v-if="detail.status === 1" type="success">已发布</el-tag>
@@ -95,12 +110,17 @@
     </el-drawer>
 
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑通知' : '发布通知'" width="600px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="90px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="通知标题" prop="title">
           <el-input v-model="form.title" />
         </el-form-item>
         <el-form-item label="通知类型">
-          <el-input v-model="form.noticeType" placeholder="例如 general、exam、homework（可选）" />
+          <el-select v-model="form.noticeType" placeholder="请选择通知类型（可选）" filterable allow-create clearable>
+            <el-option label="通用" value="general" />
+            <el-option label="课程" value="course" />
+            <el-option label="考试" value="exam" />
+            <el-option label="作业" value="homework" />
+          </el-select>
         </el-form-item>
         <el-form-item label="教学班">
           <el-select v-model="form.classId" placeholder="不选表示全站通知" clearable>
@@ -113,7 +133,7 @@
         <el-form-item label="状态">
           <el-radio-group v-model="form.status">
             <el-radio :label="1">已发布</el-radio>
-            <el-radio :label="0">已撤回</el-radio>
+            <el-radio v-if="form.id" :label="0">已撤回</el-radio>
           </el-radio-group>
         </el-form-item>
       </el-form>
@@ -131,15 +151,24 @@ import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import { getNotices, getNoticeById, createNotice, updateNotice, deleteNotice } from '@/api/notice'
 import { getTeachingClasses } from '@/api/teachingClass'
-import { formatLocalDateTime, getRecords, getTotal, scopedTeacherParams } from '@/utils/apiHelpers'
+import { formatLocalDateTime, getRecords, getTotal, requireSuccess, scopedTeacherParams } from '@/utils/apiHelpers'
 
 const userStore = useUserStore()
 const { confirmDelete } = useConfirm()
 const formRef = ref(null)
+const narrow = useNarrowScreen()
 
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  noticeList.value = []
+  pagination.total = 0
+})
 const submitLoading = ref(false)
 const noticeList = ref([])
 const classList = ref([])
@@ -179,6 +208,10 @@ const rules = {
   content: [{ required: true, message: '请输入通知正文', trigger: 'blur' }]
 }
 
+const noticeTypeLabel = value => ({
+  general: '通用', course: '课程', exam: '考试', homework: '作业'
+}[value] || value || '-')
+
 const resetAndLoad = () => {
   pagination.pageNum = 1
   loadNotices()
@@ -189,30 +222,22 @@ const handleSizeChange = () => {
   loadNotices()
 }
 
-const loadNotices = async () => {
-  loading.value = true
-  try {
-    const params = scopedTeacherParams(userStore, {
-      pageNum: pagination.pageNum,
-      pageSize: pagination.pageSize
-    })
-    if (filter.noticeType) {
-      params.noticeType = filter.noticeType
-    }
-    if (filter.title && filter.title.trim()) {
-      params.title = filter.title.trim()
-    }
-    const res = await getNotices(params)
-    if (res.code === '200') {
-      noticeList.value = getRecords(res.data)
-      pagination.total = getTotal(res.data)
-    }
-  } catch (e) {
-    // 全局已提示
-  } finally {
-    loading.value = false
+const loadNotices = () => guarded(async (isCurrent) => {
+  const params = scopedTeacherParams(userStore, {
+    pageNum: pagination.pageNum,
+    pageSize: pagination.pageSize
+  })
+  if (filter.noticeType) {
+    params.noticeType = filter.noticeType
   }
-}
+  if (filter.title && filter.title.trim()) {
+    params.title = filter.title.trim()
+  }
+  const res = requireSuccess(await getNotices(params))
+  if (!isCurrent()) return
+  noticeList.value = getRecords(res.data)
+  pagination.total = getTotal(res.data)
+})
 
 const handleReset = () => {
   filter.title = ''
@@ -236,12 +261,10 @@ const handleView = async (row) => {
   detailVisible.value = true
   detailLoading.value = true
   try {
-    const res = await getNoticeById(row.id)
-    if (res.code === '200') {
-      Object.assign(detail, res.data)
-    }
+    Object.assign(detail, requireSuccess(await getNoticeById(row.id)).data)
   } catch (e) {
-    // 全局已提示
+    // 全局已提示；关闭详情，避免继续显示上一条通知
+    detailVisible.value = false
   } finally {
     detailLoading.value = false
   }
@@ -324,22 +347,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.notice-list {
-  padding: 16px;
-}
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.filter-bar {
-  margin-bottom: 16px;
-}
-.pagination-bar {
-  margin-top: 16px;
-  display: flex;
-  justify-content: center;
-}
 .notice-detail .notice-content {
   white-space: pre-wrap;
   word-break: break-word;

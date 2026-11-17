@@ -1,6 +1,6 @@
 <template>
-  <main class="role-dashboard teacher-dashboard" v-loading="loading">
-    <section class="dashboard-hero teacher-hero">
+  <div class="role-dashboard teacher-dashboard" v-loading="loading">
+    <section class="dashboard-hero">
       <div class="hero-copy">
         <p class="eyebrow">{{ today }}</p>
         <h1>教师教学控制台</h1>
@@ -22,6 +22,21 @@
 
     <section class="dashboard-layout">
       <div class="dashboard-main">
+        <section class="panel">
+          <div class="panel-header">
+            <div><p class="section-kicker">近期安排</p><h2>已发布考核</h2><p>按开始时间展示最近的考试和作业。</p></div>
+          </div>
+          <div v-if="recentAssessments?.length" class="timeline-list">
+            <article v-for="item in recentAssessments" :key="`${item.type}-${item.id}`" class="timeline-item">
+              <span class="timeline-dot" :class="item.type === '考试' ? 'exam' : 'homework'"></span>
+              <div><h3>{{ item.title }}</h3><p>{{ item.type }} · {{ formatDateTime(item.startTime || item.endTime) }}</p></div>
+              <el-tag effect="plain">已发布</el-tag>
+            </article>
+          </div>
+          <div v-else-if="recentAssessments === null" class="data-unavailable">考核数据暂时不可用，请稍后刷新。</div>
+          <el-empty v-else description="暂无已发布考核" :image-size="72" />
+        </section>
+
         <section class="panel">
           <div class="panel-header">
             <div><p class="section-kicker">教师业务域</p><h2>课程与课堂</h2><p>围绕课程内容、教学班和课堂通知组织日常教学。</p></div>
@@ -47,43 +62,28 @@
             </button>
           </div>
         </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div><p class="section-kicker">近期安排</p><h2>已发布考核</h2><p>按开始时间展示最近的考试和作业。</p></div>
-          </div>
-          <div v-if="recentAssessments?.length" class="timeline-list">
-            <article v-for="item in recentAssessments" :key="`${item.type}-${item.id}`" class="timeline-item">
-              <span class="timeline-dot" :class="item.type === '考试' ? 'exam' : 'homework'"></span>
-              <div><h3>{{ item.title }}</h3><p>{{ item.type }} · {{ formatDateTime(item.startTime || item.endTime) }}</p></div>
-              <el-tag effect="plain">已发布</el-tag>
-            </article>
-          </div>
-          <div v-else-if="recentAssessments === null" class="data-unavailable">考核数据暂时不可用，请稍后刷新。</div>
-          <el-empty v-else description="暂无已发布考核" :image-size="72" />
-        </section>
       </div>
 
       <aside class="dashboard-side">
-        <section class="panel feature-panel teacher-feature">
+        <section class="panel feature-panel">
           <span class="feature-icon"><el-icon><Cpu /></el-icon></span>
           <p class="section-kicker">教学智能域</p>
-          <h2>知识库与 Agent</h2>
+          <h2>课程资料与 Agent</h2>
           <p>维护课程知识资产，辅助生成教学任务、检索资料和组织备课内容。</p>
           <div class="stack-actions">
-            <el-button type="primary" @click="go('/teacher-knowledge-base')">知识库管理</el-button>
-            <el-button @click="openAgentAssistant()">打开 Agent 助手</el-button>
+            <el-button type="primary" @click="go('/courses')">管理课程资料</el-button>
+            <el-button @click="openAgentAssistant()">打开智能助手</el-button>
           </div>
         </section>
 
         <section class="panel compact-panel">
-          <div class="panel-header compact"><div><p class="section-kicker">数据说明</p><h2>可信统计</h2></div></div>
+          <div class="panel-header compact"><div><p class="section-kicker">数据说明</p><h2>统计口径</h2></div></div>
           <ul class="truth-list">
-            <li><span>课程与班级</span><b>分页总数</b></li>
-            <li><span>题库题目</span><b>totalElements</b></li>
-            <li><span>考试与作业</span><b>新版考核接口</b></li>
+            <li><span>课程与班级</span><b>服务端总数</b></li>
+            <li><span>题库题目</span><b>服务端总数</b></li>
+            <li><span>考试与作业</span><b>新版考核数据</b></li>
           </ul>
-          <p class="muted">“—”表示接口暂时不可用，不会用当前页条数冒充总数。</p>
+          <p class="muted">“—”表示数据暂时不可用，不会用当前页条数冒充总数。</p>
         </section>
 
         <section class="panel compact-panel">
@@ -96,7 +96,7 @@
         </section>
       </aside>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup>
@@ -151,7 +151,7 @@ const teachingActions = [
   { label: '课程管理', description: '建设章节、课时与互动内容', path: '/courses', icon: Reading },
   { label: '教学班管理', description: '维护授课班级与学生名单', path: '/teaching-classes', icon: School },
   { label: '通知管理', description: '发布课堂通知和学习提醒', path: '/notices', icon: Bell },
-  { label: '资源生成', description: '生成大纲、讲义与练习', path: '/resource-gen', icon: Lightning },
+  { label: '新建课程', description: '准备资料并按需生成课程内容', path: '/courses/create', icon: Lightning },
 ]
 
 const assessmentActions = [

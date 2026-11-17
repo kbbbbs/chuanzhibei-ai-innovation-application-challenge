@@ -1,21 +1,24 @@
 <template>
-  <div ref="chartRef" class="subject-breakdown-chart" v-loading="!hasData"></div>
+  <div class="subject-breakdown-chart">
+    <div v-show="hasData" ref="chartRef" class="chart-canvas" :style="{ height }" role="img" aria-label="科目得分图"></div>
+    <p v-if="!hasData" class="chart-empty">暂无科目数据</p>
+  </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
-import * as echarts from 'echarts'
+import { computed, ref } from 'vue'
+import { useEchart } from '@/composables/useEchart'
 
 const props = defineProps({
   data: { type: Array, default: () => [] },
-  height: { type: String, default: '300px' }
+  height: { type: String, default: '300px' },
+  unit: { type: String, default: '分' }
 })
 
 const chartRef = ref(null)
-let chartInstance = null
-const hasData = ref(false)
+const hasData = computed(() => props.data.length > 0)
 
-function buildOption() {
+function buildOption(palette) {
   const sorted = [...props.data].sort((a, b) => b.score - a.score)
   const names = sorted.map(d => d.name)
   const scores = sorted.map(d => d.score)
@@ -25,65 +28,58 @@ function buildOption() {
       trigger: 'axis',
       formatter: (params) => {
         const p = params[0]
-        return `<b>${p.name}</b><br/>${p.marker} 得分: <b>${p.value}</b> 分`
+        return `<b>${p.name}</b><br/>${p.marker} 得分: <b>${p.value}</b> ${props.unit}`
       }
     },
     grid: { left: 100, right: 40, top: 20, bottom: 40 },
     xAxis: {
       type: 'value',
       max: 100,
-      axisLabel: { fontSize: 11, formatter: '{value}分' },
-      splitLine: { lineStyle: { color: '#f0f0f0' } }
+      axisLabel: { fontSize: 11, formatter: `{value}${props.unit}`, color: palette.subtle },
+      splitLine: { lineStyle: { color: palette.split } }
     },
     yAxis: {
       type: 'category',
       data: names,
-      axisLabel: { fontSize: 12, width: 90, overflow: 'truncate' },
-      axisLine: { lineStyle: { color: '#ccc' } }
+      axisLabel: { fontSize: 12, width: 90, overflow: 'truncate', color: palette.subtle },
+      axisLine: { lineStyle: { color: palette.line } }
     },
     series: [{
       type: 'bar',
-      data: scores.map((v, i) => {
-        const color = v >= 80 ? '#67C23A' : v >= 60 ? '#409EFF' : v >= 40 ? '#E6A23C' : '#F56C6C'
+      data: scores.map(v => {
+        const color = v >= 80 ? palette.positive : v >= 60 ? palette.accent : v >= 40 ? palette.caution : palette.critical
         return { value: v, itemStyle: { color, borderRadius: [0, 6, 6, 0] } }
       }),
       barWidth: '55%',
       markLine: {
         silent: true,
-        data: [{ xAxis: avg, name: '平均', label: { formatter: '平均 {c}分' } }],
-        lineStyle: { color: '#909399', type: 'dashed' },
+        data: [{ xAxis: avg, name: '平均', label: { formatter: `平均 {c}${props.unit}`, color: palette.subtle } }],
+        lineStyle: { color: palette.neutral, type: 'dashed' },
         symbol: 'none'
       }
     }]
   }
 }
 
-function initChart() {
-  if (!chartRef.value) return
-  if (chartInstance) chartInstance.dispose()
-  chartInstance = echarts.init(chartRef.value)
-  if (props.data.length) {
-    chartInstance.setOption(buildOption())
-    hasData.value = true
-  }
-}
-
-function resizeChart() {
-  chartInstance?.resize()
-}
-
-onMounted(() => {
-  chartRef.value.style.height = props.height
-  initChart()
-  window.addEventListener('resize', resizeChart)
-})
-onBeforeUnmount(() => {
-  window.removeEventListener('resize', resizeChart)
-  chartInstance?.dispose()
-})
-watch(() => props.data, () => nextTick(() => initChart()), { deep: true })
+useEchart(chartRef, palette => (hasData.value ? buildOption(palette) : null), () => props.data)
 </script>
 
 <style scoped>
-.subject-breakdown-chart { width: 100%; min-height: 200px; }
+.subject-breakdown-chart {
+  width: 100%;
+  min-width: 0;
+}
+
+.chart-canvas {
+  width: 100%;
+  min-height: 200px;
+}
+
+.chart-empty {
+  margin: 0;
+  padding: var(--space-8) var(--space-4);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
+  text-align: center;
+}
 </style>

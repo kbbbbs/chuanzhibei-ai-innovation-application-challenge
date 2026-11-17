@@ -45,9 +45,8 @@ async function fixture(page, { legacy = false, invalidId = false, questions = fa
   const visuals = legacy ? [] : [{ ...picture, id: invalidId ? '../bad' : figure }]
   const hit = { chunkId: chunk, documentId: doc, kbId: kb, title: '图文课程资料',
     content: String.raw`1. 网络结构与公式 \[y=Wx+b\]`, page: 1, ordinal: 1, score: 1, citation: '[1]', visuals }
-  await page.route('**/api/**', async route => {
-    const request = route.request(), url = new URL(request.url()), path = url.pathname
-    if (!path.startsWith('/api/')) return route.continue()
+  await page.route('**/backend/**', async route => {
+    const request = route.request(), url = new URL(request.url()), path = url.pathname.replace(/^\/backend/, '')
     state.calls.push({ path, url: request.url(), auth: request.headers().authorization })
     const ok = data => route.fulfill({ json: { code: '200', data } })
     if (path === '/api/rag/knowledge-bases') return ok([{ id: kb, name: '图文课程资料', owner_id: 7, read_only: false, knowledge_count: 1 }])
@@ -88,7 +87,7 @@ test('page review associates private figures with original question text beside 
   const state = await fixture(page)
   const external = []
   page.on('request', request => { if (request.url().includes('untrusted.invalid')) external.push(request.url()) })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review')
   await expect(review.locator('.katex')).toHaveCount(1)
   const images = review.getByTestId('visual-evidence')
@@ -131,7 +130,7 @@ test('search citations show authenticated figure and discard its object URL on d
 
 test('failed image authorization clears previous content and explains unavailable figure', async ({ page }) => {
   const state = await fixture(page)
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review')
   await expect(review.getByAltText('资料插图 1')).toBeVisible()
   state.denyImage = true
@@ -142,13 +141,13 @@ test('failed image authorization clears previous content and explains unavailabl
 
 test('old parsing results require image reparse instead of claiming no image exists', async ({ page }) => {
   await fixture(page, { legacy: true })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   await expect(page.getByTestId('document-page-review')).toContainText('旧解析结果尚未整理插图，请重新解析本页')
 })
 
 test('unsafe visual identifiers never become network paths', async ({ page }) => {
   const state = await fixture(page, { invalidId: true })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   await expect(page.getByTestId('visual-evidence')).toContainText('图片标识无效')
   expect(state.calls.filter(call => call.path.includes('/visuals/'))).toEqual([])
 })
@@ -156,7 +155,7 @@ test('unsafe visual identifiers never become network paths', async ({ page }) =>
 test('a delayed previous-page image cannot reappear after selecting another page', async ({ page }) => {
   const state = await fixture(page)
   state.holdFigure = true
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   await expect.poll(() => typeof state.releaseFigure).toBe('function')
   const review = page.getByTestId('document-page-review')
   await review.getByTestId('review-page-2').click()
@@ -184,10 +183,10 @@ test('question review preserves original options and formulas while showing asso
   await fixture(page, { questions: true })
   const external = []
   page.on('request', request => { if (request.url().includes('untrusted.invalid')) external.push(request.url()) })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review'), questions = review.getByTestId('question-review')
-  await expect(questions).toContainText('按题号整理（待核验）')
-  await questions.getByText('按题号整理（待核验）', { exact: true }).click()
+  await expect(questions).toContainText('按题号整理')
+  await questions.getByText('按题号整理', { exact: true }).click()
   await expect(questions).toContainText('题号 1')
   await expect(questions).toContainText('关联插图 1 张')
   await expect(questions).toContainText('关联插图 0 张')

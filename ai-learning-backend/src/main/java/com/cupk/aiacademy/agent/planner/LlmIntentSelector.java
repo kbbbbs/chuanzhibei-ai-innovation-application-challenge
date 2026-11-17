@@ -58,6 +58,7 @@ public class LlmIntentSelector {
             LlmIntentDecision decision;
             try {
                 long startedNanos = System.nanoTime();
+                com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit("MODEL_REQUEST", null);
                 modelText = plannerModelClient.call(prompt);
                 lastPlanningFailure = null;
                 log.info("Agent planner stage completed: stage=intent_select, model={}, attempt={}, promptChars={}, elapsedMs={}",

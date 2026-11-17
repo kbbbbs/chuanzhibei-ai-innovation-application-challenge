@@ -1,18 +1,40 @@
 <template>
-  <div class="exam-grading">
-    <el-card v-loading="loading">
-      <template #header>
-        <div class="card-header">
-          <span>{{ assessmentLabel }}批改：{{ exam?.title }}</span>
-          <el-button @click="$router.back()">返回</el-button>
-        </div>
+  <div class="exam-grading workspace-page">
+    <PageHeader
+      class="card-header"
+      eyebrow="作业与考试"
+      :title="pageTitle"
+      description="客观题已自动判分，这里批改简答和文件题。"
+    >
+      <template #actions>
+        <el-button @click="$router.back()">返回</el-button>
       </template>
+    </PageHeader>
 
-      <el-table :data="submissions" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="assessmentFailed"
+      :title="`${assessmentLabel}信息未加载`"
+      message="无法确认当前批改对象，批改已暂停。下方提交记录按本页地址读取，仅供查看。"
+      retry-label="重新加载"
+      :busy="assessmentLoading"
+      @retry="loadExam"
+    />
+
+    <ErrorNotice
+      v-if="loadFailed"
+      title="提交列表未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadSubmissions"
+    />
+
+    <section v-else class="table-panel" aria-label="提交列表">
+      <el-table :data="submissions" stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
         <el-table-column label="学生" width="150">
           <template #default="{ row }">
-            学生{{ row.studentId }}
+            {{ studentLabel(row.studentId) }}
           </template>
         </el-table-column>
         <el-table-column label="提交时间" width="180">
@@ -49,7 +71,7 @@
         </el-table-column>
         <el-table-column label="操作" width="120" fixed="right">
           <template #default="{ row }">
-            <el-button v-if="row.status >= 1" size="small" type="primary" :disabled="row.cheated" @click="handleGrade(row)">
+            <el-button v-if="row.status >= 1" size="small" type="primary" :disabled="row.cheated || !assessmentReady" @click="handleGrade(row)">
               {{ row.cheated ? '已锁定' : '批改' }}
             </el-button>
           </template>
@@ -60,7 +82,6 @@
       </el-table>
 
       <el-pagination
-        class="pagination"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="allSubmissions.length"
@@ -68,13 +89,13 @@
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
 
     <!-- Grading Dialog -->
     <el-dialog v-model="gradingDialogVisible" title="批改主观题" width="900px" top="5vh">
       <div v-if="currentSubmission.id">
         <el-descriptions :column="2" border class="desc-block">
-          <el-descriptions-item label="学生">学生{{ currentSubmission.studentId }}</el-descriptions-item>
+          <el-descriptions-item label="学生">{{ studentLabel(currentSubmission.studentId) }}</el-descriptions-item>
           <el-descriptions-item label="提交时间">
             {{ currentSubmission.submitTime ? new Date(currentSubmission.submitTime).toLocaleString() : '-' }}
           </el-descriptions-item>
@@ -120,7 +141,11 @@ import { ref, reactive, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { currentUserId, enumName, getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { currentUserId, enumName, getRecords, normalizeStatus, paginateRecords, requireSuccess } from '@/utils/apiHelpers'
+import { resolveResourceUrl } from '@/utils/backendUrl'
 import { useUserStore } from '@/store/user'
 import request from '@/utils/request'
 
@@ -132,16 +157,46 @@ const assessmentLabel = computed(() => isHomework.value ? '作业' : '考试')
 const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
 const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
 
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  allSubmissions.value = []
+})
+const {
+  loading: assessmentLoading,
+  loadFailed: assessmentFailed,
+  guarded: guardedAssessment,
+  reset: resetAssessmentLoad,
+} = useGuardedLoad()
 const submitLoading = ref(false)
 const exam = ref({})
+// The assessment this page has confirmed; grading stays closed until it matches the route.
+const loadedExamId = ref(null)
+const assessmentReady = computed(() => loadedExamId.value === examId.value)
+const pageTitle = computed(() => {
+  const title = assessmentReady.value ? exam.value.title : ''
+  return title ? `${assessmentLabel.value}批改：${title}` : `${assessmentLabel.value}批改`
+})
 const allSubmissions = ref([])
+// Submissions carry only ids; names are looked up once per student and fall back to the id.
+const studentNames = reactive({})
+const studentLabel = (studentId) => studentNames[studentId] || `学生${studentId}`
+
+const loadStudentNames = async (records) => {
+  const ids = [...new Set(records.map(r => r.studentId).filter(id => id && !(id in studentNames)))]
+  const results = await Promise.all(ids.map(id => request.get(`/users/${id}`, { silentError: true }).catch(() => null)))
+  results.forEach((res, index) => {
+    const user = res?.code === '200' ? res.data : null
+    if (user) studentNames[ids[index]] = user.nickname || user.username
+  })
+}
 const pagination = reactive({
   pageNum: 1,
   pageSize: 10
 })
 const gradingDialogVisible = ref(false)
 const currentSubmission = ref({})
+// Fixed when the dialog opens, so a grade always goes to the API it was read from.
+const gradingApi = ref('')
+let gradeRun = 0
 const subjectiveAnswers = ref([])
 const answerFormRef = ref(null)
 const answerRules = {
@@ -171,42 +226,32 @@ const mapSubmission = (submission) => ({
 
 const isManualGradable = (answer) => ['SHORT_ANSWER', 'FILE_UPLOAD'].includes(enumName(answer.questionType))
 
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
-
-const resolveResourceUrl = (url) => {
-  if (!url || /^(https?:)?\/\//i.test(url)) return url || ''
-  return url.startsWith('/') ? `${apiBaseUrl}${url}` : url
-}
-
-const loadExam = async () => {
-  try {
-    const res = await request.get(`${assessmentApi.value}/${examId.value}`)
-    if (res.code === '200') {
-      exam.value = {
-        ...res.data,
-        title: res.data.name || res.data.title || '',
-      }
+const loadExam = () => {
+  const id = examId.value
+  const api = assessmentApi.value
+  return guardedAssessment(async (isCurrent) => {
+    const res = requireSuccess(await request.get(`${api}/${id}`))
+    if (!isCurrent()) return
+    const data = res.data
+    if (!data || typeof data !== 'object' || Array.isArray(data) || String(data.id ?? id) !== String(id)) {
+      throw new Error('评测信息无效')
     }
-  } catch (e) {
-    // 全局已提示
-  }
+    exam.value = {
+      ...data,
+      title: data.name || data.title || '',
+    }
+    loadedExamId.value = id
+  })
 }
 
-const loadSubmissions = async () => {
-  loading.value = true
-  try {
-    const submissionKey = isHomework.value ? 'homeworkId' : 'examId'
-    const res = await request.get(submissionApi.value, { params: { [submissionKey]: examId.value } })
-    if (res.code === '200') {
-      allSubmissions.value = getRecords(res.data).map(mapSubmission)
-      normalizePage()
-    }
-  } catch (e) {
-    // 全局已提示
-  } finally {
-    loading.value = false
-  }
-}
+const loadSubmissions = () => guarded(async (isCurrent) => {
+  const submissionKey = isHomework.value ? 'homeworkId' : 'examId'
+  const res = requireSuccess(await request.get(submissionApi.value, { params: { [submissionKey]: examId.value } }))
+  if (!isCurrent()) return
+  allSubmissions.value = getRecords(res.data).map(mapSubmission)
+  normalizePage()
+  await loadStudentNames(allSubmissions.value)
+})
 
 const normalizePage = () => {
   const maxPage = Math.max(1, Math.ceil(allSubmissions.value.length / pagination.pageSize))
@@ -220,13 +265,24 @@ const handleSizeChange = () => {
 }
 
 const handleGrade = async (row) => {
-  currentSubmission.value = row
+  if (!assessmentReady.value) return
+  const api = submissionApi.value
+  const assessmentId = examId.value
+  const run = ++gradeRun
 
   // Load submission details
   try {
-    const res = await request.get(`${submissionApi.value}/${row.id}/grading`)
+    const res = await request.get(`${api}/${row.id}/grading`)
+    if (run !== gradeRun) return
     if (res.code === '200') {
       const detail = res.data
+      const ownerId = detail.homeworkId ?? detail.examId
+      if (ownerId != null && String(ownerId) !== String(assessmentId)) {
+        ElMessage.error(`该提交不属于当前${assessmentLabel.value}，已取消批改`)
+        return
+      }
+      currentSubmission.value = row
+      gradingApi.value = api
 
       // Extract subjective questions
       subjectiveAnswers.value = (detail.answers || [])
@@ -251,6 +307,7 @@ const handleGrade = async (row) => {
 }
 
 const handleSubmitGrade = async () => {
+  if (!gradingApi.value || !currentSubmission.value.id) return
   if (subjectiveAnswers.value.some(a => a.score == null || a.score < 0 || a.score > a.maxScore)) {
     ElMessage.warning('主观题得分不能小于0或超过题目分值')
     return
@@ -267,7 +324,7 @@ const handleSubmitGrade = async () => {
 
   submitLoading.value = true
   try {
-    const res = await request.post(`${submissionApi.value}/${currentSubmission.value.id}/grade-subjective`, data)
+    const res = await request.post(`${gradingApi.value}/${currentSubmission.value.id}/grade-subjective`, data)
     if (res.code === '200') {
       ElMessage.success('批改成功')
       gradingDialogVisible.value = false
@@ -281,10 +338,16 @@ const handleSubmitGrade = async () => {
 }
 
 const loadPage = () => {
+  // The instance also sees navigation away from both grading routes; that must load nothing.
+  if (!['ExamGrading', 'HomeworkSubmissions'].includes(route.name)) return
+  resetAssessmentLoad()
   exam.value = {}
+  loadedExamId.value = null
   allSubmissions.value = []
   pagination.pageNum = 1
   gradingDialogVisible.value = false
+  gradeRun += 1
+  gradingApi.value = ''
   currentSubmission.value = {}
   subjectiveAnswers.value = []
   loadExam()
@@ -299,56 +362,52 @@ watch(
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
 .desc-block {
-  margin-bottom: 20px;
+  margin-bottom: var(--space-5);
 }
 
 .answer-card {
-  margin-bottom: 20px;
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 4px;
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  background: var(--surface-canvas);
 }
 
 .answer-title {
-  font-weight: bold;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
+  color: var(--text-strong);
+  font-weight: 600;
+  overflow-wrap: anywhere;
 }
 
 .answer-student {
-  color: #666;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
+  color: var(--text-body);
+  overflow-wrap: anywhere;
 }
 
 .answer-reference {
-  color: #999;
-  font-size: 12px;
-  margin-bottom: 8px;
+  margin-bottom: var(--space-2);
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+  overflow-wrap: anywhere;
 }
 
 .score-split {
-  margin-left: 5px;
+  margin-left: var(--space-1);
 }
 
 .comment-input {
-  width: 300px;
+  width: min(300px, 100%);
 }
 
 .score-summary {
-  margin-top: 20px;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 4px;
-}
-
-.pagination {
-  margin-top: 20px;
-  justify-content: center;
+  margin-top: var(--space-4);
+  padding: var(--space-3);
+  color: var(--text-strong);
+  background: var(--surface-accent);
+  border: 1px solid var(--line-accent);
+  border-radius: var(--radius-md);
 }
 </style>

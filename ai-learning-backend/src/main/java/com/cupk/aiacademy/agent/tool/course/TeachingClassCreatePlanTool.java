@@ -50,7 +50,7 @@ public class TeachingClassCreatePlanTool implements AgentTool {
                 "根据用户自然语言请求准备创建教学班；执行前必须补齐课程ID、教学班名称等关键参数，并由用户确认。",
                 parameters,
                 List.of("会新增一条教学班记录", "教学班会作为作业、考试、通知和学生名单的作用范围",
-                        "教师默认只能创建自己负责课程下的教学班")
+                        "仅管理员可以创建教学班")
         );
 
         Map<String, Object> data = new LinkedHashMap<>(plan.toData());

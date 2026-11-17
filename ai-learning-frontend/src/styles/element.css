@@ -1,0 +1,168 @@
+/* Element Plus component states expressed through the shared tokens. */
+.el-button {
+  --el-button-font-weight: 600;
+  letter-spacing: 0;
+  transition: background-color .15s var(--ease-standard), border-color .15s var(--ease-standard), color .15s var(--ease-standard);
+}
+
+.el-button--primary:not(.is-link):not(.is-text):not(.is-plain) {
+  --el-button-bg-color: var(--accent-solid);
+  --el-button-border-color: var(--accent-solid);
+  --el-button-text-color: #ffffff;
+  --el-button-hover-bg-color: var(--accent-solid-hover);
+  --el-button-hover-border-color: var(--accent-solid-hover);
+  --el-button-hover-text-color: #ffffff;
+  --el-button-active-bg-color: var(--accent-solid-hover);
+  --el-button-active-border-color: var(--accent-solid-hover);
+  --el-button-active-text-color: #ffffff;
+  --el-button-disabled-text-color: var(--text-disabled);
+  --el-button-disabled-bg-color: var(--surface-sunken);
+  --el-button-disabled-border-color: var(--line-subtle);
+}
+
+.el-card {
+  --el-card-bg-color: var(--surface-base);
+  --el-card-border-color: var(--line-subtle);
+  --el-card-border-radius: var(--radius-lg);
+  --el-card-padding: var(--space-5);
+  color: var(--text-body);
+}
+
+.el-card.is-always-shadow {
+  box-shadow: var(--shadow-1);
+}
+
+.el-input,
+.el-textarea,
+.el-select {
+  --el-input-border-radius: var(--radius-md);
+}
+
+.el-input__wrapper,
+.el-textarea__inner,
+.el-select__wrapper {
+  transition: box-shadow .15s var(--ease-standard), background-color .15s var(--ease-standard);
+}
+
+html.dark .el-checkbox__input.is-checked .el-checkbox__inner::after {
+  border-color: var(--accent-contrast);
+}
+
+html.dark .el-checkbox__input.is-indeterminate .el-checkbox__inner::before {
+  background-color: var(--accent-contrast);
+}
+
+html.dark .el-radio__input.is-checked .el-radio__inner::after {
+  background-color: var(--accent-contrast);
+}
+
+html.dark .el-radio-button {
+  --el-radio-button-checked-text-color: var(--accent-contrast);
+}
+
+html.dark .el-switch.is-checked .el-switch__action {
+  background-color: var(--accent-contrast);
+}
+
+.el-tabs {
+  --el-tabs-header-height: 44px;
+}
+
+.el-tabs__item {
+  font-weight: 600;
+}
+
+.el-tag {
+  font-weight: 600;
+}
+
+.el-table {
+  --el-table-header-bg-color: var(--surface-sunken);
+  --el-table-header-text-color: var(--text-subtle);
+  --el-table-row-hover-bg-color: var(--surface-hover);
+  --el-table-tr-bg-color: var(--surface-base);
+  --el-table-bg-color: var(--surface-base);
+  --el-table-border-color: var(--line-subtle);
+  --el-table-text-color: var(--text-body);
+  font-size: var(--text-md);
+}
+
+.el-table--striped .el-table__body tr.el-table__row--striped td.el-table__cell {
+  background: var(--surface-canvas);
+}
+
+.el-table th.el-table__cell {
+  font-weight: 600;
+}
+
+.el-dialog {
+  max-width: calc(100vw - 24px);
+  border-radius: var(--radius-xl);
+  --el-dialog-margin-top: 8vh;
+}
+
+.el-message-box {
+  max-width: calc(100vw - 24px);
+  border-radius: var(--radius-xl);
+}
+
+.el-drawer {
+  max-width: 100vw;
+}
+
+.el-dropdown-menu__item:not(.is-disabled):focus {
+  background: var(--surface-hover);
+  color: var(--text-strong);
+}
+
+.el-popper.is-dark {
+  color: var(--surface-base);
+  background: var(--text-strong);
+  border-color: var(--text-strong);
+}
+
+html.dark .el-loading-spinner .el-loading-text {
+  color: var(--text-body);
+}
+
+.el-collapse-item__header {
+  height: auto;
+  min-height: 48px;
+  padding-block: var(--space-2);
+  line-height: 1.4;
+}
+
+.el-descriptions__label,
+.el-descriptions__content {
+  overflow-wrap: anywhere;
+}
+
+.el-empty {
+  --el-empty-padding: var(--space-8) 0;
+}
+
+.el-empty__description p {
+  color: var(--text-subtle);
+}
+
+@media (max-width: 560px) {
+  .el-dialog .el-form-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .el-dialog .el-form-item__label {
+    width: auto !important;
+    height: auto;
+    justify-content: flex-start;
+    margin-bottom: var(--space-1);
+  }
+
+  .el-dialog .el-form-item__content {
+    margin-left: 0 !important;
+  }
+
+  .el-dialog__footer .el-button {
+    margin-top: var(--space-2);
+  }
+}

@@ -16,7 +16,7 @@
       </div>
     </section>
 
-    <section class="page-shell">
+    <section class="lesson-page-grid">
       <aside v-if="navigation.length" class="page-nav">
         <h3>本节导航</h3>
         <a v-for="item in navigation" :key="item.id" :href="`#${item.id}`">{{ item.title }}</a>
@@ -216,48 +216,49 @@ function blockTypeLabel(type) {
   justify-content: space-between;
   gap: 18px;
   align-items: flex-start;
-  padding: 24px;
-  border-radius: 24px;
-  color: #172033;
-  background:
-    radial-gradient(circle at 12% 16%, rgba(37, 99, 235, .18), transparent 26%),
-    linear-gradient(135deg, #eef6ff, #fff7ed);
-  border: 1px solid #dbeafe;
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  color: var(--text-strong);
+  background: var(--surface-accent);
+  border: 1px solid var(--line-accent);
 }
-.eyebrow { margin: 0 0 8px; color: #2563eb; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; }
-h2 { margin: 0; font-size: 28px; }
-.summary { color: #475569; line-height: 1.8; margin-bottom: 0; }
-.hero-meta { display: grid; justify-items: end; gap: 8px; color: #64748b; font-size: 12px; white-space: nowrap; }
-.page-shell { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 16px; align-items: flex-start; align-content: start; min-height: 0; }
-.page-nav { position: sticky; top: 86px; display: grid; gap: 8px; padding: 16px; border: 1px solid #dbeafe; border-radius: 18px; background: #f8fbff; }
-.page-nav h3 { margin: 0 0 6px; color: #172033; }
-.page-nav a { color: #2563eb; text-decoration: none; line-height: 1.5; font-size: 13px; }
+.eyebrow { margin: 0 0 8px; color: var(--accent); font-size: var(--text-xs); font-weight: 650; }
+h2 { margin: 0; font-size: var(--text-2xl); }
+.summary { color: var(--text-body); line-height: 1.8; margin-bottom: 0; }
+.hero-meta { display: grid; justify-items: end; gap: 8px; color: var(--text-subtle); font-size: var(--text-xs); white-space: nowrap; }
+.lesson-page-grid { display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 16px; align-items: flex-start; align-content: start; min-height: 0; }
+.page-nav { position: sticky; top: 8px; display: grid; gap: 8px; padding: var(--space-4); border: 1px solid var(--line-subtle); border-radius: var(--radius-lg); background: var(--surface-canvas); }
+.page-nav h3 { margin: 0 0 6px; font-size: var(--text-md); }
+.page-nav a { color: var(--accent); text-decoration: none; line-height: 1.5; font-size: var(--text-sm); }
 .page-nav a:hover { text-decoration: underline; }
 .block-stack { display: grid; gap: 16px; min-width: 0; }
-.page-block { border: 1px solid #e2e8f0; border-radius: 20px; padding: 18px; background: #fff; }
-.page-block h3 { margin: 0 0 14px; color: #172033; }
+.page-block { border: 1px solid var(--line-subtle); border-radius: var(--radius-lg); padding: var(--space-5); background: var(--surface-base); min-width: 0; }
+.page-block h3 { margin: 0 0 14px; font-size: var(--text-lg); }
 .block-experiment,
 .block-ide { padding: 0; border: none; background: transparent; }
-.markdown-body { color: #334155; line-height: 1.9; }
+.markdown-body { color: var(--text-body); font-size: var(--text-lg); line-height: 1.9; overflow-wrap: anywhere; }
 .markdown-body :deep(h2),
 .markdown-body :deep(h3),
-.markdown-body :deep(h4) { color: #172033; margin: 18px 0 10px; }
+.markdown-body :deep(h4) { color: var(--text-strong); margin: 18px 0 10px; }
 .markdown-body :deep(p) { margin: 0 0 12px; }
 .markdown-body :deep(ul),
 .markdown-body :deep(ol) { padding-left: 22px; }
-.markdown-body :deep(pre) { padding: 14px; border-radius: 14px; background: #0f172a; color: #d1fae5; overflow: auto; }
-.markdown-body :deep(code) { font-family: Consolas, Monaco, monospace; }
-.markdown-body :deep(:not(pre) > code) { background: #f1f5f9; color: #1e3a8a; border-radius: 6px; padding: 2px 5px; }
+.markdown-body :deep(pre) { padding: 14px; border-radius: var(--radius-md); background: var(--surface-code); color: var(--text-on-code); overflow: auto; }
+.markdown-body :deep(code) { font-family: var(--font-mono); font-size: .92em; }
+.markdown-body :deep(:not(pre) > code) { background: var(--surface-sunken); color: var(--accent); border-radius: var(--radius-sm); padding: 2px 5px; }
+.markdown-body :deep(table) { display: block; max-width: 100%; overflow-x: auto; border-collapse: collapse; }
+.markdown-body :deep(th),
+.markdown-body :deep(td) { padding: 6px 10px; border: 1px solid var(--line-default); }
 .block-title-row,
 .resource-card { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .checkpoint-list { display: grid; gap: 8px; margin-bottom: 12px; }
 .checkpoint-list :deep(.el-checkbox) { height: auto; align-items: flex-start; white-space: normal; }
 .challenge-card { display: grid; gap: 10px; }
-.challenge-card p { margin: 0; line-height: 1.8; color: #475569; }
-.challenge-answer { padding: 12px; border-radius: 14px; background: #fef3c7; color: #92400e !important; }
+.challenge-card p { margin: 0; line-height: 1.8; color: var(--text-body); }
+.challenge-card .challenge-answer { padding: 12px; border-radius: var(--radius-md); background: var(--caution-surface); color: var(--caution); }
 .resource-card { padding: 4px; }
-.resource-card p { color: #64748b; line-height: 1.7; margin: 0; }
-.html-frame { width: 100%; min-height: 420px; border: 1px solid #dbeafe; border-radius: 18px; background: white; }
-@media (max-width: 900px) { .page-shell { grid-template-columns: 1fr; } .page-nav { position: static; } }
+.resource-card p { color: var(--text-subtle); line-height: 1.7; margin: 0; }
+.html-frame { width: 100%; min-height: 420px; border: 1px solid var(--line-default); border-radius: var(--radius-lg); background: white; }
+@media (max-width: 900px) { .lesson-page-grid { grid-template-columns: 1fr; } .page-nav { position: static; } }
 @media (max-width: 720px) { .page-hero, .block-title-row, .resource-card { flex-direction: column; align-items: flex-start; } .hero-meta { justify-items: start; } h2 { font-size: 22px; } }
 </style>

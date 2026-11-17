@@ -19,6 +19,8 @@ import java.util.Map;
 
 @Component
 public class ClassStudentAddActionExecutor implements AgentActionExecutor {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.controller.ClassStudentController classMaintenance;
     private static final String ACTION_CODE = "class.student.add";
 
     private final ClassStudentMapper classStudentMapper;
@@ -68,7 +70,14 @@ public class ClassStudentAddActionExecutor implements AgentActionExecutor {
         classStudent.setStudentId(studentId);
         classStudent.setStatus(status);
         classStudent.setJoinTime(LocalDateTime.now());
-        int row = classStudentMapper.insert(classStudent);
+        var dto = new com.cupk.aiacademy.dto.ClassStudentDto();
+        dto.setClassId(classId); dto.setStudentId(studentId); dto.setStatus(status);
+        var saved = classMaintenance.add(dto);
+        if (!"200".equals(saved.getCode())) throw new BusinessException(saved.getMsg());
+        QueryWrapper<ClassStudent> inserted = new QueryWrapper<>();
+        inserted.eq("class_id", classId).eq("student_id", studentId);
+        classStudent = classStudentMapper.selectOne(inserted);
+        int row = classStudent == null ? 0 : 1;
         if (row <= 0) {
             throw new BusinessException("添加班级学生失败");
         }
@@ -111,8 +120,8 @@ public class ClassStudentAddActionExecutor implements AgentActionExecutor {
     }
 
     private void requireTeacherOrAdmin(AuthUtils.LoginUser user) {
-        if (user == null || (!isTeacher(user) && !isAdmin(user))) {
-            throw new BusinessException("只有教师或管理员可以添加班级学生");
+        if (user == null || !isAdmin(user)) {
+            throw new BusinessException("只有管理员可以添加班级学生");
         }
     }
 

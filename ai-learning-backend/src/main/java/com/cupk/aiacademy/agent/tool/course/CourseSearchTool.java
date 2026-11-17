@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.Map;
 
 @Component
 public class CourseSearchTool implements AgentTool {
@@ -39,7 +40,7 @@ public class CourseSearchTool implements AgentTool {
         Page<Course> page = new Page<>(1, context.maxItems());
         QueryWrapper<Course> query = new QueryWrapper<>();
         if (!support.applyCourseVisibility(query)) {
-            return AgentToolResult.read("没有可查询的课程范围。");
+            return AgentToolResult.read(name(),"没有可查询的课程范围。",Map.of("count",0,"items",List.of()));
         }
         support.applyKeywordFilter(query, support.extractSearchTerms(context.normalizedQuery()),
                 "title", "description", "teacher", "difficulty");
@@ -47,7 +48,7 @@ public class CourseSearchTool implements AgentTool {
         courseMapper.selectPage(page, query);
         List<Course> courses = page.getRecords();
         if (courses == null || courses.isEmpty()) {
-            return AgentToolResult.read("未查询到匹配课程。");
+            return AgentToolResult.read(name(),"未查询到匹配课程。",Map.of("count",0,"items",List.of()));
         }
 
         List<String> lines = new ArrayList<>();
@@ -58,6 +59,8 @@ public class CourseSearchTool implements AgentTool {
                     + "；难度=" + support.value(course.getDifficulty())
                     + "；简介=" + support.summarize(course.getDescription(), 120));
         }
-        return AgentToolResult.read(String.join("\n", lines));
+        var items=courses.stream().map(course->Map.<String,Object>of("id",course.getId(),
+                "title",course.getTitle()==null?"":course.getTitle())).toList();
+        return AgentToolResult.read(name(),String.join("\n", lines),Map.of("count",items.size(),"items",items));
     }
 }

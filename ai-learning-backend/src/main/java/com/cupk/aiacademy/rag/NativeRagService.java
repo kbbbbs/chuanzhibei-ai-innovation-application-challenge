@@ -4,6 +4,8 @@ import com.cupk.aiacademy.common.Result;
 import com.cupk.aiacademy.common.UserContext;
 import com.cupk.aiacademy.rag.repository.RagIndexVersionRepository;
 import com.cupk.aiacademy.rag.ingestion.RagIngestionService;
+import com.cupk.aiacademy.rag.graph.CourseKnowledgeGraphService;
+import com.cupk.aiacademy.rag.graph.GraphRagEnricher;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,12 +24,14 @@ import java.security.MessageDigest;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HexFormat;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.function.Supplier;
 
 @Service
@@ -44,6 +48,10 @@ public class NativeRagService {
     private static final int MAX_SEARCH_CHUNKS = 20000;
     private RagIngestionService ingestion;
     private RagRetrievalService retrieval;
+    private CourseKnowledgeService courseKnowledge;
+    private CourseKnowledgeGraphService courseGraphs;
+    @Autowired void configureCourseKnowledge(CourseKnowledgeService service) { this.courseKnowledge = service; }
+    @Autowired void configureCourseGraphs(CourseKnowledgeGraphService service) { this.courseGraphs = service; }
     @Autowired void configureRetrieval(RagRetrievalService retrieval){this.retrieval=retrieval;}
     private final com.cupk.aiacademy.rag.visual.RagVisualService visuals;
 
@@ -158,6 +166,7 @@ public class NativeRagService {
             int user=owner();
             List<String> keys=transaction.execute(status->{
                 writable(id,user);
+                if (courseKnowledge != null && courseKnowledge.courseForBase(id) != null) throw invalid("课程专属资料库随课程归档，请在课程中管理资料");
                 var objects=jdbc.queryForList("SELECT file_key FROM native_rag_document WHERE kb_id=? UNION SELECT v.file_key FROM native_rag_document_version v JOIN native_rag_document d ON d.id=v.document_id WHERE d.kb_id=?",String.class,id,id);
                 objects.forEach(this::enqueueCleanup);
                 jdbc.update("DELETE FROM native_rag_base WHERE id=? AND owner_id=?",id,user);
@@ -378,6 +387,10 @@ public class NativeRagService {
     public Result grantDocument(String id,Integer courseId,int version,boolean readExcerpt,boolean downloadAllowed) {
         return result(() -> {
             int user=owner();var doc=document(id);writable(text(doc,"kb_id"),user);
+            if (courseKnowledge != null) {
+                Integer boundCourse = courseKnowledge.courseForBase(text(doc,"kb_id"));
+                if (boundCourse != null && !boundCourse.equals(courseId)) throw new RagAccessException("403", "课程专属资料不能授权给其他课程");
+            }
             var sourceVersion=version(id,version);
             if(readExcerpt && sourceVersion.get("active_index_version")==null)throw new RagAccessException("409","该版本尚未生成可读索引，请等待解析完成");
             requireCourseMaintenance(courseId,user);
@@ -458,6 +471,24 @@ public class NativeRagService {
         });
     }
 
+    public Result courseChunk(Integer courseId, String chunkId) {
+        return result(() -> {
+            RagActor actor = authorization.currentActor();
+            authorization.requireCourseRead(actor, courseId);
+            var rows = jdbc.queryForList("SELECT c.*,v.file_name AS title FROM native_rag_chunk c "
+                    + "JOIN native_rag_document_version v ON v.document_id=c.document_id AND v.document_version=c.document_version "
+                    + "WHERE c.id=? AND c.index_version=v.active_index_version", checkedId(chunkId));
+            if (rows.isEmpty()) throw new RagAccessException("404", "来源片段不存在或索引已更新，请重新提问或检索");
+            var row = rows.getFirst();
+            String documentId = text(row, "document_id");
+            int version = ((Number)row.get("document_version")).intValue();
+            authorization.requireCourseDocumentRead(actor, courseId, documentId, version, false);
+            RagSearchHit source = withCourseVisuals(hit(row, 0), actor.userId(), courseId);
+            authorization.requireCourseDocumentRead(actor, courseId, documentId, version, false);
+            return source;
+        });
+    }
+
     public Result contentForOwner(String documentId, Integer ownerId) {
         return result(() -> {
             Map<String,Object> doc = readableDocument(documentId, requireOwner(ownerId));
@@ -481,8 +512,13 @@ public class NativeRagService {
         return unique;
     }
 
+    private static final String SEARCH_SELECT="SELECT c.*,d.title,iv.embedding_fingerprint AS index_embedding_fingerprint,iv.embedding_model AS index_embedding_model,iv.dimensions AS index_dimensions,iv.normalized AS index_normalized,iv.chunk_revision AS index_chunk_revision,iv.state AS index_state,iv.parser_revision AS index_parser_revision,iv.document_version AS index_document_version,iv.parse_revision AS index_parse_revision FROM native_rag_chunk c JOIN native_rag_document d ON c.document_id=d.id JOIN native_rag_index_version iv ON iv.id=d.active_index_version AND iv.document_id=d.id";
+    private static final String SEARCH_READY="c.index_version=d.active_index_version AND c.document_version=iv.document_version AND c.parse_revision=iv.parse_revision AND iv.state IN ('KEYWORD_READY','HYBRID_READY')";
+    private static final String COURSE_GRANT_JOIN=" JOIN native_rag_course_grant g ON g.document_id=d.id AND g.document_version=c.document_version AND g.course_id=? AND g.revoked_at IS NULL AND g.read_excerpt=TRUE";
+
     public Result search(RagSearchRequest request) {
         if (request == null) return Result.error("400", "检索参数不能为空");
+        if (request.courseId() != null) return searchForCourse(request.courseId(),request.query(),UserContext.getCurrentUserId(),request.limit() == null ? 6 : request.limit());
         return searchForOwner(request.kbIds(), request.query(), UserContext.getCurrentUserId(), request.limit() == null ? 6 : request.limit());
     }
 
@@ -492,18 +528,131 @@ public class NativeRagService {
             if (query == null || query.isBlank() || query.length() > 2000) throw invalid("检索问题不能为空且不能超过 2000 字");
             var before=activeSnapshot(ids);
             String placeholders=String.join(",",java.util.Collections.nCopies(ids.size(),"?"));
-            List<Map<String,Object>> rows=jdbc.queryForList("SELECT c.*,d.title,iv.embedding_fingerprint AS index_embedding_fingerprint,iv.embedding_model AS index_embedding_model,iv.dimensions AS index_dimensions,iv.normalized AS index_normalized,iv.chunk_revision AS index_chunk_revision,iv.state AS index_state,iv.parser_revision AS index_parser_revision,iv.document_version AS index_document_version,iv.parse_revision AS index_parse_revision FROM native_rag_chunk c JOIN native_rag_document d ON c.document_id=d.id JOIN native_rag_index_version iv ON iv.id=d.active_index_version AND iv.document_id=d.id WHERE c.index_version=d.active_index_version AND c.document_version=iv.document_version AND c.parse_revision=iv.parse_revision AND iv.state IN ('KEYWORD_READY','HYBRID_READY') AND c.kb_id IN ("+placeholders+") ORDER BY c.id LIMIT "+(MAX_SEARCH_CHUNKS+1),ids.toArray());
+            List<Map<String,Object>> rows=jdbc.queryForList(SEARCH_SELECT+" WHERE "+SEARCH_READY+" AND c.kb_id IN ("+placeholders+") ORDER BY c.id LIMIT "+(MAX_SEARCH_CHUNKS+1),ids.toArray());
+            return rank(query,limit,rows,()->{
+                requireReadableBaseIdsForOwner(ids,ownerId);
+                if(!before.equals(activeSnapshot(ids)))throw new RagAccessException("409","资料索引已改变，请重新检索");
+            },ownerId);
+        });
+    }
+
+    public void requireCourseRead(Integer courseId) {
+        if (courseKnowledge != null && courseKnowledge.isCourseManager(courseId, UserContext.getCurrentUserId())) return;
+        authorization.requireCourseRead(authorization.currentActor(), courseId);
+    }
+
+    /** Course members search only documents granted to that course, at the granted version, without seeing the owner's library. */
+    public Result searchForCourse(Integer courseId, String query, Integer userId, int limit) {
+        if (courseKnowledge != null && courseKnowledge.isCourseManager(courseId, userId))
+            return searchOwnedCourse(courseId,query,userId,limit);
+        return result(() -> {
+            Runnable allowed=()->authorization.requireCourseRead(authorization.actorForUser(userId),courseId);
+            allowed.run();
+            if (query == null || query.isBlank() || query.length() > 2000) throw invalid("检索问题不能为空且不能超过 2000 字");
+            var before=courseSnapshot(courseId);
+            List<Map<String,Object>> rows=jdbc.queryForList(SEARCH_SELECT+COURSE_GRANT_JOIN+" WHERE "+SEARCH_READY+" ORDER BY c.id LIMIT "+(MAX_SEARCH_CHUNKS+1),courseId);
+            Runnable stillAuthorized=()->{
+                allowed.run();
+                if(!before.equals(courseSnapshot(courseId)))throw new RagAccessException("409","资料索引已改变，请重新检索");
+            };
+            var baseline=rank(query,limit,rows,stillAuthorized,null);
+            var enriched = enrichCourse(courseId,query,limit,rows,baseline,stillAuthorized,null);
+            var withImages = enriched.hits().stream().map(source -> withCourseVisuals(source,userId,courseId)).toList();
+            var paths = enriched.graphPaths().stream().map(path -> path.retainCitations(withImages))
+                    .filter(java.util.Objects::nonNull).toList();
+            stillAuthorized.run();
+            return new RagSearchResponse(withImages,enriched.mode(),enriched.warning(),enriched.actualMode(),
+                    enriched.degradedReason(),enriched.indexVersions(),paths);
+        });
+    }
+
+    private Result searchOwnedCourse(Integer courseId,String query,Integer userId,int limit) {
+        return result(() -> {
+            List<String> ids=List.of(courseKnowledge.baseId(courseId));
+            requireReadableBaseIdsForOwner(ids,userId);
+            if(query==null || query.isBlank() || query.length()>2000)
+                throw invalid("检索问题不能为空且不能超过 2000 字");
+            var before=activeSnapshot(ids);
+            Runnable stillAuthorized=()->{
+                var actor = authorization.actorForUser(userId);
+                if (!"teacher".equals(actor.roleCode()) || !courseKnowledge.isCourseManager(courseId,userId))
+                    throw new RagAccessException("403", "无权管理该课程资料");
+                requireReadableBaseIdsForOwner(ids,userId);
+                if(!before.equals(activeSnapshot(ids)))throw new RagAccessException("409","资料索引已改变，请重新检索");
+            };
+            List<Map<String,Object>> rows=jdbc.queryForList(SEARCH_SELECT+" WHERE "+SEARCH_READY
+                    +" AND c.kb_id=? ORDER BY c.id LIMIT "+(MAX_SEARCH_CHUNKS+1),ids.getFirst());
+            var baseline=rank(query,limit,rows,stillAuthorized,userId);
+            return enrichCourse(courseId,query,limit,rows,baseline,stillAuthorized,userId);
+        });
+    }
+
+    private RagSearchHit withCourseVisuals(RagSearchHit hit, int actor, int course) {
+        return new RagSearchHit(hit.chunkId(),hit.documentId(),hit.kbId(),hit.title(),hit.content(),hit.page(),
+                hit.ordinal(),hit.score(),hit.citation(),visuals.forHit(hit,actor,course),
+                hit.indexVersion(),hit.documentVersion(),hit.parseRevision());
+    }
+
+    private RagSearchResponse enrichCourse(Integer courseId,String query,int limit,List<Map<String,Object>> rows,
+            RagSearchResponse baseline,Runnable stillAuthorized,Integer visualActor) {
+        if(courseGraphs==null)return baseline;
+        Map<String, Object> graph;
+        try {
+            graph = courseGraphs.readForRetrieval(courseId);
+        } catch (RagAccessException unavailable) {
+            if (!"503".equals(unavailable.code())) throw unavailable;
+            stillAuthorized.run();
+            String warning = (baseline.warning() == null ? "" : baseline.warning() + "；")
+                    + "Neo4j 图谱暂不可用，本次使用已授权的课程资料检索。";
+            return new RagSearchResponse(baseline.hits(), baseline.mode(), warning,
+                    baseline.actualMode(), baseline.degradedReason(), baseline.indexVersions(), List.of());
+        }
+        var candidates=rows.stream().map(row->hit(row,0)).toList();
+        var enriched=GraphRagEnricher.enrich(courseId,query,graph,baseline,candidates,limit);
+        if(enriched!=baseline && visualActor!=null) {
+            var withImages=enriched.hits().stream().map(source->withVisuals(source,visualActor)).toList();
+            var paths=enriched.graphPaths().stream().map(path->path.retainCitations(withImages))
+                    .filter(java.util.Objects::nonNull).toList();
+            enriched=new RagSearchResponse(withImages,enriched.mode(),enriched.warning(),enriched.actualMode(),
+                    enriched.degradedReason(),enriched.indexVersions(),paths);
+        }
+        // Graph loading and image hydration may perform I/O after the baseline ranker's last check.
+        stillAuthorized.run();
+        return enriched;
+    }
+
+    /** Granted course materials, for showing what a lesson conversation draws on. */
+    public Result courseMaterials(Integer courseId) {
+        return result(() -> {
+            authorization.requireCourseRead(authorization.currentActor(), courseId);
+            return jdbc.queryForList("SELECT d.id AS document_id,v.file_name AS title,g.document_version,"
+                    + "CASE WHEN d.document_version=g.document_version AND d.active_index_version IS NOT NULL THEN 1 ELSE 0 END AS searchable "
+                    + "FROM native_rag_course_grant g JOIN native_rag_document d ON d.id=g.document_id "
+                    + "JOIN native_rag_document_version v ON v.document_id=g.document_id AND v.document_version=g.document_version "
+                    + "WHERE g.course_id=? AND g.revoked_at IS NULL AND g.read_excerpt=TRUE ORDER BY v.file_name,d.id", courseId);
+        });
+    }
+
+    private Map<String,String> courseSnapshot(Integer courseId) {
+        var result=new java.util.TreeMap<String,String>();
+        for(var row:jdbc.queryForList("SELECT d.id,d.active_index_version,d.document_version,d.parse_revision,g.document_version AS granted FROM native_rag_document d"
+                +" JOIN native_rag_course_grant g ON g.document_id=d.id WHERE g.course_id=? AND g.revoked_at IS NULL AND g.read_excerpt=TRUE",courseId))
+            result.put(text(row,"id")+":"+row.get("granted"),String.valueOf(row.get("active_index_version"))+":"+row.get("document_version")+":"+row.get("parse_revision"));
+        return result;
+    }
+
+    /** Ranks authorized rows; {@code stillAuthorized} re-checks access and index stability around ranking. */
+    private RagSearchResponse rank(String query,int limit,List<Map<String,Object>> rows,Runnable stillAuthorized,Integer visualActor) {
             if(rows.size()>MAX_SEARCH_CHUNKS)throw invalid("检索范围超过 2 万片段，请缩小知识库范围");
             var retrieved=retrieval.retrieve(query,rows,Math.max(1,Math.min(20,limit)));
-            requireReadableBaseIdsForOwner(ids,ownerId);
-            if(!before.equals(activeSnapshot(ids)))throw new RagAccessException("409","资料索引已改变，请重新检索");
+            stillAuthorized.run();
             var numbered=new ArrayList<RagSearchHit>();
             for(var ranked:retrieved.ranked()) {
                 var h=hit(ranked.row(),ranked.score());
-                numbered.add(withVisuals(new RagSearchHit(h.chunkId(),h.documentId(),h.kbId(),h.title(),h.content(),h.page(),h.ordinal(),h.score(),"["+(numbered.size()+1)+"]",h.visuals(),h.indexVersion(),h.documentVersion(),h.parseRevision()),ownerId));
+                var numberedHit=new RagSearchHit(h.chunkId(),h.documentId(),h.kbId(),h.title(),h.content(),h.page(),h.ordinal(),h.score(),"["+(numbered.size()+1)+"]",h.visuals(),h.indexVersion(),h.documentVersion(),h.parseRevision());
+                numbered.add(visualActor==null?numberedHit:withVisuals(numberedHit,visualActor));
             }
-            requireReadableBaseIdsForOwner(ids,ownerId);
-            if(!before.equals(activeSnapshot(ids)))throw new RagAccessException("409","资料索引已改变，请重新检索");
+            stillAuthorized.run();
             String warning=retrieved.warning()==null?"":retrieved.warning();
             if(numbered.stream().anyMatch(h->!com.cupk.aiacademy.rag.formula.FormulaText.analyze(h.content()).blocks().isEmpty()))
                 warning+=" 检索结果包含公式，请对照原页核验；可排版不代表识别准确。";
@@ -513,7 +662,6 @@ public class NativeRagService {
                 snapshots.putIfAbsent(id,new RagIndexSnapshot(text(row,"document_id"),id,((Number)row.get("document_version")).intValue(),((Number)row.get("parse_revision")).intValue(),textOrNull(row,"index_embedding_model"),((Number)row.get("index_dimensions")).intValue(),Boolean.TRUE.equals(row.get("index_normalized")) || row.get("index_normalized") instanceof Number n && n.intValue()!=0,text(row,"index_chunk_revision"),text(row,"index_parser_revision"),textOrNull(row,"index_embedding_fingerprint")));
             }
             return new RagSearchResponse(List.copyOf(numbered),"HYBRID".equals(retrieved.actualMode())?"hybrid":"bm25",warning,retrieved.actualMode(),retrieved.degradedReason(),List.copyOf(snapshots.values()));
-        });
     }
 
     private Map<String,String> activeSnapshot(List<String> ids) {
@@ -536,13 +684,17 @@ public class NativeRagService {
 
     private Map<String,Object> readable(String id, Integer user) {
         Map<String,Object> b = base(id);
-        authorization.requireBaseOwner(authorization.actorForUser(user),((Number)b.get("owner_id")).intValue());
+        Integer boundCourse = courseKnowledge == null ? null : courseKnowledge.courseForBase(id);
+        if (boundCourse == null || !courseKnowledge.isCourseManager(boundCourse, user))
+            authorization.requireBaseOwner(authorization.actorForUser(user),((Number)b.get("owner_id")).intValue());
         return b;
     }
 
     private Map<String,Object> writable(String id, Integer user) {
         Map<String,Object> b = base(id);
-        authorization.requireBaseOwner(authorization.actorForUser(user),((Number)b.get("owner_id")).intValue());
+        Integer boundCourse = courseKnowledge == null ? null : courseKnowledge.courseForBase(id);
+        if (boundCourse == null || !courseKnowledge.isCourseManager(boundCourse, user))
+            authorization.requireBaseOwner(authorization.actorForUser(user),((Number)b.get("owner_id")).intValue());
         return b;
     }
 
@@ -567,6 +719,14 @@ public class NativeRagService {
         Map<String,Object> view = new LinkedHashMap<>();
         for (String key : List.of("id", "name", "description", "owner_id", "created_at")) view.put(key, row.get(key));
         view.put("shared", bool(row.get("shared")));
+        if (courseKnowledge != null) {
+            Integer course = courseKnowledge.courseForBase(text(row,"id"));
+            if (course == null) {
+                var assignments = jdbc.queryForList("SELECT course_id FROM course_library_assignment WHERE legacy_kb_id=?", row.get("id"));
+                if (!assignments.isEmpty()) course = ((Number)assignments.getFirst().get("course_id")).intValue();
+            }
+            if (course != null) view.put("course_id", course);
+        }
         view.put("read_only", !user.equals(((Number)row.get("owner_id")).intValue()));
         view.put("knowledge_count", jdbc.queryForObject("SELECT COUNT(*) FROM native_rag_document WHERE kb_id=?", Integer.class, row.get("id")));
         view.put("provider", "native");
@@ -597,7 +757,15 @@ public class NativeRagService {
         }
         view.put("unindexed_pages", List.copyOf(withoutText));
         view.put("parse_warning",Set.of("QUEUED","PARSING","OCR","CHUNKING","EMBEDDING").contains(processing)
-                ?"资料正在逐页处理，上传完成不表示已可用。":withoutText.isEmpty()?"":"部分页面未纳入有效索引，请查看逐页结果并重试或核验。");
+                ?"资料正在处理，完成的部分会陆续可用。":withoutText.isEmpty()?"":"部分页面没有取得文字，可在逐页结果中重试。");
+        // Saved page edits whose text the published revision does not carry yet.
+        Map<Integer,String> published=new HashMap<>();
+        for(var page:jdbc.queryForList("SELECT page_no,chosen_text FROM native_rag_page WHERE document_id=? AND document_version=? AND parse_revision=?",row.get("id"),row.get("document_version"),row.get("parse_revision")))
+            published.put(((Number)page.get("page_no")).intValue(),text(page,"chosen_text"));
+        Map<Integer,String> edited=new TreeMap<>();
+        for(var edit:jdbc.queryForList("SELECT page_no,edited_text FROM native_rag_page_edit WHERE document_id=? AND document_version=? ORDER BY id",row.get("id"),row.get("document_version")))
+            edited.put(((Number)edit.get("page_no")).intValue(),text(edit,"edited_text"));
+        view.put("pending_edit_pages",edited.entrySet().stream().filter(edit->!edit.getValue().equals(published.get(edit.getKey()))).map(Map.Entry::getKey).toList());
         view.put("needs_review_pages",jdbc.queryForList("SELECT page_no FROM native_rag_page WHERE document_id=? AND document_version=? AND parse_revision=? AND needs_review=TRUE ORDER BY page_no",Integer.class,row.get("id"),row.get("document_version"),row.get("parse_revision")));
         return view;
     }
@@ -647,6 +815,7 @@ public class NativeRagService {
     private Result result(Supplier<?> operation) {
         try { return Result.success(operation.get()); }
         catch (RagAccessException e) { return Result.error(e.code(), e.getMessage()); }
+        catch (com.cupk.aiacademy.common.ForbiddenException e) { return Result.error("403",e.getMessage()); }
         catch (Exception e) { return Result.error("500", "本地知识库操作失败，请检查存储及数据库状态"); }
     }
 }

@@ -4,6 +4,9 @@ academic:
   semantic-scholar:
     api-key: ${SEMANTIC_SCHOLAR_API_KEY:}
 app:
+  cors:
+    # Comma-separated exact origins; empty keeps the API same-origin (served behind /backend).
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   upload:
     dir: ${UPLOAD_DIR:uploads}
     max-file-size-bytes: 104857600
@@ -52,6 +55,14 @@ mybatis-plus:
 server:
   port: 8080
 spring:
+  neo4j:
+    uri: ${NEO4J_URI:bolt://127.0.0.1:7687}
+    authentication:
+      username: ${NEO4J_USERNAME:neo4j}
+      password: ${NEO4J_PASSWORD:}
+  data:
+    neo4j:
+      database: ${NEO4J_DATABASE:neo4j}
   # Only the explicitly configured guarded models are created; no SDK GPT defaults.
   autoconfigure:
     exclude: org.springframework.ai.autoconfigure.openai.OpenAiAutoConfiguration
@@ -69,13 +80,6 @@ spring:
     password: ${DB_PASSWORD:}
     url: ${DB_URL:jdbc:mysql://localhost:3306/ai_academy?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true}
     username: ${DB_USERNAME:root}
-  neo4j:
-    uri: ${NEO4J_URI:bolt://127.0.0.1:7687}
-    authentication:
-      username: ${NEO4J_USERNAME:neo4j}
-      password: ${NEO4J_PASSWORD:}
-    connection-timeout: 5s
-    max-transaction-retry-time: 5s
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
     time-zone: Asia/Shanghai
@@ -116,7 +120,6 @@ agent:
 rag:
   graph:
     enabled: ${RAG_GRAPH_ENABLED:false}
-    extraction-timeout-seconds: ${RAG_GRAPH_EXTRACTION_TIMEOUT_SECONDS:90}
   retrieval:
     rrf-k: ${RAG_RETRIEVAL_RRF_K:1}
     candidate-limit: ${RAG_RETRIEVAL_CANDIDATE_LIMIT:20}

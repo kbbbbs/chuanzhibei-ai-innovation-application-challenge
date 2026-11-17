@@ -1,20 +1,35 @@
 <template>
-  <div class="my-work-study">
-    <el-card>
-      <template #header>
-        <span>我的勤工俭学</span>
+  <div class="my-work-study workspace-page">
+    <PageHeader eyebrow="校园事务" title="我的岗位" description="查看勤工俭学申请的审核结果，以及已通过岗位的劳务信息。">
+      <template #actions>
+        <el-button @click="$router.push('/work-study-jobs')">浏览岗位</el-button>
       </template>
+    </PageHeader>
 
-      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="全部" name="all" />
-        <el-tab-pane label="待审核" name="0" />
-        <el-tab-pane label="已通过" name="1" />
-        <el-tab-pane label="已拒绝" name="2" />
-      </el-tabs>
+    <section class="table-panel" aria-label="我的申请">
+      <div class="tab-strip">
+        <el-tabs v-model="activeTab" @tab-change="handleTabChange">
+          <el-tab-pane label="全部" name="all" />
+          <el-tab-pane label="待审核" name="0" />
+          <el-tab-pane label="已通过" name="1" />
+          <el-tab-pane label="已拒绝" name="2" />
+        </el-tabs>
+      </div>
 
-      <el-table :data="list" border stripe v-loading="loading">
-        <template #empty><AppEmpty /></template>
-        <el-table-column prop="jobName" label="岗位名称" min-width="120" />
+      <ErrorNotice
+        v-if="loadFailed"
+        title="申请记录未加载"
+        message="请确认网络后重试。"
+        retry-label="重新加载"
+        :busy="loading"
+        @retry="loadData"
+      />
+
+      <el-table v-else :data="list" stripe v-loading="loading">
+        <template #empty><AppEmpty description="暂无申请记录" /></template>
+        <el-table-column prop="jobName" label="岗位名称" min-width="140">
+          <template #default="{ row }"><span class="row-title">{{ row.jobName }}</span></template>
+        </el-table-column>
         <el-table-column prop="applyTime" label="申请时间" width="170">
           <template #default="{ row }">
             {{ row.applyTime ? new Date(row.applyTime).toLocaleString() : '-' }}
@@ -54,7 +69,7 @@
       </el-table>
 
       <el-pagination
-        class="pagination"
+        v-if="!loadFailed"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="pagination.total"
@@ -63,7 +78,7 @@
         @current-change="loadData"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
   </div>
 </template>
 
@@ -71,13 +86,19 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, getTotal } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { getRecords, getTotal, requireSuccess } from '@/utils/apiHelpers'
 import { getMyApplications } from '@/api/workStudy'
 
 const userStore = useUserStore()
 
 const list = ref([])
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  list.value = []
+  pagination.total = 0
+})
 const activeTab = ref('all')
 
 const pagination = reactive({
@@ -90,7 +111,7 @@ const showWorkInfo = computed(() => {
   return activeTab.value === '1' || activeTab.value === 'all'
 })
 
-const loadData = async () => {
+const loadData = () => guarded(async (isCurrent) => {
   const params = {
     pageNum: pagination.pageNum,
     pageSize: pagination.pageSize,
@@ -99,19 +120,11 @@ const loadData = async () => {
   if (activeTab.value !== 'all') {
     params.auditStatus = Number(activeTab.value)
   }
-  loading.value = true
-  try {
-    const res = await getMyApplications(params)
-    if (res.code === '200') {
-      list.value = getRecords(res.data)
-      pagination.total = getTotal(res.data)
-    }
-  } catch (err) {
-    // 全局已提示
-  } finally {
-    loading.value = false
-  }
-}
+  const res = requireSuccess(await getMyApplications(params))
+  if (!isCurrent()) return
+  list.value = getRecords(res.data)
+  pagination.total = getTotal(res.data)
+})
 
 const handleSizeChange = () => {
   pagination.pageNum = 1
@@ -129,16 +142,19 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.pagination {
-  margin-top: 20px;
-  justify-content: center;
+.tab-strip {
+  padding: var(--space-1) var(--space-5) 0;
+}
+
+.tab-strip :deep(.el-tabs__header) {
+  margin-bottom: 0;
 }
 
 .work-info {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  font-size: 13px;
-  color: #606266;
+  gap: var(--space-2);
+  color: var(--text-body);
+  font-size: var(--text-sm);
 }
 </style>

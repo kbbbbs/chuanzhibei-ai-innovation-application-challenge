@@ -16,10 +16,9 @@ async function fixture(page, { shared=false, readOnly=false, stream='complete', 
     localStorage.setItem('username','界面测试')
   })
   const calls = []
-  await page.route('**/api/**', async route => {
+  await page.route('**/backend/**', async route => {
     const request = route.request()
-    const path = new URL(request.url()).pathname
-    if (!path.startsWith('/api/')) return route.continue()
+    const path = new URL(request.url()).pathname.replace(/^\/backend/, '')
     calls.push({ path, method:request.method(), body:request.postDataJSON?.(), auth:request.headers().authorization })
     const ok = data => route.fulfill({json:{code:'200',data}})
     if (path === '/api/rag/knowledge-bases') return ok([{id:kbId,name:'算法课程资料',description:'课程原文',shared,owner_id:readOnly ? 8 : 7,read_only:readOnly,knowledge_count:1}])

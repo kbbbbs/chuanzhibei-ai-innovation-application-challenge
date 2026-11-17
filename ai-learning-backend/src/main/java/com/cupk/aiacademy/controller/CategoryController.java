@@ -80,11 +80,11 @@ public class CategoryController {
         if (categoryMapper.selectById(id) == null) {
             return Result.error("404", "分类不存在");
         }
+        category.setId(id);
         Result checkResult = checkCategory(category);
         if (checkResult != null) {
             return checkResult;
         }
-        category.setId(id);
         category.setName(category.getName().trim());
         fixSortOrder(category);
         category.setUpdateTime(LocalDateTime.now());
@@ -132,6 +132,12 @@ public class CategoryController {
         }
         if (category.getName() == null || category.getName().trim().isEmpty()) {
             return Result.error("400", "分类名称不能为空");
+        }
+        QueryWrapper<CourseCategory> duplicate = new QueryWrapper<>();
+        duplicate.eq("name", category.getName().trim());
+        duplicate.ne(category.getId() != null, "id", category.getId());
+        if (categoryMapper.selectCount(duplicate) > 0) {
+            return Result.error("409", "分类名称已存在");
         }
         return null;
     }

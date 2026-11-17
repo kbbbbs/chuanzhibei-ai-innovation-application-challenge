@@ -1,18 +1,26 @@
 <template>
-  <div class="recommendation-manage">
-    <section class="page-heading">
-      <div>
-        <span class="eyebrow">HOMEPAGE CURATION</span>
-        <h1>首页推荐课程</h1>
-        <p>管理员设置首页公共课及展示优先级；学生可先查看课程详情，再自助加入该课程的启用教学班并开始学习。</p>
-      </div>
-      <div class="heading-actions">
+  <div class="recommendation-manage workspace-page">
+    <PageHeader
+      eyebrow="教学运营"
+      title="首页推荐课程"
+      description="设置首页公共课及展示优先级；学生可先查看课程详情，再自助加入该课程的启用教学班并开始学习。"
+    >
+      <template #actions>
         <el-button @click="openHomepage">查看首页</el-button>
         <el-button type="primary" @click="openCreate">添加推荐课程</el-button>
-      </div>
-    </section>
+      </template>
+    </PageHeader>
 
-    <div class="workspace-grid">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="推荐配置未加载"
+      message="推荐或课程列表读取失败，请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadData"
+    />
+
+    <div v-else class="workspace-grid">
       <el-card class="manage-card" shadow="never">
         <template #header>
           <div class="card-title">
@@ -43,13 +51,15 @@
           </el-table-column>
           <el-table-column label="首页展示" width="100" align="center">
             <template #default="{ row }">
-              <el-switch :model-value="row.status === 1" :loading="savingId === row.id" @change="toggleStatus(row, $event)" />
+              <el-switch :model-value="row.status === 1" :loading="savingId === row.id" :aria-label="`在首页展示 ${row.courseTitle || row.courseId}`" @change="toggleStatus(row, $event)" />
             </template>
           </el-table-column>
-          <el-table-column label="操作" width="150" fixed="right">
+          <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 150" fixed="right">
             <template #default="{ row }">
-              <el-button text type="primary" @click="openEdit(row)">编辑</el-button>
-              <el-button text type="danger" @click="removeItem(row)">删除</el-button>
+              <RowActions :label="row.courseTitle || `课程 #${row.courseId}`">
+                <el-button text type="primary" @click="openEdit(row)">编辑</el-button>
+                <el-button text type="danger" @click="removeItem(row)">删除</el-button>
+              </RowActions>
             </template>
           </el-table-column>
           <template #empty>
@@ -82,7 +92,7 @@
     </div>
 
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑首页推荐' : '添加首页推荐'" width="600px" destroy-on-close>
-      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px">
+      <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <el-form-item label="推荐课程" prop="courseId">
           <el-select v-model="form.courseId" filterable placeholder="输入课程名称搜索" class="full-width">
             <el-option
@@ -123,6 +133,12 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowRight, Reading, Refresh } from '@element-plus/icons-vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
+import { requireSuccess } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 import {
   createHomeCourseRecommendation,
@@ -132,7 +148,11 @@ import {
 } from '@/api/homeCourseRecommendation'
 
 const router = useRouter()
-const loading = ref(false)
+const narrow = useNarrowScreen()
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  recommendations.value = []
+  courses.value = []
+})
 const saving = ref(false)
 const savingId = ref(null)
 const dialogVisible = ref(false)
@@ -162,18 +182,16 @@ function recordsOf(response) {
   return Array.isArray(data?.records) ? data.records : []
 }
 
-async function loadData() {
-  loading.value = true
-  try {
+function loadData() {
+  return guarded(async (isCurrent) => {
     const [recommendationRes, courseRes] = await Promise.all([
       getHomeCourseRecommendationsForAdmin(),
       request.get('/courses', { params: { pageNum: 1, pageSize: 1000 } })
     ])
-    if (recommendationRes.code === '200') recommendations.value = recordsOf(recommendationRes)
-    if (courseRes.code === '200') courses.value = recordsOf(courseRes)
-  } finally {
-    loading.value = false
-  }
+    if (!isCurrent()) return
+    recommendations.value = recordsOf(requireSuccess(recommendationRes))
+    courses.value = recordsOf(requireSuccess(courseRes))
+  })
 }
 
 function resetForm(item = {}) {
@@ -227,7 +245,11 @@ async function toggleStatus(row, enabled) {
 }
 
 async function removeItem(row) {
-  await ElMessageBox.confirm(`确定移除“${row.courseTitle}”的首页推荐吗？`, '移除推荐', { type: 'warning' })
+  try {
+    await ElMessageBox.confirm(`确定移除“${row.courseTitle}”的首页推荐吗？`, '移除推荐', { type: 'warning' })
+  } catch {
+    return
+  }
   const response = await deleteHomeCourseRecommendation(row.id)
   if (response.code === '200') {
     ElMessage.success('已移除')
@@ -243,35 +265,30 @@ onMounted(loadData)
 </script>
 
 <style scoped>
-.recommendation-manage { display: grid; gap: 22px; }
-.page-heading { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 26px 30px; border-radius: 20px; color: #fff; background: linear-gradient(135deg, #162a4b, #2454a6 70%, #2b7bd8); box-shadow: 0 16px 40px rgba(31, 78, 147, .2); }
-.page-heading h1 { margin: 7px 0 8px; font-size: 30px; }
-.page-heading p { max-width: 720px; margin: 0; color: rgba(255, 255, 255, .76); line-height: 1.7; }
-.eyebrow { color: #a9c9ff; font-size: 11px; font-weight: 800; letter-spacing: .16em; }
-.heading-actions { display: flex; flex-shrink: 0; gap: 10px; }
-.workspace-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(330px, .8fr); gap: 20px; align-items: start; }
-.manage-card, .preview-card { border: 1px solid #e5eaf2; border-radius: 18px; }
-.card-title { display: flex; align-items: center; justify-content: space-between; }
-.card-title > div { display: grid; gap: 5px; }
-.card-title strong { font-size: 17px; color: #17233b; }
-.card-title small, .course-cell small { color: #8993a4; }
-.sort-pill { display: inline-grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px; border-radius: 10px; color: #2454a6; background: #edf4ff; font-weight: 800; }
-.course-cell { display: grid; gap: 5px; }
-.preview-lane { margin-bottom: 18px; padding: 20px; border: 1px solid #e7ebf2; border-radius: 16px; background: #fbfcfe; }
-.preview-heading { display: grid; grid-template-columns: 38px 1fr auto; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid #e7ebf2; }
-.preview-heading > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 11px; color: #2563eb; background: #eaf1ff; }
+.workspace-grid { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(320px, .8fr); gap: var(--space-5); align-items: start; }
+.manage-card, .preview-card { min-width: 0; }
+.card-title { display: flex; align-items: center; justify-content: space-between; gap: var(--space-3); }
+.card-title > div { display: grid; gap: 2px; }
+.card-title strong { font-size: var(--text-lg); color: var(--text-strong); font-weight: 650; }
+.card-title small, .course-cell small { color: var(--text-subtle); font-size: var(--text-xs); }
+.sort-pill { display: inline-grid; place-items: center; min-width: 28px; height: 28px; padding: 0 var(--space-2); border-radius: var(--radius-md); color: var(--accent); background: var(--surface-accent); font-weight: 650; }
+.course-cell { display: grid; gap: 2px; }
+.course-cell strong { color: var(--text-strong); font-weight: 600; }
+.preview-lane { margin-bottom: var(--space-4); padding: var(--space-4); border: 1px solid var(--line-subtle); border-radius: var(--radius-lg); background: var(--surface-canvas); }
+.preview-heading { display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: var(--space-2); padding-bottom: var(--space-3); border-bottom: 1px solid var(--line-subtle); }
+.preview-heading > span { display: grid; place-items: center; width: 36px; height: 36px; border-radius: var(--radius-md); color: var(--accent); background: var(--surface-accent); }
 .preview-heading > div { display: grid; gap: 2px; }
-.preview-heading small { color: #8b96a8; font-size: 11px; }
-.preview-heading em { color: #8b96a8; font-style: normal; }
-.preview-lane article { display: grid; grid-template-columns: 46px 1fr 18px; align-items: center; gap: 11px; padding: 16px 0; border-bottom: 1px solid #e7ebf2; }
+.preview-heading strong { color: var(--text-strong); font-weight: 600; }
+.preview-heading small { color: var(--text-subtle); font-size: var(--text-xs); }
+.preview-heading em { color: var(--text-subtle); font-style: normal; }
+.preview-lane article { display: grid; grid-template-columns: 42px minmax(0, 1fr) 18px; align-items: center; gap: var(--space-3); padding: var(--space-3) 0; border-bottom: 1px solid var(--line-subtle); }
 .preview-lane article:last-of-type { border-bottom: 0; }
-.preview-badge { display: grid; place-items: center; width: 42px; height: 42px; border-radius: 50%; color: #2563eb; background: #eaf1ff; font-size: 11px; font-weight: 800; }
-.preview-lane h3 { margin: 0 0 5px; color: #1b2942; font-size: 14px; }
-.preview-lane p { display: -webkit-box; margin: 0; overflow: hidden; color: #7d899a; font-size: 12px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.preview-badge { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; color: var(--accent); background: var(--surface-accent); font-size: var(--text-xs); font-weight: 650; }
+.preview-lane h3 { margin: 0 0 2px; font-size: var(--text-md); }
+.preview-lane p { display: -webkit-box; margin: 0; overflow: hidden; color: var(--text-subtle); font-size: var(--text-xs); line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
 .full-width { width: 100%; }
-.course-option { display: flex; justify-content: space-between; gap: 20px; }
-.course-option small, .form-tip { color: #929cab; font-size: 12px; }
-.form-tip { margin-left: 12px; }
-@media (max-width: 1100px) { .workspace-grid { grid-template-columns: 1fr; } }
-@media (max-width: 720px) { .page-heading { align-items: stretch; flex-direction: column; } .heading-actions { justify-content: flex-end; } }
+.course-option { display: flex; justify-content: space-between; gap: var(--space-5); }
+.course-option small, .form-tip { color: var(--text-subtle); font-size: var(--text-xs); }
+.form-tip { margin-left: var(--space-3); }
+@media (max-width: 1100px) { .workspace-grid { grid-template-columns: minmax(0, 1fr); } }
 </style>

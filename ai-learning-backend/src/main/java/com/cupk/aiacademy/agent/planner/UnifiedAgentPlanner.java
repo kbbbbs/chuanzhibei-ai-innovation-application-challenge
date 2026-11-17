@@ -22,8 +22,9 @@ public class UnifiedAgentPlanner {
         AgentIntentSelection selection = intentSelector.select(agent, userText);
         return switch (selection.getType()) {
             case CHAT -> AgentPlanningOutcome.chat();
-            case READ -> AgentPlanningOutcome.read(
-                    readPlanner.planSelectedToolContext(agent, userText, selection.getCode()));
+            case READ -> "learning_analysis_report".equals(selection.getCode())
+                    ? readPlanner.planSelectedToolOutcome(agent, userText, selection.getCode())
+                    : AgentPlanningOutcome.read(readPlanner.planSelectedToolContext(agent, userText, selection.getCode()));
             case WRITE -> {
                 java.util.Optional<AgentDirectActionReply> reply = writePlanner
                         .tryPlanSelected(agent, userText, selection.getCode());

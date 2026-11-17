@@ -32,6 +32,8 @@ import java.util.regex.Pattern;
 
 @Component
 public class AgentToolSupport {
+    @org.springframework.beans.factory.annotation.Autowired
+    private com.cupk.aiacademy.service.PermissionService permissionService;
     private static final Set<String> SEARCH_STOP_WORDS = Set.of(
             "课程", "作业", "学习", "计划", "查询", "搜索", "生成", "推荐",
             "帮我", "请", "一下", "哪些", "什么", "怎么", "如何", "有没有", "我的"
@@ -63,6 +65,7 @@ public class AgentToolSupport {
     }
 
     public boolean applyCourseVisibility(QueryWrapper<Course> query) {
+        if (AgentToolScope.courseId() != null) query.eq("id", AgentToolScope.courseId());
         AuthUtils.LoginUser user = UserContext.get();
         if (isStudent(user)) {
             List<Integer> courseIds = findStudentCourseIds(user.getUserId());
@@ -79,6 +82,11 @@ public class AgentToolSupport {
     }
 
     public boolean applyHomeworkVisibility(QueryWrapper<Homework> query) {
+        if (AgentToolScope.courseId() != null) {
+            List<Integer> classes = findVisibleClassIds();
+            if (classes == null || classes.isEmpty()) return false;
+            query.in("class_id", classes);
+        }
         AuthUtils.LoginUser user = UserContext.get();
         if (isStudent(user)) {
             List<Integer> classIds = findStudentClassIds(user.getUserId());
@@ -95,6 +103,7 @@ public class AgentToolSupport {
     }
 
     public boolean applyChapterVisibility(QueryWrapper<Chapter> query) {
+        if (isAdmin(UserContext.get())) return false;
         query.eq("status", Chapter.STATUS_NORMAL);
         List<Integer> courseIds = findVisibleCourseIds();
         if (courseIds == null) {
@@ -134,6 +143,13 @@ public class AgentToolSupport {
     public List<LearningProgress> listStudentProgress(Integer studentId, int maxItems) {
         Page<LearningProgress> page = new Page<>(1, maxItems);
         QueryWrapper<LearningProgress> query = new QueryWrapper<>();
+        if (isStudent(UserContext.get()) && !java.util.Objects.equals(UserContext.getCurrentUserId(), studentId))
+            throw new com.cupk.aiacademy.common.ForbiddenException("只能查询本人的学习记录");
+        if (AgentToolScope.courseId() != null) {
+            List<Integer> classes = findVisibleClassIds();
+            if (classes == null || classes.isEmpty()) return List.of();
+            query.in("class_id", classes);
+        }
         query.eq("student_id", studentId)
                 .orderByDesc("last_learn_time")
                 .orderByDesc("update_time")
@@ -198,11 +214,12 @@ public class AgentToolSupport {
     public List<Integer> findVisibleCourseIds() {
         AuthUtils.LoginUser user = UserContext.get();
         if (isStudent(user)) {
-            return findStudentCourseIds(user.getUserId());
+            return withinCourse(findStudentCourseIds(user.getUserId()));
         }
         if (isTeacher(user)) {
             QueryWrapper<Course> query = new QueryWrapper<>();
             query.eq("teacher_id", user.getUserId());
+            if (AgentToolScope.courseId() != null) query.eq("id", AgentToolScope.courseId());
             return courseMapper.selectList(query).stream()
                     .map(Course::getId)
                     .filter(id -> id != null && id > 0)
@@ -224,11 +241,16 @@ public class AgentToolSupport {
     public List<Integer> findVisibleClassIds() {
         AuthUtils.LoginUser user = UserContext.get();
         if (isStudent(user)) {
-            return findStudentClassIds(user.getUserId());
+            List<Integer> ids = findStudentClassIds(user.getUserId());
+            if (AgentToolScope.courseId() == null || ids.isEmpty()) return ids;
+            QueryWrapper<TeachingClass> query = new QueryWrapper<>();
+            query.in("id", ids).eq("course_id", AgentToolScope.courseId());
+            return teachingClassMapper.selectList(query).stream().map(TeachingClass::getId).toList();
         }
         if (isTeacher(user)) {
             QueryWrapper<TeachingClass> query = new QueryWrapper<>();
             query.eq("teacher_id", user.getUserId());
+            if (AgentToolScope.courseId() != null) query.eq("course_id", AgentToolScope.courseId());
             return teachingClassMapper.selectList(query).stream()
                     .map(TeachingClass::getId)
                     .filter(id -> id != null && id > 0)
@@ -248,7 +270,12 @@ public class AgentToolSupport {
     }
 
     public Lesson safeLesson(Integer lessonId) {
-        return lessonId == null ? null : lessonMapper.selectById(lessonId);
+        if (lessonId == null || isAdmin(UserContext.get())) return null;
+        Lesson lesson = lessonMapper.selectById(lessonId);
+        if (lesson == null) return null;
+        Chapter chapter = chapterMapper.selectById(lesson.getChapterId());
+        if (chapter == null || !findVisibleCourseIds().contains(chapter.getCourseId())) return null;
+        return lesson;
     }
 
     public boolean isStudent(AuthUtils.LoginUser user) {
@@ -280,18 +307,13 @@ public class AgentToolSupport {
         return limit(value.replaceAll("\\s+", " ").trim(), maxLength);
     }
 
+    private List<Integer> withinCourse(List<Integer> ids) {
+        Integer selected = AgentToolScope.courseId();
+        return selected == null ? ids : ids.stream().filter(selected::equals).toList();
+    }
+
     private List<Integer> findStudentCourseIds(Integer studentId) {
-        List<Integer> classIds = findStudentClassIds(studentId);
-        if (classIds.isEmpty()) {
-            return List.of();
-        }
-        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds);
-        return teachingClassMapper.selectList(query).stream()
-                .map(TeachingClass::getCourseId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
+        return permissionService == null ? List.of() : permissionService.studentCourseIds(studentId);
     }
 
     private List<Integer> findVisibleChapterIds() {
@@ -307,16 +329,7 @@ public class AgentToolSupport {
     }
 
     private List<Integer> findStudentClassIds(Integer studentId) {
-        if (studentId == null) {
-            return List.of();
-        }
-        QueryWrapper<ClassStudent> query = new QueryWrapper<>();
-        query.eq("student_id", studentId).eq("status", 1);
-        return classStudentMapper.selectList(query).stream()
-                .map(ClassStudent::getClassId)
-                .filter(id -> id != null && id > 0)
-                .distinct()
-                .toList();
+        return permissionService == null ? List.of() : permissionService.studentLearningClassIds(studentId);
     }
 
     private String cleanSearchTerm(String term) {

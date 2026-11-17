@@ -39,7 +39,7 @@
         </el-table-column>
         <el-table-column label="附件" width="90">
           <template #default="{ row }">
-            <el-link v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" type="primary">查看</el-link>
+            <el-link v-if="row.attachmentUrl" :href="resolveResourceUrl(row.attachmentUrl)" target="_blank" type="primary">查看</el-link>
             <span v-else>-</span>
           </template>
         </el-table-column>
@@ -107,7 +107,7 @@
                 <div class="el-upload__tip">可上传题目说明、模板、数据集或参考材料，单个文件不超过 100MB</div>
               </template>
             </el-upload>
-            <el-link v-if="form.attachmentUrl" :href="form.attachmentUrl" target="_blank" type="success">
+            <el-link v-if="form.attachmentUrl" :href="resolveResourceUrl(form.attachmentUrl)" target="_blank" type="success">
               {{ attachmentName || '查看已上传附件' }}
             </el-link>
           </div>
@@ -154,6 +154,7 @@ import { uploadHomeworkAttachment } from '@/api/homework'
 import request from '@/utils/request'
 import { getTeachingClasses } from '@/api/teachingClass'
 import { currentUserId, formatLocalDateTime, getRecords, getTotal, scopedTeacherParams } from '@/utils/apiHelpers'
+import { resolveResourceUrl } from '@/utils/backendUrl'
 
 const router = useRouter()
 const userStore = useUserStore()

@@ -53,14 +53,18 @@ public class SchemaDrivenReadToolPlanner {
             return "";
         }
 
-        return planAndExecute(userText.trim(), specs, false);
+        return planAndExecute(userText.trim(), specs, false).getToolContext();
     }
 
     public String planSelectedToolContext(AgentDefinition agent,
                                           String userText,
                                           String toolName) {
+        return planSelectedToolOutcome(agent, userText, toolName).getToolContext();
+    }
+
+    public AgentPlanningOutcome planSelectedToolOutcome(AgentDefinition agent, String userText, String toolName) {
         if (!properties.isEnabled() || agent == null || userText == null || userText.isBlank()) {
-            return "";
+            return AgentPlanningOutcome.chat();
         }
         List<String> enabledTools = configurationParser.parseEnabledTools(agent.getEnabledTools());
         AgentReadToolSpec selected = readToolCatalog.enabledSpecs(enabledTools).stream()
@@ -74,7 +78,7 @@ public class SchemaDrivenReadToolPlanner {
         return planAndExecute(userText.trim(), List.of(selected), true);
     }
 
-    private String planAndExecute(String userText,
+    private AgentPlanningOutcome planAndExecute(String userText,
                                   List<AgentReadToolSpec> specs,
                                   boolean selectedIntent) {
         LlmReadToolDecision decision = null;
@@ -88,6 +92,7 @@ public class SchemaDrivenReadToolPlanner {
             attempts = attempt + 1;
             try {
                 long startedNanos = System.nanoTime();
+                com.cupk.aiacademy.agent.kernel.AgentExecutionProgress.emit("MODEL_REQUEST", null);
                 decision = callModel(prompt);
                 log.info("Agent planner stage completed: stage=read_parameters, model={}, attempt={}, promptChars={}, elapsedMs={}",
                         properties.getModel(), attempt + 1, prompt.length(), elapsedMillis(startedNanos));
@@ -124,12 +129,12 @@ public class SchemaDrivenReadToolPlanner {
                     : exhausted
                     ? "查询条件校验已达到最大尝试次数（" + attempts + " 次）"
                     : "查询条件未通过校验";
-            return "[read_planner]\n未执行平台数据库查询；" + stage + "；原因=" + reason
-                    + "。请直接、简洁地告诉用户本次没有查询平台数据，以及需要补充或重试的内容。";
+            return AgentPlanningOutcome.read("[read_planner]\n未执行平台数据库查询；" + stage + "；原因=" + reason
+                    + "。请直接、简洁地告诉用户本次没有查询平台数据，以及需要补充或重试的内容。");
         }
         if (validation.isChat()) {
             log.info("Agent read planner selected CHAT");
-            return "";
+            return AgentPlanningOutcome.chat();
         }
         try {
             log.info("Agent read planner selected tool: {}", validation.getToolName());
@@ -138,13 +143,13 @@ public class SchemaDrivenReadToolPlanner {
                     validation.getNormalizedArguments()
             );
             if (result.isEmpty() || !result.get().hasContent()) {
-                return "[" + validation.getToolName() + "]\n工具未返回数据。";
+                return AgentPlanningOutcome.read("[" + validation.getToolName() + "]\n工具未返回数据。");
             }
-            return "[" + validation.getToolName() + "]\n" + result.get().content();
+            return AgentPlanningOutcome.readResult(result.get());
         } catch (Exception e) {
             log.warn("Model-selected read tool failed: tool={}, message={}",
                     validation.getToolName(), e.getMessage(), e);
-            return "[" + validation.getToolName() + "]\n平台数据查询失败，本次没有获取到最新数据。";
+            return AgentPlanningOutcome.read("[" + validation.getToolName() + "]\n平台数据查询失败，本次没有获取到最新数据。");
         }
     }
 

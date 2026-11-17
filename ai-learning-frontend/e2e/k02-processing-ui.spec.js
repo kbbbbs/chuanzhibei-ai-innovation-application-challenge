@@ -20,6 +20,7 @@ async function fixture(page, { state = 'OCR', empty = false, textSource = false,
   let activeJob = jobId
   let phase = state
   let cancelRequested = false
+  let savedEdits = []
   const document = () => ({
     id: docId, documentId: docId, jobId: activeJob, title: textSource ? '位置资料' : '扫描资料',
     file_name: textSource ? 'notes.md' : 'scan.pdf', mime_type: textSource ? 'text/markdown' : 'application/pdf',
@@ -39,15 +40,16 @@ async function fixture(page, { state = 'OCR', empty = false, textSource = false,
     failedPages: phase === 'PARTIAL' ? [2] : [], needsReviewPages: phase === 'PARTIAL' ? [2] : [],
     cancelRequested, errorCode: null,
   })
-  await page.route('**/api/**', async route => {
+  await page.route('**/backend/**', async route => {
     const request = route.request()
-    const path = new URL(request.url()).pathname
-    // Vite imports /src/api/*.js; those are application modules, not backend API requests.
-    if (!path.startsWith('/api/')) return route.continue()
+    const path = new URL(request.url()).pathname.replace(/^\/backend/, '')
     const isJson = request.headers()['content-type']?.includes('application/json')
     calls.push({ path, method: request.method(), body: isJson && request.postData() ? request.postDataJSON() : null,
       auth: request.headers().authorization, url: request.url() })
     const ok = data => route.fulfill({ json: { code: '200', data } })
+    if (path === '/courses/41') return ok({ id: 41, title: '课程处理测试', teacherId: 7, status: 2 })
+    if (path === '/api/rag/courses/41/knowledge-base') return ok({ id: kbId, name: 'K02处理测试库', owner_id: 7, course_id: 41, read_only: false, knowledge_count: uploaded ? 1 : 0 })
+
     if (path === '/api/rag/knowledge-bases') return ok([{ id: kbId, name: 'K02处理测试库', description: '合成资料', owner_id: 7, read_only: false, shared: false, knowledge_count: uploaded ? 1 : 0 }])
     if (path === `/api/rag/knowledge-bases/${kbId}/documents`) {
       if (request.method() === 'POST') {
@@ -90,56 +92,27 @@ async function fixture(page, { state = 'OCR', empty = false, textSource = false,
       phase = 'QUEUED'
       return ok({ ...document(), ...job() })
     }
-    if (path === `/api/rag/documents/${docId}/pages/1/review`) return ok({ ...document(), jobId: retriedJob })
     if (path === `/api/rag/documents/${docId}/reindex`) return ok(document())
+    if (path === `/api/rag/documents/${docId}/page-edits` && request.method() === 'POST') {
+      savedEdits = request.postDataJSON().edits.map((edit, index) => ({ id: index + 1, ...edit, state: 'SAVED', latest: true, savedAt: '2026-11-16T10:00:00' }))
+      return ok(savedEdits)
+    }
+    if (path === `/api/rag/documents/${docId}/page-edits`) return ok(savedEdits)
+    if (path === `/api/rag/documents/${docId}/page-edits/apply`) return ok(document())
     if (path.endsWith('/chunks')) return ok([])
     if (path.endsWith('/sessions')) return ok([])
     return ok([])
   })
-  await page.goto('/teacher-knowledge-base')
-  await expect(page.getByRole('tab', { name: '资料与出处' })).toBeVisible()
+  await page.goto('/courses/41?tab=materials')
+  await expect(page.getByRole('tab', { name: '课程资料' })).toBeVisible()
   return calls
 }
-
-test('owner can correct and confirm a page with the displayed revision', async ({ page }) => {
-  const calls = await fixture(page, { state: 'COMPLETED' })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
-  const review = page.getByTestId('document-page-review')
-  await review.getByRole('button', { name: '修改文本', exact: true }).click()
-  await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('教师修订后的文字')
-  await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()
-  await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)
-  expect(calls.find(call => call.path.endsWith('/pages/1/review')).body).toEqual({ version: 1, parseRevision: 1, text: '教师修订后的文字' })
-})
-
-test('processing pages cannot be edited or confirmed', async ({ page }) => {
-  await fixture(page, { state: 'OCR' })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
-  const review = page.getByTestId('document-page-review')
-  await expect(review.getByRole('button', { name: '修改文本', exact: true })).toBeDisabled()
-  await expect(review.getByRole('button', { name: '确认本页无误', exact: true })).toBeDisabled()
-})
-
-test('confirmation submits the displayed text and conflicts retain the correction', async ({ page }) => {
-  const calls = await fixture(page, { state: 'COMPLETED' })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
-  const review = page.getByTestId('document-page-review')
-  await review.getByRole('button', { name: '确认本页无误', exact: true }).click()
-  await expect.poll(() => calls.filter(call => call.path.endsWith('/pages/1/review')).length).toBe(1)
-  expect(calls.find(call => call.path.endsWith('/pages/1/review')).body.text).toBe('文字层标题\n识别正文')
-  await page.route(`**/api/rag/documents/${docId}/pages/1/review`, route => route.fulfill({ json: { code: '409', msg: '页面版本已改变，请刷新后重新核验' } }))
-  await review.getByRole('button', { name: '修改文本', exact: true }).click()
-  await review.getByRole('textbox', { name: '修订后的检索文本' }).fill('保留未保存的修订')
-  await review.getByRole('button', { name: '保存并确认本页', exact: true }).click()
-  await expect(review).toContainText('页面版本已改变')
-  await expect(review.getByRole('textbox', { name: '修订后的检索文本' })).toHaveValue('保留未保存的修订')
-})
 
 test('queued upload shows background work and cancellation never means parsed successfully', async ({ page }) => {
   const calls = await fixture(page, { empty: true })
   await expect(page.getByText('单文件20 MB，PDF/PPTX最多200页')).toBeVisible()
   await page.locator('input[type=file]').setInputFiles({ name: 'scan.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-UI-fixture-only') })
-  await expect(page.getByText('资料已上传，等待后台处理')).toBeVisible()
+  await expect(page.locator('.upload-queue')).toContainText('已上传')
   const status = page.getByTestId(`processing-status-${docId}`)
   await expect(status).toContainText('正在识别图中文字')
   await expect(status).not.toContainText('解析完成')
@@ -154,7 +127,7 @@ test('partial processing preserves missing pages and authenticates page review b
   const status = page.getByTestId(`processing-status-${docId}`)
   await expect(status).toContainText('部分可用')
   await expect(status).toContainText('缺失页：2')
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review')
   await expect(review).toContainText('原页与提取结果')
   await expect(review.getByAltText('原始页面预览')).toBeVisible()
@@ -181,7 +154,7 @@ test('parse retry is separate from vector rebuilding and does not hide a partial
 
 test('text sources display character positions and do not fabricate PDF pages or previews', async ({ page }) => {
   const calls = await fixture(page, { state: 'COMPLETED', textSource: true })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review')
   await expect(review).toContainText('字符 0–23')
   await expect(review).toContainText('Text section.')
@@ -192,7 +165,7 @@ test('text sources display character positions and do not fabricate PDF pages or
 
 test('replacement review reads the pending source version instead of the previously active original', async ({ page }) => {
   const calls = await fixture(page, { state: 'OCR', pendingReplacement: true })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review')
   await expect(review).toContainText('PENDING_VERSION_CONTENT')
   await expect(review).not.toContainText('OLD_VERSION_CONTENT')
@@ -204,7 +177,7 @@ test('replacement review reads the pending source version instead of the previou
 
 test('formula review shows local math rendering, provenance and incomplete source without claiming correctness', async ({ page }) => {
   await fixture(page, { state: 'PARTIAL', formula: true })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   const review = page.getByTestId('document-page-review')
   await expect(review.getByTestId('formula-1').locator('.katex')).toHaveCount(1)
   await expect(review).toContainText('不代表数学内容正确')
@@ -218,6 +191,57 @@ test('formula review shows local math rendering, provenance and incomplete sourc
 
 test('legacy parsing results visibly require a new formula check', async ({ page }) => {
   await fixture(page, { state: 'COMPLETED' })
-  await page.getByRole('button', { name: '逐页核验', exact: true }).click()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
   await expect(page.getByTestId('formula-review')).toContainText('旧解析结果尚未检查公式')
+})
+
+test('page text edits are kept locally, saved without reindexing, and applied only on request', async ({ page }) => {
+  const calls = await fixture(page, { state: 'COMPLETED' })
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
+  const review = page.getByTestId('document-page-review')
+  await expect(review).toContainText('识别出的文字已自动用于检索')
+  await review.getByTestId('edit-page-text').click()
+  await review.getByTestId('page-text-editor').fill('人工修正后的第一页正文')
+  await expect(review.getByTestId('page-edit-bar')).toContainText('1 页有未保存的修改')
+  // A closed drawer or refresh must not lose unsaved text.
+  await page.reload()
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
+  await expect(review.getByTestId('page-text-editor')).toHaveValue('人工修正后的第一页正文')
+  await review.getByRole('button', { name: '保存修改', exact: true }).click()
+  await expect(review.getByTestId('page-edit-bar')).toContainText('已保存 1 页修改，检索仍使用原内容')
+  expect(calls.find(call => call.path.endsWith('/page-edits') && call.method === 'POST').body).toEqual({ version: 1, edits: [{ pageNo: 1, text: '人工修正后的第一页正文' }] })
+  expect(calls.some(call => call.path.endsWith('/apply') || call.path.endsWith('/parse-retry') || call.path.endsWith('/reindex'))).toBe(false)
+  await expect(review).toContainText('已修改 · 检索未更新')
+  await review.getByRole('button', { name: '更新检索内容', exact: true }).click()
+  await expect.poll(() => calls.filter(call => call.path.endsWith('/page-edits/apply')).length).toBe(1)
+})
+
+ test('page text defaults to formatted preview and edits only on request', async ({ page }) => {
+  await fixture(page, { state: 'COMPLETED', textSource: true })
+  await page.getByRole('button', { name: '查看与修改', exact: true }).click()
+  await expect(page.getByTestId('page-text-preview').getByRole('heading', { name: 'Heading' })).toBeVisible()
+  await expect(page.getByTestId('page-text-editor')).toHaveCount(0)
+  await page.getByTestId('edit-page-text').click()
+  await expect(page.getByRole('textbox', { name: '修改本页文字' })).toHaveValue('# Heading\nText section.')
+  await page.getByRole('textbox', { name: '修改本页文字' }).fill('# Revised\nSaved text')
+  await page.getByRole('button', { name: '保存修改', exact: true }).click()
+  await expect(page.getByTestId('page-text-preview').getByRole('heading', { name: 'Revised' })).toBeVisible()
+  await expect(page.getByTestId('page-text-editor')).toHaveCount(0)
+})
+
+test('document source displays original pages instead of extracted chunks', async ({ page }) => {
+  const calls = await fixture(page, { state: 'COMPLETED' })
+  await page.getByRole('button', { name: '查看出处', exact: true }).click()
+  await expect(page.getByTestId('source-page-image')).toBeVisible()
+  await page.getByRole('button', { name: '下一页', exact: true }).click()
+  await expect.poll(() => calls.some(c => c.path.endsWith('/pages/2/preview'))).toBe(true)
+  await expect(page.locator('.document-chunk')).toHaveCount(0)
+})
+
+test('unpaged originals offer download without fabricating a page image', async ({ page }) => {
+  const calls = await fixture(page, { state: 'COMPLETED', textSource: true })
+  await page.getByRole('button', { name: '查看出处', exact: true }).click()
+  await expect(page.getByText('该资料没有可预览的原页图片，请下载原始文件查看')).toBeVisible()
+  await expect(page.getByRole('button', { name: '下载原始文件', exact: true })).toBeVisible()
+  expect(calls.some(c => c.path.endsWith('/preview'))).toBe(false)
 })

@@ -55,6 +55,9 @@ public class CourseDto {
 
     private Boolean publishNotice = false;
 
+    @Size(max = 100)
+    private String creationKey;
+
     public Course toEntity() {
         Course course = new Course();
         course.setTitle(title);

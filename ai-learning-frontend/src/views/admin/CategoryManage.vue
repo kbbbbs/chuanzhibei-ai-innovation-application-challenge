@@ -1,14 +1,13 @@
 <template>
-  <div class="category-manage">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>分类管理</span>
-          <el-button type="primary" @click="handleCreate">新增分类</el-button>
-        </div>
+  <div class="category-manage workspace-page workspace-page--narrow">
+    <PageHeader eyebrow="教学运营" title="分类管理" description="维护课程分类。分类被课程引用时，删除结果以服务端返回为准。">
+      <template #actions>
+        <el-button type="primary" @click="handleCreate">新增分类</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
+    <section class="filter-panel" aria-label="筛选分类">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
         <el-form-item label="关键词">
           <el-input v-model="searchForm.keyword" placeholder="请输入分类名称或描述" clearable @keyup.enter="handleSearch" />
         </el-form-item>
@@ -17,23 +16,34 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="categories" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      title="分类列表未加载"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadCategories"
+    />
+
+    <section v-else class="table-panel" aria-label="分类列表">
+      <el-table :data="categories" stripe v-loading="loading">
         <template #empty><AppEmpty /></template>
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="name" label="分类名称" />
-        <el-table-column prop="description" label="描述" />
-<!--        <el-table-column prop="sortOrder" label="排序" width="100" />-->
-        <el-table-column label="操作" width="200" fixed="right">
+        <el-table-column prop="name" label="分类名称" min-width="160" />
+        <el-table-column prop="description" label="描述" min-width="220" />
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 200" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button size="small" type="danger" :loading="loading" @click="handleDelete(row)">删除</el-button>
+            <RowActions :label="row.name || `分类 ${row.id}`">
+              <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button size="small" type="danger" :loading="loading" @click="handleDelete(row)">删除</el-button>
+            </RowActions>
           </template>
         </el-table-column>
       </el-table>
 
       <el-pagination
-        class="pagination"
         v-model:current-page="pagination.pageNum"
         v-model:page-size="pagination.pageSize"
         :total="filteredCategories.length"
@@ -41,20 +51,17 @@
         layout="total, sizes, prev, pager, next, jumper"
         @size-change="handleSizeChange"
       />
-    </el-card>
+    </section>
 
     <!-- Form Dialog -->
     <el-dialog v-model="dialogVisible" :title="form.id ? '编辑分类' : '新增分类'" width="500px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-position="top">
         <el-form-item label="分类名称" prop="name">
           <el-input v-model="form.name" />
         </el-form-item>
         <el-form-item label="描述">
           <el-input v-model="form.description" type="textarea" :rows="3" />
         </el-form-item>
-<!--        <el-form-item label="排序">-->
-<!--          <el-input-number v-model="form.sortOrder" :min="1" />-->
-<!--        </el-form-item>-->
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -70,14 +77,22 @@ import { ElMessage } from 'element-plus'
 import request from '@/utils/request'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { paginateRecords } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
+import { paginateRecords, requireSuccess } from '@/utils/apiHelpers'
 
 const { confirmDelete } = useConfirm()
 
 const formRef = ref(null)
+const narrow = useNarrowScreen()
 
 const allCategories = ref([])
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  allCategories.value = []
+})
 const dialogVisible = ref(false)
 
 const searchForm = reactive({
@@ -111,20 +126,12 @@ const rules = {
   name: [{ required: true, message: '请输入分类名称', trigger: 'blur' }]
 }
 
-const loadCategories = async () => {
-  loading.value = true
-  try {
-    const res = await request.get('/categories')
-    if (res.code === '200') {
-      allCategories.value = Array.isArray(res.data) ? res.data : []
-      normalizePage()
-    }
-  } catch (err) {
-    // 全局已提示
-  } finally {
-    loading.value = false
-  }
-}
+const loadCategories = () => guarded(async (isCurrent) => {
+  const res = requireSuccess(await request.get('/categories'))
+  if (!isCurrent()) return
+  allCategories.value = Array.isArray(res.data) ? res.data : []
+  normalizePage()
+})
 
 const normalizePage = () => {
   const maxPage = Math.max(1, Math.ceil(filteredCategories.value.length / pagination.pageSize))
@@ -207,20 +214,3 @@ onMounted(() => {
   loadCategories()
 })
 </script>
-
-<style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pagination {
-  margin-top: 20px;
-  justify-content: center;
-}
-
-.search-form {
-  margin-bottom: 16px;
-}
-</style>

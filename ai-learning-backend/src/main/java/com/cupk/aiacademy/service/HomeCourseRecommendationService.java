@@ -53,10 +53,9 @@ public class HomeCourseRecommendationService {
         }
 
         Map<Integer, TeachingClass> studentClasses = studentClassesByCourse(UserContext.getCurrentUserId());
-        Map<Integer, TeachingClass> publicClasses = activeClassesByCourse(items);
         items.forEach(item -> {
             TeachingClass enrolledClass = studentClasses.get(item.getCourseId());
-            item.setJoinable(publicClasses.containsKey(item.getCourseId()));
+            item.setJoinable(false);
             item.setEnrolled(enrolledClass != null);
             if (enrolledClass != null) {
                 applyStudentClass(item, enrolledClass);
@@ -79,43 +78,14 @@ public class HomeCourseRecommendationService {
             throw new BusinessException("该课程不是可加入的首页公共课");
         }
 
-        List<TeachingClass> publicClasses = teachingClassMapper.selectList(new QueryWrapper<TeachingClass>()
-                .eq("course_id", courseId)
-                .eq("status", 1)
-                .orderByAsc("id"));
-        if (publicClasses.isEmpty()) {
-            throw new BusinessException("该公共课暂未开放教学班，请联系管理员");
-        }
-
-        List<Integer> classIds = publicClasses.stream().map(TeachingClass::getId).toList();
-        ClassStudent existing = classStudentMapper.selectOne(new QueryWrapper<ClassStudent>()
-                .in("class_id", classIds)
-                .eq("student_id", studentId)
-                .orderByDesc("status")
-                .orderByAsc("id")
-                .last("LIMIT 1"));
-        TeachingClass teachingClass;
-        if (existing != null) {
-            if (!Integer.valueOf(1).equals(existing.getStatus())) {
-                throw new BusinessException("该课程的教学班成员状态已停用，请联系任课教师");
-            }
-            teachingClass = publicClasses.stream()
-                    .filter(item -> Objects.equals(item.getId(), existing.getClassId()))
-                    .findFirst()
-                    .orElse(publicClasses.get(0));
-        } else {
-            teachingClass = publicClasses.get(0);
-            ClassStudent membership = new ClassStudent();
-            membership.setClassId(teachingClass.getId());
-            membership.setStudentId(studentId);
-            membership.setJoinTime(LocalDateTime.now());
-            membership.setStatus(1);
-            classStudentMapper.insert(membership);
+        TeachingClass teachingClass = studentClassesByCourse(studentId).get(courseId);
+        if (teachingClass == null) {
+            throw new com.cupk.aiacademy.common.ForbiddenException("请联系管理员加入已开放的教学班");
         }
 
         HomeCourseRecommendationVO view = toView(recommendation, course);
         view.setEnrolled(true);
-        view.setJoinable(true);
+        view.setJoinable(false);
         applyStudentClass(view, teachingClass);
         return view;
     }
@@ -226,26 +196,12 @@ public class HomeCourseRecommendationService {
     }
 
     private Map<Integer, TeachingClass> studentClassesByCourse(Integer studentId) {
-        List<Integer> classIds = permissionService.studentClassIds(studentId);
+        List<Integer> classIds = permissionService.studentLearningClassIds(studentId);
         if (classIds.isEmpty()) return Map.of();
         QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("id", classIds).eq("status", 1).orderByDesc("id");
+        query.in("id", classIds).eq("status", 1).eq("course_open", true).orderByDesc("id");
         return teachingClassMapper.selectList(query).stream()
-                .filter(item -> item.getCourseId() != null)
-                .collect(Collectors.toMap(TeachingClass::getCourseId, Function.identity(), (first, ignored) -> first));
-    }
-
-    private Map<Integer, TeachingClass> activeClassesByCourse(List<HomeCourseRecommendationVO> items) {
-        List<Integer> courseIds = items.stream()
-                .map(HomeCourseRecommendationVO::getCourseId)
-                .filter(Objects::nonNull)
-                .distinct()
-                .toList();
-        if (courseIds.isEmpty()) return Map.of();
-        QueryWrapper<TeachingClass> query = new QueryWrapper<>();
-        query.in("course_id", courseIds).eq("status", 1).orderByAsc("id");
-        return teachingClassMapper.selectList(query).stream()
-                .filter(item -> item.getCourseId() != null)
+                .filter(item -> item.getCourseId() != null && Boolean.TRUE.equals(item.getCourseOpen()))
                 .collect(Collectors.toMap(TeachingClass::getCourseId, Function.identity(), (first, ignored) -> first));
     }
 

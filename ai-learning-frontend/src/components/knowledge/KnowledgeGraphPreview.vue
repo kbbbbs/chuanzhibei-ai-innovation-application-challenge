@@ -60,6 +60,7 @@ import { VueFlow } from '@vue-flow/core'
 import '@vue-flow/core/dist/style.css'
 import '@vue-flow/core/dist/theme-default.css'
 import * as kbApi from '@/api/knowledgeBase'
+import { renderWikiMarkdown } from '@/utils/wikiMarkdown'
 
 const props = defineProps({
   kbId: { type: String, default: '' },
@@ -190,7 +191,7 @@ const flowEdges = computed(() => {
       id: edge.id,
       source: edge.source,
       target: edge.target,
-      style: { stroke: '#94a3b8', strokeWidth: 1 }
+      style: { stroke: 'var(--line-strong)', strokeWidth: 1 }
     }))
 })
 
@@ -249,22 +250,6 @@ async function handleNodeClick({ node }) {
   }
 }
 
-function renderWikiMarkdown(content) {
-  if (!content) return ''
-  return content
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-    .replace(/^### (.+)$/gm, '<h4>$1</h4>')
-    .replace(/^## (.+)$/gm, '<h3>$1</h3>')
-    .replace(/^# (.+)$/gm, '<h2>$1</h2>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank">$1</a>')
-    .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '<span class="wiki-link">$2</span>')
-    .replace(/\[\[([^\]]+)\]\]/g, '<span class="wiki-link">$1</span>')
-    .replace(/\n\n/g, '</p><p>')
-    .replace(/\n/g, '<br>')
-    .replace(/^/, '<p>').replace(/$/, '</p>')
-}
-
 function emitLoaded() {
   emit('loaded', {
     enabled: graphEnabled.value,
@@ -297,22 +282,23 @@ watch(() => [props.kbId, props.refreshKey], loadGraph, { immediate: true })
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #1f2937;
+  color: var(--text-strong);
 }
 
 .graph-preview-stats {
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #64748b;
+  color: var(--text-subtle);
   font-size: 12px;
 }
 
 .graph-preview-stage {
   height: 320px;
-  border-radius: 16px;
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-md);
   overflow: hidden;
-  background: linear-gradient(180deg, #f8fbff 0%, #f3f6fb 100%);
+  background: var(--surface-canvas);
 }
 
 .graph-preview-flow {
@@ -341,29 +327,29 @@ watch(() => [props.kbId, props.refreshKey], loadGraph, { immediate: true })
   border: none;
   border-radius: 6px;
   padding: 3px 8px;
-  background: #2563eb;
-  color: #ffffff;
+  background: var(--accent-solid);
+  color: #fff;
   font-size: 10px;
   font-weight: 600;
   text-align: center;
-  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.10);
+  box-shadow: var(--shadow-1);
   cursor: pointer;
 }
 
 :deep(.vue-flow__edge-textbg) {
-  fill: rgba(255, 255, 255, 0.92);
+  fill: var(--surface-base);
 }
 
 .wiki-page-body {
   line-height: 1.8;
   font-size: 14px;
-  color: #303133;
+  color: var(--text-body);
 }
 
 .wiki-page-body h2 { font-size: 18px; margin: 16px 0 8px; }
 .wiki-page-body h3 { font-size: 16px; margin: 14px 0 6px; }
 .wiki-page-body h4 { font-size: 14px; margin: 12px 0 6px; }
 .wiki-page-body p { margin: 8px 0; }
-.wiki-page-body strong { color: #1f2937; }
-.wiki-page-body .wiki-link { color: #3b82f6; text-decoration: underline; cursor: pointer; }
+.wiki-page-body strong { color: var(--text-strong); }
+.wiki-page-body .wiki-link { color: var(--accent); text-decoration: underline; cursor: pointer; }
 </style>

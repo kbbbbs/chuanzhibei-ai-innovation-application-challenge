@@ -60,10 +60,17 @@ public class CourseController {
     @Autowired
     private RelatedNoticeService relatedNoticeService;
 
+    @Autowired
+    private com.cupk.aiacademy.rag.CourseKnowledgeService courseKnowledge;
+
+    @Autowired
+    private com.cupk.aiacademy.service.CourseLifecycleService lifecycle;
+
     @GetMapping
     public Result pages(@RequestParam(defaultValue = "") String title,
                         @RequestParam(required = false) Integer categoryId,
                         @RequestParam(required = false) Integer teacherId,
+                        @RequestParam(required = false) String box,
                         @RequestParam(defaultValue = "1") Integer pageNum,
                         @RequestParam(defaultValue = "5") Integer pageSize) {
         pageNum = pageNum == null || pageNum <= 0 ? 1 : pageNum;
@@ -82,11 +89,18 @@ public class CourseController {
             queryWrapper.eq("teacher_id", loginUser.getUserId());
         } else if (authUtils.isStudent(loginUser)) {
             queryWrapper.eq("status", 1);
+            var ids = permissionService.studentCourseIds(loginUser.getUserId());
+            if (ids.isEmpty()) return Result.success(page);
+            queryWrapper.in("id", ids);
         } else if (teacherId != null && teacherId > 0) {
             queryWrapper.eq("teacher_id", teacherId);
         }
+        if ("drafts".equals(box)) queryWrapper.ne("setup_stage", "COMPLETED");
+        else if ("completed".equals(box)) queryWrapper.eq("setup_stage", "COMPLETED");
+        else if (box != null && !"all".equals(box)) return Result.error("400", "课程列表范围无效");
         queryWrapper.orderByDesc("id");
         courseMapper.selectPage(page, queryWrapper);
+        page.getRecords().forEach(course -> course.setStudentCount(lifecycle.studentCount(course.getId())));
         return Result.success(page);
     }
 
@@ -105,19 +119,53 @@ public class CourseController {
     @GetMapping("/{id}")
     public Result selectById(@PathVariable Integer id) {
         Course course = courseMapper.selectById(id);
-        AuthUtils.LoginUser actor = UserContext.get();
-        if (course == null || (actor != null && "student".equals(actor.getRoleCode())
-                && !Integer.valueOf(1).equals(course.getStatus()))) {
-            return Result.error("404", "课程不存在");
-        }
+        if (course == null) return Result.error("404", "课程不存在");
+        course.setStudentCount(lifecycle.studentCount(id));
+        if (permissionService.isAdmin()) return Result.success(course);
+        permissionService.requireCourseContentRead(id);
         return Result.success(course);
+    }
+
+    @GetMapping("/{id}/setup")
+    public Result setup(@PathVariable Integer id) { return Result.success(lifecycle.setup(id)); }
+
+    @PutMapping("/{id}/setup")
+    public Result saveSetup(@PathVariable Integer id,@RequestBody com.cupk.aiacademy.service.CourseLifecycleService.SetupRequest request) {
+        return Result.success(lifecycle.saveSetup(id,request));
+    }
+
+    @PostMapping("/{id}/complete")
+    public Result complete(@PathVariable Integer id,@RequestBody com.cupk.aiacademy.service.CourseLifecycleService.VersionRequest request) {
+        return Result.success(lifecycle.complete(id,request));
+    }
+
+    @GetMapping("/{id}/publication")
+    public Result publication(@PathVariable Integer id) { return Result.success(lifecycle.publication(id)); }
+
+    @PostMapping("/{id}/publish")
+    public Result publish(@PathVariable Integer id,@RequestBody com.cupk.aiacademy.service.CourseLifecycleService.PublishRequest request) {
+        return Result.success(lifecycle.publish(id,request));
+    }
+
+    @PutMapping("/{id}/publication")
+    public Result changePublication(@PathVariable Integer id,@RequestBody com.cupk.aiacademy.service.CourseLifecycleService.PublishRequest request) {
+        return Result.success(lifecycle.updatePublication(id,request));
     }
 
     @Transactional
     @PostMapping
     public Result add(@Valid @RequestBody CourseDto request) {
-        permissionService.requireTeacherOrAdmin();
+        if (!permissionService.isTeacher()) return Result.error("403", "仅教师可新建课程");
+        if (courseKnowledge != null) {
+            courseKnowledge.lockCreationOwner();
+            Integer existing = courseKnowledge.createdCourse(request.getCreationKey());
+            if (existing != null) return Result.success(courseKnowledge.creationResult(existing));
+        }
         Course course = request.toEntity();
+        course.setStatus(2);
+        course.setSetupStage("MATERIALS");
+        course.setWorkflowVersion(0L);
+        request.setPublishNotice(false);
         applyCourseTeacher(course, null);
         Result checkResult = checkCourse(course);
         if (checkResult != null) {
@@ -133,7 +181,9 @@ public class CourseController {
             return Result.error();
         }
         publishCourseNoticeIfRequested(request, course);
-        return Result.success();
+        if (courseKnowledge == null) return Result.success();
+        courseKnowledge.rememberCreation(request.getCreationKey(), course.getId());
+        return Result.success(courseKnowledge.creationResult(course.getId()));
     }
 
     @Transactional
@@ -141,7 +191,7 @@ public class CourseController {
     public Result addWithOutline(@RequestPart("course") String courseJson,
                                  @RequestPart(value = "file", required = false) MultipartFile singleFile,
                                  @RequestPart(value = "files", required = false) List<MultipartFile> files) {
-        permissionService.requireTeacherOrAdmin();
+        if (!permissionService.isTeacher()) return Result.error("403", "仅教师可新建课程");
 
         CourseDto request;
         try {
@@ -154,6 +204,11 @@ public class CourseController {
         }
 
         Course course = request.toEntity();
+        course.setStatus(2);
+        course.setSetupStage("CONTENT");
+        course.setContentMode("IMPORT");
+        course.setWorkflowVersion(0L);
+        request.setPublishNotice(false);
         applyCourseTeacher(course, null);
         Result checkResult = checkCourse(course);
         if (checkResult != null) {
@@ -184,7 +239,7 @@ public class CourseController {
     @Transactional
     @PutMapping("/{id}")
     public Result update(@PathVariable Integer id, @Valid @RequestBody CourseDto request) {
-        Course course = courseMapper.selectById(id);
+        Course course = lifecycle.basicForUpdate(id);
         if (course == null) {
             return Result.error("404", "课程不存在");
         }
@@ -192,6 +247,13 @@ public class CourseController {
         permissionService.requireCourseTeacher(course);
 
         Course newCourse = request.toEntity();
+        newCourse.setStatus(course.getStatus());
+        newCourse.setTeacherId(course.getTeacherId());
+        newCourse.setStudentCount(course.getStudentCount());
+        newCourse.setViewCount(course.getViewCount());
+        newCourse.setRating(course.getRating());
+        newCourse.setWorkflowVersion(course.getWorkflowVersion() + 1);
+        request.setPublishNotice(false);
         applyCourseTeacher(newCourse, course);
         Result checkResult = checkCourse(newCourse);
         if (checkResult != null) {
@@ -210,29 +272,31 @@ public class CourseController {
         return Result.success();
     }
 
+    @Transactional
     @DeleteMapping("/{id}")
     public Result delete(@PathVariable Integer id) {
-        Course course = courseMapper.selectById(id);
+        Course course = lifecycle.basicForUpdate(id);
         if (course == null) {
             return Result.error("404", "课程不存在");
         }
 
         permissionService.requireCourseTeacher(course);
+        lifecycle.requireDeletable(id);
 
+        if (courseKnowledge != null) {
+            if (permissionService.isAdmin()) {
+                lifecycle.archiveLibrary(id);
+            } else courseKnowledge.archive(id);
+        }
+        lifecycle.deleteCourseClasses(id);
         int row = courseMapper.deleteById(id);
         return row > 0 ? Result.success() : Result.error();
     }
 
     @PutMapping("/{id}/enable")
-    public Result enable(@PathVariable Integer id) {
-        Course course = courseMapper.selectById(id);
-        if (course == null) {
-            return Result.error("404", "课程不存在");
-        }
-        permissionService.requireCourseTeacher(course);
-        course.setStatus(1);
-        course.setUpdatedAt(LocalDateTime.now());
-        return courseMapper.updateById(course) > 0 ? Result.success() : Result.error();
+    public Result enable(@PathVariable Integer id,@RequestBody(required = false) com.cupk.aiacademy.service.CourseLifecycleService.PublishRequest request) {
+        if (request == null) return Result.error("400", "请先选择教学班后发布课程");
+        return Result.success(lifecycle.publish(id,request));
     }
 
     @PutMapping("/{id}/view")

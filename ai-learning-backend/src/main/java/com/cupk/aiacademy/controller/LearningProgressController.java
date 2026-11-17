@@ -65,9 +65,6 @@ public class LearningProgressController {
         if (authUtils.isStudent(user)) {
             queryWrapper.eq("student_id", user.getUserId());
             if (classId != null && classId > 0) {
-                if (!permissionService.isStudentInClass(classId, user.getUserId())) {
-                    return Result.success(page);
-                }
                 queryWrapper.eq("class_id", classId);
             }
         } else if (authUtils.isTeacher(user)) {
@@ -141,6 +138,8 @@ public class LearningProgressController {
                 return Result.error("403", "只能修改自己的学习进度");
             }
             preserveProgressIdentity(progress, old);
+            Result identityCheck = checkProgress(progress);
+            if (identityCheck != null) return identityCheck;
         } else {
             permissionService.requireAdmin();
         }
@@ -220,9 +219,7 @@ public class LearningProgressController {
         if (chapter == null || !teachingClass.getCourseId().equals(chapter.getCourseId())) {
             return Result.error("400", "课时不属于教学班课程");
         }
-        if (!permissionService.isStudentInClass(progress.getClassId(), progress.getStudentId())) {
-            return Result.error("400", "学生未加入该教学班");
-        }
+        permissionService.requireStudentLearningClass(progress.getClassId(), chapter.getCourseId(), progress.getStudentId());
         if (progress.getProgress() != null && (progress.getProgress() < 0 || progress.getProgress() > 100)) {
             return Result.error("400", "学习进度应在0到100之间");
         }

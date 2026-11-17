@@ -45,12 +45,15 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public AgentActionExecutionResult execute(AgentActionExecutionContext context) {
         AuthUtils.LoginUser user = context.user();
         requireTeacherOrAdmin(user);
 
         Map<String, Object> parameters = context.parameters();
         Course course = resolveCourse(parameters);
+        course = courseMapper.selectForUpdate(course.getId());
+        if (course == null) throw new BusinessException("课程不存在");
         if (!isAdmin(user) && (course.getTeacherId() == null || !course.getTeacherId().equals(user.getUserId()))) {
             throw new BusinessException("只能修改当前登录教师负责的课程");
         }
@@ -62,6 +65,7 @@ public class CourseUpdateActionExecutor implements AgentActionExecutor {
         }
 
         course.setUpdatedAt(LocalDateTime.now());
+        course.setWorkflowVersion(course.getWorkflowVersion() == null ? 1L : course.getWorkflowVersion() + 1);
         int row = courseMapper.updateById(course);
         if (row <= 0) {
             throw new BusinessException("修改课程失败");

@@ -25,6 +25,11 @@ public class MybatisAgentPendingActionStore implements AgentPendingActionStore {
     private static final TypeReference<Map<String, Object>> MAP_TYPE = new TypeReference<>() {
     };
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private AgentActionSafetyService safety;
+    @org.springframework.beans.factory.annotation.Autowired
+    private org.springframework.beans.factory.ObjectProvider<AgentActionPreExecutionValidator> validatorProvider;
+
     private final AgentPendingActionMapper pendingActionMapper;
     private final ObjectMapper objectMapper;
 
@@ -35,20 +40,27 @@ public class MybatisAgentPendingActionStore implements AgentPendingActionStore {
     }
 
     @Override
+    @org.springframework.transaction.annotation.Transactional
     public AgentPendingAction create(String actionCode, Integer createdBy, Map<String, Object> parameters, Duration ttl) {
         LocalDateTime now = LocalDateTime.now();
         Duration effectiveTtl = ttl == null || ttl.isNegative() || ttl.isZero() ? DEFAULT_TTL : ttl;
+        Map<String,Object> reviewed = new LinkedHashMap<>(parameters == null ? Map.of() : parameters);
+        if (validatorProvider != null) {
+            AgentActionPreExecutionValidator validator = validatorProvider.getIfAvailable();
+            if (validator != null) reviewed.putAll(validator.validateAndNormalize(actionCode, reviewed));
+        }
         AgentPendingAction action = new AgentPendingAction(
                 UUID.randomUUID().toString(),
                 actionCode,
                 createdBy,
-                parameters,
+                reviewed,
                 now,
                 now.plus(effectiveTtl)
         );
 
         AgentPendingActionEntity entity = toEntity(action);
         pendingActionMapper.insert(entity);
+        if (safety != null) safety.register(action);
         return action;
     }
 
@@ -67,6 +79,27 @@ public class MybatisAgentPendingActionStore implements AgentPendingActionStore {
             pendingActionMapper.deleteById(actionId.trim());
         }
     }
+
+    @Override
+    public void bindToSession(String actionId, Integer sessionId, Integer courseId) {
+        safety.bind(actionId, sessionId, courseId);
+    }
+
+    @Override
+    public Optional<AgentActionExecutionResult> lockAndReadResult(String actionId, Integer ownerId) {
+        return safety.lockAndReadResult(actionId, ownerId);
+    }
+
+    @Override
+    public void validateTargets(AgentPendingAction action) { safety.validateTargets(action); }
+
+    @Override
+    public void validateExecutionParameters(AgentPendingAction action, Map<String,Object> parameters) {
+        safety.validateExecutionParameters(action, parameters);
+    }
+
+    @Override
+    public void completed(String actionId, AgentActionExecutionResult result) { safety.completed(actionId, result); }
 
     private AgentPendingActionEntity toEntity(AgentPendingAction action) {
         AgentPendingActionEntity entity = new AgentPendingActionEntity();

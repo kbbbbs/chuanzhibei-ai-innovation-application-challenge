@@ -70,6 +70,8 @@ public class NativeRagController {
         return service.revokeDocumentGrant(id,courseId,version);
     }
 
+    @GetMapping("/courses/{courseId}/materials")
+    public Result courseMaterials(@PathVariable Integer courseId) { return service.courseMaterials(courseId); }
     @GetMapping("/courses/{courseId}/documents/{id}/versions/{version}")
     public Result courseContent(@PathVariable Integer courseId,@PathVariable String id,@PathVariable int version) {
         return service.courseContent(courseId,id,version);
@@ -85,6 +87,11 @@ public class NativeRagController {
 
     @GetMapping("/documents/{id}/chunks")
     public Result chunks(@PathVariable String id) { return service.chunks(id); }
+
+    @GetMapping("/courses/{courseId}/chunks/{id}")
+    public Result courseChunk(@PathVariable Integer courseId, @PathVariable String id) {
+        return service.courseChunk(courseId, id);
+    }
 
     @GetMapping("/chunks/{id}")
     public Result chunk(@PathVariable String id) { return service.chunk(id); }

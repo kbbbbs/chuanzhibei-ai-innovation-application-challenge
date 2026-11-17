@@ -49,7 +49,7 @@
             </el-table-column>
             <el-table-column label="附件" width="90">
               <template #default="{ row }">
-                <el-link v-if="row.attachmentUrl" :href="row.attachmentUrl" target="_blank" type="primary">查看</el-link>
+                <el-link v-if="row.attachmentUrl" :href="resolveResourceUrl(row.attachmentUrl)" target="_blank" type="primary">查看</el-link>
                 <span v-else>-</span>
               </template>
             </el-table-column>
@@ -87,7 +87,7 @@
           {{ currentHomework.deadline ? new Date(currentHomework.deadline).toLocaleString() : '-' }}
         </el-descriptions-item>
         <el-descriptions-item label="附件" v-if="currentHomework.attachmentUrl">
-          <el-link :href="currentHomework.attachmentUrl" target="_blank">查看附件</el-link>
+          <el-link :href="resolveResourceUrl(currentHomework.attachmentUrl)" target="_blank">查看附件</el-link>
         </el-descriptions-item>
       </el-descriptions>
 
@@ -115,7 +115,7 @@
                 <div class="el-upload__tip">支持文档、表格、压缩包、图片和视频，单个文件不超过 100MB</div>
               </template>
             </el-upload>
-            <el-link v-if="submitForm.attachmentUrl" :href="submitForm.attachmentUrl" target="_blank" type="success">
+            <el-link v-if="submitForm.attachmentUrl" :href="resolveResourceUrl(submitForm.attachmentUrl)" target="_blank" type="success">
               {{ submitAttachmentName || '查看已上传附件' }}
             </el-link>
           </div>
@@ -137,7 +137,7 @@
         </el-descriptions-item>
         <el-descriptions-item label="我的答案">{{ currentSubmission.submitContent }}</el-descriptions-item>
         <el-descriptions-item label="附件" v-if="currentSubmission.attachmentUrl">
-          <el-link :href="currentSubmission.attachmentUrl" target="_blank">查看附件</el-link>
+          <el-link :href="resolveResourceUrl(currentSubmission.attachmentUrl)" target="_blank">查看附件</el-link>
         </el-descriptions-item>
         <el-descriptions-item label="得分" v-if="currentSubmission.score != null">
           {{ currentSubmission.score }} / {{ currentSubmission.fullScore }}
@@ -160,6 +160,7 @@ import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import { uploadHomeworkAttachment } from '@/api/homework'
 import { currentUserId, formatLocalDateTime, getRecords, paginateRecords } from '@/utils/apiHelpers'
+import { resolveResourceUrl } from '@/utils/backendUrl'
 import request from '@/utils/request'
 
 const userStore = useUserStore()

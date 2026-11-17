@@ -123,7 +123,8 @@ class ExamWorkflowIntegrationTest {
         jdbcTemplate.update("INSERT INTO t_user_role(id, user_id, role_id) VALUES (2, ?, 3)", STUDENT_ID);
         jdbcTemplate.update("INSERT INTO t_course_category(id, name, description, sort_order, create_time, update_time) VALUES (1, '后端开发', '后端课程', 1, NOW(), NOW())");
         jdbcTemplate.update("INSERT INTO t_course(id, category_id, teacher_id, title, description, difficulty, status, created_at, updated_at) VALUES (?, 1, ?, 'Java', 'Java 基础', 'EASY', 1, NOW(), NOW())", COURSE_ID, TEACHER_ID);
-        jdbcTemplate.update("INSERT INTO t_teaching_class(id, course_id, teacher_id, class_name, semester, status, create_time, update_time) VALUES (?, ?, ?, 'Java 1 班', '2025', 1, NOW(), NOW())", CLASS_ID, COURSE_ID, TEACHER_ID);
+        // A published course is open to its class (course_open), as publishing from the course list does.
+        jdbcTemplate.update("INSERT INTO t_teaching_class(id, course_id, teacher_id, class_name, semester, status, course_open, create_time, update_time) VALUES (?, ?, ?, 'Java 1 班', '2025', 1, TRUE, NOW(), NOW())", CLASS_ID, COURSE_ID, TEACHER_ID);
         jdbcTemplate.update("INSERT INTO t_class_student(id, class_id, student_id, join_time, status) VALUES (1, ?, ?, NOW(), 1)", CLASS_ID, STUDENT_ID);
     }
 

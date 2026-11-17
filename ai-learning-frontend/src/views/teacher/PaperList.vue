@@ -1,21 +1,22 @@
 <template>
-  <div class="paper-list">
-    <el-card>
-      <template #header>
-        <div class="card-header">
-          <span>试卷管理</span>
-          <div class="header-actions">
-            <el-button type="warning" @click="importDialogVisible = true">导入</el-button>
-            <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
-            <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
-            <el-button type="primary" @click="handleCreate">创建试卷</el-button>
-          </div>
-        </div>
+  <div class="paper-list workspace-page">
+    <PageHeader
+      eyebrow="作业与考试"
+      :title="isHomeworkPaper ? '作业题卷' : '试卷管理'"
+      :description="isHomeworkPaper ? '从题库组成作业题卷，发布作业时选用。' : '从题库组成试卷，发布考试时选用。已发布的试卷不能直接修改，可拷贝副本。'"
+    >
+      <template #actions>
+        <el-button @click="importDialogVisible = true">导入</el-button>
+        <el-button :loading="exporting" @click="handleExport('xlsx')">导出Excel</el-button>
+        <el-button :loading="exporting" @click="handleExport('csv')">导出CSV</el-button>
+        <el-button type="primary" @click="handleCreate">创建{{ paperLabel }}</el-button>
       </template>
+    </PageHeader>
 
-      <el-form :inline="true" :model="searchForm" class="search-form" @submit.prevent>
-        <el-form-item label="试卷名称">
-          <el-input v-model="searchForm.keyword" placeholder="请输入试卷名称" clearable @keyup.enter="handleSearch" />
+    <section class="filter-panel" :aria-label="`筛选${paperLabel}`">
+      <el-form :inline="true" :model="searchForm" @submit.prevent>
+        <el-form-item :label="`${paperLabel}名称`">
+          <el-input v-model="searchForm.keyword" :placeholder="`请输入${paperLabel}名称`" clearable @keyup.enter="handleSearch" />
         </el-form-item>
         <el-form-item label="课程">
           <el-select v-model="searchForm.courseId" placeholder="请选择课程" clearable>
@@ -27,10 +28,21 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
+    </section>
 
-      <el-table :data="papers" border stripe v-loading="loading">
+    <ErrorNotice
+      v-if="loadFailed"
+      :title="`${paperLabel}列表未加载`"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadPapers"
+    />
+
+    <section v-else class="table-panel" :aria-label="`${paperLabel}列表`">
+      <el-table :data="papers" stripe v-loading="loading">
         <el-table-column prop="id" label="ID" width="80" />
-        <el-table-column prop="title" label="试卷名称" />
+        <el-table-column prop="title" :label="`${paperLabel}名称`" min-width="200" />
         <el-table-column prop="totalScore" label="总分" width="100" />
         <el-table-column prop="duration" label="时长(分钟)" width="120" />
         <el-table-column label="状态" width="100">
@@ -39,12 +51,14 @@
             <el-tag v-else type="info">草稿</el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="270" fixed="right">
+        <el-table-column label="操作" :width="narrow ? ROW_SHEET_COLUMN_WIDTH : 270" fixed="right">
           <template #default="{ row }">
-            <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button v-if="row.status === 0" size="small" type="success" @click="handleEnable(row)">启用</el-button>
-            <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
-            <el-button size="small" type="success" @click="handleCopy(row)">拷贝</el-button>
+            <RowActions :label="row.title || `${paperLabel} ${row.id}`">
+              <el-button size="small" type="primary" @click="handleEdit(row)">编辑</el-button>
+              <el-button v-if="row.status === 0" size="small" type="success" @click="handleEnable(row)">启用</el-button>
+              <el-button size="small" type="danger" @click="handleDelete(row)">删除</el-button>
+              <el-button size="small" type="success" @click="handleCopy(row)">拷贝</el-button>
+            </RowActions>
           </template>
         </el-table-column>
         <template #empty>
@@ -60,25 +74,25 @@
         layout="total, sizes, prev, pager, next, jumper"
         @current-change="loadPapers"
         @size-change="handleSizeChange"
-        class="pagination-bar"
       />
-    </el-card>
+    </section>
 
     <!-- Form Dialog -->
-    <el-dialog v-model="dialogVisible" :title="form.id ? '编辑试卷' : '创建试卷'" width="980px">
-      <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+    <el-dialog v-model="dialogVisible" :title="form.id ? `编辑${paperLabel}` : `创建${paperLabel}`" width="980px">
+      <el-form :model="form" :rules="rules" ref="formRef" label-width="110px">
         <div class="wizard-dialog">
           <div class="wizard-steps">
             <el-steps direction="vertical" :active="paperStep" finish-status="success">
-              <el-step title="基本信息" description="课程与试卷设置" />
+              <el-step title="基本信息" :description="`课程与${paperLabel}设置`" />
               <el-step title="选择题目" description="从题库组卷" />
               <el-step title="确认保存" description="检查后提交" />
             </el-steps>
           </div>
 
           <div class="wizard-content">
+            <p class="wizard-mobile-step">第 {{ paperStep + 1 }} / 3 步</p>
             <template v-if="paperStep === 0">
-              <el-form-item label="试卷名称" prop="title">
+              <el-form-item :label="`${paperLabel}名称`" prop="title">
                 <el-input v-model="form.title" />
               </el-form-item>
               <el-form-item label="课程" prop="courseId">
@@ -86,10 +100,10 @@
                   <el-option v-for="course in courses" :key="course.id" :label="course.title" :value="course.id" />
                 </el-select>
               </el-form-item>
-              <el-form-item label="试卷说明">
+              <el-form-item :label="`${paperLabel}说明`">
                 <el-input v-model="form.description" type="textarea" :rows="2" />
               </el-form-item>
-              <el-form-item label="考试时长(分)">
+              <el-form-item :label="isHomeworkPaper ? '作答限时(分)' : '考试时长(分)'">
                 <el-input-number v-model="form.duration" :min="10" />
               </el-form-item>
               <el-form-item label="状态">
@@ -104,7 +118,7 @@
               <div class="question-pool">
                 <div class="pool-side">
                   <div class="pool-title">题库</div>
-                  <el-select v-model="questionTypeFilter" placeholder="筛选题型" class="question-filter">
+                  <el-select v-model="questionTypeFilter" placeholder="筛选题型" aria-label="筛选题型" class="question-filter">
                     <el-option label="全部" value="" />
                     <el-option label="单选题" value="single_choice" />
                     <el-option label="多选题" value="multiple_choice" />
@@ -113,8 +127,8 @@
                     <el-option label="简答题" value="short_answer" />
                     <el-option label="文件上传题" value="file_upload" />
                   </el-select>
-                  <el-table :data="filteredQuestions" border size="small" height="300" @row-click="addQuestionToPaper">
-                    <el-table-column prop="questionText" label="题目" show-overflow-tooltip />
+                  <el-table :data="filteredQuestions" size="small" height="300" @row-click="addQuestionToPaper">
+                    <el-table-column prop="questionText" label="题目" min-width="180" show-overflow-tooltip />
                     <el-table-column label="类型" width="80">
                       <template #default="{ row }">
                         {{ getTypeShort(row.questionType) }}
@@ -133,8 +147,8 @@
                       添加自定义题目
                     </el-button>
                   </div>
-                  <el-table :data="form.selectedQuestions" border size="small" height="350">
-                    <el-table-column prop="questionText" label="题目" show-overflow-tooltip />
+                  <el-table :data="form.selectedQuestions" size="small" height="350">
+                    <el-table-column prop="questionText" label="题目" min-width="160" show-overflow-tooltip />
                     <el-table-column label="类型" width="80">
                       <template #default="{ row }">
                         {{ getTypeShort(row.questionType) }}
@@ -151,7 +165,7 @@
                       </template>
                     </el-table-column>
                     <template #empty>
-                      <AppEmpty description="点击左侧题目添加到试卷" />
+                      <AppEmpty :description="`点击题库中的题目添加到${paperLabel}`" />
                     </template>
                   </el-table>
                 </div>
@@ -160,13 +174,13 @@
 
             <template v-else>
               <el-descriptions :column="2" border>
-                <el-descriptions-item label="试卷名称">{{ form.title || '-' }}</el-descriptions-item>
+                <el-descriptions-item :label="`${paperLabel}名称`">{{ form.title || '-' }}</el-descriptions-item>
                 <el-descriptions-item label="课程">{{ selectedCourseTitle }}</el-descriptions-item>
                 <el-descriptions-item label="时长">{{ form.duration }} 分钟</el-descriptions-item>
                 <el-descriptions-item label="状态">{{ form.status === 1 ? '启用' : '草稿' }}</el-descriptions-item>
                 <el-descriptions-item label="题目数量">{{ form.selectedQuestions.length }}</el-descriptions-item>
                 <el-descriptions-item label="总分">{{ totalScore }}</el-descriptions-item>
-                <el-descriptions-item label="试卷说明" :span="2">{{ form.description || '-' }}</el-descriptions-item>
+                <el-descriptions-item :label="`${paperLabel}说明`" :span="2">{{ form.description || '-' }}</el-descriptions-item>
               </el-descriptions>
             </template>
           </div>
@@ -181,7 +195,7 @@
     </el-dialog>
 
     <el-dialog v-model="customQuestionDialogVisible" title="添加自定义题目" width="760px" append-to-body>
-      <el-form ref="customQuestionFormRef" :model="customQuestion" :rules="customQuestionRules" label-width="100px">
+      <el-form ref="customQuestionFormRef" :model="customQuestion" :rules="customQuestionRules" label-position="top">
         <el-form-item label="题目类型" prop="questionType">
           <el-select v-model="customQuestion.questionType" @change="handleCustomQuestionTypeChange">
             <el-option label="单选题" value="single_choice" />
@@ -237,12 +251,12 @@
       </el-form>
       <template #footer>
         <el-button @click="customQuestionDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="addCustomQuestionToPaper">添加到试卷</el-button>
+        <el-button type="primary" @click="addCustomQuestionToPaper">添加到{{ paperLabel }}</el-button>
       </template>
     </el-dialog>
 
     <el-dialog v-model="warningDialogVisible" title="组卷检查" width="520px" append-to-body :close-on-click-modal="false">
-      <el-alert type="warning" :closable="false" show-icon title="以下问题不会阻止出卷，但需要明确确认。" />
+      <el-alert type="warning" :closable="false" show-icon title="以下问题不会阻止保存，但需要明确确认。" />
       <ul class="preflight-warning-list">
         <li v-for="warning in preflightWarnings" :key="warning.code || warning">{{ formatPreflightWarning(warning) }}</li>
       </ul>
@@ -255,7 +269,7 @@
     <ImportDialog
       v-model="importDialogVisible"
       type="papers"
-      title="试卷导入"
+      :title="`${paperLabel}导入`"
       :courses="courses"
       @imported="loadPapers"
     />
@@ -270,9 +284,14 @@ import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
 import AppEmpty from '@/components/AppEmpty.vue'
 import ImportDialog from '@/components/ImportDialog.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import RowActions from '@/components/ui/RowActions.vue'
+import { useGuardedLoad } from '@/composables/useGuardedLoad'
+import { ROW_SHEET_COLUMN_WIDTH, useNarrowScreen } from '@/composables/useNarrowScreen'
 import { exportImportData } from '@/api/imports'
 import { getCourses } from '@/utils/course'
-import { currentUserId, enumName, getRecords, getTotal, normalizeStatus, paginateRecords, scopedTeacherParams } from '@/utils/apiHelpers'
+import { currentUserId, enumName, getRecords, getTotal, normalizeStatus, paginateRecords, requireSuccess, scopedTeacherParams } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const userStore = useUserStore()
@@ -280,8 +299,12 @@ const route = useRoute()
 const { confirmDelete } = useConfirm()
 const formRef = ref(null)
 const customQuestionFormRef = ref(null)
+const narrow = useNarrowScreen()
 
-const loading = ref(false)
+const { loading, loadFailed, guarded } = useGuardedLoad(() => {
+  papers.value = []
+  pagination.total = 0
+})
 const submitLoading = ref(false)
 const deleteLoading = ref(false)
 const exporting = ref(false)
@@ -311,7 +334,8 @@ const preflightSummary = ref(null)
 let customQuestionSequence = 0
 
 const isHomeworkPaper = computed(() => route.meta.assessmentType === 'HOMEWORK')
-const paperApi = computed(() => isHomeworkPaper.value ? '/api/homework-papers' : '/api/papers')
+const paperLabel = computed(() => isHomeworkPaper.value ? '作业题卷' : '试卷')
+const paperApi =computed(() => isHomeworkPaper.value ? '/api/homework-papers' : '/api/papers')
 
 const form = reactive({
   id: null,
@@ -339,7 +363,7 @@ const customQuestion = reactive({
 })
 
 const rules = {
-  title: [{ required: true, message: '请输入试卷名称', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入名称', trigger: 'blur' }],
   courseId: [{ required: true, message: '请选择课程', trigger: 'change' }]
 }
 
@@ -419,32 +443,20 @@ const mapQuestionForBank = (q) => ({
 })
 
 // ---- 数据加载 ----
-const loadPapers = async () => {
-  loading.value = true
-  try {
-    const params = scopedTeacherParams(userStore)
-    if (searchForm.keyword && searchForm.keyword.trim()) {
-      params.keyword = searchForm.keyword.trim()
-    }
-    if (searchForm.courseId) {
-      params.courseId = searchForm.courseId
-    }
-    const res = await request.get(paperApi.value, { params })
-    if (res.code === '200' && res.data) {
-      const records = getRecords(res.data).map(mapPaperForDisplay)
-      papers.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
-      pagination.total = getTotal(records)
-    } else {
-      papers.value = []
-      pagination.total = 0
-    }
-  } catch (e) {
-    papers.value = []
-    pagination.total = 0
-  } finally {
-    loading.value = false
+const loadPapers = () => guarded(async (isCurrent) => {
+  const params = scopedTeacherParams(userStore)
+  if (searchForm.keyword && searchForm.keyword.trim()) {
+    params.keyword = searchForm.keyword.trim()
   }
-}
+  if (searchForm.courseId) {
+    params.courseId = searchForm.courseId
+  }
+  const res = requireSuccess(await request.get(paperApi.value, { params }))
+  if (!isCurrent()) return
+  const records = getRecords(res.data).map(mapPaperForDisplay)
+  papers.value = paginateRecords(records, pagination.pageNum, pagination.pageSize)
+  pagination.total = getTotal(records)
+})
 
 const handleSearch = () => {
   pagination.pageNum = 1
@@ -487,7 +499,7 @@ const handleExport = async (format) => {
       params.courseId = searchForm.courseId
     }
     const blob = await exportImportData('papers', params)
-    downloadBlob(blob, `试卷_${new Date().toISOString().slice(0, 10)}.${format}`)
+    downloadBlob(blob, `${paperLabel.value}_${new Date().toISOString().slice(0, 10)}.${format}`)
     ElMessage.success('导出成功')
   } catch (e) {
     // 全局已提示
@@ -688,7 +700,7 @@ const handleCreate = async () => {
     await loadCourses()
   }
   if (!courses.value || courses.value.length === 0) {
-    ElMessage.warning('暂无课程数据，请先创建课程后再来创建试卷')
+    ElMessage.warning(`暂无课程数据，请先创建课程后再来创建${paperLabel.value}`)
     return
   }
   Object.assign(form, {
@@ -709,7 +721,7 @@ const handleCreate = async () => {
 
 const handleEdit = async (row) => {
   if (row.status === 1) {
-    ElMessage.warning('已发布试卷不能直接修改，请拷贝试卷副本')
+    ElMessage.warning(`已发布${paperLabel.value}不能直接修改，请拷贝副本`)
     return
   }
   try {
@@ -745,7 +757,7 @@ const handleEdit = async (row) => {
 
 const validatePaperBasics = () => {
   if (!form.title) {
-    ElMessage.warning('请输入试卷名称')
+    ElMessage.warning(`请输入${paperLabel.value}名称`)
     return false
   }
   if (!form.courseId) {
@@ -827,7 +839,7 @@ const formatPreflightWarning = (warning) => {
   const code = typeof warning === 'string' ? warning : warning.code
   if (code === 'TOTAL_NOT_100') {
     const score = warning.totalScore ?? preflightSummary.value?.totalScore ?? totalScore.value
-    return `试卷总分为 ${score} 分，不是 100 分`
+    return `${paperLabel.value}总分为 ${score} 分，不是 100 分`
   }
   if (code === 'MISSING_TYPES') {
     const missingTypes = warning.missingTypes || preflightSummary.value?.missingTypes || []
@@ -916,11 +928,11 @@ const savePaper = async (ignoreWarnings) => {
 
 const handleDelete = async (row) => {
   if (row.status === 1) {
-    ElMessage.warning('已发布试卷不能删除，请先停止相关考试或改为草稿后再删除')
+    ElMessage.warning(`已发布${paperLabel.value}不能删除，请先停止相关${isHomeworkPaper.value ? '作业' : '考试'}或改为草稿后再删除`)
     return
   }
   try {
-    const confirmed = await confirmDelete('确认删除此试卷？')
+    const confirmed = await confirmDelete(`确认删除此${paperLabel.value}？`)
     if (!confirmed) return
     deleteLoading.value = true
     const res = await request.delete(`${paperApi.value}/${row.id}`)
@@ -939,7 +951,7 @@ const handleEnable = async (row) => {
   try {
     const res = await request.post(`${paperApi.value}/${row.id}/publish`)
     if (res.code === '200') {
-      ElMessage.success('试卷已启用')
+      ElMessage.success(`${paperLabel.value}已启用`)
       loadPapers()
     }
   } catch (e) {
@@ -990,7 +1002,10 @@ onMounted(() => {
 
 watch(
   () => route.name,
-  () => {
+  (name) => {
+    // The instance also sees navigation away from both paper lists; that must load nothing.
+    if (!['PaperList', 'HomeworkPaperList'].includes(name)) return
+    papers.value = []
     pagination.pageNum = 1
     loadPapers()
   }
@@ -998,42 +1013,25 @@ watch(
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.header-actions {
-  display: flex;
-  gap: 10px;
-}
-
-.pagination-bar {
-  margin-top: 20px;
-  justify-content: center;
-}
-
-.search-form {
-  margin-bottom: 16px;
-}
-
 .question-pool {
-  display: flex;
-  gap: 20px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-5);
 }
 
 .pool-side {
-  flex: 1;
+  min-width: 0;
 }
 
 .pool-title {
-  font-weight: bold;
-  margin-bottom: 10px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 8px;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+  color: var(--text-strong);
+  font-weight: 600;
 }
 
 .question-filter {
@@ -1043,14 +1041,14 @@ watch(
 
 .wizard-dialog {
   display: flex;
-  gap: 24px;
+  gap: var(--space-6);
   min-height: 420px;
 }
 
 .wizard-steps {
-  width: 170px;
-  padding: 8px 8px 8px 0;
-  border-right: 1px solid #ebeef5;
+  flex: 0 0 170px;
+  padding: var(--space-2) var(--space-2) var(--space-2) 0;
+  border-right: 1px solid var(--line-subtle);
 }
 
 .wizard-content {
@@ -1058,15 +1056,41 @@ watch(
   min-width: 0;
 }
 
+.wizard-mobile-step {
+  display: none;
+  margin: 0 0 var(--space-3);
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
+}
+
 .option-row {
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
+  width: 100%;
 }
 
 .preflight-warning-list {
   margin: 16px 0 0;
   padding-left: 24px;
   line-height: 1.8;
+}
+
+@media (max-width: 860px) {
+  .wizard-dialog {
+    min-height: 0;
+  }
+
+  .wizard-steps {
+    display: none;
+  }
+
+  .wizard-mobile-step {
+    display: block;
+  }
+
+  .question-pool {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }
 </style>

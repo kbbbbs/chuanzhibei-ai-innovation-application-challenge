@@ -10,10 +10,9 @@ async function fixture(page, role = 'student') {
     localStorage.setItem('username', '布局核验')
     localStorage.removeItem('courseLessonSidebarCollapsed')
   }, role)
-  await page.route('**/*', async route => {
+  await page.route('**/backend/**', async route => {
     const url = new URL(route.request().url())
-    if (url.port !== '8080') return route.continue()
-    const path = url.pathname.replace(/^\/api/, '')
+    const path = url.pathname.replace(/^\/backend/, '').replace(/^\/api/, '')
     requests.push(path)
     let data = []
     if (path === '/courses/1') data = { id: 1, title: '算法学习课程' }
@@ -77,6 +76,16 @@ test('same submission id switches result API when assessment query changes', asy
   await expect(page.locator('.exam-result .card-header')).toContainText('作业结果')
   await expect.poll(() => requests.includes('/homework-submissions/1/student')).toBe(true)
   await expect(page.locator('.el-descriptions')).toContainText('作业名称')
+})
+
+test('result description columns respond to desktop to mobile resize', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 960 })
+  await fixture(page)
+  await page.goto('/exam-result/1')
+  const rows = page.locator('.el-descriptions tbody tr')
+  await expect(rows.first().locator('.el-descriptions__label')).toHaveCount(2)
+  await page.setViewportSize({ width: 375, height: 960 })
+  await expect(rows.first().locator('.el-descriptions__label')).toHaveCount(1)
 })
 
 test('mobile lesson navigation keeps the first content block nearby', async ({ page }) => {

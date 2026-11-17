@@ -28,6 +28,9 @@ public class TeachingClass {
     private String description;
     private Integer status;
 
+    @TableField("course_open")
+    private Boolean courseOpen;
+
     @TableField("create_time")
     private LocalDateTime createTime;
 

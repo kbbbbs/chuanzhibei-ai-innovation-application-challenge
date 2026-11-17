@@ -14,10 +14,12 @@ async function fixture(page, { response = {}, chunkResponse = hit, secondFailure
     localStorage.setItem('userId', '7'); localStorage.setItem('roleCode', 'teacher'); localStorage.setItem('username', '检索核验')
   })
   let searches = 0
-  await page.route('**/api/**', async route => {
-    const request = route.request(), path = new URL(request.url()).pathname
-    if (!path.startsWith('/api/')) return route.continue()
+  await page.route('**/backend/**', async route => {
+    const request = route.request(), path = new URL(request.url()).pathname.replace(/^\/backend/, '')
     const ok = data => route.fulfill({ json: { code: '200', data } })
+    if (path === '/courses/41') return ok({ id: 41, title: '课程检索测试', teacherId: 7, status: 2 })
+    if (path === '/api/rag/courses/41/knowledge-base') return ok({ id: kb, name: 'K03算法讲义', owner_id: 7, course_id: 41, knowledge_count: 1 })
+
     if (path === '/api/rag/knowledge-bases') return ok([{ id: kb, name: 'K03算法讲义', description: '检索核验', owner_id: 7, knowledge_count: 1 }])
     if (path.endsWith('/documents')) return ok([{ id: doc, title: hit.title, file_name: '讲义.pdf', parse_status: 'success', page_count: 4, chunk_count: 1 }])
     if (path === '/api/rag/search') {
@@ -28,6 +30,7 @@ async function fixture(page, { response = {}, chunkResponse = hit, secondFailure
         { documentId: doc, indexVersion: index, documentVersion: 2, parseRevision: 3, embeddingModel: 'test-fixture', dimensions: 4096, normalized: true, chunkRevision: 'fixture' }
       ], ...response }).catch(problem => { if (!searchDelay) throw problem })
     }
+    if (path.endsWith('/preview')) return route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aSucAAAAASUVORK5CYII=', 'base64') })
     if (path === `/api/rag/chunks/${chunk}`) return ok(chunkResponse)
     if (path === '/api/rag/chat/stream') {
       const result = { answer: '每次减半。[1]', citations: [hit], mode: 'bm25', actualMode: 'HYBRID', degradedReason: null, status: 'ANSWERED', sessionId: 's1', ...answer }
@@ -35,7 +38,7 @@ async function fixture(page, { response = {}, chunkResponse = hit, secondFailure
     }
     return ok([])
   })
-  await page.goto('/teacher-knowledge-base')
+  await page.goto('/courses/41?tab=search')
   await expect(page.getByRole('tab', { name: '检索与验证' })).toBeVisible()
 }
 async function search(page) {
@@ -59,7 +62,6 @@ test('hybrid retrieval retains source version and an inspectable index snapshot'
   await search(page)
   await expect(page.getByTestId('retrieval-mode')).toContainText('关键词与语义联合检索')
   await expect(page.locator('.search-hit')).toContainText('资料版本 2 · 解析修订 3')
-  await page.getByRole('button', { name: '[1] K03算法讲义 · 第 3 页', exact: true }).click()
   await expect(page.getByTestId('source-version')).toContainText('资料版本 2 · 解析修订 3')
   await page.getByText('索引快照', { exact: true }).click()
   await expect(page.getByTestId('source-index-version')).toHaveText(index)
@@ -79,14 +81,14 @@ test('a failed new search clears the previous actual mode and its source snapsho
   await search(page)
   await expect(page.getByTestId('retrieval-mode')).toContainText('联合检索')
   await page.getByRole('button', { name: '检索', exact: true }).click()
-  await expect(page.getByText('本次检索失败', { exact: true })).toBeVisible()
+  await expect(page.getByText('服务暂时不可用，请稍后重试', { exact: true })).toBeVisible()
   await expect(page.getByTestId('retrieval-mode')).toHaveCount(0)
   await expect(page.locator('.search-hit')).toHaveCount(0)
 })
 
 test('completed answers show only actual returned retrieval mode', async ({ page }) => {
   await fixture(page)
-  await page.getByRole('tab', { name: '知识问答' }).click()
+  await page.getByRole('tab', { name: '智能问答' }).click()
   await page.getByPlaceholder('例如：这节课的核心概念是什么？').fill('二分查找如何工作')
   await page.getByRole('button', { name: '发送', exact: true }).click()
   await expect(page.locator('.chat-message.assistant')).toContainText('本次检索：关键词与语义联合检索')
@@ -96,7 +98,6 @@ test('completed answers show only actual returned retrieval mode', async ({ page
 test('a citation cannot relabel a newer index as the original retrieved source', async ({ page }) => {
   await fixture(page, { chunkResponse: { ...hit, indexVersion: '34e99c55-d5bc-47a4-beb4-5d7b9958bd5b', content: 'NEWER_SOURCE' } })
   await search(page)
-  await page.getByRole('button', { name: '[1] K03算法讲义 · 第 3 页', exact: true }).click()
   await expect(page.getByText('引用对应的索引版本已改变，请重新检索。', { exact: true })).toBeVisible()
   await expect(page.getByText('NEWER_SOURCE', { exact: true })).toHaveCount(0)
 })
@@ -112,8 +113,7 @@ test('a fresh legacy source without version fields does not inherit cached versi
   const { indexVersion, documentVersion, parseRevision, ...legacy } = hit
   await fixture(page, { chunkResponse: legacy })
   await search(page)
-  await page.getByRole('button', { name: '[1] K03算法讲义 · 第 3 页', exact: true }).click()
-  await expect(page.locator('.el-drawer.open .source-text')).toHaveText(hit.content)
+  await expect(page.getByTestId('source-page-image')).toBeVisible()
   await expect(page.getByTestId('source-version')).toHaveCount(0)
   await expect(page.getByTestId('source-index-version')).toHaveCount(0)
 })
@@ -130,6 +130,56 @@ test('stopping a pending search is shown as incomplete instead of a completed em
   await page.screenshot({ path: '../.codex_tmp/k03-ui-finish/cancel-incomplete-green.png', fullPage: true })
   await page.getByRole('button', { name: '检索', exact: true }).click()
   await expect(page.getByText('已停止检索，本次未完成。', { exact: true })).toHaveCount(0)
-  await expect(page.locator('.search-hit')).toContainText(hit.content)
+  await expect(page.locator('.search-hit').getByTestId('source-page-image')).toBeVisible()
   await expect(page.getByTestId('retrieval-mode')).toContainText('关键词与语义联合检索')
+})
+
+test('citation displays the referenced page image with its document version', async ({ page }) => {
+  await fixture(page)
+  let previewUrl = ''
+  await page.route('**/pages/3/preview?*', async route => {
+    previewUrl = route.request().url()
+    await route.fulfill({contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aSucAAAAASUVORK5CYII=', 'base64')})
+  })
+  await search(page)
+  await expect(page.getByTestId('source-page-image')).toBeVisible()
+  expect(new URL(previewUrl).searchParams.get('version')).toBe('2')
+  await expect(page.locator('.el-drawer .source-text')).toHaveCount(0)
+})
+
+test('failed source images can be retried without showing extracted text as an original', async ({ page }) => {
+  await fixture(page)
+  let attempts = 0
+  await page.route('**/pages/3/preview?*', async route => {
+    if (++attempts === 1) return route.fulfill({ status: 200, json: { code: '500', msg: '原页暂不可用' } })
+    return route.fulfill({contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aSucAAAAASUVORK5CYII=', 'base64')})
+  })
+  await search(page)
+  await expect(page.getByText('原页暂不可用', { exact: true })).toBeVisible()
+  await expect(page.locator('.el-drawer .source-text')).toHaveCount(0)
+  await page.getByRole('button', { name: '重新加载原页', exact: true }).click()
+  await expect(page.getByTestId('source-page-image')).toBeVisible()
+})
+
+test('search results show source pages inline and reveal text only on request', async ({ page }) => {
+  await fixture(page)
+  await search(page)
+  const result = page.locator('.search-hit').first()
+  await expect(result.getByTestId('source-page-image')).toBeVisible()
+  await expect(result.locator('.source-text')).not.toBeVisible()
+  await result.getByRole('button', { name: '查看原文', exact: true }).click()
+  await expect(result.locator('.source-text')).toHaveText(hit.content)
+  await expect(page.locator('.el-drawer:visible')).toHaveCount(0)
+  await result.getByRole('button', { name: '收起原文', exact: true }).click()
+  await expect(result.locator('.source-text')).not.toBeVisible()
+  await expect(result.getByTestId('source-page-image')).toBeVisible()
+})
+
+test('knowledge chat keeps its source drawer', async ({ page }) => {
+  await fixture(page)
+  await page.getByRole('tab', { name: '智能问答' }).click()
+  await page.getByPlaceholder('例如：这节课的核心概念是什么？').fill('二分查找')
+  await page.getByRole('button', { name: '发送', exact: true }).click()
+  await page.getByRole('button', { name: '[1] K03算法讲义 · 第 3 页', exact: true }).click()
+  await expect(page.locator('.el-drawer:visible').getByTestId('source-page-image')).toBeVisible()
 })

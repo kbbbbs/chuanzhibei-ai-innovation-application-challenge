@@ -66,6 +66,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh } from '@element-plus/icons-vue'
 import { createLessonComment, deleteLessonComment, getLessonComments } from '@/api/comment'
 import { getRecords, getTotal } from '@/utils/apiHelpers'
+import { resolveResourceUrl as resolveAvatar } from '@/utils/backendUrl'
 
 const props = defineProps({
   lessonId: {
@@ -82,8 +83,6 @@ const pageNum = ref(1)
 const pageSize = 10
 const total = ref(0)
 let loadSeq = 0
-
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
 
 const loadComments = async () => {
   const requestId = ++loadSeq
@@ -156,17 +155,6 @@ const avatarText = (name) => {
   return (name || '?').trim().slice(0, 1)
 }
 
-const resolveAvatar = (url) => {
-  if (!url) return ''
-  if (/^(https?:)?\/\//i.test(url) || /^(data|blob):/i.test(url)) {
-    return url
-  }
-  if (url.startsWith('/')) {
-    return `${apiBaseUrl}${url}`
-  }
-  return url
-}
-
 const formatTime = (value) => {
   if (!value) return ''
   const date = new Date(value)
@@ -226,7 +214,7 @@ watch(
   display: flex;
   gap: 10px;
   padding-bottom: 14px;
-  border-bottom: 1px solid #ebeef5;
+  border-bottom: 1px solid var(--line-subtle);
 }
 
 .comment-item:last-child {
@@ -245,18 +233,18 @@ watch(
 }
 
 .comment-author {
-  color: #303133;
+  color: var(--text-strong);
   font-weight: 600;
 }
 
 .comment-time {
-  color: #909399;
-  font-size: 12px;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
 }
 
 .comment-content {
   margin-top: 4px;
-  color: #303133;
+  color: var(--text-body);
   line-height: 1.6;
   white-space: pre-wrap;
   word-break: break-word;

@@ -1,6 +1,6 @@
 <template>
-  <main class="role-dashboard admin-dashboard" v-loading="loading">
-    <section class="dashboard-hero admin-hero">
+  <div class="role-dashboard admin-dashboard" v-loading="loading">
+    <section class="dashboard-hero">
       <div class="hero-copy">
         <p class="eyebrow">{{ today }}</p>
         <h1>平台管理控制台</h1>
@@ -22,6 +22,22 @@
 
     <section class="dashboard-layout">
       <div class="dashboard-main">
+        <section class="panel">
+          <div class="panel-header">
+            <div><p class="section-kicker">待办事项</p><h2>教师入驻审核</h2><p>只展示待审核申请，统计来自分页响应总数。</p></div>
+            <el-button link type="primary" @click="go('/teacher-applications')">查看全部</el-button>
+          </div>
+          <div v-if="pendingTeachers?.length" class="timeline-list">
+            <article v-for="item in pendingTeachers" :key="item.id" class="timeline-item">
+              <span class="avatar-mark">{{ String(item.nickname || item.username || '师').slice(0, 1) }}</span>
+              <div><h3>{{ item.nickname || item.username || `申请 ${item.id}` }}</h3><p>{{ item.reason || '等待教师身份审核' }}</p></div>
+              <el-tag type="warning" effect="plain">待审核</el-tag>
+            </article>
+          </div>
+          <div v-else-if="pendingTeachers === null" class="data-unavailable">教师申请数据暂时不可用，请稍后刷新。</div>
+          <el-empty v-else description="暂无待审核教师申请" :image-size="72" />
+        </section>
+
         <section class="panel">
           <div class="panel-header">
             <div><p class="section-kicker">平台运营域</p><h2>账号、权限与平台内容</h2><p>管理账号生命周期、教师准入、课程分类、首页推荐与运行审计。</p></div>
@@ -47,33 +63,17 @@
             </button>
           </div>
         </section>
-
-        <section class="panel">
-          <div class="panel-header">
-            <div><p class="section-kicker">待办事项</p><h2>教师入驻审核</h2><p>只展示待审核申请，统计来自分页响应总数。</p></div>
-            <el-button link type="primary" @click="go('/teacher-applications')">查看全部</el-button>
-          </div>
-          <div v-if="pendingTeachers?.length" class="timeline-list">
-            <article v-for="item in pendingTeachers" :key="item.id" class="timeline-item">
-              <span class="avatar-mark">{{ String(item.nickname || item.username || '师').slice(0, 1) }}</span>
-              <div><h3>{{ item.nickname || item.username || `申请 ${item.id}` }}</h3><p>{{ item.reason || '等待教师身份审核' }}</p></div>
-              <el-tag type="warning" effect="plain">待审核</el-tag>
-            </article>
-          </div>
-          <div v-else-if="pendingTeachers === null" class="data-unavailable">教师申请数据暂时不可用，请稍后刷新。</div>
-          <el-empty v-else description="暂无待审核教师申请" :image-size="72" />
-        </section>
       </div>
 
       <aside class="dashboard-side">
-        <section class="panel feature-panel admin-feature">
+        <section class="panel feature-panel">
           <span class="feature-icon"><el-icon><Monitor /></el-icon></span>
           <p class="section-kicker">运行治理域</p>
           <h2>平台运行与审计</h2>
           <p>通过操作日志追踪关键行为，维护知识资产和勤工俭学业务。</p>
           <div class="stack-actions">
             <el-button type="primary" @click="go('/operation-logs')">查看操作日志</el-button>
-            <el-button @click="openAgentAssistant()">打开 Agent 助手</el-button>
+            <el-button @click="openAgentAssistant()">打开智能助手</el-button>
           </div>
         </section>
 
@@ -83,7 +83,7 @@
             <span><b>{{ countText(categoryCount) }}</b><small>课程分类</small></span>
             <span><b>{{ countText(adminClassTotal) }}</b><small>行政班</small></span>
           </div>
-          <p class="muted">用户、课程、教学班、行政班与日志均读取分页 total，不使用首屏条数代替总数。</p>
+          <p class="muted">用户、课程、教学班、行政班与日志均读取服务端总数，不使用首屏条数代替。</p>
         </section>
 
         <section class="panel compact-panel">
@@ -91,12 +91,12 @@
           <div class="quick-links">
             <button type="button" @click="go('/work-studies')"><el-icon><Wallet /></el-icon><span>岗位管理</span></button>
             <button type="button" @click="go('/work-study-students')"><el-icon><Money /></el-icon><span>劳务名单</span></button>
-            <button type="button" @click="go('/teacher-knowledge-base')"><el-icon><Collection /></el-icon><span>知识库</span></button>
+            <button type="button" @click="go('/courses')"><el-icon><Collection /></el-icon><span>知识库</span></button>
           </div>
         </section>
       </aside>
     </section>
-  </main>
+  </div>
 </template>
 
 <script setup>
@@ -106,6 +106,7 @@ import {
   ArrowRight,
   Checked,
   Collection,
+  Cpu,
   Document,
   Edit,
   Menu,
@@ -154,6 +155,7 @@ const platformActions = [
   { label: '课程分类', description: '维护平台课程分类结构', path: '/categories', icon: Menu },
   { label: '首页推荐', description: '配置公共首页推荐课程', path: '/home-course-recommendations', icon: Star },
   { label: '操作日志', description: '追踪平台关键操作记录', path: '/operation-logs', icon: Document },
+  { label: '模型设置', description: '配置、探测并应用四项 AI 能力', path: '/settings/models', icon: Cpu },
 ]
 
 const teachingActions = [

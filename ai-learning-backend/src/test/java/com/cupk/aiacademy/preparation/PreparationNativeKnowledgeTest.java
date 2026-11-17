@@ -199,6 +199,61 @@ class PreparationNativeKnowledgeTest {
         verifyNoInteractions(model);
     }
 
+    private void ownedSources(PreparationProject project, Map<?, ?>... documents) {
+        project.setOwnedKnowledgeBaseId("kb-owned");
+        StringBuilder configured = new StringBuilder("[");
+        for (Map<?, ?> document : documents) configured.append(configured.length() > 1 ? "," : "")
+                .append("{\"name\":\"").append(document.get("title")).append("\",\"knowledgeId\":\"").append(document.get("id")).append("\"}");
+        project.setSourceFilesJson(configured.append("]").toString());
+        when(rag.listKnowledgeForOwner("kb-owned", 7, 200, 0)).thenReturn(Result.success(List.of(documents)));
+    }
+
+    @Test
+    void partiallyUsableAndFailedSourcesDoNotBlockGenerationFromTheUsableOnes() throws Exception {
+        PreparationProject project = project();
+        requestOwner(project);
+        ownedSources(project,
+                Map.of("id", "doc-1", "title", "教材.pdf", "parse_status", "success", "active_index_version", "i1", "unindexed_pages", List.of()),
+                Map.of("id", "doc-2", "title", "课件.pdf", "parse_status", "partial", "active_index_version", "i2", "unindexed_pages", List.of(3, 5)),
+                Map.of("id", "doc-3", "title", "扫描件.pdf", "parse_status", "failed", "error_message", "识别失败"));
+
+        service.startOutline(1L);
+
+        assertEquals(1, queued.size());
+        PreparationModels.View current = service.get(1L);
+        assertTrue(current.isSourcesReady());
+        assertEquals(List.of("USABLE", "PARTIAL", "FAILED"), current.getSourceFiles().stream().map(PreparationModels.SourceFile::getAvailability).toList());
+        assertEquals(List.of(3, 5), current.getSourceFiles().get(1).getMissingPages());
+    }
+
+    @Test
+    void sourceStillProcessingWithoutAnIndexWaitsInsteadOfGenerating() throws Exception {
+        PreparationProject project = project();
+        requestOwner(project);
+        ownedSources(project,
+                Map.of("id", "doc-1", "title", "教材.pdf", "parse_status", "success", "active_index_version", "i1"),
+                Map.of("id", "doc-2", "title", "课件.pdf", "parse_status", "ocr", "parse_progress", 40));
+
+        BusinessException waiting = assertThrows(BusinessException.class, () -> service.startOutline(1L));
+
+        assertTrue(waiting.getMessage().contains("课件.pdf"));
+        assertTrue(queued.isEmpty());
+        assertFalse(service.get(1L).isSourcesReady());
+        assertEquals("PROCESSING", service.get(1L).getSourceFiles().get(1).getAvailability());
+    }
+
+    @Test
+    void sourceBeingReprocessedKeepsServingItsPublishedIndex() throws Exception {
+        PreparationProject project = project();
+        requestOwner(project);
+        ownedSources(project, Map.of("id", "doc-1", "title", "教材.pdf", "parse_status", "queued", "active_index_version", "i1"));
+
+        service.startOutline(1L);
+
+        assertEquals(1, queued.size());
+        assertEquals("USABLE", service.get(1L).getSourceFiles().getFirst().getAvailability());
+    }
+
     @Test
     void sharingRevokedDuringModelCallPreventsPersistingTheCompletedDraft() throws Exception {
         PreparationProject project = project();
@@ -232,6 +287,54 @@ class PreparationNativeKnowledgeTest {
         assertUpdateContains("FAILED");
         assertUpdateContains("检查模型配置");
         assertUpdateDoesNotContain("PRIVATE_PROVIDER_RESPONSE");
+    }
+
+    @Test
+    void courseDraftUsesAvailableSourcesWithoutWaitingForOtherFiles() throws Exception {
+        PreparationProject project = project();
+        when(categories.selectById(1)).thenReturn(new CourseCategory());
+        var config = config(); config.setTargetCourseId(42);
+        project.setConfigJson(json.writeValueAsString(config)); project.setOwnedKnowledgeBaseId("kb-1");
+        requestOwner(project);
+        when(rag.listKnowledgeForOwner("kb-1", 7, 200, 0)).thenReturn(Result.success(List.of(
+                Map.of("id", "ready", "parse_status", "partial", "active_index_version", "index"),
+                Map.of("id", "processing", "parse_status", "ocr"))));
+        service.startAll(1L, false);
+        assertEquals(1, queued.size());
+        assertEquals("RUNNING", project.getGenerationStatus());
+    }
+
+    @Test
+    void pendingCourseSourcesPersistWaitingIntentAndResumeWithoutRequestThread() throws Exception {
+        PreparationProject project = project();
+        when(categories.selectById(1)).thenReturn(new CourseCategory());
+        var config = config(); config.setTargetCourseId(42);
+        project.setConfigJson(json.writeValueAsString(config)); project.setOwnedKnowledgeBaseId("kb-1");
+        requestOwner(project);
+        when(rag.listKnowledgeForOwner("kb-1", 7, 200, 0)).thenReturn(Result.success(List.of(Map.of("id", "pending", "parse_status", "ocr"))));
+        service.startAll(1L, false);
+        assertTrue(queued.isEmpty()); assertEquals("WAITING", project.getGenerationStatus());
+        assertEquals("WAITING_SOURCES_ALL", project.getCurrentStage());
+        when(mapper.selectList(any())).thenReturn(List.of(project));
+        when(mapper.update(isNull(), any(UpdateWrapper.class))).thenReturn(1);
+        when(rag.listKnowledgeForOwner("kb-1", 7, 200, 0)).thenReturn(Result.success(List.of(Map.of("id", "pending", "parse_status", "success"))));
+        service.resumeWaitingSources();
+        assertEquals(1, queued.size());
+    }
+
+    @Test
+    void failedCourseSourcesRequireExplicitCourseInfoFallback() throws Exception {
+        PreparationProject project = project();
+        when(categories.selectById(1)).thenReturn(new CourseCategory());
+        var config = config(); config.setTargetCourseId(42);
+        project.setConfigJson(json.writeValueAsString(config)); project.setOwnedKnowledgeBaseId("kb-1");
+        requestOwner(project);
+        when(rag.listKnowledgeForOwner("kb-1", 7, 200, 0)).thenReturn(Result.success(List.of(Map.of("id", "failed", "parse_status", "failed"))));
+        assertThrows(BusinessException.class, () -> service.startAll(1L, false));
+        assertTrue(queued.isEmpty());
+        config.setUseCourseInfoOnly(true); project.setConfigJson(json.writeValueAsString(config));
+        service.startAll(1L, false);
+        assertEquals(1, queued.size());
     }
 
     private PreparationProject project() throws Exception {
@@ -282,6 +385,7 @@ class PreparationNativeKnowledgeTest {
     }
 
     private void requestOwner(PreparationProject project) {
+        org.springframework.test.util.ReflectionTestUtils.setField(service, "courseKnowledgeService", mock(com.cupk.aiacademy.rag.CourseKnowledgeService.class));
         Thread requestThread = Thread.currentThread();
         AuthUtils.LoginUser user = new AuthUtils.LoginUser();
         user.setUserId(7);

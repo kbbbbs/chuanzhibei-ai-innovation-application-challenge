@@ -1,0 +1,25 @@
+# Only build inputs enter the Docker context.
+**
+!ai-learning-backend/
+!ai-learning-backend/pom.xml
+!ai-learning-backend/src/
+!ai-learning-backend/src/**
+!ai-learning-frontend/
+!ai-learning-frontend/package.json
+!ai-learning-frontend/package-lock.json
+!ai-learning-frontend/index.html
+!ai-learning-frontend/vite.config.js
+!ai-learning-frontend/src/
+!ai-learning-frontend/src/**
+!ai-learning-frontend/public/
+!ai-learning-frontend/public/**
+!deploy/
+!deploy/nginx/
+!deploy/nginx/default.conf
+**/.env*
+**/*.log
+**/data
+**/uploads
+**/private
+**/secrets
+**/*.jsonl

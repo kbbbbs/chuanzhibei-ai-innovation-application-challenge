@@ -49,6 +49,12 @@ export const enableCourse = id => {
   return request.put('/courses/' + id + '/enable')
 }
 
+export const getCoursePublication = id => request.get(`/courses/${id}/publication`, { silent: true })
+
+export const publishCourse = (id, data) => request.post(`/courses/${id}/publish`, data, { silent: true })
+
+export const updateCoursePublication = (id, data) => request.put(`/courses/${id}/publication`, data, { silent: true })
+
 export const addCourseView = id => {
   return request.put('/courses/' + id + '/view')
 }

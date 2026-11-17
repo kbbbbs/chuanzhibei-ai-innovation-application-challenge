@@ -93,7 +93,7 @@ public class LearningContentRepository {
             String summary = safeString(page.get("summary"));
             if (!summary.isBlank()) return summary;
             String markdown = markdownFromPage(page);
-            if (!markdown.isBlank()) return truncate(markdown.replaceAll("[#*`>\\-\\n]+", " ").trim(), 72);
+            if (!markdown.isBlank()) return markdownSummary(markdown, 72);
         }
         String resourceType = lesson == null ? "" : safe(lesson.getResourceType());
         if ("video_url".equals(resourceType) || "video_file".equals(resourceType) || "video_link".equals(resourceType)) {
@@ -103,7 +103,8 @@ public class LearningContentRepository {
             return "阅读教师上传的资料并完成课堂任务";
         }
         String text = firstNonBlank(lesson == null ? "" : lesson.getContent(), resourceText(lesson == null ? "" : lesson.getResourceUrl()));
-        return text.isBlank() ? "进入本节学习内容" : truncate(text.replaceAll("\\s+", " "), 72);
+        String summary = markdownSummary(text, 72);
+        return summary.isBlank() ? "进入本节学习内容" : summary;
     }
 
     List<Map<String, Object>> blocksFromPage(Map<String, Object> page) {
@@ -275,7 +276,7 @@ public class LearningContentRepository {
         }
         page.put("blocks", normalizedBlocks);
         if (safeString(page.get("summary")).isBlank()) {
-            page.put("summary", truncate(markdownFromPage(page).replaceAll("[#*`>\\-\\n]+", " ").trim(), 120));
+            page.put("summary", markdownSummary(markdownFromPage(page), 120));
         }
         return page;
     }
@@ -288,7 +289,7 @@ public class LearningContentRepository {
 
         Map<String, Object> page = new LinkedHashMap<>();
         page.put("title", title);
-        page.put("summary", truncate(markdown.replaceAll("\\s+", " "), 120));
+        page.put("summary", markdownSummary(markdown, 120));
         page.put("blocks", List.of(block));
         return page;
     }
@@ -362,10 +363,42 @@ public class LearningContentRepository {
         return "";
     }
 
-    private String truncate(String value, int maxLength) {
-        String text = safeString(value);
-        if (text.length() <= maxLength) return text;
-        return text.substring(0, Math.max(0, maxLength - 1)) + "…";
+    /**
+     * Plain-text summary of lesson Markdown: the first prose paragraph, preferring one without
+     * inline math. Headings, quotes, tables, code and display math never become the summary.
+     */
+    static String markdownSummary(String markdown, int maxLength) {
+        if (markdown == null || markdown.isBlank()) return "";
+        String body = markdown.replace("\r\n", "\n")
+                .replaceAll("(?s)```.*?```", "\n\n")
+                .replaceAll("(?s)\\$\\$.*?\\$\\$", "\n\n");
+        String withMath = "";
+        for (String paragraph : body.split("\\n\\s*\\n")) {
+            String text = paragraph.trim();
+            if (text.isEmpty() || text.startsWith("#") || text.startsWith(">") || text.startsWith("|")) continue;
+            text = plainInline(text.replaceAll("(?m)^\\s*(?:[-*+]|\\d+\\.)\\s+", ""));
+            if (text.isEmpty()) continue;
+            if (!text.contains("$")) return clip(text, maxLength);
+            if (withMath.isEmpty()) withMath = text;
+        }
+        String fallback = withMath.isEmpty()
+                ? plainInline(body.trim().split("\\n")[0].replaceAll("^[#>|\\s]+", ""))
+                : withMath;
+        // Inline math reads as raw LaTeX in a one-line summary; keep the sentence around it.
+        return clip(fallback.replaceAll("\\$[^$]*\\$", "").replaceAll("\\s+([，。；：！？、）,.;:!?)])", "$1")
+                .replaceAll("\\s+", " ").trim(), maxLength);
+    }
+
+    private static String plainInline(String text) {
+        return text.replaceAll("!?\\[([^\\]]*)\\]\\([^)]*\\)", "$1")
+                .replaceAll("\\*{1,3}([^*]+)\\*{1,3}", "$1")
+                .replaceAll("`([^`]+)`", "$1")
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private static String clip(String text, int maxLength) {
+        return text.length() <= maxLength ? text : text.substring(0, Math.max(0, maxLength - 1)) + "…";
     }
 
     private boolean matches(LearningProfile profile, String haystack) {

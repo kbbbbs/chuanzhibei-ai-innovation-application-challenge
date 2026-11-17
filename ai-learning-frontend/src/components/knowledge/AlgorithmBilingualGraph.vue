@@ -350,10 +350,10 @@ function buildFlowEdges() {
       source: r.source, target: r.target,
       label: langMode.value === 'en' ? '' : r.label,
       animated: isHL,
-      style: { stroke: isHL ? '#3b82f6' : '#c8d2e0', strokeWidth: isHL ? 2.5 : 1.2 },
-      labelStyle: { fill: '#94a3b8', fontSize: '10px', fontWeight: '500' },
-      labelBgStyle: { fill: '#fff', fillOpacity: 0.88 },
-      markerEnd: { type: 'arrowclosed', color: isHL ? '#3b82f6' : '#c8d2e0', width: 14, height: 14 },
+      style: { stroke: isHL ? 'var(--accent)' : 'var(--line-default)', strokeWidth: isHL ? 2.5 : 1.2 },
+      labelStyle: { fill: 'var(--text-subtle)', fontSize: '10px', fontWeight: '500' },
+      labelBgStyle: { fill: 'var(--surface-base)', fillOpacity: 0.88 },
+      markerEnd: { type: 'arrowclosed', color: isHL ? 'var(--accent)' : 'var(--line-strong)', width: 14, height: 14 },
     }
   })
 }
@@ -418,7 +418,7 @@ watch(langMode, rebuildFlow)
   z-index: 20;
 }
 .algo-graph-stage .vue-flow__node.selected {
-  box-shadow: 0 0 0 4px rgba(59,130,246,0.35) !important;
+  box-shadow: 0 0 0 4px var(--line-accent) !important;
 }
 .algo-graph-stage .vue-flow__edge.animated .vue-flow__edge-path {
   stroke-dasharray: 5;
@@ -438,7 +438,7 @@ watch(langMode, rebuildFlow)
   display: flex; align-items: center; justify-content: space-between;
   gap: 12px; flex-wrap: wrap; flex-shrink: 0;
 }
-.algo-graph-title { font-size: 14px; font-weight: 700; color: #1f2937; }
+.algo-graph-title { font-size: 14px; font-weight: 700; color: var(--text-strong); }
 .algo-graph-tags { display: flex; align-items: center; gap: 6px; }
 
 .algo-graph-toolbar {
@@ -465,43 +465,43 @@ watch(langMode, rebuildFlow)
 .algo-graph-stage {
   flex: 1; min-height: 420px; border-radius: 12px;
   overflow: hidden;
-  background: linear-gradient(135deg, #f8faff 0%, #eff2f9 100%);
-  border: 1px solid #e0e4ef;
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-subtle);
 }
 .algo-graph-flow { width: 100%; height: 100%; }
 
 .graph-sidebar {
   width: 260px; flex-shrink: 0;
-  border: 1px solid #e0e4ef; border-left: none;
+  border: 1px solid var(--line-subtle); border-left: none;
   border-radius: 0 12px 12px 0;
-  background: #fafbfd;
+  background: var(--surface-base);
   display: flex; flex-direction: column;
   max-height: 420px; overflow-y: auto;
 }
 .sidebar-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 12px 14px; border-bottom: 1px solid #e0e4ef;
-  position: sticky; top: 0; background: #fafbfd; z-index: 5;
+  padding: 12px 14px; border-bottom: 1px solid var(--line-subtle);
+  position: sticky; top: 0; background: var(--surface-base); z-index: 5;
 }
-.sidebar-head h4 { margin: 0; font-size: 14px; color: #1f2937; }
+.sidebar-head h4 { margin: 0; font-size: 14px; color: var(--text-strong); }
 .sidebar-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
 .sidebar-field { display: flex; gap: 10px; align-items: baseline; }
-.sf-key { width: 64px; flex-shrink: 0; font-size: 11px; color: #909399; }
-.sf-val { font-size: 13px; color: #303133; font-weight: 500; }
+.sf-key { width: 64px; flex-shrink: 0; font-size: 11px; color: var(--text-subtle); }
+.sf-val { font-size: 13px; color: var(--text-body); font-weight: 500; }
 .sidebar-rel { }
 .rel-chip {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 10px; margin-bottom: 4px;
-  border-radius: 8px; border: 1px solid #e0e4ef;
-  background: #fff; cursor: pointer; transition: all .15s;
-  font-size: 12px; color: #303133;
+  border-radius: 8px; border: 1px solid var(--line-subtle);
+  background: var(--surface-canvas); cursor: pointer; transition: all .15s;
+  font-size: 12px; color: var(--text-body);
 }
-.rel-chip:hover { border-color: #3b82f6; background: #eff6ff; }
+.rel-chip:hover { border-color: var(--line-accent); background: var(--surface-accent); }
 .sidebar-desc { margin-top: 4px; }
-.sidebar-desc p { margin: 4px 0 0; font-size: 12px; color: #606266; line-height: 1.7; }
+.sidebar-desc p { margin: 4px 0 0; font-size: 12px; color: var(--text-subtle); line-height: 1.7; }
 
 @media (max-width: 1100px) {
   .graph-with-sidebar { flex-direction: column; }
-  .graph-sidebar { width: 100%; border-left: 1px solid #e0e4ef; border-top: none; border-radius: 0 0 12px 12px; max-height: 260px; }
+  .graph-sidebar { width: 100%; border-left: 1px solid var(--line-subtle); border-top: none; border-radius: 0 0 12px 12px; max-height: 260px; }
 }
 </style>

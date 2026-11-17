@@ -1,102 +1,150 @@
 <template>
-  <div class="exam-taking">
-    <el-card v-loading="loading">
-      <template #header>
-        <div class="exam-header">
-          <span>{{ exam.title }}</span>
-          <div class="exam-status-panel" :class="{ urgent: remainingTime <= 300 }">
-            <div class="timer">
-              <el-icon><Clock /></el-icon>
-              <div>
-                <span class="timer-label">剩余时间</span>
-                <strong class="timer-text">{{ formatTime(remainingTime) }}</strong>
-              </div>
-            </div>
-            <div v-if="!isHomework" class="screen-switch-status">
-              切屏 {{ screenSwitchCount }} / {{ maxScreenSwitches }}
-            </div>
+  <div class="exam-taking" v-loading="loading">
+    <div class="exam-layout">
+      <div class="exam-paper">
+        <header class="exam-heading">
+          <p class="exam-kicker">{{ isHomework ? '作业作答' : '考试答题' }}</p>
+          <h1>{{ exam.title || (isHomework ? '作业' : '考试') }}</h1>
+        </header>
+
+        <ErrorNotice
+          v-if="loadFailed"
+          :title="`${isHomework ? '作业' : '试卷'}未加载`"
+          message="试题没有读取成功，这不代表没有题目。请返回列表后重新进入。"
+        />
+
+        <el-alert v-if="exam.description" :title="exam.description" type="info" :closable="false" />
+        <el-alert
+          v-if="!isHomework"
+          :title="antiCheatNotice"
+          type="warning"
+          :closable="false"
+          show-icon
+        />
+
+        <section
+          v-for="(question, idx) in questions"
+          :id="`question-${question.id}`"
+          :key="question.id"
+          class="question-block"
+          :aria-label="`第 ${idx + 1} 题`"
+        >
+          <div class="question-title">
+            <span class="question-number">{{ idx + 1 }}</span>
+            <div class="question-text" v-html="renderMarkdown(question.questionText)"></div>
+            <span class="question-score">{{ question.score }} 分</span>
+          </div>
+
+          <!-- Single Choice -->
+          <el-radio-group v-if="question.questionType === 'single_choice'" v-model="answers[question.id]" class="option-group">
+            <el-radio v-for="(opt, optIdx) in question.options" :key="optIdx" :label="optIdx">
+              <span class="option-text">{{ String.fromCharCode(65 + optIdx) }}. <span v-html="renderMarkdown(opt.text)"></span></span>
+            </el-radio>
+          </el-radio-group>
+
+          <!-- Multiple Choice -->
+          <el-checkbox-group v-if="question.questionType === 'multiple_choice'" v-model="answers[question.id]" class="option-group">
+            <el-checkbox v-for="(opt, optIdx) in question.options" :key="optIdx" :label="optIdx">
+              <span class="option-text">{{ String.fromCharCode(65 + optIdx) }}. <span v-html="renderMarkdown(opt.text)"></span></span>
+            </el-checkbox>
+          </el-checkbox-group>
+
+          <!-- True/False -->
+          <el-radio-group v-if="question.questionType === 'true_false'" v-model="answers[question.id]">
+            <el-radio :label="0">正确</el-radio>
+            <el-radio :label="1">错误</el-radio>
+          </el-radio-group>
+
+          <!-- Fill Blank / Short Answer -->
+          <el-input v-if="['fill_blank', 'short_answer'].includes(question.questionType)"
+                    v-model="answers[question.id]"
+                    type="textarea"
+                    :rows="question.questionType === 'short_answer' ? 6 : 2"
+                    :aria-label="`第 ${idx + 1} 题答案`"
+                    placeholder="请输入答案" />
+
+          <div v-if="question.questionType === 'file_upload'" class="file-answer">
+            <el-upload
+              action="#"
+              :auto-upload="false"
+              :limit="1"
+              :on-change="file => handleExamFileChange(question, file)"
+              :on-remove="() => answers[question.id] = ''"
+              :on-exceed="() => ElMessage.warning('每题只能上传一个文件')"
+            >
+              <el-button :loading="uploadingQuestionId === question.id">上传答题文件</el-button>
+              <template #tip><div class="el-upload__tip">支持 PDF、文档、图片、压缩包等，上传后再交卷</div></template>
+            </el-upload>
+            <el-link v-if="answers[question.id]" :href="resolveResourceUrl(answers[question.id])" target="_blank" type="success">查看已上传文件</el-link>
+          </div>
+        </section>
+
+        <AppEmpty v-if="!questions.length && !loading && !loadFailed" :description="isHomework ? '暂无作业题目' : '暂无试题'" />
+      </div>
+
+      <aside class="exam-side" aria-label="答题状态">
+        <div class="exam-status-panel" :class="{ urgent: remainingTime <= 300 }">
+          <el-icon :size="20" aria-hidden="true"><Clock /></el-icon>
+          <div>
+            <span class="timer-label">剩余时间</span>
+            <strong class="timer-text" role="timer">{{ formatTime(remainingTime) }}</strong>
+          </div>
+          <div v-if="!isHomework" class="screen-switch-status">
+            切屏 {{ screenSwitchCount }} / {{ maxScreenSwitches }}
           </div>
         </div>
-      </template>
 
-      <el-alert v-if="exam.description" :title="exam.description" type="info" :closable="false" class="exam-description" />
-      <el-alert
-        v-if="!isHomework"
-        :title="antiCheatNotice"
-        type="warning"
-        :closable="false"
-        show-icon
-        class="exam-description"
-      />
-
-      <div v-for="(question, idx) in questions" :key="question.id" class="question-block">
-        <div class="question-title">
-          <span class="question-number">{{ idx + 1 }}.</span>
-          <span>{{ question.questionText }}</span>
-          <span class="question-score">({{ question.score }}分)</span>
+        <div class="answer-sheet">
+          <div class="sheet-head">
+            <strong>答题卡</strong>
+            <span>已答 {{ answeredCount }} / {{ questions.length }}</span>
+          </div>
+          <div class="sheet-grid">
+            <button
+              v-for="(question, idx) in questions"
+              :key="question.id"
+              type="button"
+              class="sheet-cell"
+              :class="{ 'is-answered': isAnswered(question) }"
+              :aria-label="`第 ${idx + 1} 题，${isAnswered(question) ? '已答' : '未答'}`"
+              @click="scrollToQuestion(question)"
+            >
+              {{ idx + 1 }}
+            </button>
+          </div>
+          <div class="sheet-legend" aria-hidden="true">
+            <span><i class="legend-dot is-answered"></i>已答</span>
+            <span><i class="legend-dot"></i>未答</span>
+          </div>
         </div>
 
-        <!-- Single Choice -->
-        <el-radio-group v-if="question.questionType === 'single_choice'" v-model="answers[question.id]" class="option-group">
-          <el-radio v-for="(opt, optIdx) in question.options" :key="optIdx" :label="optIdx">
-            {{ String.fromCharCode(65 + optIdx) }}. {{ opt.text }}
-          </el-radio>
-        </el-radio-group>
-
-        <!-- Multiple Choice -->
-        <el-checkbox-group v-if="question.questionType === 'multiple_choice'" v-model="answers[question.id]" class="option-group">
-          <el-checkbox v-for="(opt, optIdx) in question.options" :key="optIdx" :label="optIdx">
-            {{ String.fromCharCode(65 + optIdx) }}. {{ opt.text }}
-          </el-checkbox>
-        </el-checkbox-group>
-
-        <!-- True/False -->
-        <el-radio-group v-if="question.questionType === 'true_false'" v-model="answers[question.id]">
-          <el-radio :label="0">正确</el-radio>
-          <el-radio :label="1">错误</el-radio>
-        </el-radio-group>
-
-        <!-- Fill Blank / Short Answer -->
-        <el-input v-if="['fill_blank', 'short_answer'].includes(question.questionType)"
-                  v-model="answers[question.id]"
-                  type="textarea"
-                  :rows="question.questionType === 'short_answer' ? 6 : 2"
-                  placeholder="请输入答案" />
-
-        <div v-if="question.questionType === 'file_upload'" class="file-answer">
-          <el-upload
-            action="#"
-            :auto-upload="false"
-            :limit="1"
-            :on-change="file => handleExamFileChange(question, file)"
-            :on-remove="() => answers[question.id] = ''"
-            :on-exceed="() => ElMessage.warning('每题只能上传一个文件')"
-          >
-            <el-button :loading="uploadingQuestionId === question.id">上传答题文件</el-button>
-            <template #tip><div class="el-upload__tip">支持 PDF、文档、图片、压缩包等，上传后再交卷</div></template>
-          </el-upload>
-          <el-link v-if="answers[question.id]" :href="resolveResourceUrl(answers[question.id])" target="_blank" type="success">查看已上传文件</el-link>
+        <p class="autosave-status" :class="`is-${autosave.state.value}`" data-testid="answer-save-status" aria-live="polite">
+          {{ autosave.label.value || '作答会自动暂存，交卷前不会提交' }}
+        </p>
+        <div class="submit-action">
+          <el-button :loading="saveLoading" :disabled="loading" @click="handleSaveDraft">暂存答案</el-button>
+          <el-button type="primary" :loading="loading" :disabled="saveLoading" @click="handleSubmit()">{{ isHomework ? '提交作业' : '提交试卷' }}</el-button>
         </div>
-      </div>
-
-      <div class="submit-action">
-        <el-button size="large" :loading="saveLoading" :disabled="loading" @click="handleSaveDraft">暂存答案</el-button>
-        <el-button type="primary" size="large" :loading="loading" :disabled="saveLoading" @click="handleSubmit()">提交试卷</el-button>
-      </div>
-    </el-card>
+      </aside>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed, ref, reactive, watch, onUnmounted } from 'vue'
+import { computed, nextTick, ref, reactive, watch, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Clock } from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/user'
 import { useConfirm } from '@/composables/useConfirm'
-import { enumName } from '@/utils/apiHelpers'
+import AppEmpty from '@/components/AppEmpty.vue'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import { enumName, requireSuccess } from '@/utils/apiHelpers'
+import { resolveResourceUrl } from '@/utils/backendUrl'
+import { renderMarkdown } from '@/utils/markdown'
 import request from '@/utils/request'
 import { uploadExamAnswerAttachment } from '@/api/exam'
+import { useAutosave } from '@/composables/useAutosave'
 
 const route = useRoute()
 const router = useRouter()
@@ -115,14 +163,42 @@ const answers = reactive({})
 const remainingTime = ref(0)
 const screenSwitchCount = ref(0)
 const loading = ref(false)
+const loadFailed = ref(false)
 const saveLoading = ref(false)
 const uploadingQuestionId = ref(null)
 let timer = null
 let examDeadline = 0
 let screenSwitchReporting = false
 let autoSubmitTriggered = false
+let submitInFlight = false
+let answersReady = false
 
-const maxScreenSwitches = computed(() => Number(exam.value.maxScreenSwitches ?? 3))
+// Autosave uses the same draft endpoint as 「暂存答案」; only the submit buttons hand in the paper.
+const autosave = useAutosave({
+  key: () => submission.value?.id ? `eduloop:answers:${submissionApi.value}:${submission.value.id}` : '',
+  snapshot: () => JSON.parse(JSON.stringify(answers)),
+  save: async () => {
+    if (!submission.value?.id) return false
+    const res = await request.post(`${submissionApi.value}/${submission.value.id}/answers`, buildAnswerPayload(), { silent: true })
+    return res?.code === '200'
+  },
+  delay: 2000
+})
+watch(answers, () => { if (answersReady) autosave.touch() }, { deep: true })
+
+const isAnswered = (question) => {
+  const value = answers[question.id]
+  if (Array.isArray(value)) return value.length > 0
+  return value !== null && value !== undefined && value !== ''
+}
+const answeredCount = computed(() => questions.value.filter(isAnswered).length)
+
+const scrollToQuestion = (question) => {
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  document.getElementById(`question-${question.id}`)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' })
+}
+
+const maxScreenSwitches =computed(() => Number(exam.value.maxScreenSwitches ?? 3))
 const antiCheatNotice = computed(() => {
   const clipboardText = exam.value.disableClipboard ? '本场考试已禁用复制、剪切和粘贴。' : ''
   return `请勿切换标签页或离开考试窗口，超过 ${maxScreenSwitches.value} 次将判定作弊，成绩记为 -1。${clipboardText}`
@@ -268,46 +344,44 @@ const unbindAntiCheatEvents = () => {
 
 const loadExam = async () => {
   loading.value = true
+  loadFailed.value = false
   try {
-    const res = await request.get(`${assessmentApi.value}/${examId.value}`)
-    if (res.code === '200') {
-      exam.value = {
-        ...res.data,
-        title: res.data.name || res.data.title || '',
-      }
-
-      const startRes = await request.post(`${assessmentApi.value}/${examId.value}/submissions/start`, null, {
-        params: { candidateId: String(userStore.userId) }
-      })
-      if (startRes.code !== '200' || !startRes.data?.id) return
-
-      const detailRes = await request.get(`${submissionApi.value}/${startRes.data.id}/student`)
-      if (detailRes.code !== '200') return
-
-      submission.value = detailRes.data
-      screenSwitchCount.value = Number(detailRes.data.screenSwitchCount || 0)
-      if (detailRes.data.cheated) {
-        handleCheated()
-        return
-      }
-      questions.value = (detailRes.data.answers || []).map(normalizeQuestion)
-      initializeAnswers()
-      startTimer()
-      bindAntiCheatEvents()
+    const res = requireSuccess(await request.get(`${assessmentApi.value}/${examId.value}`))
+    exam.value = {
+      ...res.data,
+      title: res.data.name || res.data.title || '',
     }
+
+    const startRes = requireSuccess(await request.post(`${assessmentApi.value}/${examId.value}/submissions/start`, null, {
+      params: { candidateId: String(userStore.userId) }
+    }))
+    if (!startRes.data?.id) throw new Error('答卷未创建')
+
+    const detailRes = requireSuccess(await request.get(`${submissionApi.value}/${startRes.data.id}/student`))
+
+    submission.value = detailRes.data
+    screenSwitchCount.value = Number(detailRes.data.screenSwitchCount || 0)
+    if (detailRes.data.cheated) {
+      handleCheated()
+      return
+    }
+    questions.value = (detailRes.data.answers || []).map(normalizeQuestion)
+    initializeAnswers()
+    // Answers typed before a refresh or while offline outrank the last server draft.
+    const local = autosave.readLocal()
+    const restored = local && questions.value.some(q => q.id in local)
+    if (restored) questions.value.forEach(q => { if (q.id in local) answers[q.id] = local[q.id] })
+    await nextTick()
+    answersReady = true
+    if (restored) { autosave.touch(); ElMessage.info('已恢复上次未保存的作答') }
+    startTimer()
+    bindAntiCheatEvents()
   } catch (e) {
-    // 全局异常已由 request.js 提示
+    // 全局异常已由 request.js 提示；这里只保留页面状态，不自动重试 start
+    loadFailed.value = true
   } finally {
     loading.value = false
   }
-}
-
-const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(/\/$/, '')
-
-const resolveResourceUrl = (url) => {
-  if (!url) return ''
-  if (/^(https?:)?\/\//i.test(url) || /^(data|blob):/i.test(url)) return url
-  return url.startsWith('/') ? `${apiBaseUrl}${url}` : url
 }
 
 const handleExamFileChange = async (question, file) => {
@@ -360,6 +434,7 @@ const handleSaveDraft = async ({ notify = true } = {}) => {
   saveLoading.value = true
   try {
     const res = await request.post(`${submissionApi.value}/${submission.value.id}/answers`, buildAnswerPayload())
+    if (res.code === '200') autosave.clearLocal()
     if (res.code === '200' && notify) {
       ElMessage.success('答案已暂存')
     }
@@ -373,12 +448,15 @@ const handleSaveDraft = async ({ notify = true } = {}) => {
 }
 
 const handleSubmit = async (skipConfirm = false) => {
+  if (submitInFlight) return
   if (skipConfirm !== true) {
-    const confirmed = await confirmSubmit('确认提交试卷？提交后不可修改')
-    if (!confirmed) return
+    const confirmed = await confirmSubmit(`确认提交${isHomework.value ? '作业' : '试卷'}？提交后不可修改`)
+    if (!confirmed || submitInFlight) return
   }
 
+  submitInFlight = true
   loading.value = true
+  answersReady = false
   try {
     let res
     if (isHomework.value) {
@@ -389,6 +467,7 @@ const handleSubmit = async (skipConfirm = false) => {
       res = await request.post(`${submissionApi.value}/${submission.value.id}/${action}`, buildAnswerPayload())
     }
     if (res.code === '200') {
+      autosave.finish()
       ElMessage.success('提交成功')
       clearInterval(timer)
       router.push({ name: isHomework.value ? 'MyHomeworkList' : 'MyExamList' })
@@ -396,7 +475,9 @@ const handleSubmit = async (skipConfirm = false) => {
   } catch (e) {
     // 全局异常已由 request.js 提示
   } finally {
+    submitInFlight = false
     loading.value = false
+    answersReady = true
   }
 }
 
@@ -417,8 +498,11 @@ const loadPage = () => {
   examDeadline = 0
   screenSwitchReporting = false
   autoSubmitTriggered = false
+  answersReady = false
+  autosave.reset()
   unbindAntiCheatEvents()
-  loadExam()
+  // Leaving the page also clears the param; that must not start a submission.
+  if (route.params.examId) loadExam()
 }
 
 watch(
@@ -434,116 +518,286 @@ onUnmounted(() => {
 </script>
 
 <style scoped>
-.exam-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.exam-taking {
+  width: min(100%, 1200px);
+  margin-inline: auto;
 }
 
-.timer {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.exam-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  align-items: start;
+  gap: var(--space-5);
+}
+
+.exam-paper {
+  display: grid;
+  gap: var(--space-4);
+  min-width: 0;
+}
+
+.exam-kicker {
+  margin: 0 0 var(--space-1);
+  color: var(--accent);
+  font-size: var(--text-xs);
+  font-weight: 650;
+}
+
+.exam-heading h1 {
+  margin: 0;
+  font-size: var(--text-2xl);
+  overflow-wrap: anywhere;
+}
+
+.exam-side {
+  position: sticky;
+  top: 0;
+  display: grid;
+  gap: var(--space-3);
+  min-width: 0;
 }
 
 .exam-status-panel {
   display: flex;
   align-items: center;
-  gap: 16px;
-  min-width: 250px;
-  padding: 8px 12px;
-  border: 1px solid #dcdfe6;
-  border-radius: 6px;
-  background: #f5f7fa;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  color: var(--accent);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .exam-status-panel.urgent {
-  border-color: #f56c6c;
-  background: #fef0f0;
+  color: var(--critical);
+  background: var(--critical-surface);
+  border-color: var(--critical-line);
 }
 
 .timer-label {
   display: block;
-  color: #606266;
-  font-size: 12px;
-  line-height: 1;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+}
+
+.timer-text {
+  display: block;
+  color: inherit;
+  font-size: var(--text-2xl);
+  font-weight: 650;
+  line-height: 1.2;
+  font-variant-numeric: tabular-nums;
 }
 
 .screen-switch-status {
   margin-left: auto;
-  color: #606266;
-  font-size: 13px;
+  color: var(--text-body);
+  font-size: var(--text-sm);
   white-space: nowrap;
 }
 
+.answer-sheet {
+  padding: var(--space-4);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
+}
+
+.sheet-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--space-3);
+}
+
+.sheet-head strong {
+  color: var(--text-strong);
+  font-weight: 600;
+}
+
+.sheet-head span {
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+}
+
+.sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(36px, 1fr));
+  gap: var(--space-2);
+  max-height: 260px;
+  overflow-y: auto;
+}
+
+.sheet-cell {
+  height: 36px;
+  color: var(--text-body);
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-default);
+  border-radius: var(--radius-md);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+}
+
+.sheet-cell:hover {
+  border-color: var(--line-strong);
+}
+
+.sheet-cell.is-answered {
+  color: var(--accent);
+  background: var(--surface-accent);
+  border-color: var(--line-accent);
+  font-weight: 600;
+}
+
+.sheet-legend {
+  display: flex;
+  gap: var(--space-4);
+  margin-top: var(--space-3);
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+}
+
+.sheet-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  background: var(--surface-canvas);
+  border: 1px solid var(--line-default);
+  border-radius: 3px;
+}
+
+.legend-dot.is-answered {
+  background: var(--surface-accent);
+  border-color: var(--line-accent);
+}
+
+.autosave-status {
+  margin: var(--space-3) 0 0;
+  color: var(--text-subtle);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+.autosave-status.is-offline,
+.autosave-status.is-error {
+  color: var(--caution);
+}
+
+.submit-action {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-2);
+}
+
+.submit-action .el-button + .el-button {
+  margin-left: 0;
+}
+
 .question-block {
-  padding: 20px;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-bottom: 20px;
-  background: #fafafa;
+  min-width: 0;
+  padding: var(--space-5);
+  scroll-margin-top: var(--space-4);
+  background: var(--surface-base);
+  border: 1px solid var(--line-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-1);
 }
 
 .question-title {
-  font-size: 16px;
-  margin-bottom: 15px;
   display: flex;
-  align-items: baseline;
-  gap: 5px;
+  align-items: flex-start;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  color: var(--text-strong);
+  font-size: var(--text-lg);
 }
 
 .question-number {
-  font-weight: bold;
-  color: #409eff;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: var(--accent);
+  background: var(--surface-accent);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 650;
+}
+
+.question-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.question-text :deep(p),
+.option-text :deep(p) {
+  display: inline;
+  margin: 0;
+}
+
+.question-text :deep(pre) {
+  padding: var(--space-3);
+  overflow-x: auto;
+  color: var(--text-on-code);
+  background: var(--surface-code);
+  border-radius: var(--radius-md);
 }
 
 .question-score {
-  margin-left: auto;
-  color: #999;
-  font-size: 14px;
-}
-
-.exam-description {
-  margin-bottom: 20px;
+  flex: 0 0 auto;
+  color: var(--text-subtle);
+  font-size: var(--text-sm);
 }
 
 .option-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  align-items: stretch;
+  gap: var(--space-2);
 }
 
-.timer-text {
-  display: block;
-  margin-top: 4px;
-  font-weight: bold;
-  color: #f56c6c;
-  font-size: 22px;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
+.option-group :deep(.el-radio),
+.option-group :deep(.el-checkbox) {
+  height: auto;
+  min-height: 32px;
+  margin-right: 0;
+  white-space: normal;
 }
 
-@media (max-width: 700px) {
-  .exam-header {
-    align-items: flex-start;
-    gap: 12px;
-    flex-direction: column;
-  }
-
-  .exam-status-panel {
-    width: 100%;
-    min-width: 0;
-    box-sizing: border-box;
-  }
-}
-
-.submit-action {
-  margin-top: 30px;
-  text-align: center;
+.option-group :deep(.el-radio__label),
+.option-group :deep(.el-checkbox__label) {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  line-height: 1.6;
 }
 
 .file-answer {
   display: grid;
-  gap: 10px;
+  gap: var(--space-2);
+}
+
+@media (max-width: 960px) {
+  .exam-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .exam-side {
+    order: -1;
+    position: static;
+  }
+
+  .sheet-grid {
+    max-height: 132px;
+  }
 }
 </style>

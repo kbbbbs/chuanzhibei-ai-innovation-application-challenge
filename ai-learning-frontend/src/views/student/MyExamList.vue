@@ -1,47 +1,69 @@
 <template>
-  <div class="my-exams">
-    <el-card v-loading="loading">
-      <template #header>
-        <span>我的{{ assessmentLabel }}</span>
+  <div class="my-exams workspace-page">
+    <PageHeader
+      eyebrow="学习"
+      :title="`我的${assessmentLabel}`"
+      :description="isHomework ? '在开放时间内完成作业，提交后可查看批改结果。' : '在考试时间内进入答题，交卷后可查看批改结果和成绩。'"
+    >
+      <template #actions>
+        <el-button :loading="loading" @click="loadExams">刷新</el-button>
       </template>
+    </PageHeader>
 
+    <ErrorNotice
+      v-if="loadFailed"
+      :title="`${assessmentLabel}列表未加载`"
+      message="请确认网络后重试。"
+      retry-label="重新加载"
+      :busy="loading"
+      @retry="loadExams"
+    />
+
+    <section class="metric-grid" :aria-label="`${assessmentLabel}概览`">
+      <div class="metric-tile"><span>{{ pendingLabel }}</span><strong>{{ allUpcomingExams.length }}</strong></div>
+      <div class="metric-tile"><span>可以开始</span><strong>{{ startableCount }}</strong></div>
+      <div class="metric-tile"><span>批改中</span><strong>{{ gradingCount }}</strong></div>
+      <div class="metric-tile"><span>已批改</span><strong>{{ gradedCount }}</strong></div>
+    </section>
+
+    <section class="content-panel" v-loading="loading" :aria-label="`${assessmentLabel}列表`">
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="待参加" name="upcoming">
-          <el-table :data="upcomingExams" border stripe>
-            <template #empty><AppEmpty /></template>
-            <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
-            <el-table-column label="开始时间" width="180">
+        <el-tab-pane :label="pendingLabel" name="upcoming">
+          <el-table :data="upcomingExams" stripe>
+            <template #empty><AppEmpty :description="`暂无${pendingLabel}的${assessmentLabel}`" /></template>
+            <el-table-column prop="title" :label="`${assessmentLabel}名称`" min-width="200">
+              <template #default="{ row }"><span class="row-title">{{ row.title }}</span></template>
+            </el-table-column>
+            <el-table-column :label="isHomework ? '开放时间' : '开始时间'" width="180">
               <template #default="{ row }">
                 {{ row.startTime ? new Date(row.startTime).toLocaleString() : '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="结束时间" width="180">
+            <el-table-column :label="isHomework ? '截止时间' : '结束时间'" width="180">
               <template #default="{ row }">
                 {{ row.endTime ? new Date(row.endTime).toLocaleString() : '-' }}
               </template>
             </el-table-column>
-            <el-table-column label="时长" width="100">
+            <el-table-column :label="isHomework ? '作答限时' : '时长'" width="100">
               <template #default="{ row }">
                 {{ row.duration }}分钟
               </template>
             </el-table-column>
-            <el-table-column label="开始状态" width="100">
+            <el-table-column label="状态" width="110">
               <template #default="{ row }">
-                <el-tag :type="hasExamStarted(row) ? 'success' : 'warning'">
-                  {{ hasExamStarted(row) ? '已开始' : '未开始' }}
-                </el-tag>
+                <StatusBadge v-bind="availabilityState(row)" />
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="150">
+            <el-table-column label="操作" width="130" fixed="right">
               <template #default="{ row }">
                 <el-button size="small" type="primary" @click="handleStartExam(row)" :disabled="!canStartExam(row)">
-                  {{ canStartExam(row) ? `开始${assessmentLabel}` : '未到时间' }}
+                  {{ canStartExam(row) ? `开始${assessmentLabel}` : hasExamEnded(row) ? '已截止' : '未到时间' }}
                 </el-button>
               </template>
             </el-table-column>
           </el-table>
           <el-pagination
-            class="pagination"
+            class="list-pagination"
             v-model:current-page="upcomingPagination.pageNum"
             v-model:page-size="upcomingPagination.pageSize"
             :total="allUpcomingExams.length"
@@ -52,9 +74,11 @@
         </el-tab-pane>
 
         <el-tab-pane label="已完成" name="completed">
-          <el-table :data="completedExams" border stripe>
-            <template #empty><AppEmpty /></template>
-            <el-table-column prop="title" :label="`${assessmentLabel}名称`" />
+          <el-table :data="completedExams" stripe>
+            <template #empty><AppEmpty :description="`暂无已完成的${assessmentLabel}`" /></template>
+            <el-table-column prop="title" :label="`${assessmentLabel}名称`" min-width="200">
+              <template #default="{ row }"><span class="row-title">{{ row.title }}</span></template>
+            </el-table-column>
             <el-table-column label="提交时间" width="180">
               <template #default="{ row }">
                 {{ row.submitTime ? new Date(row.submitTime).toLocaleString() : '-' }}
@@ -73,14 +97,14 @@
                 <el-tag v-else type="warning">批改中</el-tag>
               </template>
             </el-table-column>
-            <el-table-column label="操作" width="120">
+            <el-table-column label="操作" width="100" fixed="right">
               <template #default="{ row }">
                 <el-button size="small" @click="handleViewResult(row)">查看</el-button>
               </template>
             </el-table-column>
           </el-table>
           <el-pagination
-            class="pagination"
+            class="list-pagination"
             v-model:current-page="completedPagination.pageNum"
             v-model:page-size="completedPagination.pageSize"
             :total="allCompletedExams.length"
@@ -90,7 +114,7 @@
           />
         </el-tab-pane>
       </el-tabs>
-    </el-card>
+    </section>
   </div>
 </template>
 
@@ -100,7 +124,10 @@ import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useUserStore } from '@/store/user'
 import AppEmpty from '@/components/AppEmpty.vue'
-import { getRecords, normalizeStatus, paginateRecords } from '@/utils/apiHelpers'
+import ErrorNotice from '@/components/ui/ErrorNotice.vue'
+import PageHeader from '@/components/ui/PageHeader.vue'
+import StatusBadge from '@/components/ui/StatusBadge.vue'
+import { getRecords, normalizeStatus, paginateRecords, requireSuccess } from '@/utils/apiHelpers'
 import request from '@/utils/request'
 
 const router = useRouter()
@@ -121,11 +148,19 @@ const completedPagination = reactive({
 const upcomingExams = computed(() => paginateRecords(allUpcomingExams.value, upcomingPagination.pageNum, upcomingPagination.pageSize))
 const completedExams = computed(() => paginateRecords(allCompletedExams.value, completedPagination.pageNum, completedPagination.pageSize))
 const loading = ref(false)
+const loadFailed = ref(false)
+let loadRun = 0
 const assessmentType = computed(() => route.meta.assessmentType || 'EXAM')
 const assessmentLabel = computed(() => assessmentType.value === 'HOMEWORK' ? '作业' : '考试')
 const isHomework = computed(() => assessmentType.value === 'HOMEWORK')
-const assessmentApi = computed(() => isHomework.value ? '/api/homeworks' : '/api/exams')
-const submissionApi = computed(() => isHomework.value ? '/api/homework-submissions' : '/api/submissions')
+const pendingLabel = computed(() => isHomework.value ? '待完成' : '待参加')
+const startableCount = computed(() => allUpcomingExams.value.filter(canStartExam).length)
+const gradingCount = computed(() => allCompletedExams.value.filter(item => !item.cheated && item.status !== 2).length)
+const gradedCount = computed(() => allCompletedExams.value.filter(item => !item.cheated && item.status === 2).length)
+const assessmentSources = {
+  EXAM: { assessmentUrl: '/api/exams', submissionUrl: '/api/submissions', label: '考试' },
+  HOMEWORK: { assessmentUrl: '/api/homeworks', submissionUrl: '/api/homework-submissions', label: '作业' },
+}
 
 const canStartExam = (exam) => {
   const now = new Date()
@@ -135,6 +170,14 @@ const canStartExam = (exam) => {
 }
 
 const hasExamStarted = (exam) => exam.status === 1 && new Date() >= new Date(exam.startTime)
+
+const hasExamEnded = (exam) => Boolean(exam.endTime) && new Date() > new Date(exam.endTime)
+
+const availabilityState = (exam) => {
+  if (hasExamEnded(exam)) return { label: '已截止', tone: 'neutral' }
+  if (hasExamStarted(exam)) return { label: isHomework.value ? '已开放' : '已开始', tone: 'positive' }
+  return { label: isHomework.value ? '未开放' : '未开始', tone: 'caution' }
+}
 
 const mapExam = (exam) => {
   const normalized = normalizeStatus(exam.status, { DRAFT: 0, PUBLISHED: 1, CLOSED: 2 }, 0)
@@ -146,7 +189,7 @@ const mapExam = (exam) => {
   }
 }
 
-const mapSubmission = (submission, exam) => {
+const mapSubmission = (submission, exam, label) => {
   const normalized = normalizeStatus(submission.status, {
     IN_PROGRESS: 0,
     SUBMITTED: 1,
@@ -156,7 +199,7 @@ const mapSubmission = (submission, exam) => {
   return {
     ...submission,
     assessmentId: submission.homeworkId ?? submission.examId,
-    title: exam?.title || submission.homeworkName || submission.examName || `${assessmentLabel.value}${submission.homeworkId ?? submission.examId}`,
+    title: exam?.title || submission.homeworkName || submission.examName || `${label}${submission.homeworkId ?? submission.examId}`,
     duration: exam?.duration || 0,
     submitTime: submission.submittedAt,
     status: normalized,
@@ -164,46 +207,54 @@ const mapSubmission = (submission, exam) => {
 }
 
 const loadExams = async () => {
+  // /my-exams and /my-homeworks share this instance, so one run must never use the other's values.
+  const run = ++loadRun
+  const { assessmentUrl, submissionUrl, label } = assessmentSources[assessmentType.value] || assessmentSources.EXAM
+  const studentId = userStore.userId
   loading.value = true
+  loadFailed.value = false
   try {
+    // An unknown class or submission state must not offer a second attempt, so all three are required.
     // Get my classes
-    const classRes = await request.get(`/class-students/student/${userStore.userId}`)
-    if (classRes.code === '200') {
-      const classIds = getRecords(classRes.data).map(c => c.classId)
+    const classRes = requireSuccess(await request.get(`/class-students/student/${studentId}`))
+    if (run !== loadRun) return
+    const classIds = getRecords(classRes.data).map(c => c.classId)
 
-      // Get all exams for these classes
-      const examRes = await request.get(assessmentApi.value, {
-        params: { pageSize: 100 }
-      })
-      if (examRes.code === '200') {
-        const allExams = getRecords(examRes.data).map(mapExam).filter(e => classIds.includes(e.classId))
+    // Get all exams for these classes
+    const examRes = requireSuccess(await request.get(assessmentUrl, {
+      params: { pageSize: 100 }
+    }))
+    if (run !== loadRun) return
+    const allExams = getRecords(examRes.data).map(mapExam).filter(e => classIds.includes(e.classId))
 
-        // Get my submissions
-        const subRes = await request.get(submissionApi.value, {
-          params: { studentId: userStore.userId, pageSize: 100 }
-        })
-        const mySubmissions = subRes.code === '200' ? getRecords(subRes.data) : []
-        const mappedSubmissions = mySubmissions.map(sub => {
-          const exam = allExams.find(e => e.id === (sub.homeworkId ?? sub.examId))
-          return mapSubmission(sub, exam)
-        })
+    // Get my submissions
+    const subRes = requireSuccess(await request.get(submissionUrl, {
+      params: { studentId, pageSize: 100 }
+    }))
+    if (run !== loadRun) return
 
-        const finishedExamIds = new Set(
-          mappedSubmissions
-            .filter(sub => sub.status >= 1)
-            .map(sub => sub.assessmentId)
-        )
+    const mappedSubmissions = getRecords(subRes.data).map(sub => {
+      const exam = allExams.find(e => e.id === (sub.homeworkId ?? sub.examId))
+      return mapSubmission(sub, exam, label)
+    })
 
-        allUpcomingExams.value = allExams.filter(e => !finishedExamIds.has(e.id) && e.status === 1)
-        allCompletedExams.value = mappedSubmissions.filter(sub => sub.status >= 1)
-        normalizePage(upcomingPagination, allUpcomingExams.value.length)
-        normalizePage(completedPagination, allCompletedExams.value.length)
-      }
-    }
+    const finishedExamIds = new Set(
+      mappedSubmissions
+        .filter(sub => sub.status >= 1)
+        .map(sub => sub.assessmentId)
+    )
+
+    allUpcomingExams.value = allExams.filter(e => !finishedExamIds.has(e.id) && e.status === 1)
+    allCompletedExams.value = mappedSubmissions.filter(sub => sub.status >= 1)
+    normalizePage(upcomingPagination, allUpcomingExams.value.length)
+    normalizePage(completedPagination, allCompletedExams.value.length)
   } catch (e) {
-    // 全局异常已由 request.js 提示
+    if (run !== loadRun) return
+    allUpcomingExams.value = []
+    allCompletedExams.value = []
+    loadFailed.value = true
   } finally {
-    loading.value = false
+    if (run === loadRun) loading.value = false
   }
 }
 
@@ -232,7 +283,7 @@ const handleTabChange = () => {
 
 const handleStartExam = (exam) => {
   if (!canStartExam(exam)) {
-    ElMessage.warning(`${assessmentLabel.value}未到开始时间`)
+    ElMessage.warning(hasExamEnded(exam) ? `${assessmentLabel.value}已截止` : `${assessmentLabel.value}未到开始时间`)
     return
   }
 
@@ -255,15 +306,33 @@ onMounted(() => {
   loadExams()
 })
 
+// /my-homeworks and /my-exams share this component, so a switch must not show the other list.
 watch(
   () => route.name,
-  () => loadExams()
+  (name) => {
+    // The shared instance also sees the navigation away from both lists; that must load nothing.
+    if (!['MyExamList', 'MyHomeworkList'].includes(name)) {
+      loadRun += 1
+      return
+    }
+    allUpcomingExams.value = []
+    allCompletedExams.value = []
+    activeTab.value = 'upcoming'
+    upcomingPagination.pageNum = 1
+    completedPagination.pageNum = 1
+    loadExams()
+  }
 )
 </script>
 
 <style scoped>
-.pagination {
-  margin-top: 16px;
+.list-pagination {
   justify-content: center;
+  margin-top: var(--space-4);
+}
+
+.cheated-score {
+  color: var(--critical);
+  font-weight: 600;
 }
 </style>

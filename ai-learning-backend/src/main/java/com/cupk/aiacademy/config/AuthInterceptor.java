@@ -17,6 +17,11 @@ public class AuthInterceptor implements AsyncHandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
         UserContext.clear();
+        if (request.getRequestURI().startsWith("/api/setup/")
+                || request.getRequestURI().startsWith("/api/admin/settings/")) {
+            // Installation endpoints enforce their own session or live administrator authorization.
+            return true;
+        }
         String authorization = request.getHeader("Authorization");
 
         if (authUtils == null) {

@@ -13,7 +13,7 @@ public class ChapterDto {
     @Positive
     private Integer courseId;
 
-    @NotBlank
+    @NotBlank(message = "章节名称不能为空")
     @Size(max = 100)
     private String title;
 

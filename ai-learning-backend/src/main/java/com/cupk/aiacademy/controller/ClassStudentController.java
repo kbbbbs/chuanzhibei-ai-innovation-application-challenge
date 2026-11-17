@@ -43,6 +43,9 @@ public class ClassStudentController {
     @Autowired
     private AuthUtils authUtils;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbc;
+
     @GetMapping
     public Result pages(@RequestParam(required = false) Integer classId,
                         @RequestParam(required = false) Integer studentId,
@@ -128,8 +131,11 @@ public class ClassStudentController {
     }
 
     @PostMapping
+    @org.springframework.transaction.annotation.Transactional
     public Result add(@RequestBody ClassStudentDto request) {
+        permissionService.requireAdmin();
         ClassStudent classStudent = request == null ? null : request.toEntity();
+        if (classStudent != null) lockClassCourse(classStudent.getClassId());
         Result checkResult = checkClassStudent(classStudent, null);
         if (checkResult != null) {
             return checkResult;
@@ -137,16 +143,26 @@ public class ClassStudentController {
         permissionService.requireClassTeacher(classStudent.getClassId());
         classStudent.setJoinTime(LocalDateTime.now());
         int row = classStudentMapper.insert(classStudent);
+        if (row > 0) bumpClassCourse(classStudent.getClassId());
         return row > 0 ? Result.success() : Result.error();
     }
 
     @PutMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public Result update(@PathVariable Integer id, @RequestBody ClassStudentDto request) {
+        permissionService.requireAdmin();
         ClassStudent classStudent = request == null ? null : request.toEntity();
         ClassStudent old = classStudentMapper.selectById(id);
         if (old == null) {
             return Result.error("404", "学生名单记录不存在");
         }
+        if (classStudent == null) return Result.error("400", "学生名单信息不能为空");
+        lockClassCourses(old.getClassId(), classStudent.getClassId());
+        ClassStudent current = classStudentMapper.selectForUpdate(id);
+        if (current == null || !java.util.Objects.equals(current.getClassId(), old.getClassId())) {
+            return Result.error("409", "学生名单已更新，请刷新后重试");
+        }
+        old = current;
         permissionService.requireClassTeacher(old.getClassId());
         Result checkResult = checkClassStudent(classStudent, id);
         if (checkResult != null) {
@@ -155,17 +171,30 @@ public class ClassStudentController {
         permissionService.requireClassTeacher(classStudent.getClassId());
         classStudent.setId(id);
         int row = classStudentMapper.updateById(classStudent);
+        if (row > 0) {
+            bumpClassCourse(old.getClassId());
+            if (!java.util.Objects.equals(old.getClassId(), classStudent.getClassId())) bumpClassCourse(classStudent.getClassId());
+        }
         return row > 0 ? Result.success() : Result.error();
     }
 
     @DeleteMapping("/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public Result delete(@PathVariable Integer id) {
+        permissionService.requireAdmin();
         ClassStudent old = classStudentMapper.selectById(id);
         if (old == null) {
             return Result.error("404", "学生名单记录不存在");
         }
+        lockClassCourse(old.getClassId());
+        ClassStudent current = classStudentMapper.selectForUpdate(id);
+        if (current == null || !java.util.Objects.equals(current.getClassId(), old.getClassId())) {
+            return Result.error("409", "学生名单已更新，请刷新后重试");
+        }
+        old = current;
         permissionService.requireClassTeacher(old.getClassId());
         int row = classStudentMapper.deleteById(id);
+        if (row > 0) bumpClassCourse(old.getClassId());
         return row > 0 ? Result.success() : Result.error();
     }
 
@@ -197,6 +226,27 @@ public class ClassStudentController {
             return Result.error("409", "该学生已加入该教学班");
         }
         return null;
+    }
+
+    private void lockClassCourse(Integer classId) {
+        lockClassCourses(classId);
+    }
+
+    private void lockClassCourses(Integer... classIds) {
+        var classes = java.util.Arrays.stream(classIds).distinct().sorted().map(permissionService::getTeachingClass).toList();
+        classes.stream().map(TeachingClass::getCourseId).filter(java.util.Objects::nonNull).distinct().sorted().forEach(courseId ->
+                jdbc.queryForObject("SELECT id FROM t_course WHERE id=? FOR UPDATE", Integer.class, courseId));
+        for (TeachingClass teachingClass : classes) {
+            TeachingClass current = classMapper.selectForUpdate(teachingClass.getId());
+            if (current == null || !java.util.Objects.equals(current.getCourseId(), teachingClass.getCourseId())) {
+                throw new com.cupk.aiacademy.common.BusinessException("教学班归属已更新，请刷新后重试");
+            }
+        }
+    }
+
+    private void bumpClassCourse(Integer classId) {
+        TeachingClass teachingClass = classMapper.selectById(classId);
+        if (teachingClass.getCourseId() != null) jdbc.update("UPDATE t_course SET workflow_version=COALESCE(workflow_version,0)+1 WHERE id=?", teachingClass.getCourseId());
     }
 
     private void checkReadPermission(ClassStudent classStudent) {

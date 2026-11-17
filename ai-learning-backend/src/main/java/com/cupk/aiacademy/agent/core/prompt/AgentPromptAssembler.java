@@ -78,6 +78,15 @@ public class AgentPromptAssembler {
             knowledgeContextProvider.requireReadableEvidence(retrieval.citations());
     }
 
+    /** Uses administrator-managed persona/options while evidence and capabilities remain server-owned. */
+    public Prompt buildAssistantPrompt(AgentDefinition agent, List<Message> preparedMessages) {
+        var messages = new ArrayList<Message>();
+        messages.add(new SystemMessage(systemPrompt(agent) + "\n" + CONCISE_RESPONSE_RULES));
+        messages.addAll(preparedMessages);
+        var options = chatOptions(agent);
+        return options == null ? new Prompt(messages) : new Prompt(messages, options);
+    }
+
     private List<Message> buildPromptMessages(List<AgentMessage> historyMessages,
                                               String systemPrompt,
                                               String currentUserContent) {

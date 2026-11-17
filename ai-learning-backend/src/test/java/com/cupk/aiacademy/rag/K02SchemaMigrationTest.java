@@ -38,6 +38,9 @@ class K02SchemaMigrationTest {
         assertArrayEquals(Files.readAllBytes(root.resolve("ai-learning-backend/src/main/resources/db/migration/V004__rag_visuals.sql")),
                 Files.readAllBytes(root.resolve("database/migrations/V004__rag_visuals.sql")));
         assertTrue(fresh.contains("native_rag_visual_page"));assertTrue(fresh.contains("image_png LONGBLOB"));
+        assertArrayEquals(Files.readAllBytes(root.resolve("ai-learning-backend/src/main/resources/db/migration/V006__rag_page_edits.sql")),
+                Files.readAllBytes(root.resolve("database/migrations/V006__rag_page_edits.sql")));
+        assertTrue(fresh.contains("native_rag_page_edit"));
         for(String column:new String[]{"processing_state","processing_job_id","processing_version","lease_token","expected_active_index","expected_document_version","force_ocr_pages_json","selected_pages_json","total_pages","processed_pages","failed_pages","ocr_raw_text","needs_review","ocr_fingerprint"})
             assertTrue(fresh.contains(column),column);
     }

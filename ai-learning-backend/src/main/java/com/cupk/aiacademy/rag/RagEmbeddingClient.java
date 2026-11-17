@@ -75,10 +75,8 @@ public class RagEmbeddingClient {
             String path = baseUrl.replaceAll("/+$", "");
             if (!path.endsWith("/embeddings")) path += path.endsWith("/v1") ? "/embeddings" : "/v1/embeddings";
             URI uri = URI.create(path);
-            String host = uri.getHost();
-            if (host == null || !("https".equals(uri.getScheme()) ||
-                    ("http".equals(uri.getScheme()) && List.of("localhost", "127.0.0.1", "::1", "[::1]").contains(host))))
-                throw new IllegalStateException("Embedding endpoint requires HTTPS or loopback HTTP");
+            RuntimeModelPolicy.requireAllowedEndpoint(uri.toString(),
+                    System.getenv().getOrDefault("INSTALLATION_MODEL_HTTP_ALLOWLIST", ""));
             int dimensions = -1;
             // This provider's selected VL model resets indices in groups of eight for larger requests.
             // Send bounded independent batches; never infer identity from arrival order or renumber duplicates.
