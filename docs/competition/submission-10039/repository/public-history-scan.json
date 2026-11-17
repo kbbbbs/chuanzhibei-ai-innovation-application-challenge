@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-11-17T08:03:34.241200+00:00",
+  "sourceReviewCommit": "708940c38d5f863112d96daef1ab15ecd62fb734",
+  "publicSafeParent": "0e4f54e3a8a7d60ca3b5618f1dfffb07f35e31bb",
+  "reachableObjects": 5809,
+  "blobs": 3408,
+  "commits": 119,
+  "largestBlob": {
+    "object": "0e15ef88e5ebf8d44193bdccb42a74ce538ccae8",
+    "path": "outputs/AI智学平台项目介绍.pptx",
+    "bytes": 38310700
+  },
+  "over100MiB": [],
+  "credentialFindings": [
+    {
+      "object": "fc686aa6da6d2bf3be95ec8a7067e96442ad0942",
+      "path": "scripts/competition/tests/test_export_agent_development_records.py",
+      "kinds": [
+        "sk_key"
+      ],
+      "classification": "reviewed_synthetic_fixture"
+    }
+  ],
+  "unresolvedCredentialFindings": [],
+  "retainedPrivateHostFindings": [],
+  "retainedRuntimeProfilePaths": [],
+  "status": "PASS",
+  "limitations": [
+    "Known credentials and selected token signatures scanned across all reachable objects, with Office XML/text ZIP members.",
+    "Image pixels were not OCR-scanned. New publication documents and root copy-back require a subsequent payload scan."
+  ]
+}

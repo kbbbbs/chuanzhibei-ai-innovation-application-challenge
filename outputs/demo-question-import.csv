@@ -1,6 +1,0 @@
-课程ID,题型,题干,选项A,选项B,选项C,选项D,选项E,选项F,正确答案,难度,知识点,解析
-109,单选题,Java程序的标准入口方法是哪个？,public static void main(String[] args),public void start(),static void run(),private main(),,,A,简单,Java基础语法,main方法是Java应用程序的标准入口。
-109,多选题,下列哪些属于Java基本数据类型？,int,String,boolean,double,ArrayList,,A，C，D,中等,数据类型,String和ArrayList属于引用类型。
-109,判断题,Java中的局部变量在使用前必须显式初始化。,,,,,,,正确,简单,变量与作用域,局部变量没有默认值，使用前必须赋值。
-109,填空题,用于声明一个类的Java关键字是____。,,,,,,,class,简单,类与对象,class关键字用于声明类。
-109,简答题,请简述封装的含义及其主要作用。,,,,,,,隐藏实现细节并通过受控接口访问对象状态,中等,面向对象,封装通过访问控制和公开方法保护对象内部状态并降低耦合。

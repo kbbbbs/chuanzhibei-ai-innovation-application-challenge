@@ -1,0 +1,35 @@
+{
+  "preparedAt": "2026-11-17T08:09:21.303048+00:00",
+  "repository": "https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge",
+  "defaultBranch": "main",
+  "officialTrack": "传智杯 · AI创新应用挑战赛（10039）",
+  "localCodeSnapshot": "708940c38d5f863112d96daef1ab15ecd62fb734",
+  "publicSafeParent": "0e4f54e3a8a7d60ca3b5618f1dfffb07f35e31bb",
+  "safeHistoryCommits": 119,
+  "codeChangesInPublicRedaction": 0,
+  "payloadRedactionChanges": [
+    {
+      "path": "docs/competition/submission-10039/prompt-chains/P02-visible-dialogue.md",
+      "localSha256": "0928baecfd1785d8b512fe62120457d4205bd940b8b8d9c0dfa55322f967bf25",
+      "publicSha256": "cd16977ce48c23af53a940a1ef217c49f1ce9af9642d134879580de70001a59d"
+    },
+    {
+      "path": "docs/competition/submission-10039/prompt-chains/source-excerpts.jsonl",
+      "localSha256": "6aa8dfc973c729435bbd4dadc80ded8aba2c85543399850e7b60ae6d50d93253",
+      "publicSha256": "48a91c5b4eab7f5e3486a288bcb8712acc70d44f67a0d396b4537375fac95202"
+    },
+    {
+      "path": "docs/competition/submission-10039/evidence/prompt-chains/P02/page-review/records.jsonl",
+      "localSha256": "d9d53145699730db2d13f1a90f1e8ba4604d0d99e1a501d9600009ea7a25cde5",
+      "publicSha256": "78fb2cd9e83a6d557a0bd6908e3ec9290f52d503a8b43386c0c1020485e10737"
+    },
+    {
+      "path": "docs/competition/submission-10039/evidence/prompt-chains/P02/reports/historical-result.txt",
+      "localSha256": "9a15469d713985685d4ae1a24f8193dec85e9e75b246c4ca6571216a2c706eb7",
+      "publicSha256": "d0446edea40a7d1bb8c1f7546f3759c99af63298e1a357dd4aee315500acc9f8"
+    }
+  ],
+  "identityFields": "blank at user request",
+  "technicalDocxSha256": "208e1fca34ade92d0a8ed1c9b53c0a75f95bd14a3673b2a78b918e4c2b0d91ce",
+  "note": "Publishing commit appends editable documentation, narrated outline and review entry points. Legacy manifests describe their original bounded local snapshots; public hash manifest describes current payload."
+}

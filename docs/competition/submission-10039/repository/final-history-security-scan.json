@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-11-17T07:36:33.257283+00:00",
+  "submissionCommit": "708940c38d5f863112d96daef1ab15ecd62fb734",
+  "reachableObjects": 5896,
+  "blobs": 3458,
+  "uncompressedBlobBytes": 180165821,
+  "commits": 119,
+  "findings": [
+    {
+      "object": "fc686aa6da6d2bf3be95ec8a7067e96442ad0942",
+      "path": "scripts/competition/tests/test_export_agent_development_records.py",
+      "kinds": [
+        "sk_key"
+      ],
+      "classification": "reviewed_synthetic_redaction_test_fixture"
+    }
+  ],
+  "unresolvedFindings": 0,
+  "status": "PASS_WITH_DOCUMENTED_TEST_FIXTURE",
+  "limitations": [
+    "Known private literals and selected token signatures only.",
+    "ZIP XML/text container members scanned. Screenshots are not OCR-scanned.",
+    "Original private runtime configuration and unverifiable binary assets excluded from the sanitized base history."
+  ]
+}

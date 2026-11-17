@@ -38,4 +38,4 @@ AI 智学面向课程资料分散、学生课时提问缺少上下文、资料�
 
 ## 仓库与附件填写
 
-仓库链接采用 [仓库说明](repository/REPOSITORY_ACCESS.md) 中核实的地址。评委访问方式在取得赛方账号或邀请要求后配置。技术 PDF 使用 `TECHNICAL_REPORT.pdf`，开发过程材料使用 `prompt-chains/` 及其证据。演示视频按 `VIDEO_OUTLINE.md` 录制并导出为 1080p MP4，最终文件时长应在 5 至 8 分钟内。
+仓库链接采用 [仓库说明](repository/REPOSITORY_ACCESS.md) 中核实的地址。公开评审仓库支持匿名读取，提交时使用其首页地址并核对默认分支的材料。技术 PDF 使用 `TECHNICAL_REPORT.pdf`，开发过程材料使用 `prompt-chains/` 及其证据。演示视频按 `VIDEO_OUTLINE.md` 录制并导出为 1080p MP4，最终文件时长应在 5 至 8 分钟内。

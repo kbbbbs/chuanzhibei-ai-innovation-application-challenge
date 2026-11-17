@@ -1,8 +1,0 @@
-
-Running 7 tests using 1 worker
-
-(node:2660) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)
-  x  1 e2e\knowledge-graph-motion.spec.js:162:1 › directional motion paints changing frames, pauses and resumes without semantic graph mutations (18.1s)
-(node:33688) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
-(Use `node --trace-warnings ...` to show where the warning was created)

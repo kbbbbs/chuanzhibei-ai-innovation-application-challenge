@@ -1,29 +1,28 @@
-# 代码仓库与评审访问
+# 公开评审仓库
 
-本项目提交仓库地址为 https://github.com/kbbbbs/ai-learning-collaboration 。该地址来自本地真实 origin。2026-10-31 的发布验证记载其为私有仓库，当前评审权限需要在正式提交前由仓库所有者配置。
+正式赛道为传智杯“AI创新应用挑战赛”，赛项10039，Vibe Coding为开发主题。
 
-## 本次提交版本
+仓库地址为 https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge ，默认评审分支为main。公开内容可匿名浏览，姓名等身份栏按参赛者要求留空。
 
-- 当前工作区为 D:/ai-learning-collaboration-verified，原 main 保持在 1d0b985b35d2bdf272990a114c16f5ea7c00735c。
-- 为参赛材料建立本地评审分支 `codex/contest-10039-history`，其中已并入小学期管理系统的脱敏原始 Git 历史。
-- 本轮谱系合并提交为 `d54aabda39c96df47a2cae4988b902fbb19d5fe1`，实际创建时间为 `2026-11-17T15:31:35+08:00`。该提交有 118 条可达真实提交，完整数量包含 112 条经安全处理的原基座提交、5 条协作仓库提交及本次谱系合并。
-- 谱系合并的代码树等于本轮开始时的当前 HEAD。随后准备的实际参赛源码与材料应由根任务生成最终 snapshot 提交，最终版本以材料包清单登记的 submission commit 为准。
+## 复核与克隆
 
-## 线上访问状态
+```powershell
+git clone --config core.longpaths=true https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge.git ./ai-learning-review
+git -C ./ai-learning-review log --graph --oneline --all
+```
 
-本轮 GitHub CLI 没有登录，连接器读取仓库元数据返回 404。当前工具未取得在线仓库信息，无法在本轮确认公开状态、评委是否具有权限以及本地评审分支是否已出现在远端。
+Windows克隆设置仅作用于新副本，用于处理历史材料中的长文件名。完整启动步骤见上级ENVIRONMENT.md，首页提供Word、PDF、逐句视频旁白及三条核心Prompt链入口。
 
-正式提交时应由仓库所有者完成以下操作并在报名后台核验。
+## 历史与版本
 
-1. 将最终评审分支和提交推送到上述仓库。
-2. 按主办方要求设为 Public，或将主办方提供的评审账号加入 Collaborators 并授予只读所需权限。
-3. 以评审可用账号或未登录窗口打开最终 branch、README、技术 PDF 与 Prompt 链附件，确认链接和下载可用。
-4. 在提交表填写仓库链接、评审分支和最终提交 SHA。通过网页分享资料时避免带入本机令牌。
+公开历史由112条小学期团队管理系统提交、5条后续协作提交和2条本轮真实归档提交派生。原作者、提交者、时间和消息保留。公开发布前，在独立副本中进一步处理历史运维主机地址与无评审价值的LibreOffice缓存，并提供额外的提交映射和复扫说明。
 
-当前本地状态没有包含实际发出的评审邀请。本地 Git bundle 提供离线核查路径，网上仓库的评审访问仍需完成配置。
+本地冻结代码快照为708940c38d5f863112d96daef1ab15ecd62fb734。公开版本采用安全副本的对应提交作为父节点，再追加可编辑技术文档、逐句旁白和评审首页。具体公开提交以GitHub默认分支显示和PUBLICATION_VERSION.json记录的安全父节点为依据。
 
-## 离线历史核查
+原始AI开发中未保存的中间提交采用真实Prompt快照补充，材料按实际可追溯范围披露。其它本地分支的功能按各自版本说明。
 
-根任务形成最终 snapshot 后，由本子任务从该评审分支生成统一历史 bundle。使用材料包中的最终文件和清单核对 SHA-256，再执行 `git bundle verify <bundle文件>`。可在新的空目录中克隆该 bundle，切换到材料清单记录的最终提交。
+## 本地离线归档
 
-源码快照 ZIP 用于直接阅读和复现。Git bundle 用于查看真实提交谱系、作者时间与演进差异，两者的版本对应关系由最终材料清单记录。
+本地10039-history.bundle与原压缩包保留准备时的119提交快照，供本地版本核查。公开GitHub仓库直接保存对应的真实Git谱系，仓库中的bundle-manifest.json描述本地离线归档的历史状态。
+
+本轮公开发布的授权来自参赛者明确要求新建public仓库并上传评审部分。产品私有凭据和实例数据由运行者本机配置。最终提交时使用上述公开仓库链接，并按报名后台字段上传技术PDF及录制的视频。

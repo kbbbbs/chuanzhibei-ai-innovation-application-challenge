@@ -1,3 +1,0 @@
-SYNTHETIC INTERFACE TEST 2026
-The unique marker ZEBRA2026 names a synthetic classroom exercise.
-Gradient descent updates parameters along the negative gradient.

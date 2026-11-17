@@ -1,0 +1,5 @@
+{
+  "comparedCommits": 119,
+  "mismatches": [],
+  "fields": "author, author email/date, committer, committer email/date, exact message"
+}

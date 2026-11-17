@@ -1,6 +1,6 @@
 # AI 智学参赛材料
 
-全国高校 Vibe Coding 开发挑战赛，赛项 10039，推荐选题方向为“场景化轻量 RAG 知识库”。作品围绕教师课程资料管理、学生课时选文提问与授权资料检索回答形成学习流程。
+传智杯 AI创新应用挑战赛，赛项 10039，开发主题为 Vibe Coding，推荐选题方向为“场景化轻量 RAG 知识库”。作品围绕教师课程资料管理、学生课时选文提问与授权资料检索回答形成学习流程。
 
 参赛者已确认提交截止时间为 **2026 年 11 月 18 日 15:00，Asia/Shanghai**。姓名、学校、专业年级和报名组别按参赛者要求留空，见 [提交表单文案](FORM_TEXT.md)。
 
@@ -9,7 +9,8 @@
 | 文件或目录 | 用途 |
 | --- | --- |
 | [技术说明 PDF](TECHNICAL_REPORT.pdf) | 赛方要求的 PDF 技术文档，重点说明意图控制、架构约束和可复现性 |
-| [技术说明可编辑正文](TECHNICAL_REPORT.md) | PDF 的文字源稿，供后续更新 |
+| [可编辑 Word 技术文档](TECHNICAL_REPORT.docx) | 可直接填写身份、编辑正文和表格 |
+| [技术说明文字源稿](TECHNICAL_REPORT.md) | 正文源稿，供后续更新 |
 | [环境与十分钟复现指南](ENVIRONMENT.md) | 环境、依赖、配置、启动、演示账号及业务操作 |
 | [核心 Prompt 链索引](prompt-chains/README.md) | 三条主链的原始提问、Agent 建议、真实问题、修正和验证 |
 | [仓库与评审访问说明](repository/REPOSITORY_ACCESS.md) | 仓库链接、真实 Git 历史、当前快照与评审访问状态 |
@@ -39,7 +40,7 @@
 
 ## 提交动作
 
-在赛事个人中心完成缴费并进入所报赛项，按后台字段提交仓库链接、技术 PDF、Prompt 材料及要求的附件。私有仓库需要提供评审访问权限，评委账号由赛方实际提供后配置。身份字段、评审访问状态与最终视频文件应在截止前逐项核对。
+在赛事个人中心完成缴费并进入所报赛项，按后台字段提交仓库链接、技术 PDF、Prompt 材料及要求的附件。公开评审仓库为 https://github.com/kbbbbs/chuanzhibei-ai-innovation-application-challenge ，可匿名读取。身份字段与最终视频文件应在截止前逐项核对。
 
 [官方赛项页面](https://www.boxuegu.com/matchTrack/detail/?id=10039)
 

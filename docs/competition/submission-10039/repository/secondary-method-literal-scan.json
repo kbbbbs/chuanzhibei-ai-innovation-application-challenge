@@ -5,86 +5,105 @@
       "object": "cff20ef351c39db5534101e8d88d8aa4bd6f0799",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/agent/action/teacher/TeacherApplicationReviewActionExecutorTest.java",
       "line": 138,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "d23b75582b9dba7e9a68c7e66d526aa50b8a9d0c",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 201,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     },
     {
       "object": "8651d4b399a8946e2c1aaa140fe529bc9e5f9072",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/UserProfileControllerTest.java",
       "line": 88,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "8651d4b399a8946e2c1aaa140fe529bc9e5f9072",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/UserProfileControllerTest.java",
       "line": 89,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "8651d4b399a8946e2c1aaa140fe529bc9e5f9072",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/UserProfileControllerTest.java",
       "line": 104,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "8651d4b399a8946e2c1aaa140fe529bc9e5f9072",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/UserProfileControllerTest.java",
       "line": 105,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "8651d4b399a8946e2c1aaa140fe529bc9e5f9072",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/UserProfileControllerTest.java",
       "line": 116,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "8651d4b399a8946e2c1aaa140fe529bc9e5f9072",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/UserProfileControllerTest.java",
       "line": 140,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "descriptive_password_test_fixture"
     },
     {
       "object": "9bd5ac0367e20319c381e404a4187dbac83e786b",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 201,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     },
     {
       "object": "df97da1d08e18e0701ead8c620ace311404ad82b",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 196,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     },
     {
       "object": "61b0fcb89f6e231069b6d0a8934ca0654a00a5f9",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 192,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     },
     {
       "object": "6de57b15e21871556861858f3edbe6105236dee4",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 192,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     },
     {
       "object": "1d9a7b5b72353e7c21c58dbb96188d49c806e4f8",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 156,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     },
     {
       "object": "db74d6c86d2da8a0e5ea50a9692c98e804d45000",
       "path": "ai-learning-backend/src/test/java/com/cupk/aiacademy/controller/ApiRepairRegressionTest.java",
       "line": 152,
-      "kind": "method_credential_literal"
+      "kind": "method_credential_literal",
+      "classification": "md5_fixture"
     }
   ],
-  "status": "REVIEW_REQUIRED"
+  "status": "PASS_WITH_DOCUMENTED_TEST_FIXTURES",
+  "unresolvedFindings": 0,
+  "classificationCounts": {
+    "descriptive_password_test_fixture": 7,
+    "md5_fixture": 7
+  }
 }

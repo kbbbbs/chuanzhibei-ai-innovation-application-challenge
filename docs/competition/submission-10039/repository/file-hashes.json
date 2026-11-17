@@ -1,0 +1,19 @@
+{
+  "10039-history.bundle": "aa1f9ae8636a46c192ec6cfc6401b6a0283404c82dfca13dc5813649b331eaf1",
+  "bundle-manifest.json": "06934d43112886b8a823aab586169c1c0c8d5c4b65a5abb160e5b3a8f3065fa4",
+  "final-history-security-scan.json": "cdf4248812e009072833c92d4503804825e80acaede6a9ae939f2d2df2021135",
+  "history-index.json": "910dc4efdf891aaf03ab2e0dbf1b27ef8b7082dcd9961f0086750f969999183c",
+  "history-merge-result.json": "b7ba63de7f3249192bea53c1d8b6d2f5a292b0e415c744b73d081bb340465498",
+  "history-security-scan.json": "4eb1fbc01147396c3d185c58e6837774c7e3e18f8a1953dc81ef482ee4548c1e",
+  "HISTORY_PROVENANCE.md": "21fab1ca11c2fd1973a18256e5cbe69c4c3a7e7ad4f49908e665f10aa6e2c760",
+  "original-to-sanitized-commit-map.json": "870bde26fd986a5a95e84bc07b4c9820c487bcb2cf15fb1247efb2bc5553936e",
+  "README.md": "e81782f63d50c2b60e4eabac2c4c1680df38ac38796858517bb7ca27b3041eeb",
+  "removed-original-paths.json": "96ee93b990e9772a6d27167359e97334c84f83cef1b9ea2e083f6d8159a254a3",
+  "repository-access-check.json": "e54bbeb14e30b40f7eaf9b618fdd9899afa9c29af64f0d98168393383264fe4b",
+  "REPOSITORY_ACCESS.md": "000481ff08c9ae4d151b0de615964effe4d04e91d21697486d0a4c6dacac922f",
+  "sanitized-original-security-scan.json": "2c95213d353e5ff61f5d9d85c517d580c57694d2e8fce4d17d34326bef53534b",
+  "secondary-method-literal-scan.json": "42be321a3b750e53c98f77ca0e6993261c654aebaed52371cd20ee37fa3d72e6",
+  "SOURCE_SNAPSHOT.json": "556d6b105ce931655dc5d706965245d1976a8cd3c3a0faf9afc9170876f25376",
+  "working-tree-stat.txt": "0ba3fa628653d3c1ca1acd8e2ddef43a3f52fd9577f7f085e3c6d0d3cffaecf5",
+  "working-tree-status.json": "14a8dbe912bafc35e4df01efea8b009016aec35b51ddb1f305031923e12ab589"
+}

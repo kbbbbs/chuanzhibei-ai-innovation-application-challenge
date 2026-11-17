@@ -1,9 +1,0 @@
-test_evidence_cannot_silently_use_another_page (test_import_chapter.ChapterImportTest.test_evidence_cannot_silently_use_another_page) ... ok
-test_evidence_uses_actual_chunk_and_exact_quote (test_import_chapter.ChapterImportTest.test_evidence_uses_actual_chunk_and_exact_quote) ... ok
-test_missing_keyword_stops_candidate_generation (test_import_chapter.ChapterImportTest.test_missing_keyword_stops_candidate_generation) ... ok
-test_wrong_pdf_cannot_receive_this_curated_snapshot (test_import_chapter.ChapterImportTest.test_wrong_pdf_cannot_receive_this_curated_snapshot) ... ok
-
-----------------------------------------------------------------------
-Ran 4 tests in 0.000s
-
-OK

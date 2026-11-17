@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-11-17T07:41:29.890351+00:00",
+  "sourceCommit": "708940c38d5f863112d96daef1ab15ecd62fb734",
+  "packagedBackendBuild": "PASS",
+  "packagedFrontendNpmCi": "PASS",
+  "packagedFrontendBuild": "PASS",
+  "newModelRequests": false,
+  "technicalPdfPages": 16,
+  "videoOutlineSeconds": 450,
+  "aiCollaborationSeconds": 180,
+  "deadline": "2026-11-18T15:00:00+08:00"
+}

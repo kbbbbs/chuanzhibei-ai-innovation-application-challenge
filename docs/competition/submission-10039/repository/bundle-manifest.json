@@ -1,0 +1,14 @@
+{
+  "preparedAt": "2026-11-17T07:40:31.432006+00:00",
+  "file": "10039-history.bundle",
+  "bytes": 111483128,
+  "sha256": "aa1f9ae8636a46c192ec6cfc6401b6a0283404c82dfca13dc5813649b331eaf1",
+  "branch": "refs/heads/codex/contest-10039-history",
+  "submissionCommit": "708940c38d5f863112d96daef1ab15ecd62fb734",
+  "reachableCommits": 119,
+  "gitBundleVerify": "PASS",
+  "cloneCheckoutWithLocalLongpaths": "PASS",
+  "cloneWorktreeClean": true,
+  "firstCloneWithoutLongpaths": "checkout failed on long historical screenshot paths; corrected with clone-local core.longpaths=true",
+  "pushed": false
+}

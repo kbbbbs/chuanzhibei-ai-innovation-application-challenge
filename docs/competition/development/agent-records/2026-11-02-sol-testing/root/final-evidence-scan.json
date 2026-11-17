@@ -1,6 +1,0 @@
-{
-  "checked_at_utc": "2026-11-02T10:45:41.947803+00:00",
-  "files_scanned": 42,
-  "exact_private_secret_or_jwt_files": [],
-  "limitations": "Exact configured-secret and JWT pattern scan; not a claim that all possible private information is detected."
-}
